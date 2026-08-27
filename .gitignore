@@ -1,0 +1,15 @@
+node_modules
+dist
+coverage
+.DS_Store
+*.local
+.env
+.env.*
+!.env.example
+# OpenAPI: 스냅샷 원본만 커밋한다. 생성물과 변환 산출물은 커밋하지 않는다.
+src/api/generated/
+.openapi-prepared/
+# 작업 문서 (AGENTS.md §8)
+.ai-work/
+
+# docs/ 를 ignore 하지 마라. docs/decisions 의 승인된 ADR 은 커밋 대상이다 (AGENTS.md §8).

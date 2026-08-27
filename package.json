@@ -1,0 +1,81 @@
+{
+  "name": "zeroplus-web-admin",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "vite",
+    "preview": "vite preview",
+    "api:pull": "node scripts/openapi/pull.mjs",
+    "api:validate": "node scripts/openapi/validate.mjs",
+    "api:prepare": "node scripts/openapi/prepare-generation.mjs",
+    "api:generate": "pnpm api:prepare && orval --config orval.config.ts",
+    "typecheck:generated": "tsc -p tsconfig.generated.json --noEmit",
+    "api:check": "pnpm api:validate && pnpm api:generate && pnpm typecheck:generated",
+    "typecheck": "tsc -b --pretty false",
+    "lint": "eslint . --max-warnings 0",
+    "test:unit": "vitest run",
+    "build": "vite build",
+    "verify": "pnpm api:check && pnpm typecheck && pnpm lint && pnpm test:unit && pnpm build"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "5.9.1",
+    "@tanstack/react-query": "5.102.6",
+    "@tanstack/react-router": "1.170.32",
+    "@tanstack/react-table": "9.2.3",
+    "axios": "1.20.0",
+    "clsx": "2.1.1",
+    "i18next": "26.4.0",
+    "radix-ui": "1.6.7",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "react-hook-form": "7.86.0",
+    "react-i18next": "17.0.12",
+    "tailwind-merge": "3.6.0",
+    "zod": "4.4.3",
+    "zustand": "5.0.15"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@tailwindcss/vite": "4.3.3",
+    "@tanstack/eslint-plugin-query": "5.102.6",
+    "@tanstack/router-plugin": "1.168.35",
+    "@testing-library/dom": "10.4.1",
+    "@testing-library/jest-dom": "7.0.1",
+    "@testing-library/react": "16.3.2",
+    "@types/node": "^26.4.0",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.5",
+    "@vitejs/plugin-react": "6.1.0",
+    "eslint": "10.9.1",
+    "eslint-import-resolver-typescript": "^4.4.5",
+    "eslint-plugin-import-x": "4.17.1",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "globals": "17.11.0",
+    "jsdom": "30.0.1",
+    "msw": "2.15.0",
+    "orval": "8.26.0",
+    "oxc-transform-react": "^0.147.0",
+    "tailwindcss": "4.3.3",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.68.0",
+    "vite": "8.2.2",
+    "vitest": "4.1.11"
+  },
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "msw",
+      "unrs-resolver"
+    ]
+  }
+}

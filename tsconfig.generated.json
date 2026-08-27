@@ -1,0 +1,8 @@
+{
+  "// 목적": "생성물이 실제로 생성되었고, 그 import가 해석되며, 프로젝트 mutator와 함께 컴파일되는지만 좁게 검사한다. 존재 검사나 grep이 아니다.",
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["vite/client"]
+  },
+  "include": ["src/api/generated/**/*.ts", "src/api/http/**/*.ts"]
+}
