@@ -30,6 +30,15 @@ describe('operation context + ApiError kind outcome', () => {
     expect(resolveErrorOutcome('feature', kind)).toBe('incident')
   })
 
+  it.each(['unauthorized', 'forbidden'] as const)(
+    'keeps a pre-auth %s inline on the screen that asked for the credential',
+    (kind) => expect(resolveErrorOutcome('pre-auth', kind)).toBe('feature'),
+  )
+
+  it('still suppresses a cancelled pre-auth request', () => {
+    expect(resolveErrorOutcome('pre-auth', 'cancelled')).toBe('none')
+  })
+
   it.each(['render', 'route-loader', 'fatal', 'route-not-found'] as const)(
     'routes %s failures to root',
     (context) => expect(resolveErrorOutcome(context, 'contract')).toBe('root'),

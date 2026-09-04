@@ -1,18 +1,33 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import { client } from '@/api/http/client'
+import {
+  clearAccessToken,
+  readAccessToken,
+  readLoginId,
+  readReissuedAccessToken,
+} from '@/api/http/credential'
 import { AuthProvider, useAuth } from './AuthProvider'
 import { AppProviders, createQueryClient } from './AppProviders'
 
-function TokenSetter() {
-  const { setAccessToken } = useAuth()
-  return <button type="button" onClick={() => setAccessToken('token-from-app')}>set token</button>
+function SessionStarter() {
+  const { startSession } = useAuth()
+  return (
+    <button
+      type="button"
+      onClick={() => { startSession({ accessToken: 'token-from-app', loginId: 'manager_id' }) }}
+    >
+      set token
+    </button>
+  )
 }
+
+afterEach(() => { clearAccessToken() })
 
 describe('AuthProvider', () => {
   it('registers the credential port before the login route module is loaded', async () => {
     let authorization: string | null = null
-    render(<AuthProvider><TokenSetter /></AuthProvider>)
+    render(<AuthProvider><SessionStarter /></AuthProvider>)
     fireEvent.click(screen.getByRole('button', { name: 'set token' }))
     await waitFor(async () => {
       await client.get('/protected', {
@@ -28,7 +43,7 @@ describe('AuthProvider', () => {
 
   it('is connected by AppProviders so protected requests are signed without loading login', async () => {
     let authorization: string | null = null
-    render(<AppProviders queryClient={createQueryClient()}><TokenSetter /></AppProviders>)
+    render(<AppProviders queryClient={createQueryClient()}><SessionStarter /></AppProviders>)
     fireEvent.click(screen.getByRole('button', { name: 'set token' }))
     await waitFor(async () => {
       await client.get('/protected', {
@@ -40,5 +55,25 @@ describe('AuthProvider', () => {
       })
       expect(authorization).toBe('Bearer token-from-app')
     })
+  })
+
+  it('stores the login id alongside the token so a later reissue can be requested', () => {
+    render(<AuthProvider><SessionStarter /></AuthProvider>)
+
+    fireEvent.click(screen.getByRole('button', { name: 'set token' }))
+
+    expect(readAccessToken()).toBe('token-from-app')
+    expect(readLoginId()).toBe('manager_id')
+  })
+
+  it('registers a reissue reader that reads the access token out of the response envelope', () => {
+    expect(
+      readReissuedAccessToken({
+        header: { resultCode: 200, resultMessage: 'SUCCESS' },
+        data: { id: 'manager_id', accessToken: 'reissued-token' },
+      }),
+    ).toBe('reissued-token')
+    expect(readReissuedAccessToken({ accessToken: 'reissued-token' })).toBeUndefined()
+    expect(readReissuedAccessToken(null)).toBeUndefined()
   })
 })

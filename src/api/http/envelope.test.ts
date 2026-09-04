@@ -21,11 +21,12 @@ describe('응답 봉투 판정', () => {
     expect(value).toEqual({ id: 7 })
   })
 
+  /** ADR 0001 "HTTP 200 응답의 resultCode 매핑" 이 선언한 code 는 확인된 판정이므로 경고하지 않는다. */
   it.each([
-    4004,
-    400,
-    401,
-  ] as const)('HTTP 200 + 미확인 resultCode %s를 business로 유지한다', (resultCode) => {
+    [400, 'validation'],
+    [401, 'unauthorized'],
+    [4004, 'unauthorized'],
+  ] as const)('HTTP 200 + 선언된 resultCode %s를 %s로 판정한다', (resultCode, kind) => {
     const log = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
     const error = captureApiError(() =>
       unwrapEnvelope(
@@ -34,13 +35,9 @@ describe('응답 봉투 판정', () => {
       ),
     )
 
-    expect(error).toMatchObject({ kind: 'business', code: String(resultCode), status: 200, requestId: 'req-1' })
+    expect(error).toMatchObject({ kind, code: String(resultCode), status: 200, requestId: 'req-1' })
     expect(error.message).not.toContain('서버 원문')
-    expect(log).toHaveBeenCalledWith(
-      'Unmapped API business code',
-      expect.objectContaining({ resultCode, requestId: 'req-1' }),
-    )
-    expect(JSON.stringify(log.mock.calls)).not.toContain('서버 원문')
+    expect(log).not.toHaveBeenCalled()
     log.mockRestore()
   })
 

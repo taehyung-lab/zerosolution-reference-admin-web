@@ -2,6 +2,7 @@ import { ApiError, type ApiErrorKind } from '@/api/error'
 
 export type ErrorOperationContext =
   | 'feature'
+  | 'pre-auth'
   | 'prefetch'
   | 'render'
   | 'route-loader'
@@ -29,5 +30,10 @@ export function resolveErrorOutcome(
     return 'root'
   }
   if (context === 'prefetch' && kind === 'forbidden') return 'none'
+  /**
+   * 로그인 전 요청의 인증 실패는 틀린 자격증명이지 세션의 종료가 아니다.
+   * 이것을 incident 로 보내면 로그인 실패가 화면 안 오류 대신 `/login` 재이동으로 끝난다.
+   */
+  if (context === 'pre-auth') return kind === 'cancelled' ? 'none' : 'feature'
   return observedFeatureOutcome(kind)
 }

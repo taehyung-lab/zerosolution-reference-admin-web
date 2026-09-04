@@ -1,6 +1,9 @@
 import type { AxiosRequestConfig, AxiosResponse } from 'axios'
+import { ApiError } from '../error'
 import { client, readResponseHeader } from './client'
+import { isPreAuthPath } from './credential'
 import { unwrapEnvelope } from './envelope'
+import { publishTerminalUnauthorized } from './incident'
 
 /**
  * 생성된 endpoint 는 봉투 타입(`{ header?, data? }`)을 타입 인자로 넘긴다.
@@ -16,11 +19,31 @@ function isJsonResponse(response: AxiosResponse<unknown>): boolean {
   return mediaType === 'application/json' || mediaType?.endsWith('+json') === true
 }
 
+/**
+ * 봉투가 선언한 세션 만료는 HTTP 200 으로 도착하므로 응답 오류 인터셉터를 지나지 않는다.
+ * `unwrapEnvelope` 은 순수 판정이라 이음매가 없으니, 봉투를 푸는 이 transport 경계가
+ * terminal 처리를 소유한다. 여기서 발행하지 않으면 `error-outcome` 은 incident 로 판정하는데
+ * `IncidentBoundary` 에는 아무 사실도 오지 않는다.
+ *
+ * pre-auth 요청(sign-in·2FA)은 제외한다. 아직 성립한 세션이 없으므로 그 실패는
+ * 세션의 종료가 아니라 화면 안 오류다.
+ */
 function decodeResponse<T>(response: AxiosResponse<T>): UnwrapEnvelope<T>
 function decodeResponse(response: AxiosResponse<unknown>): unknown {
   if (!isJsonResponse(response)) return response.data
   const requestId = readResponseHeader(response, 'x-request-id')
-  return unwrapEnvelope(response.data, requestId)
+  try {
+    return unwrapEnvelope(response.data, requestId)
+  } catch (error) {
+    if (
+      error instanceof ApiError &&
+      error.kind === 'unauthorized' &&
+      !isPreAuthPath(response.config.url)
+    ) {
+      publishTerminalUnauthorized('api', error)
+    }
+    throw error
+  }
 }
 
 /**

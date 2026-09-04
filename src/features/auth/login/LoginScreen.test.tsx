@@ -13,10 +13,12 @@ const onAuthenticated = vi.fn()
 vi.mock('@tanstack/react-router', () => ({ useNavigate: () => navigate }))
 vi.mock('./useSignInMutation', () => ({ useSignInMutation: () => ({ mutateAsync, isPending: false }) }))
 
-function renderScreen() {
+function renderScreen(redirectTo?: string) {
   return render(
     <QueryClientProvider client={new QueryClient()}>
-      <I18nextProvider i18n={i18n}><LoginScreen onAuthenticated={onAuthenticated} /></I18nextProvider>
+      <I18nextProvider i18n={i18n}>
+        <LoginScreen onAuthenticated={onAuthenticated} redirectTo={redirectTo} />
+      </I18nextProvider>
     </QueryClientProvider>,
   )
 }
@@ -36,14 +38,25 @@ afterEach(() => {
 })
 
 describe('LoginScreen', () => {
-  it('passes the access token to the app boundary and navigates after a successful sign-in', async () => {
+  it('passes the submitted credential to the app boundary and navigates after a successful sign-in', async () => {
     mutateAsync.mockResolvedValue({ accessToken: 'token-1', requirePasswordChange: false })
     renderScreen()
     fireEvent.change(screen.getByLabelText('아이디*'), { target: { value: 'operator' } })
     fireEvent.change(screen.getByLabelText('비밀번호*'), { target: { value: 'password' } })
     fireEvent.submit(getLoginForm())
     await waitFor(() => expect(navigate).toHaveBeenCalledWith({ to: '/' }))
-    expect(onAuthenticated).toHaveBeenCalledWith('token-1')
+    expect(onAuthenticated).toHaveBeenCalledWith({ accessToken: 'token-1', loginId: 'operator' })
+  })
+
+  it('returns to the guarded destination the auth guard preserved', async () => {
+    mutateAsync.mockResolvedValue({ accessToken: 'token-1', requirePasswordChange: false })
+    renderScreen('/managers?periodType=UPDATED_AT')
+    fireEvent.change(screen.getByLabelText('아이디*'), { target: { value: 'operator' } })
+    fireEvent.change(screen.getByLabelText('비밀번호*'), { target: { value: 'password' } })
+    fireEvent.submit(getLoginForm())
+    await waitFor(() =>
+      expect(navigate).toHaveBeenCalledWith({ to: '/managers?periodType=UPDATED_AT' }),
+    )
   })
 
   it('shows an explicit unsupported-flow error without navigating when a password change is required', async () => {
@@ -65,6 +78,18 @@ describe('LoginScreen', () => {
     fireEvent.submit(getLoginForm())
     expect(await screen.findByRole('alert')).toHaveTextContent('아이디 또는 비밀번호를 확인해주세요')
     expect(id).toHaveValue('operator')
+  })
+
+  it('shows an inline credential error when the server rejects the submitted password', async () => {
+    mutateAsync.mockRejectedValue(
+      new ApiError({ kind: 'unauthorized', message: 'http 401', status: 401, code: '401' }),
+    )
+    renderScreen()
+    fireEvent.change(screen.getByLabelText('아이디*'), { target: { value: 'operator' } })
+    fireEvent.change(screen.getByLabelText('비밀번호*'), { target: { value: 'wrong' } })
+    fireEvent.submit(getLoginForm())
+    expect(await screen.findByRole('alert')).toHaveTextContent('아이디 또는 비밀번호를 확인해주세요')
+    expect(navigate).not.toHaveBeenCalled()
   })
 
   it('maps confirmed field errors to their matching fields', async () => {

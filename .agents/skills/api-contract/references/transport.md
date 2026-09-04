@@ -20,7 +20,8 @@ Kind does not choose a UI location. The operation context owns the result: cance
 
 The four outcomes `none | feature | incident | root` are decided only in `src/api/error-outcome.ts` (`resolveErrorOutcome(context, kind)`, `isFeatureError(error)`); the UI-side placement of each outcome is [shared-ui-contract incidents.md](../../shared-ui-contract/references/incidents.md).
 Feature consumers use its context-free feature predicate instead of repeating cancelled/unauthorized/forbidden
-comparisons. Context remains only for real differences such as observerless prefetch and root failures.
+comparisons. Context remains only for real differences such as observerless prefetch, pre-auth failures that end no
+session, and root failures.
 
 Never expose `resultMessage`, another raw server message, or a stack in UI. Safe translated copy and a recovery action are mandatory. `requestId` is the visible inquiry code; a details disclosure may additionally show request ID, status, and kind.
 

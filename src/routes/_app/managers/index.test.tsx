@@ -10,7 +10,16 @@ import {
 } from "@testing-library/react";
 import { HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+} from "vitest";
+import { clearAccessToken, setAccessToken } from "@/api/http/credential";
 
 let managerListRequestCount = 0;
 let managerTypeRequestCount = 0;
@@ -35,10 +44,13 @@ const server = setupServer(
 );
 
 beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
+// `/_app` 가드는 저장된 토큰을 요구한다. 이 절은 인증된 세션의 라우팅을 검증한다.
+beforeEach(() => { setAccessToken("route-test-token"); });
 afterEach(() => {
   managerListRequestCount = 0;
   managerTypeRequestCount = 0;
   server.resetHandlers();
+  clearAccessToken();
 });
 afterAll(() => server.close());
 

@@ -247,7 +247,7 @@ export const SEED_BUNDLES = [
       location(
         '.agents/skills/api-contract/references/auth-session.md',
         'Auth transport and session incidents',
-        'HTTP 401 runs `/auth/reissue` once',
+        "HTTP 401 runs the contract's reissue endpoint once",
       ),
     ],
     adrs: [location(

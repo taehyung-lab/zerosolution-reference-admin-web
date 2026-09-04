@@ -218,6 +218,19 @@ test('@smoke login renders the preserved sign-in field and action contract', asy
   await expect(page.getByText('ZERO PLUS+')).toBeVisible()
 })
 
+test.describe('unauthenticated entry', () => {
+  test.use({ storageState: { cookies: [], origins: [] } })
+
+  test('@smoke an app route without a stored credential lands on login with the attempted location', async ({ page }) => {
+    await page.goto('/managers?periodType=CREATED_AT')
+
+    await expect(page.getByRole('heading', { name: '로그인' })).toBeVisible()
+    const url = new URL(page.url())
+    expect(url.pathname).toBe('/login')
+    expect(url.searchParams.get('redirect')).toBe('/managers?periodType=CREATED_AT')
+  })
+})
+
 test.describe('manager list result states', () => {
   test.use({ timezoneId: 'Asia/Seoul' })
 

@@ -3,7 +3,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ApiError } from '@/api/error'
-import { isFeatureError } from '@/api/error-outcome'
+import { resolveErrorOutcome } from '@/api/error-outcome'
 import { Button } from '@/shared/ui/primitives/Button'
 import { FormTextField } from '@/shared/ui/form/FormTextField'
 import { useSignInMutation } from './useSignInMutation'
@@ -11,10 +11,16 @@ import { toSignInRequest } from './login-mapper'
 import { loginSchema, type LoginValues } from './login-schema'
 
 interface LoginScreenProps {
-  readonly onAuthenticated: (accessToken: string) => void
+  /**
+   * 제출한 로그인 ID 를 함께 넘긴다. 토큰 재발급 요청 body 가 그 값을 요구하고,
+   * sign-in 에 실제로 사용한 값이 아니면 서버가 재발급을 계산할 수 없다.
+   */
+  readonly onAuthenticated: (session: { accessToken: string; loginId: string }) => void
+  /** 인증 가드가 되돌려 보낸 원래 목적지. route가 소유하고 검증한다. */
+  readonly redirectTo?: string | undefined
 }
 
-export function LoginScreen({ onAuthenticated }: LoginScreenProps) {
+export function LoginScreen({ onAuthenticated, redirectTo }: LoginScreenProps) {
   const { t } = useTranslation('auth')
   const navigate = useNavigate()
   const [rootError, setRootError] = useState<string>()
@@ -32,8 +38,8 @@ export function LoginScreen({ onAuthenticated }: LoginScreenProps) {
           setRootError(t('errors.flowNotImplemented'))
           return
         }
-        onAuthenticated(session.accessToken)
-        await navigate({ to: '/' })
+        onAuthenticated({ accessToken: session.accessToken, loginId: values.id })
+        await navigate({ to: redirectTo ?? '/' })
       } catch (error: unknown) {
         applyLoginError(error)
       }
@@ -59,7 +65,8 @@ export function LoginScreen({ onAuthenticated }: LoginScreenProps) {
       return
     }
     if (error instanceof ApiError) {
-      if (!isFeatureError(error)) return
+      // 로그인 전 실패는 이 화면이 인라인으로 처리한다. 세션 종료가 아니므로 incident 로 보내지 않는다.
+      if (resolveErrorOutcome('pre-auth', error.kind) !== 'feature') return
       if (error.kind === 'network' || error.kind === 'timeout') {
         setRootError(t('errors.connection'))
         return
@@ -72,7 +79,8 @@ export function LoginScreen({ onAuthenticated }: LoginScreenProps) {
         setRootError(t('errors.rateLimited'))
         return
       }
-      if (error.kind === 'business') {
+      // 401 은 서버가 제출한 자격증명을 거부한 것이고, 업무 실패 code 도 같은 안전 카피를 쓴다.
+      if (error.kind === 'unauthorized' || error.kind === 'business') {
         setRootError(t('errors.invalidCredentials'))
         return
       }
