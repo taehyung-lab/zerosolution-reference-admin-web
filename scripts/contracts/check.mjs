@@ -16,6 +16,7 @@ import {
   collectDocumentFiles,
   copilotAgentsPointerFailure,
   documentBudgetFailures,
+  ledgerIndexFailures,
   DOCUMENT_LINE_BUDGET,
   parseReadmeVerifyProjection,
   parseVerifyChain,
@@ -103,6 +104,7 @@ const citingFiles = [
 failures.push(...retiredDocumentNameFailures(citingFiles))
 failures.push(...agentsSectionReferenceFailures(citingFiles, agents))
 failures.push(...prohibitedAbstractionSourceFailures(readFileSync(resolve('eslint.config.js'), 'utf8')))
+failures.push(...ledgerIndexFailures())
 
 // 문서 안의 sentinel 은 어느 모드에서도 결정 미해소다.
 failures.push(...transplantSentinelFailures(documents))
@@ -160,6 +162,7 @@ console.log(`  ✓ 에이전트 문서 ${documents.length}개의 줄 수 예산 
 console.log('  ✓ CLAUDE.md 가 AGENTS.md 를 첫 지시로 import')
 if (copilotChecked) console.log('  ✓ Copilot 첫 본문 지시가 AGENTS.md 를 가리킴')
 console.log(`  ✓ 삭제된 문서 이름·옛 AGENTS §번호·금지 추상화 근거 파일 drift 없음 (${citingFiles.length}파일)`)
+console.log('  ✓ 시나리오 원장 색인과 카드가 서로를 덮음')
 console.log(`  ✓ 문서 안 미해소 이관 sentinel 없음${mode === 'target' ? ' (target: 코드 포함)' : ''}`)
 console.log(
   declaredPaths === null

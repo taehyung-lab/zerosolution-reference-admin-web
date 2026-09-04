@@ -9,6 +9,7 @@ import {
   claudeAgentsImportFailure,
   copilotAgentsPointerFailure,
   documentBudgetFailures,
+  ledgerIndexFailures,
   DOCUMENT_LINE_BUDGET,
   parseReadmeVerifyProjection,
   parseVerifyChain,
@@ -567,5 +568,30 @@ describe('api surface: ports and contract paths', () => {
   it('holds for the real repository', () => {
     expect(findUnregisteredPorts()).toEqual([])
     expect(findContractPathMismatches(readDeclaredPaths())).toEqual([])
+  })
+})
+
+describe('scenario ledger index', () => {
+  it('reports a card the index does not link and an index entry with no card', () => {
+    const files = ['README.md', 'session-lifetime.md', 'orphan-card.md']
+    const index = '| [session-lifetime.md](session-lifetime.md) | 세션 |\n| [ghost.md](ghost.md) | 없는 카드 |\n'
+
+    const failures = ledgerIndexFailures('docs/reference/scenarios', 'README.md', () => files, () => index)
+
+    expect(failures).toEqual([
+      'docs/reference/scenarios/README.md: 카드 `orphan-card.md` 가 색인에 없다 (라우팅에서 도달 불가)',
+      'docs/reference/scenarios/README.md: 색인이 가리키는 `ghost.md` 가 없다',
+    ])
+  })
+
+  it('accepts an index and card set that cover each other', () => {
+    const files = ['README.md', 'a.md', 'b.md']
+    const index = '[a.md](a.md) and [b.md](b.md)\n'
+
+    expect(ledgerIndexFailures('docs/reference/scenarios', 'README.md', () => files, () => index)).toEqual([])
+  })
+
+  it('holds for the real ledger', () => {
+    expect(ledgerIndexFailures()).toEqual([])
   })
 })

@@ -226,3 +226,35 @@ export function copilotAgentsPointerFailure(copilot) {
     ? null
     : 'Copilot 의 첫 번째 본문 지시는 `../AGENTS.md` 를 가리켜야 한다.'
 }
+
+/**
+ * 원장은 색인과 카드가 서로를 덮어야 한다. 카드를 쓰고 표에 안 올리면 그 카드는 라우팅에서 사라지고,
+ * 표에만 있고 파일이 없으면 링크가 죽는다. 실제로 카드를 하나 쓰고 표에 안 올린 적이 있어서 넣었다.
+ */
+export function ledgerIndexFailures(
+  directory = 'docs/reference/scenarios',
+  indexFile = 'README.md',
+  list = readdirSync,
+  read = (file) => readFileSync(resolve(file), 'utf8'),
+) {
+  if (!existsSync(resolve(directory))) return []
+  const cards = list(resolve(directory))
+    .filter((name) => name.endsWith('.md') && name !== indexFile)
+    .sort()
+  const index = read(`${directory}/${indexFile}`)
+  const linked = new Set(
+    [...index.matchAll(/\]\(([^)\s]+\.md)\)/g)]
+      .map((match) => match[1].split('/').pop())
+      .filter((name) => name !== undefined),
+  )
+  const failures = []
+  for (const card of cards) {
+    if (!linked.has(card)) failures.push(`${directory}/${indexFile}: 카드 \`${card}\` 가 색인에 없다 (라우팅에서 도달 불가)`)
+  }
+  for (const name of [...linked].sort()) {
+    if (!cards.includes(name) && existsSync(resolve(directory, name)) === false) {
+      failures.push(`${directory}/${indexFile}: 색인이 가리키는 \`${name}\` 가 없다`)
+    }
+  }
+  return failures
+}

@@ -13,7 +13,7 @@ Select references by the surfaces actually present, not by the page type alone. 
 
 ## Read only what applies
 
-- Before composing any screen, read that screen's section of the product inventory (`docs/reference/zero-sol/NN-*.md`: Figma composition, Notion policy sentences, open questions) and the judgment (`docs/reference/zero-sol-figma-analysis.md` §2/§5/§8). Compose only what the inventory shows; record what it does not.
+- Before composing any screen, read that screen's section of the product inventory (`docs/reference/zero-sol/NN-*.md`: Figma composition, Notion policy sentences, open questions) and the judgment (`docs/reference/zero-sol-figma-analysis.md` §2/§5/§8). Also read every applicable card in `docs/reference/scenarios/` (its README lists them): a still frame cannot show which facts arrive without a request, what stays true when a connection drops, or what the server changes on its own, and designing without those is what forces a rewrite mid-build. Compose only what the inventory shows; record what it does not.
 - Route, params/search validation, guard, loader, preload, or navigation entry: read [references/router.md](references/router.md).
 - List, filter, search, result state, sorting, or pagination: read [references/list-workflow.md](references/list-workflow.md).
 - Any table, repeating rows, embedded collection, or search/selection table, whether it sits in a list, a detail section, a form, or a dialog: read [references/table-composition.md](references/table-composition.md) together with the hosting workflow reference.
