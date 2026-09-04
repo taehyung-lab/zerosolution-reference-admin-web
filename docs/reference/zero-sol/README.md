@@ -25,7 +25,7 @@ Figma와 Notion은 이 제품 사실의 1순위 입력이다. 둘이 같은 사�
 
 | 열 | 채우는 것 | 출처 |
 | --- | --- | --- |
-| 화면 | Figma page 번호·이름과 대표 node ID | Figma |
+| 화면 | Figma page 번호·이름과 대표 top-level frame node ID | Figma |
 | surface | 기간 / 검색어 / 다중선택 / 결과 toolbar / summary / table / paging / row action / 상세 / 폼 / dialog / 상태 화면 등 | Figma |
 | Figma 관찰 | 컨트롤 구성, 관찰된 상태(검색 전·후, 빈 결과, 에러, 로딩), 다른 화면과의 차이 | Figma |
 | Notion 동작·정책 | 검색 gate, 기본값, 권한, 다운로드·등록·옵션변경 조건, 에러·빈 결과 문구 정책. 문서 링크 포함 | Notion |
@@ -34,6 +34,13 @@ Figma와 Notion은 이 제품 사실의 1순위 입력이다. 둘이 같은 사�
 
 CSS·색·간격은 기록하지 않는다. 공용 UI(primitive), 공용 컴포넌트(pattern), 공용 로직(mechanic·순수 유틸)
 판정에 필요한 것만 적는다.
+`frame-index.md`에는 page node ID가 없으므로 page ID를 추측해 채우지 않는다. 여러 상태를 합친 행은 대표 frame임을 밝히거나 상태별 frame ID를 모두 적는다.
+
+## 판독 규칙
+
+- select의 렌더된 값은 Figma, 옵션 목록은 Notion이 정본이다. Figma select는 커스터마이즈 여부가 제각각이므로 레이어의 옵션만으로 제품 값을 확정하지 않는다.
+- `Case 정의` frame은 옵션·cascade·필터 그룹·정렬·보기·range slider의 정본이며 모든 select를 펼친 상태로 그려져 있다.
+- 컴포넌트 인스턴스(`◇`)의 레이어 트리는 마스터나 형제의 텍스트를 반환할 수 있으므로 신뢰하지 않고 반드시 렌더로 확정한다.
 
 ## 섹션 파일
 
@@ -41,6 +48,7 @@ Figma 최상위 page 번호를 따른다. 파일 하나가 200줄을 넘으면 �
 
 | 파일 | Figma page |
 | --- | --- |
+| — | ⅱ. KEYSCREEN (`발권>발권취소`·`설정 > APP 버전`·`상품>전시`·`CRM`·`팝업`·`컴포넌트`·`미사용`) — 15개 도메인 밖의 별도 판독 범위 |
 | [01-common.md](01-common.md) | 1 공통 (Layout, LNB, Alert, 공통화면) |
 | [02-auth.md](02-auth.md) | 2 로그인 (로그인, 아이디/비밀번호 찾기, 회원가입, 결과조회) |
 | [03-dashboard.md](03-dashboard.md) | 3 대시보드 |
@@ -67,9 +75,6 @@ Figma 최상위 page 번호를 따른다. 파일 하나가 200줄을 넘으면 �
 
 ## 관찰 한계
 
-- Figma: 2026-09-02 Aside 브라우저로 55개 leaf page의 최상위 frame 261장을 캡처(layer 선택 → zoom to
-  selection → 스크린샷). MCP는 View seat 호출 한도로 사용 불가. **판독은 목록형 화면의 검색후·Case 정의와
-  화면 유형별 대표 1~2 frame에 집중**했고, 표에 `미판독`이라 적힌 frame은 레이어 이름만 기록했다. view-only라
-  prototype interaction은 재생하지 않았고 상태는 정적 frame 기준이다. page node ID는 URL의 `node-id`다.
+- Figma: 2026-09-02 Aside 브라우저 캡처는 선택 갱신 전에 URL을 읽어 node ID가 계통적으로 직전 frame으로 밀렸다. 당시 MCP는 View seat 호출 한도로 사용 불가했고 목록형 화면의 검색후·Case 정의와 화면 유형별 대표 frame에 집중했다. 2026-09-04에는 `aside repl`로 78 page를 전수 재판독해 **frame을 가진 leaf page 59개와 top-level frame 272개**를 확인하고 원장의 node ID를 실측값으로 교체했다. view-only라 prototype interaction은 재생하지 않았고 상태는 정적 frame 기준이다.
 - Notion: 문서에 없는 정책은 Notion 부재를 뜻할 뿐 정책 부재를 뜻하지 않는다. 문장은 원문 인용이며 해석을
   섞지 않았다. 페이지 Status는 대부분 `Backlog`다.

@@ -1,8 +1,8 @@
 # ZEROsol 공용화 판정 (Figma + Notion 전체 인벤토리 기준)
 
 - 성격: 비규범적 판정 기록. 제품 계약이 아니며 단계와 되돌리기 어려운 결정은 ADR 0009·0010이 소유한다.
-- 입력: [전체 surface 인벤토리](zero-sol/README.md)(Figma 55 leaf page · 261 frame, Notion Feature 72페이지 원문), 현재 `src/shared/**`·`src/features/managers/**`, `promotion.md`, `list-workflow.md`.
-- 판정일: 2026-09-02. 방식: Claude와 Codex가 같은 입력으로 독립 초안을 쓰고 교차 리뷰한 뒤 근거로 합쳤다. 합친 결론은 §2·§8 표가 소유하고, 쟁점별 해소 과정은 세션 작업 문서에 두었다.
+- 입력: [전체 surface 인벤토리](zero-sol/README.md)(Figma frame 보유 leaf page 59개 · top-level frame 272개, Notion Feature 72페이지 원문), 현재 `src/shared/**`·`src/features/managers/**`, `promotion.md`, `list-workflow.md`.
+- 판정일: 2026-09-02, Figma 전수 재확인 2026-09-04. 방식: Claude와 Codex가 같은 입력으로 독립 초안을 쓰고 교차 리뷰한 뒤 근거로 합쳤다. 합친 결론은 §2·§8 표가 소유하고, 쟁점별 해소 과정은 세션 작업 문서에 두었다.
 - 이전 판(2026-08-31)은 Figma 대표 node만 보고 Managers 한 화면에서 판정했다. 그 관찰(Alert·공통화면 카피)은 [zero-sol/01-common.md](zero-sol/01-common.md)로 옮겼다.
 - 갱신 조건: 인벤토리가 바뀌거나, 두 번째 코드 consumer가 provisional 계약을 confirm/demote하거나, §5 질문의 답이 나올 때.
 
@@ -32,9 +32,11 @@
 | 정렬 방향 토글 | **`SortControl`에서 제거(narrow)** | Figma 30 화면 어디에도 방향 컨트롤 없음, 정렬된 컬럼 헤더 아이콘만. Notion 방향 문장 없음 | direction props 제거. 헤더 클릭 토글(`selectManagerSort`)은 feature 유지. 후속(2026-09-02): 헤더 버튼·`aria-sort`·glyph는 `DataTable.meta.sort`가 한 값에서 렌더(접근성 불변식, 인벤토리 12+ table 반복). 정렬 가능 컬럼·방향·전이는 feature `manager-sort.ts` 단일표 |
 | `SearchFieldPartition`·`filterPartitionKey/Values` | **feature-local로 demote** | production caller 1곳. "view 변경 중 draft 보존"은 설계 계약이지 인벤토리 문장이 아님 | Managers local로 이동. `useDraftCommit`은 shared 유지. 두 번째 route-backed list에서 재승격 판단 |
 | Managers 검색 전 표면 | **feature 불일치 수정** | 11.1 검색전 frame: "검색해주세요." + `등록`만. 현재 `ManagerListResult`는 summary·toolbar를 무조건 렌더 | `data.searched`로 summary·toolbar-left 가림. `ListResult`에 mode 넣지 않음 |
-| toolbar 우측 action | slot 유지, 카탈로그 없음 | 화면별 집합 전부 다름(5개 / 2개 / 0개). SMS·이메일은 회원·발권 공통 문장이지만 마케팅 정책 조회를 포함한 cross-feature use case | — |
-| 행 선택·bulk 3단계·다운로드 scope | feature workflow (지금). §4 후보 | 헤더 전체선택은 현재 페이지의 선택 가능 행만 대상으로 하고 결과 정체성 변경 시 해제(2026-09-04 사용자 답). bulk endpoint·partial은 미확인 | `bulk-actions.md`에 제품 기본 수명 기록 |
-| lookup 필터·종속 필수 select·range slider·cascade·행 인라인 action | primitive만 shared, 조립은 feature. §4 후보 | lookup 12 화면·종속 select 10 화면·range 1 화면 판독·cascade 1·인라인 1 | — |
+| toolbar 우측 action | slot 유지, 카탈로그 없음 | 화면별 action 집합은 다름. SMS·이메일의 미선택 검증·popup open은 동일 trigger 후보지만 마케팅 정책 gate와 popup 본문은 feature 사실 | trigger는 첫 consumer surface만 provisional, 정책·권한·field·payload는 feature |
+| 행 선택 | feature workflow | 헤더 전체선택은 현재 페이지의 선택 가능 행만 대상으로 하고 결과 정체성 변경 시 해제(2026-09-04 사용자 답) | `bulk-actions.md`의 제품 기본 수명 유지 |
+| bulk alert 연쇄 | **provisional shared 후보** | 미선택 20 / 확인 17 / 완료 17의 문구·lifecycle 반복. `run(values)`는 endpoint를 shared에 가르치지 않는 callback | 첫 consumer의 미선택·확인·실행 callback만; 선택 ID·cascade·값·권한·호출 이후는 feature |
+| 다운로드 선택/전체 | **provisional shared 후보** | 택1 6 / 미선택 오류 7. `(mode, count) → selected\|all\|error`는 순수 분류기 | 첫 consumer의 mode·검증 표면만; row·committed 검색·파일·권한·실행은 feature |
+| lookup 필터·종속 필수 select·range slider·cascade·행 인라인 action | primitive만 shared, 조립은 feature. §4 후보 | lookup 12 화면·종속 select 10 화면·range slider는 `129:32748` Case의 6.2에서 실재 확인(나머지 4 variant는 미확인)·cascade와 인라인 action은 화면별 차이 | — |
 | 팝업/별도 창의 list | 원칙 유지 + reference 연결 | 9.2·14.x | `list-workflow.md`가 kind E를 명시 연결. 루트 §3 표는 바꾸지 않음 |
 
 ## 3. 이번 판정으로 바뀌는 것 (③ Managers 증명 범위)
@@ -49,15 +51,30 @@
 | 반복 행동 | 근거 | 착수 조건 |
 | --- | --- | --- |
 | 행 checkbox + 전체선택 | 20 화면 | 현재 페이지 선택 수명은 확정. 첫 bulk consumer에서 feature-local 상태와 checked/mixed 계산 검증 |
-| 일괄 변경: 미선택 오류 alert → 확인 alert → 완료 alert → 갱신 | Notion 15+ 화면 동일 3문장. 운영자는 확인 문구에 예외 병기 | Managers bulk 정책·endpoint·partial 확정 |
-| 다운로드: 선택/전체 택1, default 미선택, 미선택 오류 alert | Notion 7 화면 | export endpoint·형식 확정 |
+| 일괄 변경 alert 연쇄 | Notion 미선택 20 / 확인 17 / 완료 17의 product-generic copy와 lifecycle 반복; `run(values)`는 domain-free | 첫 consumer가 쓰는 미선택·확인·실행 callback만 provisional로 구현; 선택·cascade·권한·호출 이후는 feature |
+| 다운로드 선택/전체 | Notion 택1 6 / 미선택 오류 7; `(mode, count)` 순수 분류기로 검증 가능 | 첫 consumer가 쓰는 mode·검증만 provisional로 구현; row·검색조건·파일·권한·실행은 feature |
+| SMS·이메일 trigger | 회원·발권에서 미선택 검증·popup open 문구와 lifecycle 반복 | trigger만 provisional; 정책 gate·권한·popup 본문은 feature |
 | lookup(검색 → 단일 선택 chip) | Figma 12 화면, Notion "택1·삭제 후 재선택" | 첫 구현 시 접근성 primitive만 |
 | 보기/정렬 "마지막으로 설정한 값" | Notion 30 화면 | §5-1 답 |
 | 통계 집계 위젯(interval select·차트·전치 표·섹션 다운로드) | 10.x 5 화면 + 대시보드 | 통계 endpoint |
+| Tabs | 인벤토리 7 surface/8 set, APP PUSH 타겟 검색에도 존재 | 첫 실제 화면에서 tab/tabpanel·키보드·controlled value만 검증; URL/local과 panel 수명은 caller 소유 |
+| Tooltip | 디자인 시스템 컴포넌트 + page header 반복 | 첫 header consumer에서 focus/hover/Escape 계약 검증; `PageHeader`는 넓히지 않음 |
+| 행 활성화 | 일반·회원·발권 목록 18회 | 키보드·스크린리더 activation과 interactive child 예외를 함께 검증; destination·permission은 feature 소유 |
+| 상태 count 클릭 필터 | 발권 5 variant 동일 문장, 현장 count는 이벤트 없음 | 접근 가능한 controlled item만 검증; filter·URL·page reset은 feature 소유 |
+| 빈 값 `-` 표현 | 9회 | caller가 absence를 판정하고 shared는 표현만 맡는 가장 좁은 표면을 첫 실제 consumer에서 검증 |
 
 ## 5. 미확인 — 답이 구현을 바꾸는 질문
 
 답을 받은 항목은 지우지 않고 그 자리에 `답(YYYY-MM-DD): …`와 그 답이 바꾼 판정을 남긴다.
+
+실측으로 닫힌 판독 질문:
+
+- 답(2026-09-04): 개인정보 전체보기와 회원 탈퇴는 현재 운영자 비밀번호 재입력 재인증이며, 탈퇴는 사유(5자 이상)도 요구한다. 재인증 성공 후 재조회/클라이언트 해제, 해제 범위(화면 1회/세션), 감사 기록만 미확인이다.
+- 답(2026-09-04): 티켓인증 활동정보 컬럼은 인증일·공연명·회차·공연일시·예매번호·좌석번호다.
+- 답(2026-09-04): 운영자 일괄변경 cascade는 `계정 상태 > 활성 / 비활성`이다.
+- 답(2026-09-04): 발권 5 variant는 cascade·정렬 축이 서로 다르고 분실에는 상태변경 cascade가 없다.
+- 답(2026-09-04): 출입조회 결과 컬럼은 입장일·퇴장일·구분·티켓일련번호·등급·출입상태·입장유형·NFC리더기·게이트다.
+- 답(2026-09-04): 게시판의 기존 "항목 사용 설정" 표면 이름은 `피드백 설정`이며 `조회수`가 함께 있다.
 
 1. "보기/정렬 default: 100 **or 마지막으로 설정한 값**" — `or`의 우선순위, 저장 범위(화면/계정/브라우저), URL 공유 시 우선권. 답에 따라 resolver 기본값 주입 mechanic 필요 여부가 갈린다.
 2. 검색전 frame 없는 화면(콘텐츠·공연목록·배너·PUSH·게시판·게시물·회원상담·소명신청·스마트프린터·접근권한)도 Notion "초기화 → 검색 전 상태" 문장을 가진다. 진입 즉시 조회인지, 초기화 후 상태가 무엇인지.
@@ -69,6 +86,13 @@
 8. 활성회원 전체·일반·불량 화면 정체성. 답(2026-09-04): Figma page와 Notion Feature처럼 각각 별도 route다. 공용 list mechanic만 재사용하고 한 route의 `variant`/`mode`로 합치지 않는다.
 9. 헤더 전체선택 범위와 수명. 답(2026-09-04): 현재 페이지에 보이는 선택 가능 행 전체만 선택한다. 페이지·page size·정렬·커밋된 검색 조건·목록 route 변경 시 해제하고, draft 편집이나 같은 조건 재검색·refetch는 남아 있는 선택 가능 ID만 유지한다. bulk 실패 시 유지하고 성공 후 cache consequence가 끝나면 해제한다. 검색결과 전체 선택은 서버가 조건 기반 payload를 선언할 때 별도 재검토한다.
 10. 활성회원의 별도 목록 route 사이 검색 조건 전달. 발생: 전체회원에서 검색 후 일반회원·불량회원 LNB 이동. 공통 필터를 넘길지 각 route의 검색 전 상태로 진입할지 미확인이다. 선택은 어느 답에서도 route 변경 시 해제한다.
+11. 세션 경고 시점 충돌. Figma `1.4.4`는 남은 시간 60초, Notion은 5분부터 카운트라고 한다. 경고 팝업과 상단 바가 다른 시간을 재는지 같은 정책이 충돌하는지.
+12. 구글OTP 인증 화면이 이메일 인증과 같은 "이메일로 발송된 2차 인증코드" 문구를 쓴다. 디자인 확정인지 컴포넌트 복제 잔재인지.
+13. 통합검색 결과 5개 top-level frame이 실제 tab 선택 상태인지 별도 화면인지. tab bar 렌더는 미확인이다.
+14. 통계 회차가 `추가` 버튼으로 여러 세션을 고르는 구조인지. 옵션에는 숫자 회차 외 `사운드체크`·`팬이벤트부스`가 있다.
+15. 회원 table·다국어·권한 matrix·발권 목록에서 반복된 `- 이하 생략 -`이 상한 안내인지 축약인지 paging 대체인지.
+16. KEYSCREEN의 `발권>발권취소`·`설정 > APP 버전`·`CRM`·`상품>전시`가 정규 화면인지, 중복 시안인지, 독립 workflow인지.
+17. 전시 정책·배너 이미지의 `권장 사이즈 : 가로 {n}px * 세로 {n}px`에서 실제 가로·세로 값. `png`와 `1MB 이하`는 실측됐다.
 
 ### 코드 결함 후보 (2026-09-02 reference 사실 대조에서 발견, Codex·Hermes 교차 리뷰)
 
@@ -91,7 +115,7 @@ DOM으로 검증 가능한 3건은 2026-09-03 사용자 결정으로 이 저장�
 
 ## 8. 상세·폼·팝업 판정 (2026-09-02 ①′~②′, Claude·Codex 독립 초안 + 교차 리뷰)
 
-결론: **shared 신규 없음**(Tabs primitive 후보 1개). 기존 `PageHeader.actions`·`SectionCard`·`DetailField`·`DetailStateBoundary`·form adapter·`FormSaveDialogs`·Confirm/Alert 로 전 archetype 조립 가능. 바뀐 것은 규칙 문장과 Managers feature 정합이다.
+결론: 현재 코드에 새 shared 구현을 추가하지 않는다. Tabs·Tooltip·행 활성화·상태 count 클릭 필터·빈 값 `-` 표현은 반복 근거가 생긴 후보지만 두 번째 코드 consumer가 없으며, 기존 `PageHeader.actions`·`SectionCard`·`DetailField`·`DetailStateBoundary`·form adapter·`FormSaveDialogs`·Confirm/Alert 로 현재 archetype을 조립할 수 있다.
 
 | surface | 판정 | 근거 | 반영 |
 | --- | --- | --- | --- |
@@ -107,7 +131,7 @@ DOM으로 검증 가능한 3건은 2026-09-03 사용자 결정으로 이 저장�
 | `ManagerDetailScreen` | `목록으로` 제거, 이력 raw table → `Table` primitive | Figma 11.1 조회에 없음 | Managers 적용 |
 | 상세·수정 상태 판정 (2026-09-03, Claude·Codex 독립안 → 교차 리뷰 2라운드) | **`src/api/required-query.ts`**: 순수 `resolveRequiredQueryOutcome` + 얇은 `useDetailQuery`. feature 훅(`useManagerDetail`·`useManagerEditDetail`)이 화면 옆에서 실행 | 삼항식이 상세·수정에 글자 그대로 복제. 초기 401/403 = generic error + incident 중복, cached+500 = 내용 소실, cached+404 = stale 표시 결함 3종 실측 | ADR 0011, detail-workflow 재작성, `features/*/api` 훅 금지 lint(사용자 결정) |
 | 업데이트 이력 (2026-09-03) | **2층**: `shared/ui/patterns/UpdateHistory`(3열 + `<ul><li>` 렌더만) + feature 순수 함수 `toManagerHistoryEntries(logs, t)`. Accordion 렌더·줄 조립·값 해석 옵션 훅·도메인 formatter 훅으로 나뉜 4층 구조는 제외 | 회원·소명·발권·운영자·콘텍츠 조회 5 화면 동일 3열, 사항 열은 field 단위 `이름: A > B` 다중 행(4.1.4). 현재 코드는 `type` 한 줄로 디자인 미달이었음. discriminated union 은 첫 consumer 에 없는 분기라 YAGNI | ADR 0011, page-and-detail-surfaces 행, seed `update-history` bundle |
-| 미구현 유지(계약 없음) | 헤더 SMS·이메일, 개인정보 전체보기, 상태별 승인·거절, `agencyId` | 마케팅 정책·마스킹·서버 계약 미확인 | ADR 0010 미확인 |
+| 미구현 유지(계약 없음) | 헤더 SMS·이메일, 개인정보 재인증 이후 처리, 상태별 승인·거절, `agencyId` | 재인증 입력은 확인됐지만 재조회/해제 범위/감사와 서버 계약은 미확인 | ADR 0010·0011 미확인 |
 | 접힌 섹션의 오류 표기 | **헤더 "오류 N개" 텍스트 배지 + 폼 섹션 keepMounted** (Claude·Codex 독립안 → 교차 리뷰 합의) | 재접기 후 오류 발견성(WCAG 3.3.1 흐름 유지), Figma 에 상태 frame 없음 → 사용자 요구로 추가. unmount 가 error map 을 비우는 실측 때문에 재파싱 대신 mount 유지 채택 | `SectionCard errorCount/keepMounted`, `useFormSections invalidFields`, ADR 0010 개정, 재검증 절차 제거 |
 
 ## 8-1. 진행 표면 정책 (2026-09-02 사용자 요구)

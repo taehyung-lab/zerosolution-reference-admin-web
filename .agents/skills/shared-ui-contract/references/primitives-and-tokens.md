@@ -16,6 +16,16 @@ Read this file only for a shadcn-style copied component, Radix primitive, Tailwi
 
 `Popover` takes `trigger` (a button element that accepts a ref), `children`, and `contentLabel`; it owns outside-click dismissal and focus return to the trigger. Open state is uncontrolled by default; a consumer that must render the same state elsewhere (`Combobox` and its trigger `aria-expanded`) passes `open`/`onOpenChange` so there is exactly one owner. `Combobox` and the `PeriodField` calendar consume it; a feature does not compose Popover directly for a new surface without a reference.
 
+## Observed candidates, not implementations
+
+- `Tabs`: 7 surfaces/8 sets, including the APP PUSH target area. A future source-owned primitive may own tab/tabpanel linkage, roving keyboard behavior, and controlled value; the caller keeps URL/local ownership and panel lifecycle.
+- `Tooltip`: the Figma design system contains it and page headers repeat it. A future primitive may own focus/hover/Escape and accessible association; `PageHeader` and feature copy stay unchanged.
+- Row activation: 18 list occurrences. A future table-level interaction may own keyboard/screen-reader activation and interactive-child exclusion; destination, permission, and row meaning stay feature-owned.
+- Status-count filtering: five ticketing variants repeat the action while onsite counts explicitly have no event. A future controlled action item may own accessible activation; filter mapping, URL update, and page reset stay in the feature.
+- Empty value `-`: nine occurrences. A future narrow renderer may own only the visible fallback; the caller decides whether a value is absent.
+
+These are inventory-backed candidates with no second code consumer. Do not add APIs or raise their lifecycle stage until a real screen needs the domain-free contract; range slider, selected-label registry, last-value persistence, and `- 이하 생략 -` remain unresolved rather than candidates for implementation.
+
 Which primitive a feature may use directly: `Button`, `Input`, `Checkbox`, `Badge`, `Table*`, `Select`, `Combobox`, `MultiSelect`, `RadioGroup`, `Calendar`, `FileInput`, `Dialog`. Consumed only through a pattern: `Accordion` (→ `SectionCard`), `Popover` (→ `Combobox`, `PeriodField`), `BlockingProgress` (→ app shell).
 
 Test the interaction actually changed: accessible name/description, keyboard operation, focus entry/restoration, disabled state, controlled value, and relevant visual variants. Read a more specific reference as well when the primitive is a selection control, date/file control, dialog, or table surface.

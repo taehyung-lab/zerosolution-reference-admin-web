@@ -13,13 +13,22 @@ One use stays feature-local. Two uses are compared. A third stable use starts re
 
 Figma repetition counts only when semantics, state transitions, and failure behavior are legible and match. It may establish a documented contract before three code uses; it does not automatically authorize a component. Visual similarity and anticipated reuse are not evidence.
 
-A whole-product inventory (`docs/reference/zero-sol/`) is a third evidence type: Figma frames prove UI composition and static states, Notion Feature sentences prove behavior and policy. An identical sentence repeated across domains strengthens a provisional contract, but it never replaces the second code consumer, and a candidate observed only in the inventory is recorded as behavior in the judgment document, not as a named API in shared or in this skill.
+A whole-product inventory (`docs/reference/zero-sol/`) is a third evidence type: Figma frames prove UI composition and static states, Notion Feature sentences prove behavior and policy. An identical sentence repeated across domains strengthens a provisional contract, but it never replaces the second code consumer. An inventory-only candidate may be recorded in the judgment document and `primitives-and-tokens.md` with its evidence and feature-owned boundary, but it is not a named API or implementation commitment.
 
 A pattern may own confirmed product-generic status or action copy in the `shared` namespace when that wording
 is part of the pattern's interaction contract. For example, `ListResult` owns shared error/retry/trace labels,
 while its search-before and no-result messages remain feature-owned because they carry workflow meaning.
 
-In the completion report, name compared call sites, matching lifecycle, reduced cost/risk, and the domain-free public API. Otherwise keep the code feature-local.
+The completion report must answer every admission item, not return only a verdict word:
+
+| admission item | required evidence |
+| --- | --- |
+| semantics, lifecycle, ownership, failure behavior match | compared call sites and the matching/differing transitions |
+| public API has no domain, DTO, Query, Router, permission, or mutation policy | the smallest domain-free input/output and the feature-owned remainder |
+| no resource switch, schema injection, or callback override | required variation and why an opaque generic, pure classifier, `run(values)`, or completion callback does not teach shared domain facts |
+| implementation reduces observed cost or risk | concrete duplication, change cost, or defect evidence |
+
+If any row is unanswered, keep the code feature-local. A verdict such as `feature-local` or `provisional shared` alone is not a completed promotion report.
 
 ## Reference-project lifecycle
 
