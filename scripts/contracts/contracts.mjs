@@ -100,8 +100,9 @@ export function ciWorkflowScriptFailures(workflow) {
 
 /** PR supersession만 취소하고 main을 포함한 비-PR 실행은 서로 다른 그룹에 둔다. */
 export function ciWorkflowConcurrencyFailures(workflow) {
-  const group = /^\s*group:\s*(.+)$/m.exec(workflow)?.[1].trim()
-  const cancelInProgress = /^\s*cancel-in-progress:\s*(.+)$/m.exec(workflow)?.[1].trim()
+  const concurrency = /^concurrency:\r?\n {2}group:\s*(.+)\r?\n {2}cancel-in-progress:\s*(.+)(?:\r?\n|$)/m.exec(workflow)
+  const group = concurrency?.[1].trim()
+  const cancelInProgress = concurrency?.[2].trim()
   const failures = []
 
   if (group !== "${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}") {

@@ -234,6 +234,21 @@ concurrency:
       'CI workflow cancel-in-progress는 pull_request에서만 true여야 한다.',
     ])
   })
+
+  it('rejects matching values nested under a job when root concurrency is absent', () => {
+    const jobOnlyConcurrency = `
+jobs:
+  static:
+    concurrency:
+      group: \${{ github.workflow }}-\${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+      cancel-in-progress: \${{ github.event_name == 'pull_request' }}
+`
+
+    expect(ciWorkflowConcurrencyFailures(jobOnlyConcurrency)).toEqual([
+      'CI workflow concurrency group은 PR ref와 비-PR run_id를 분리해야 한다.',
+      'CI workflow cancel-in-progress는 pull_request에서만 true여야 한다.',
+    ])
+  })
 })
 
 describe('pnpm command existence', () => {
