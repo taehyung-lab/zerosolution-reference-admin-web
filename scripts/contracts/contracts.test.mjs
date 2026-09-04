@@ -9,6 +9,7 @@ import {
   CI_VERIFY_SCRIPTS,
   claudeAgentsImportFailure,
   ciVerifyStageFailures,
+  ciWorkflowConcurrencyFailures,
   ciWorkflowScriptFailures,
   copilotAgentsPointerFailure,
   documentBudgetFailures,
@@ -101,7 +102,32 @@ describe('CI verify stage coverage', () => {
     }
 
     expect(ciVerifyStageFailures(scripts)).toEqual([
+      expect.stringContaining('CI script 비어 있음: ci:e2e'),
       expect.stringContaining('verify에만 존재: test:e2e:smoke'),
+    ])
+  })
+
+  it('rejects a missing required CI script even when another script owns its stages', () => {
+    const scripts = {
+      ...completeScripts,
+      'ci:static': 'pnpm api:check && pnpm contracts:check && pnpm test:unit',
+    }
+    delete scripts['ci:unit']
+
+    expect(ciVerifyStageFailures(scripts)).toEqual([
+      'CI script 누락: ci:unit',
+    ])
+  })
+
+  it('rejects an empty required CI script even when another script owns its stages', () => {
+    const scripts = {
+      ...completeScripts,
+      'ci:static': 'pnpm api:check && pnpm contracts:check && pnpm test:unit',
+      'ci:unit': '   ',
+    }
+
+    expect(ciVerifyStageFailures(scripts)).toEqual([
+      'CI script 비어 있음: ci:unit',
     ])
   })
 
@@ -181,6 +207,31 @@ jobs:
 
     expect(ciWorkflowScriptFailures(workflow)).toEqual([
       expect.stringContaining('ci:static'),
+    ])
+  })
+})
+
+describe('CI workflow concurrency', () => {
+  const protectedConcurrency = `
+concurrency:
+  group: \${{ github.workflow }}-\${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: \${{ github.event_name == 'pull_request' }}
+`
+
+  it('accepts stable PR groups and unique non-PR groups with PR-only cancellation', () => {
+    expect(ciWorkflowConcurrencyFailures(protectedConcurrency)).toEqual([])
+  })
+
+  it('rejects a shared main group and ref-based cancellation', () => {
+    const unsafeConcurrency = `
+concurrency:
+  group: \${{ github.workflow }}-\${{ github.ref }}
+  cancel-in-progress: \${{ github.ref != 'refs/heads/main' }}
+`
+
+    expect(ciWorkflowConcurrencyFailures(unsafeConcurrency)).toEqual([
+      'CI workflow concurrency group은 PR ref와 비-PR run_id를 분리해야 한다.',
+      'CI workflow cancel-in-progress는 pull_request에서만 true여야 한다.',
     ])
   })
 })

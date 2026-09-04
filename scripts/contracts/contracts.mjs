@@ -50,20 +50,29 @@ export function ciVerifyStageFailures(scripts) {
   const verifyStageSet = new Set(verifyStages)
   const verifyStageCounts = new Map()
   const ciStageOwners = new Map()
+  const failures = []
 
   for (const stage of verifyStages) {
     verifyStageCounts.set(stage, (verifyStageCounts.get(stage) ?? 0) + 1)
   }
 
   for (const scriptName of CI_VERIFY_SCRIPTS) {
-    for (const stage of parseVerifyChain(scripts[scriptName] ?? '')) {
+    if (!Object.hasOwn(scripts, scriptName)) {
+      failures.push(`CI script 누락: ${scriptName}`)
+      continue
+    }
+    const script = scripts[scriptName]
+    if (typeof script !== 'string' || script.trim() === '') {
+      failures.push(`CI script 비어 있음: ${scriptName}`)
+      continue
+    }
+    for (const stage of parseVerifyChain(script)) {
       const owners = ciStageOwners.get(stage) ?? []
       owners.push(scriptName)
       ciStageOwners.set(stage, owners)
     }
   }
 
-  const failures = []
   for (const [stage, count] of verifyStageCounts) {
     if (count > 1) failures.push(`verify에서 중복: ${stage}`)
   }
@@ -87,6 +96,21 @@ export function ciWorkflowScriptFailures(workflow) {
       'm',
     ).test(workflow) === false)
     .map((scriptName) => `CI workflow에서 호출하지 않음: ${scriptName}`)
+}
+
+/** PR supersession만 취소하고 main을 포함한 비-PR 실행은 서로 다른 그룹에 둔다. */
+export function ciWorkflowConcurrencyFailures(workflow) {
+  const group = /^\s*group:\s*(.+)$/m.exec(workflow)?.[1].trim()
+  const cancelInProgress = /^\s*cancel-in-progress:\s*(.+)$/m.exec(workflow)?.[1].trim()
+  const failures = []
+
+  if (group !== "${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}") {
+    failures.push('CI workflow concurrency group은 PR ref와 비-PR run_id를 분리해야 한다.')
+  }
+  if (cancelInProgress !== "${{ github.event_name == 'pull_request' }}") {
+    failures.push('CI workflow cancel-in-progress는 pull_request에서만 true여야 한다.')
+  }
+  return failures
 }
 
 /** README 의 `pnpm verify` 투영 행에서 `a → b → c` 단계 목록을 뽑는다. */

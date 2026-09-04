@@ -72,6 +72,7 @@ function runLint(target) {
     child.stdout.on('data', (chunk) => {
       stdout += chunk
     })
+    child.stderr.resume()
     child.once('error', rejectResult)
     child.once('close', (status) => {
       if (runningLint === child) runningLint = undefined
