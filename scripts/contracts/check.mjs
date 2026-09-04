@@ -14,6 +14,7 @@ import {
   agentsSectionReferenceFailures,
   claudeAgentsImportFailure,
   ciVerifyStageFailures,
+  ciWorkflowScriptFailures,
   collectDocumentFiles,
   copilotAgentsPointerFailure,
   documentBudgetFailures,
@@ -60,6 +61,8 @@ const notes = []
 const packageJson = JSON.parse(readFileSync(resolve('package.json'), 'utf8'))
 const chain = parseVerifyChain(packageJson.scripts?.verify ?? '')
 failures.push(...ciVerifyStageFailures(packageJson.scripts ?? {}))
+const workflow = readFileSync(resolve('.github/workflows/verify.yml'), 'utf8')
+failures.push(...ciWorkflowScriptFailures(workflow))
 const projected = parseReadmeVerifyProjection(readFileSync(resolve('README.md'), 'utf8'))
 if (projected === null) {
   failures.push('README.md 에 `pnpm verify` 단계를 투영한 행이 없다.')

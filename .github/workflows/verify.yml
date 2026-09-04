@@ -3,12 +3,53 @@ name: Verify
 on:
   pull_request:
   push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 permissions:
   contents: read
 
 jobs:
-  verify:
+  static:
+    runs-on: ubuntu-latest
+    env:
+      TZ: Asia/Seoul
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Verify static stages
+        run: pnpm run ci:static
+
+  unit:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
+    env:
+      TZ: Asia/Seoul
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Verify unit shard
+        run: pnpm run ci:unit --shard=${{ matrix.shard }}/2
+
+  e2e:
     runs-on: ubuntu-latest
     env:
       TZ: Asia/Seoul
@@ -23,5 +64,5 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Install Chromium
         run: pnpm exec playwright install --with-deps chromium
-      - name: Verify
-        run: pnpm verify
+      - name: Verify E2E smoke
+        run: pnpm run ci:e2e
