@@ -49,6 +49,7 @@ describe('negative gate workspace', () => {
   }, 120_000)
 
   it('removes its exact workspace when interrupted', async () => {
+    const startedAt = Date.now()
     const child = spawn(process.execPath, [resolve('scripts/verify-negative-controls.mjs')], {
       stdio: ['ignore', 'pipe', 'pipe'],
     })
@@ -65,5 +66,6 @@ describe('negative gate workspace', () => {
     await new Promise((resolveExit) => child.once('exit', resolveExit))
 
     expect(existsSync(workspace)).toBe(false)
+    expect(Date.now() - startedAt).toBeLessThan(5_000)
   }, 120_000)
 })

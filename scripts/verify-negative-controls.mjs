@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, relative, resolve } from 'node:path'
-import { spawnSync } from 'node:child_process'
+import { spawn } from 'node:child_process'
 import { CASES, FIXTURE_ROOT, diffFixtureSets, listFixtureFiles } from './gates/fixture-manifest.mjs'
 
 const repositoryRoot = resolve('.')
@@ -26,6 +26,7 @@ mkdirSync(workspaceParent, { recursive: true })
 const workspaceRoot = mkdtempSync(resolve(workspaceParent, 'run-'))
 const workspaceConfig = resolve(workspaceRoot, 'tsconfig.json')
 let workspaceRemoved = false
+let runningLint
 
 function removeWorkspace() {
   if (workspaceRemoved) return
@@ -35,8 +36,47 @@ function removeWorkspace() {
 
 for (const signal of ['SIGINT', 'SIGTERM']) {
   process.once(signal, () => {
+    runningLint?.kill(signal)
     removeWorkspace()
     process.kill(process.pid, signal)
+  })
+}
+
+function runLint(target) {
+  return new Promise((resolveResult, rejectResult) => {
+    const child = spawn(
+      process.execPath,
+      [
+        resolve(repositoryRoot, 'node_modules/eslint/bin/eslint.js'),
+        '--no-ignore',
+        '--format',
+        'json',
+        '--config',
+        resolve(repositoryRoot, 'eslint.config.js'),
+        target,
+      ],
+      {
+        cwd: workspaceRoot,
+        env: {
+          ...process.env,
+          ESLINT_PROJECT_ROOT: workspaceRoot,
+          ESLINT_PROJECT_TSCONFIG: workspaceConfig,
+        },
+        stdio: ['ignore', 'pipe', 'pipe'],
+      },
+    )
+    runningLint = child
+
+    let stdout = ''
+    child.stdout.setEncoding('utf8')
+    child.stdout.on('data', (chunk) => {
+      stdout += chunk
+    })
+    child.once('error', rejectResult)
+    child.once('close', (status) => {
+      if (runningLint === child) runningLint = undefined
+      resolveResult({ status, stdout })
+    })
   })
 }
 
@@ -64,27 +104,7 @@ try {
 
   let failed = false
   for (const { fixture, target, expectedRule } of cases) {
-    const result = spawnSync(
-      process.execPath,
-      [
-        resolve(repositoryRoot, 'node_modules/eslint/bin/eslint.js'),
-        '--no-ignore',
-        '--format',
-        'json',
-        '--config',
-        resolve(repositoryRoot, 'eslint.config.js'),
-        target,
-      ],
-      {
-        cwd: workspaceRoot,
-        encoding: 'utf8',
-        env: {
-          ...process.env,
-          ESLINT_PROJECT_ROOT: workspaceRoot,
-          ESLINT_PROJECT_TSCONFIG: workspaceConfig,
-        },
-      },
-    )
+    const result = await runLint(target)
     const reports = result.stdout === '' ? [] : JSON.parse(result.stdout)
     const ruleIds = reports.flatMap((report) =>
       report.messages.map((message) => message.ruleId).filter((ruleId) => ruleId !== null),
