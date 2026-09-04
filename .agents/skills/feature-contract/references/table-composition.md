@@ -16,6 +16,8 @@ Ask in order: where do the rows come from, what changes them, and which state mu
 
 A top-level list result is kind C without a parent: [list-workflow.md](list-workflow.md) owns its whole lifecycle and this file only decides its rendering surface. Kind A is confirmed by the parent DTO alone. Kinds B, C, and E require the child endpoint, its params, and its failure semantics from the server contract; kind C also needs the product to say whether its state is shared or restored. Stop that surface when those facts are missing instead of guessing a child endpoint or a URL prefix.
 
+Kind E already permits component-local draft and committed params, local candidate selection, confirm return, and cancel discard while the parent URL stays unchanged. A popup-hosted list therefore needs no new controller; the host composes the existing list/result/table/dialog mechanics and owns cardinality, returned value, close policy, and parent-field commit.
+
 ## Rules for every kind
 
 - A child failure never rewrites the parent. Kinds B and C keep pending, error, and retry inside their section; the parent `DetailStateBoundary` stays `ready`, and a child not-found is not the parent's `notFound`. First fetch of an observed query is covered by app-wide progress like any other query.
@@ -24,6 +26,8 @@ A top-level list result is kind C without a parent: [list-workflow.md](list-work
 - Empty, not-found, and unavailable copy carries workflow meaning and stays feature-owned.
 - Row identity for kinds A, B, C, and E uses a stable identifier confirmed from the server contract; do not assume every DTO carries an `id`, and never use the array index. `DataTable` requires a stable `getRowId`, so a collection whose contract names no stable identifier cannot consume it until the identifier is confirmed. Form rows need a render key that survives insert and remove; the array index alone is not one.
 - Columns, cell formatting, row actions, and permission-gated actions stay in the feature for every kind.
+
+The consuming screen records its collection kind and keeps row source, stable identity, params owner, selection lifetime, columns, actions, permission, and empty/error copy. An issue that did not adopt this composition is fixed at that screen boundary, not by widening `DataTable` or inventing a collection wrapper.
 
 ## Choose the rendering surface
 

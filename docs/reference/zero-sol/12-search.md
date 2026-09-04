@@ -7,7 +7,7 @@
 | 12 | 진입 | 상단 바 통합검색 input → 결과 화면(breadcrumb 통합검색 > 검색결과) | (대기) | — | 없음 |
 | 12 | 기간 | **기준 select 없음**, preset(기본 전체) + range | (대기) | — | `PeriodField` |
 | 12 | 검색어 | **대상 select 없음** — 입력 + `⊕ 추가` + chip("ive" ⓧ) | (대기) | — | `KeywordChipField`(대상 없이 사용 가능) |
-| 12 | 결과 tab | 회원·공연·발권·입장·커뮤니티 5 tab, tab별 검색결과 수·보기·정렬·table·paging 독립 | (대기) | tab별 count 동시 조회 여부 | 없음 |
+| 12 | 결과 종류 | 회원(`129:81575`)·공연(`129:81310`)·발권(`129:81130`)·입장(`129:80850`)·커뮤니티(`269:560`)가 5개 독립 top-level frame으로 존재하고 결과별 검색결과 수·보기·정렬·table·paging 축이 독립 | (대기) | 실제 tab control인지, 결과별 count 동시 조회 여부 | 없음 |
 | 12 | table | 검색어 일치 부분 **하이라이트**("ive") | (대기) | — | `DataTable` 셀 렌더 caller 소유 → 가능 |
 
 ## Notion 요점 (원문: [notion/12-search.md](notion/12-search.md))

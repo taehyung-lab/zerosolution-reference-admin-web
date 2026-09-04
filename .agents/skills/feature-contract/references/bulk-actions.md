@@ -11,4 +11,6 @@ Read this file only for multi-row selection followed by a bulk operation.
 - Report row-level partial success only when the response contract exposes row-level results.
 - Reset selection only under the lifecycle above and the declared success policy.
 
+The consuming screen keeps its selectable-row rule, stable IDs, action intent, permission, copy, payload, and cache consequence. It adopts this lifecycle explicitly; a missing screen implementation is not evidence for a shared bulk hook or action catalog.
+
 Read [mutation-actions.md](mutation-actions.md) for confirmation and mutation presentation. Read the API mutation reference when changing payload, invalidation, or optimistic behavior. Test stable-ID payloads, pending duplicate prevention, confirmed success/reset semantics, and any declared partial result.

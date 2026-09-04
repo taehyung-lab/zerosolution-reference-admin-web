@@ -11,7 +11,8 @@
 구현 도중에 구조를 여러 번 갈아엎게 되고, 그 과정에서 붙은 우회 코드가 그대로 남는다.
 
 카드 한 장의 값은 4절과 5절에 있다. 실패를 알고 나면 애초에 그 실패가 못 일어나는 구조가 보이고,
-그 구조를 우리 공용 계약과 대조하면 계약에서 무엇이 빠졌는지가 드러난다. 이 저장소의 목적이 그것이다.
+그 구조를 우리 공용 계약과 대조하면 계약에서 무엇이 빠졌는지가 드러난다. 카드는 특히 **이 상황에서
+어느 공용 계약이 그 표면을 소유하는가**를 답한다. 이 저장소의 목적이 그것이다.
 
 ## 카드 한 장의 절 구조
 
@@ -27,10 +28,14 @@
 - 근거는 **"이 실패가 관측됐다"**이지 "어느 제품이 이렇게 한다"가 아니다. 다른 제품의 구현은 실패를
   발견하는 데만 쓰고, 대응은 우리 계약과 인벤토리로 다시 설계한다. 현재 비교 가능한 `dt-admin-web`도
   코드·설계 참고가 아니라 이 입력으로만 사용하며, 출처 제품 이름은 개별 카드에 남기지 않는다.
-- ZERO PLUS+에 대응하는 workflow가 없으면 카드를 만들지 않는다. 대응 workflow가 있을 때만 관측된 오류
-  조건과 복구를 후보 근거로 쓰고, 1절에 그 대응 화면과 적용 가능성 판정을 적는다.
+- ZERO PLUS+의 Figma·Notion·기존 분석만으로도 대응 화면과 호출 직전 상태 전이를 확인할 수 있으면 카드를
+  쓴다. 비교 가능한 다른 제품의 관측은 Figma·Notion이 구조적으로 답할 수 없는 실행 진행·세션 연장·권한
+  전이 같은 런타임 축에서만 최후순위로 사용한다.
 - 관측 사실에는 시점과 방법을 밝힌다. 저장소 밖 경로로 Markdown 링크를 걸지 않는다.
 - 확인과 추론을 구분해 표기한다. 제품 정책·서버 계약은 우리 스냅샷이 선언한 것만 사실로 쓴다.
+- 이 저장소의 시나리오는 API 호출에 필요한 입력이 확정되는 직전까지 쓴다. API·mock을 다루지 않으며
+  브라우저에서 오류를 주입하라고 요구하지 않는다. 성공 응답·완료 alert·cache 갱신·실서버 동작은 후속
+  제품의 계약과 검증이 소유한다.
 
 ## 현재 카드
 
@@ -40,3 +45,9 @@
 | [ticketing-realtime.md](ticketing-realtime.md) | 발권 실시간 프레임과 작업·티켓 축 분리 | 회원 화면 이후 |
 | [session-lifetime.md](session-lifetime.md) | 세션 만료·경고·연장과 롤링 TTL | 인증 계열 마지막 |
 | [member-list-and-detail.md](member-list-and-detail.md) | 회원 목록·조회·등록·수정이 공유하는 검색·선택·저장·오류 축 | #4 #5 #6 #7 |
+| [member-secondary-lists.md](member-secondary-lists.md) | 비활성회원·상담·소명·접속 목록의 서로 다른 action과 인라인 처리 상태 | #18 #19 #20 #21 #22 #23 |
+| [performance-and-content.md](performance-and-content.md) | 공연·콘텐츠의 읽기 목록, 반복 행, 섹션 편집, 언어·파일·미리보기 | #8 #9 #24 #25 #26 #27 |
+| [ticketing-lists-and-detail.md](ticketing-lists-and-detail.md) | 발권 목록 5종의 lookup·종속 선택·summary·variant와 상세 겹침 | #10 #11 #30 |
+| [settings-and-permissions.md](settings-and-permissions.md) | 설정 tab, 로그 6종, 화면별 권한 기능, 편집 표·반복·조건부 섹션 | #12 #28 #29 #31 #32 #33 |
+| [exhibition-promotion-community.md](exhibition-promotion-community.md) | 전시·PUSH·커뮤니티의 게시 상태, 업로드, 행 action, 상세·팝업 | #35 #36 #37 #38 |
+| [aggregation-and-search.md](aggregation-and-search.md) | 통계 interval·회차 선택·전치 표와 통합검색의 독립 결과 축 | #34 #39 #40 #41 |

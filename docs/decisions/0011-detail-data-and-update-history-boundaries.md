@@ -21,7 +21,7 @@
 - `ManagerDetailScreen` 과 `ManagerEditScreen` 에 `notFound | error | ready` 삼항 판정이 글자 그대로 두 번 있었다. 목록은 `useManagerListData` 가 같은 판정을 세 번째 변형으로 갖고 있었다.
 - 조회는 `queryOptions` 팩토리 + 화면의 `useQuery`, 목록은 feature 훅, mutation 은 `api/mutations.ts` 의 훅으로 **비대칭**이었다.
 - Orval 은 `axios-functions` 만 생성한다. route loader(`new`·`edit`)가 `queryClient.query(팩토리)` 로 옵션 캐시를 채우므로 팩토리는 어떤 설계에서도 남는다.
-- 인벤토리 5 화면(회원·소명·발권·운영자·콘텐츠 조회)의 업데이트 이력은 같은 3열(업데이트일·사항·담당자)이고, 사항 열은 `수정 - 비밀번호 변경 / 이름: A > B` 같은 field 단위 다중 행이다. 리허설 DTO `CnChangeLogDTOInventory { type: C/U/D, changes[{field, before, after}] }` 가 14 개 상세 DTO 에 공용으로 들어간다. 현재 코드는 `type` 라벨 한 줄만 그려 디자인과 달랐다.
+- 인벤토리 5 화면(회원·소명·발권·운영자·콘텐츠 조회)의 업데이트 이력은 같은 3열(업데이트일·사항·담당자)이고, 사항 열은 한 셀에 수정·삭제 같은 여러 종류와 field 단위 `이름: A > B`를 줄바꿈한다. 담당자는 `이름 (계정)` 형식이며 회원가입 행은 빈칸이다. 리허설 DTO `CnChangeLogDTOInventory { type: C/U/D, changes[{field, before, after}] }` 가 14 개 상세 DTO 에 공용으로 들어간다. 현재 코드는 `type` 라벨 한 줄만 그려 디자인과 달랐다.
 
 ### 3-state 판정만으로 잡지 못하는 결함 입력 (Codex 교차 리뷰에서 확정)
 
@@ -71,6 +71,7 @@ generated (HTTP 함수·DTO)
 
 - `PageHeader`(제목 `h1`·선택적 breadcrumb·끝 정렬 actions slot), `SectionCard`(제목 disclosure 블록: `aria-expanded`/`aria-controls`, controlled/uncontrolled, `keepMounted`, 오류 수 badge), `DetailField`(`dt`/`dd` 한 쌍)는 인벤토리 5 상세 화면(회원·소명·발권·운영자·콘텐츠 조회)이 같은 구성으로 반복하는 provisional shared 다. 상세는 `PageHeader`를 `DetailStateBoundary` 밖에, `SectionCard`·`DetailField`를 안에 조립한다.
 - shared 가 소유하는 것은 위 표면의 markup·접근성·개폐 mechanic 뿐이다. 어떤 action 이 있는지, 섹션 제목과 field 배치, 빈 값 문구, 값의 마스킹·링크는 feature 가 쓴다. 코드 consumer 는 Managers 1 이며 두 번째 상세에서 confirm/demote 한다. 계약 문장은 `page-and-detail-surfaces.md`·`disclosure-sections.md` 가 소유한다.
+- 빈 값 `-`는 인벤토리 9곳에서 반복돼 표현 후보가 됐지만, absence 판정은 caller에 남고 두 번째 코드 consumer가 생기기 전에는 shared API를 만들지 않는다. 회원가입 이력의 빈 담당자를 `-`로 표시할지 빈칸으로 보존할지도 미확인이다.
 
 ### 검증 단계
 
@@ -88,6 +89,7 @@ generated (HTTP 함수·DTO)
 - 상세·수정 DTO/endpoint 통합 여부. 리허설의 `get8`/`getForEdit1`, `staleTime: Infinity`, `gcTime: 0` 을 제품 결정으로 복사하지 않는다.
 - update 성공 시 정확한 invalidate 범위. 현행 Manager family invalidation 은 리허설 안전안이다.
 - background 404 → `not-found` 로 stale 표시를 끊는 정책이 신규 제품의 삭제·비활성 의미와 맞는지.
+- 담당자 계정 식별자의 서버 필드와 마스킹 정책, 담당자 없음의 빈칸/`-` 표시 규칙.
 
 ## 신규 프로젝트 채택 경계
 

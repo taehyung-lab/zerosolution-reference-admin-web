@@ -159,7 +159,7 @@ Codex 는 consumer 수를 이유로 반대했고 그 이견을 기록으로 남�
 - 한 도메인의 등록·수정은 **하나의 feature 폼 컴포넌트**(`ManagerForm`)가 옵션 Query·유형 정책·공통 필드·섹션/action 껍데기를 소유하고, 화면은 `useSaveForm` 선언(스키마·defaults·mutation·목적지)과 다른 필드 slot(`identity`)만 갖는다. 결정 없는 domain-free layout 은 만들지 않는다.
 - 종속 값 초기화("유형 변경시 권한은 초기화됨")는 `useEffect` 가 아니라 유형 select 의 `onValueChange` 에 배선하고, 옵션 select 는 로딩·실패·재시도를 `FormSelectField state/onRetry` 로 표현한다.
 
-공용 계약 단위는 `useSaveForm`(+ 내부 `FormSaveDialogs`), `useUnsavedChangesGuard`, `useFormSections`, `SectionCard keepMounted/errorCount`, `FormField` 와 승인된 어댑터, `FormSubmitButton`/`FormCancelButton`, `DetailStateBoundary`, `BlockingProgress` 다. `DetailStateBoundary` 는 `ready | error | notFound` 렌더와 error live/retry/trace slot 만 소유하고 caller 가 state 와 safe copy 를 고른다(pending 은 app progress 소유). 그 외 서명과 소유 한계는 `form-workflow.md`(저장 흐름)와 `form-fields.md`(어댑터)가 한 곳씩 소유하며 이 ADR 은 반복하지 않는다.
+공용 계약 단위는 `useSaveForm`(+ 내부 `FormSaveDialogs`), `useUnsavedChangesGuard.leave()`, `useFormSections`, `SectionCard(collapsible/open/onOpenChange/defaultOpen/keepMounted/errorCount)`, `FormField` 와 승인된 어댑터, `FormSubmitButton`/`FormCancelButton`, `DetailStateBoundary`, `BlockingProgress` 다. `DetailStateBoundary` 는 `ready | error | notFound` 렌더와 error live/retry/trace slot 만 소유하고 caller 가 state 와 safe copy 를 고른다(pending 은 app progress 소유). 그 외 서명과 소유 한계는 `form-workflow.md`(저장 흐름)와 `form-fields.md`(어댑터)가 한 곳씩 소유하며 이 ADR 은 반복하지 않는다.
 
 feature-local 인 것: `useManagerFormOptions(type)`, 유형 select 의 `onValueChange` 에 배선된 종속 값 초기화, `classifyFormError` 연결 한 줄, Manager 의 스키마·defaults·mapper·필드 JSX·문구.
 
@@ -171,6 +171,8 @@ feature-local 인 것: `useManagerFormOptions(type)`, 유형 select 의 `onValue
 결과가 같으므로(입력 삭제) 취소 버튼은 별도 dialog 없이 `useUnsavedChangesGuard().leave(navigate)` 로 같은 Router blocker를
 지나가고, 가드가 진입 경로에 따라 두 문장 중 하나를 고른다. 이전 구현(항상 확인 → 확인 뒤 가드를 끄고 effect로 이동)은 그
 순서 보장 코드를 폼마다 요구해 폐기했다. 문장 두 개는 모두 확인된 것이라 하나로 합치지 않는다.
+
+Tabs는 인벤토리 7 surface/8 set과 APP PUSH 타겟 영역에서 반복된 새 primitive 후보다. 실제 구현 전까지 form/dialog 안 tab은 nearest component가 소유하고, 제품이 deep link·복원을 확정한 경우에만 route search로 올린다.
 
 ## 미확인
 
