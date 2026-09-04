@@ -25,7 +25,7 @@ export const SEED_BUNDLES = [
     adrs: [location(
       'docs/decisions/0009-shared-boundaries.md',
       '현재 provisional 계약',
-      '`ListResult`는 `notSearched | error | empty | ready`',
+        '`ListResult`는 `notSearched | loading | error | empty | ready`',
     )],
     tests: [
       'src/shared/ui/patterns/list-patterns.test.tsx',

@@ -67,7 +67,7 @@
 6. 현장발권의 배포 형태(별도 창/앱)와 세션 공유.
 7. 다운로드·일괄 변경 실행 중 표면(전역 overlay인지 버튼 pending만인지) — Figma 공통화면에 해당 frame 없음.
 8. 활성회원 전체·일반·불량 화면 정체성. 답(2026-09-04): Figma page와 Notion Feature처럼 각각 별도 route다. 공용 list mechanic만 재사용하고 한 route의 `variant`/`mode`로 합치지 않는다.
-9. 헤더 전체선택 범위와 수명. 답(2026-09-04): 현재 페이지에 보이는 선택 가능 행 전체만 선택한다. 페이지·page size·정렬·검색 실행·목록 route 변경 시 해제하고, 같은 조건 refetch는 남아 있는 선택 가능 ID만 유지한다. bulk 실패 시 유지하고 성공 후 cache consequence가 끝나면 해제한다. 검색결과 전체 선택은 서버가 조건 기반 payload를 선언할 때 별도 재검토한다.
+9. 헤더 전체선택 범위와 수명. 답(2026-09-04): 현재 페이지에 보이는 선택 가능 행 전체만 선택한다. 페이지·page size·정렬·커밋된 검색 조건·목록 route 변경 시 해제하고, draft 편집이나 같은 조건 재검색·refetch는 남아 있는 선택 가능 ID만 유지한다. bulk 실패 시 유지하고 성공 후 cache consequence가 끝나면 해제한다. 검색결과 전체 선택은 서버가 조건 기반 payload를 선언할 때 별도 재검토한다.
 
 ### 코드 결함 후보 (2026-09-02 reference 사실 대조에서 발견, Codex·Hermes 교차 리뷰)
 
