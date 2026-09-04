@@ -13,6 +13,7 @@ import { resolve } from 'node:path'
 import {
   agentsSectionReferenceFailures,
   claudeAgentsImportFailure,
+  ciVerifyStageFailures,
   collectDocumentFiles,
   copilotAgentsPointerFailure,
   documentBudgetFailures,
@@ -58,6 +59,7 @@ const notes = []
 
 const packageJson = JSON.parse(readFileSync(resolve('package.json'), 'utf8'))
 const chain = parseVerifyChain(packageJson.scripts?.verify ?? '')
+failures.push(...ciVerifyStageFailures(packageJson.scripts ?? {}))
 const projected = parseReadmeVerifyProjection(readFileSync(resolve('README.md'), 'utf8'))
 if (projected === null) {
   failures.push('README.md 에 `pnpm verify` 단계를 투영한 행이 없다.')
@@ -157,6 +159,7 @@ if (failures.length > 0) {
 }
 
 console.log(`  ✓ verify 체인 ${chain.length}단계가 README 투영과 일치`)
+console.log('  ✓ verify↔CI stage 소유가 누락·추가·중복 없이 일치')
 console.log(`  ✓ 문서 ${documents.length}개의 pnpm 명령과 로컬 link 대상 실존`)
 console.log(`  ✓ 에이전트 문서 ${documents.length}개의 줄 수 예산 ${DOCUMENT_LINE_BUDGET} 이내`)
 console.log('  ✓ CLAUDE.md 가 AGENTS.md 를 첫 지시로 import')

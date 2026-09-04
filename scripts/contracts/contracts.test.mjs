@@ -6,7 +6,10 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from
 import {
   agentsBudgetFailure,
   AGENTS_LINE_BUDGET,
+  CI_VERIFY_SCRIPTS,
   claudeAgentsImportFailure,
+  ciVerifyStageFailures,
+  ciWorkflowScriptFailures,
   copilotAgentsPointerFailure,
   documentBudgetFailures,
   ledgerIndexFailures,
@@ -75,6 +78,80 @@ describe('verify chain projection', () => {
 
   it('detects a missing projection row', () => {
     expect(parseReadmeVerifyProjection('| `pnpm build` | 빌드 |')).toBeNull()
+  })
+})
+
+describe('CI verify stage coverage', () => {
+  const completeScripts = {
+    verify: 'pnpm api:check && pnpm contracts:check && pnpm test:unit && pnpm test:e2e:smoke',
+    'ci:static': 'pnpm api:check && pnpm contracts:check',
+    'ci:unit': 'pnpm test:unit',
+    'ci:e2e': 'pnpm test:e2e:smoke',
+  }
+
+  it('accepts an exact one-owner partition of the verify stages', () => {
+    expect(CI_VERIFY_SCRIPTS).toEqual(['ci:static', 'ci:unit', 'ci:e2e'])
+    expect(ciVerifyStageFailures(completeScripts)).toEqual([])
+  })
+
+  it('reports a stage missing from every CI script', () => {
+    const scripts = {
+      ...completeScripts,
+      'ci:e2e': '',
+    }
+
+    expect(ciVerifyStageFailures(scripts)).toEqual([
+      expect.stringContaining('verify에만 존재: test:e2e:smoke'),
+    ])
+  })
+
+  it('reports a stage that exists only in CI', () => {
+    const scripts = {
+      verify: 'pnpm api:check && pnpm contracts:check && pnpm test:unit',
+      'ci:static': 'pnpm api:check && pnpm contracts:check',
+      'ci:unit': 'pnpm test:unit',
+      'ci:e2e': 'pnpm test:e2e:smoke',
+    }
+
+    expect(ciVerifyStageFailures(scripts)).toEqual([
+      expect.stringContaining('CI에만 존재: test:e2e:smoke'),
+    ])
+  })
+
+  it('reports a stage owned by more than one CI script', () => {
+    const scripts = {
+      ...completeScripts,
+      'ci:unit': 'pnpm test:unit && pnpm api:check',
+    }
+
+    expect(ciVerifyStageFailures(scripts)).toEqual([
+      expect.stringContaining('CI에서 중복: api:check'),
+    ])
+  })
+})
+
+describe('CI workflow script coverage', () => {
+  const completeWorkflow = `
+jobs:
+  static:
+    steps:
+      - run: pnpm run ci:static
+  unit:
+    steps:
+      - run: pnpm run ci:unit -- --shard=1/2
+  e2e:
+    steps:
+      - run: pnpm run ci:e2e
+`
+
+  it('accepts a workflow that calls each CI script', () => {
+    expect(ciWorkflowScriptFailures(completeWorkflow)).toEqual([])
+  })
+
+  it('reports a CI script missing from the workflow', () => {
+    expect(ciWorkflowScriptFailures(completeWorkflow.replace('      - run: pnpm run ci:e2e\n', ''))).toEqual([
+      expect.stringContaining('ci:e2e'),
+    ])
   })
 })
 

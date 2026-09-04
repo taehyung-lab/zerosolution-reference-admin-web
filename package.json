@@ -30,6 +30,9 @@
     "gates:negative": "node scripts/verify-negative-controls.mjs",
     "build": "vite build",
     "test:e2e:smoke": "playwright test --project=chromium --grep @smoke",
+    "ci:static": "pnpm api:check && pnpm contracts:check && pnpm typecheck && pnpm lint && pnpm i18n:check && pnpm gates:negative && pnpm build",
+    "ci:unit": "pnpm test:unit",
+    "ci:e2e": "pnpm test:e2e:smoke",
     "verify": "pnpm api:check && pnpm contracts:check && pnpm typecheck && pnpm lint && pnpm test:unit && pnpm i18n:check && pnpm gates:negative && pnpm build && pnpm test:e2e:smoke"
   },
   "dependencies": {

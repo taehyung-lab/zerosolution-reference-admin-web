@@ -41,6 +41,43 @@ export function parseVerifyChain(script) {
     .filter((step) => step !== '')
 }
 
+/** CI 는 verify의 각 단계를 정확히 한 job script가 소유하도록 나눈다. */
+export const CI_VERIFY_SCRIPTS = ['ci:static', 'ci:unit', 'ci:e2e']
+
+/** verify 단계와 CI 단계의 누락·추가·중복 소유를 확인한다. */
+export function ciVerifyStageFailures(scripts) {
+  const verifyStages = parseVerifyChain(scripts.verify ?? '')
+  const verifyStageSet = new Set(verifyStages)
+  const ciStageOwners = new Map()
+
+  for (const scriptName of CI_VERIFY_SCRIPTS) {
+    for (const stage of parseVerifyChain(scripts[scriptName] ?? '')) {
+      const owners = ciStageOwners.get(stage) ?? []
+      owners.push(scriptName)
+      ciStageOwners.set(stage, owners)
+    }
+  }
+
+  const failures = []
+  for (const stage of verifyStages) {
+    if (!ciStageOwners.has(stage)) failures.push(`verify에만 존재: ${stage}`)
+  }
+  for (const stage of ciStageOwners.keys()) {
+    if (!verifyStageSet.has(stage)) failures.push(`CI에만 존재: ${stage}`)
+  }
+  for (const [stage, owners] of ciStageOwners) {
+    if (owners.length > 1) failures.push(`CI에서 중복: ${stage} (${owners.join(', ')})`)
+  }
+  return failures
+}
+
+/** workflow가 각 CI stage script를 한 번 이상 호출하는지 텍스트로 확인한다. */
+export function ciWorkflowScriptFailures(workflow) {
+  return CI_VERIFY_SCRIPTS
+    .filter((scriptName) => new RegExp(`\\bpnpm\\s+(?:run\\s+)?${scriptName}\\b`).test(workflow) === false)
+    .map((scriptName) => `CI workflow에서 호출하지 않음: ${scriptName}`)
+}
+
 /** README 의 `pnpm verify` 투영 행에서 `a → b → c` 단계 목록을 뽑는다. */
 export function parseReadmeVerifyProjection(readme) {
   const row = readme.split('\n').find((line) => line.includes('`pnpm verify`') && line.includes('→'))
