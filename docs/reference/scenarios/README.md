@@ -39,3 +39,4 @@
 | [auth-workflow.md](auth-workflow.md) | 1차 인증과 세션 성립의 분리, 2차 대기 상태의 거처 | 인증 계열 |
 | [ticketing-realtime.md](ticketing-realtime.md) | 발권 실시간 프레임과 작업·티켓 축 분리 | 회원 화면 이후 |
 | [session-lifetime.md](session-lifetime.md) | 세션 만료·경고·연장과 롤링 TTL | 인증 계열 마지막 |
+| [member-list-and-detail.md](member-list-and-detail.md) | 회원 목록·조회·등록·수정이 공유하는 검색·선택·저장·오류 축 | #4 #5 #6 #7 |
