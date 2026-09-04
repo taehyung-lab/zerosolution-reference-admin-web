@@ -2,6 +2,8 @@
 
 Read this file only when work concerns React Compiler, rerenders, memoization, effects, subscriptions, TanStack Table, virtualization, or bundle loading.
 
+TanStack Table 9 names: `useTable` (v8 `useReactTable`), `tableFeatures` for feature slots, and instance `table.FlexRender` (v8 free `flexRender`).
+
 ## Compiler default
 
 Enable React Compiler for the React 19 app and keep the official hooks/compiler lint rules active. Do not add `memo`, `useMemo`, or `useCallback` by habit.

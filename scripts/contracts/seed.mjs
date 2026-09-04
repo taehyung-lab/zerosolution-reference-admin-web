@@ -1,0 +1,736 @@
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
+import { dirname, relative, resolve } from 'node:path'
+
+const location = (file, heading, marker) => ({ file, heading, marker })
+
+/**
+ * 사람은 채택 후보의 public 진입점, 규범 문장, 결정 행, focused test와 소유권만 선언한다.
+ * 실제 반출 파일은 이 진입점들의 local import closure를 매번 계산해 얻는다.
+ * code root는 bundle 하나가 소유한다. focused test는 증거이므로 여러 bundle이 같은 파일을 가리킬 수 있다.
+ * 설정·게이트·harness처럼 채택 후보가 아닌 이관 재료는 아래 TRANSPLANT_MANIFEST가 따로 소유한다.
+ */
+export const SEED_BUNDLES = [
+  {
+    id: 'list-result',
+    code: [
+      'src/shared/ui/patterns/ListResult.tsx',
+      'src/shared/ui/patterns/ResultToolbar.tsx',
+      'src/shared/ui/patterns/ResultSummary.tsx',
+    ],
+    skills: [location(
+      '.agents/skills/feature-contract/references/list-workflow.md',
+      'Result ownership',
+      '`ListResult` receives `ListResultData<TRow>`',
+    )],
+    adrs: [location(
+      'docs/decisions/0009-shared-boundaries.md',
+      '현재 provisional 계약',
+      '`ListResult`는 `notSearched | error | empty | ready`',
+    )],
+    tests: [
+      'src/shared/ui/patterns/list-patterns.test.tsx',
+      'src/shared/ui/patterns/ListResult.test-d.ts',
+    ],
+    ownership: {
+      shared: 'Receives plain list facts, resolves the four-state result, and owns shared error, retry, live region, and trace presentation.',
+      feature: 'Owns Query interpretation, plain facts, two domain messages, structural trace mapping, rows, and footer policy.',
+    },
+  },
+  {
+    id: 'detail-state-boundary',
+    code: ['src/shared/ui/patterns/DetailStateBoundary.tsx'],
+    skills: [location(
+      '.agents/skills/feature-contract/references/detail-workflow.md',
+      'Detail state',
+      '`DetailStateBoundary`',
+    )],
+    adrs: [location(
+      'docs/decisions/0011-detail-data-and-update-history-boundaries.md',
+      'API 호출 계층 (조회·목록·mutation 공통)',
+      '`DetailStateBoundary` 는 `ready | error | notFound` 렌더',
+    )],
+    tests: ['src/shared/ui/patterns/DetailStateBoundary.test.tsx'],
+    ownership: {
+      shared: 'Renders ready, error, and notFound with live error, retry, and trace slots.',
+      feature: 'Owns which query runs, safe copy, retry behavior, and detail content; the state decision comes from api/useDetailQuery.',
+    },
+  },
+  {
+    id: 'detail-query',
+    code: ['src/api/required-query.ts'],
+    skills: [location(
+      '.agents/skills/feature-contract/references/detail-workflow.md',
+      'Detail state',
+      '`useDetailQuery(options)`',
+    )],
+    adrs: [location(
+      'docs/decisions/0011-detail-data-and-update-history-boundaries.md',
+      'API 호출 계층 (조회·목록·mutation 공통)',
+      '`resolveRequiredQueryOutcome(facts)`',
+    )],
+    tests: ['src/api/required-query.test.tsx'],
+    ownership: {
+      shared: 'API owns the required-query outcome priority (incident, not-found, cached data, pending, error) and its projection to the three detail states.',
+      feature: 'Owns the queryOptions factory, the workflow hook beside the screen that injects locale and runs it, safe copy, retry, and content.',
+    },
+  },
+  {
+    id: 'update-history',
+    code: ['src/shared/ui/patterns/UpdateHistory.tsx'],
+    skills: [location(
+      '.agents/skills/shared-ui-contract/references/page-and-detail-surfaces.md',
+      'Page and detail surfaces',
+      '`UpdateHistory`',
+    )],
+    adrs: [location(
+      'docs/decisions/0011-detail-data-and-update-history-boundaries.md',
+      '업데이트 이력 — 2층',
+      '`UpdateHistory`',
+    )],
+    tests: ['src/shared/ui/patterns/UpdateHistory.test.tsx'],
+    ownership: {
+      shared: 'Renders the three-column history table with one semantic line per change and the empty text.',
+      feature: 'Owns the pure mapper from server change logs to localized safe lines: field labels, value formatting, redaction, unsupported/unknown copy, section title.',
+    },
+  },
+  {
+    id: 'blocking-progress',
+    code: ['src/shared/ui/primitives/BlockingProgress.tsx', 'src/api/query-meta.ts'],
+    skills: [location(
+      '.agents/skills/shared-ui-contract/references/blocking-progress.md',
+      'Blocking progress',
+      '`BlockingProgress` is the sole confirmed app-wide loading surface',
+    )],
+    adrs: [location(
+      'docs/decisions/0010-form-boundaries.md',
+      '전역 진행 상태',
+      '`AppShell`이 `useIsMutating()`',
+    )],
+    tests: ['src/app/shell/AppShell.test.tsx'],
+    ownership: {
+      shared: 'Owns the inert blocking surface, accessible progress presentation, and the query progress meta vocabulary (blocking | content | inline).',
+      feature: 'AppShell derives explicit blocking screen-entry and mutation facts; mounted content and option queries stay local.',
+    },
+  },
+  {
+    id: 'form-sections-and-adapters',
+    code: [
+      'src/shared/ui/form/useFormSections.ts',
+      'src/shared/ui/form/FormField.tsx',
+      'src/shared/ui/form/FormTextField.tsx',
+      'src/shared/ui/form/FormSelectField.tsx',
+      'src/shared/ui/form/FormMultiSelectField.tsx',
+      'src/shared/ui/form/FormComboboxField.tsx',
+      'src/shared/ui/form/FormCheckboxField.tsx',
+      'src/shared/ui/form/FormRadioGroupField.tsx',
+      'src/shared/ui/form/FormDateField.tsx',
+      'src/shared/ui/form/FormDateRangeField.tsx',
+      'src/shared/ui/form/FormPermissionTreeField.tsx',
+      'src/shared/ui/form/FormFileField.tsx',
+      'src/shared/ui/form/FormSubmitButton.tsx',
+      'src/shared/ui/form/FormCancelButton.tsx',
+      'src/shared/ui/form/useSaveForm.tsx',
+    ],
+    skills: [
+      location(
+        '.agents/skills/feature-contract/references/form-workflow.md',
+        'Sections and error visibility',
+        'writes `fieldMeta.errorMap.onServer`',
+      ),
+      location(
+        '.agents/skills/shared-ui-contract/references/form-fields.md',
+        'Layer contract',
+        'approved adapter vocabulary',
+      ),
+    ],
+    adrs: [
+      location(
+        'docs/decisions/0010-form-boundaries.md',
+        '소유권 경계',
+        'TanStack 어댑터의 `form` + typed `name`',
+      ),
+      location(
+        'docs/decisions/0010-form-boundaries.md',
+        '저장 오케스트레이션과 서버 오류의 거처 (2026-09-03 개정)',
+        'reveal → 첫 rejected field focus',
+      ),
+    ],
+    tests: [
+      'src/shared/ui/form/useFormSections.test.tsx',
+      'src/shared/ui/form/useSaveForm.test.tsx',
+      'src/shared/ui/form/FormField.test.tsx',
+      'src/shared/ui/form/FormAdapters.test.tsx',
+      'src/shared/ui/form/FormTextField.test.tsx',
+      'src/shared/ui/form/FormSelectField.test.tsx',
+      'src/shared/ui/form/FormDateRangeField.test.tsx',
+      'src/shared/ui/form/FormFileField.test.tsx',
+      'src/shared/ui/form/FormActionButtons.test.tsx',
+      'src/shared/ui/form/UnsavedChangesGuard.test.tsx',
+    ],
+    ownership: {
+      shared: 'Owns typed field association, server-error placement and rendering, section disclosure, focus-target mechanics, and the save stage/guard lifecycle (useSaveForm).',
+      feature: 'Owns schema, defaults, field order and section mapping, the ApiError classification link (classifyFormError), the mutation, destinations, and copy.',
+    },
+  },
+  {
+    id: 'draft-commit',
+    code: ['src/shared/lib/use-draft-commit.ts'],
+    skills: [location(
+      '.agents/skills/shared-ui-contract/references/logic-promotion.md',
+      'Shared logic admission',
+      'draft preservation while a caller identity is equal',
+    )],
+    adrs: [location(
+      'docs/decisions/0009-shared-boundaries.md',
+      '현재 provisional 계약',
+      '`useDraftCommit`',
+    )],
+    tests: ['src/shared/lib/use-draft-commit.test.tsx'],
+    ownership: {
+      shared: 'Owns preserve, rebuild, reset, and patch mechanics for an explicit caller identity.',
+      feature: 'Owns committed identity, draft shape, submit/reset/navigation, and page policy.',
+    },
+  },
+  {
+    id: 'period-draft',
+    code: ['src/shared/lib/use-period-draft.ts'],
+    skills: [location(
+      '.agents/skills/shared-ui-contract/references/logic-promotion.md',
+      'Shared logic admission',
+      'period preset/custom transitions',
+    )],
+    adrs: [location(
+      'docs/decisions/0009-shared-boundaries.md',
+      '현재 provisional 계약',
+      '`usePeriodDraft`',
+    )],
+    tests: ['src/shared/lib/use-period-draft.test.tsx'],
+    ownership: {
+      shared: 'Owns preset/custom draft transitions and conversion from explicit timezone inputs.',
+      feature: 'Owns period meaning, adopted presets, validation copy, provider use, and request boundaries.',
+    },
+  },
+  {
+    id: 'keyword-draft',
+    code: ['src/shared/lib/use-keyword-draft.ts'],
+    skills: [location(
+      '.agents/skills/shared-ui-contract/references/logic-promotion.md',
+      'Shared logic admission',
+      'pending keyword add/remove/trim behavior',
+    )],
+    adrs: [location(
+      'docs/decisions/0009-shared-boundaries.md',
+      '현재 provisional 계약',
+      '`useKeywordDraft`',
+    )],
+    tests: ['src/shared/lib/use-keyword-draft.test.tsx'],
+    ownership: {
+      shared: 'Owns pending keyword add, remove, and trim mechanics.',
+      feature: 'Owns keyword enum and field meaning, limits, URL state, and request mapping.',
+    },
+  },
+  {
+    id: 'transport-auth',
+    code: [
+      'src/api/error.ts',
+      'src/api/error-outcome.ts',
+      'src/api/http/client.ts',
+      'src/api/http/credential.ts',
+      'src/api/http/mutator.ts',
+    ],
+    skills: [
+      location(
+        '.agents/skills/api-contract/references/transport.md',
+        'Envelope and errors',
+        '`ApiError.kind` is the closed 12-kind taxonomy',
+      ),
+      location(
+        '.agents/skills/api-contract/references/auth-session.md',
+        'Auth transport and session incidents',
+        'HTTP 401 runs `/auth/reissue` once',
+      ),
+    ],
+    adrs: [location(
+      'docs/decisions/0006-auth-token-storage.md',
+      '결정',
+      '`refreshPromise`',
+    )],
+    tests: [
+      'src/api/error-outcome.test.ts',
+      'src/api/http/credential.test.ts',
+      'src/api/http/transport.test.ts',
+    ],
+    ownership: {
+      shared: 'API owns the 12-kind error shape, four placement outcomes, safe diagnostics, token storage, reissue, and retry limits.',
+      feature: 'App/feature context owns token-reader registration, incident UI, safe copy, recovery, and operation outcome.',
+    },
+  },
+  {
+    id: 'filter-surface',
+    code: [
+      'src/shared/ui/patterns/FilterPanel.tsx',
+      'src/shared/ui/patterns/FilterField.tsx',
+      'src/shared/ui/patterns/PeriodFilterField.tsx',
+      'src/shared/ui/patterns/KeywordFilterField.tsx',
+      'src/shared/ui/patterns/AsyncFieldBoundary.tsx',
+    ],
+    skills: [location(
+      '.agents/skills/shared-ui-contract/references/filter-fields.md',
+      'Composition',
+      '`FilterPanel`',
+    )],
+    adrs: [location(
+      'docs/decisions/0009-shared-boundaries.md',
+      '현재 provisional 계약',
+      '`FilterPanel`, `FilterField`, `AsyncFieldBoundary`',
+    )],
+    tests: [
+      'src/shared/ui/patterns/list-patterns.test.tsx',
+      'src/shared/ui/patterns/AsyncFieldBoundary.test.tsx',
+    ],
+    ownership: {
+      shared: 'Owns the filter frame disclosure, label/control association, the optional select-plus-field row composition, and generic async field states.',
+      feature: 'Owns criterion/target enums, defaults, labels, preset policy, validation, draft commit, and the option query.',
+    },
+  },
+  {
+    id: 'data-table',
+    code: ['src/shared/ui/patterns/DataTable.tsx'],
+    skills: [location(
+      '.agents/skills/shared-ui-contract/references/data-table.md',
+      'Public contract',
+      '`meta.sort`',
+    )],
+    adrs: [location(
+      'docs/decisions/0009-shared-boundaries.md',
+      '현재 provisional 계약',
+      '`DataTable`, `Pagination`, `PageSizeControl`, `SortControl`',
+    )],
+    tests: ['src/shared/ui/patterns/DataTable.test.tsx'],
+    ownership: {
+      shared: 'Owns native table semantics, stable row identity, and the controlled sort header (button, aria-sort, glyph) from meta.sort.',
+      feature: 'Owns which columns sort, direction transitions, server sort keys, URL, Query, selection, and empty/error copy.',
+    },
+  },
+  {
+    id: 'table-navigation',
+    code: [
+      'src/shared/ui/patterns/Pagination.tsx',
+      'src/shared/ui/patterns/PageSizeControl.tsx',
+      'src/shared/ui/patterns/SortControl.tsx',
+    ],
+    skills: [location(
+      '.agents/skills/shared-ui-contract/references/pagination.md',
+      'Pagination rendering',
+      '`Pagination({ page, totalPages, onPageChange',
+    )],
+    adrs: [location(
+      'docs/decisions/0009-shared-boundaries.md',
+      '현재 provisional 계약',
+      '`DataTable`, `Pagination`, `PageSizeControl`, `SortControl`',
+    )],
+    tests: ['src/shared/ui/patterns/list-patterns.test.tsx'],
+    ownership: {
+      shared: 'Owns controlled page window rendering, accessible current page, boundary buttons, and the controlled page-size/sort-field selects.',
+      feature: 'Owns URL page state, default page size, out-of-range canonicalization, sort field vocabulary, and route navigation.',
+    },
+  },
+  {
+    id: 'page-header',
+    code: ['src/shared/ui/patterns/PageHeader.tsx'],
+    skills: [location(
+      '.agents/skills/shared-ui-contract/references/page-and-detail-surfaces.md',
+      'Page and detail surfaces',
+      '`PageHeader`',
+    )],
+    adrs: [location(
+      'docs/decisions/0011-detail-data-and-update-history-boundaries.md',
+      '상세 표면 — provisional',
+      '`PageHeader`',
+    )],
+    tests: ['src/shared/ui/patterns/PageHeader.test.tsx'],
+    ownership: {
+      shared: 'Owns the single h1 header row with optional breadcrumb and an end-aligned actions slot.',
+      feature: 'Owns which actions exist, their permission and pending state, and navigation.',
+    },
+  },
+  {
+    id: 'section-card',
+    code: ['src/shared/ui/patterns/SectionCard.tsx'],
+    skills: [location(
+      '.agents/skills/shared-ui-contract/references/disclosure-sections.md',
+      'Which surface',
+      '`SectionCard`',
+    )],
+    adrs: [location(
+      'docs/decisions/0011-detail-data-and-update-history-boundaries.md',
+      '상세 표면 — provisional',
+      '`SectionCard`',
+    )],
+    tests: ['src/shared/ui/patterns/detail-patterns.test.tsx'],
+    ownership: {
+      shared: 'Owns the titled disclosure block: header button with aria-expanded/aria-controls, controlled/uncontrolled open, keepMounted, and the error-count badge.',
+      feature: 'Owns section titles, which fields belong to which section, initial open policy, and header actions.',
+    },
+  },
+  {
+    id: 'detail-field',
+    code: ['src/shared/ui/patterns/DetailField.tsx'],
+    skills: [location(
+      '.agents/skills/shared-ui-contract/references/page-and-detail-surfaces.md',
+      'Page and detail surfaces',
+      '`DetailField`',
+    )],
+    adrs: [location(
+      'docs/decisions/0011-detail-data-and-update-history-boundaries.md',
+      '상세 표면 — provisional',
+      '`DetailField`',
+    )],
+    tests: ['src/shared/ui/patterns/detail-patterns.test.tsx'],
+    ownership: {
+      shared: 'Owns one dt/dd pair.',
+      feature: 'Owns the enclosing dl grid, empty-value copy, formatting, masking, and interactive values.',
+    },
+  },
+]
+
+const SOURCE_EXTENSIONS = ['.ts', '.tsx']
+const ASSET_EXTENSIONS = ['.json']
+
+function isSourceFile(path) {
+  return SOURCE_EXTENSIONS.some((extension) => path.endsWith(extension))
+}
+
+function relativeToProject(path) {
+  return relative(resolve('.'), resolve(path))
+}
+
+export function resolveLocalSpecifier(fromFile, specifier) {
+  const base = specifier.startsWith('@/')
+    ? resolve('src', specifier.slice(2))
+    : specifier.startsWith('.')
+      ? resolve(dirname(resolve(fromFile)), specifier)
+      : null
+  if (base === null) return null
+  const candidates = [
+    ...SOURCE_EXTENSIONS.map((extension) => `${base}${extension}`),
+    ...ASSET_EXTENSIONS.map((extension) => `${base}${extension}`),
+    ...SOURCE_EXTENSIONS.map((extension) => resolve(base, `index${extension}`)),
+    base,
+  ]
+  const hit = candidates.find((candidate) => existsSync(candidate) && statSync(candidate).isFile())
+  return hit === undefined ? null : relativeToProject(hit)
+}
+
+export function readLocalImports(file, read = readFileSync) {
+  if (!isSourceFile(file)) return []
+  const source = read(resolve(file), 'utf8')
+  const specifiers = [
+    ...source.matchAll(/\b(?:import|export)\s+(?:[^'";]*?\s+from\s+)?['"]([^'"]+)['"]/g),
+    ...source.matchAll(/\bimport\(\s*['"]([^'"]+)['"]\s*\)/g),
+  ].map((match) => match[1])
+  return [...new Set(specifiers
+    .map((specifier) => resolveLocalSpecifier(file, specifier))
+    .filter((resolved) => resolved !== null))]
+}
+
+export function readLocalMocks(file, read = readFileSync) {
+  if (!isSourceFile(file)) return []
+  const source = read(resolve(file), 'utf8')
+  return [...new Set([...source.matchAll(/\bvi\.mock\(\s*['"]([^'"]+)['"]/g)]
+    .map((match) => resolveLocalSpecifier(file, match[1]))
+    .filter((resolved) => resolved !== null))]
+}
+
+/** 선언된 code/test roots에서 시작해 실제 local import closure를 계산한다. */
+export function collectImportClosure(entrypoints, readImports = readLocalImports) {
+  const seen = new Set()
+  const queue = entrypoints.map(relativeToProject)
+  while (queue.length > 0) {
+    const current = queue.shift()
+    if (seen.has(current)) continue
+    seen.add(current)
+    for (const target of readImports(current)) {
+      if (!seen.has(target)) queue.push(target)
+    }
+  }
+  return [...seen].sort()
+}
+
+/** focused test의 명시적 vi.mock 대체 모듈은 실행 closure에 넣지 않는다. */
+export function collectTestImportClosure(
+  tests,
+  readImports = readLocalImports,
+  readMocks = readLocalMocks,
+) {
+  const files = new Set()
+  for (const test of tests) {
+    const mocked = new Set(readMocks(test))
+    for (const file of collectImportClosure(
+      [test],
+      (current) => readImports(current).filter((target) => !mocked.has(target)),
+    )) {
+      files.add(file)
+    }
+  }
+  return [...files].sort()
+}
+
+function sectionAt(content, heading) {
+  const lines = content.split(/\r?\n/)
+  const headings = lines.map((line, index) => {
+    const match = /^(#{1,6})\s+(.+?)\s*$/.exec(line)
+    return match === null ? null : { index, level: match[1].length, title: match[2] }
+  }).filter(Boolean)
+  const start = headings.find((candidate) => candidate.title === heading)
+  if (start === undefined) return null
+  const end = headings.find(
+    (candidate) => candidate.index > start.index && candidate.level <= start.level,
+  )?.index ?? lines.length
+  return lines.slice(start.index + 1, end).join('\n')
+}
+
+function locationFailures(bundleId, kind, locations) {
+  const failures = []
+  if (!Array.isArray(locations) || locations.length === 0) {
+    return [`seed bundle ${bundleId}: ${kind} 위치가 없다 (4-part 누락)`]
+  }
+  for (const item of locations) {
+    if (!item?.file || !item.heading || !item.marker) {
+      failures.push(`seed bundle ${bundleId}: ${kind} 위치는 file + heading + marker가 필요하다`)
+      continue
+    }
+    if (!existsSync(resolve(item.file))) {
+      failures.push(`seed bundle ${bundleId}: ${kind} 파일이 없다: ${item.file}`)
+      continue
+    }
+    const section = sectionAt(readFileSync(resolve(item.file), 'utf8'), item.heading)
+    if (section === null) {
+      failures.push(`seed bundle ${bundleId}: ${kind} 절이 없다: ${item.file}#${item.heading}`)
+    } else if (!section.includes(item.marker)) {
+      failures.push(`seed bundle ${bundleId}: ${kind} marker가 절 안에 없다: ${item.file}#${item.heading}`)
+    }
+  }
+  return failures
+}
+
+/** 4-part 실존, 문서 위치, 소유권, 중복 계약 root를 검사한다. */
+export function validateSeedBundles(bundles = SEED_BUNDLES) {
+  const failures = []
+  const ids = new Set()
+  const ownedRoots = new Map()
+  for (const bundle of bundles) {
+    const id = typeof bundle?.id === 'string' && bundle.id !== '' ? bundle.id : '<missing-id>'
+    if (ids.has(id)) failures.push(`seed bundle id 중복 소유: ${id}`)
+    ids.add(id)
+
+    if (!Array.isArray(bundle?.code) || bundle.code.length === 0) {
+      failures.push(`seed bundle ${id}: code 진입점이 없다 (4-part 누락)`)
+    }
+    if (!Array.isArray(bundle?.tests) || bundle.tests.length === 0) {
+      failures.push(`seed bundle ${id}: focused test가 없다 (4-part 누락)`)
+    }
+    for (const [kind, files] of [['code', bundle?.code], ['focused test', bundle?.tests]]) {
+      for (const file of files ?? []) {
+        if (!existsSync(resolve(file)) || !statSync(resolve(file)).isFile()) {
+          failures.push(`seed bundle ${id}: ${kind} 파일이 없다: ${file}`)
+        }
+        if (kind !== 'code') continue
+        const owner = ownedRoots.get(file)
+        if (owner !== undefined && owner !== id) {
+          failures.push(`seed contract 중복 소유: ${file} (${owner}, ${id})`)
+        } else {
+          ownedRoots.set(file, id)
+        }
+      }
+    }
+    failures.push(...locationFailures(id, 'skill', bundle?.skills))
+    failures.push(...locationFailures(id, 'ADR', bundle?.adrs))
+    if (!bundle?.ownership?.shared?.trim() || !bundle?.ownership?.feature?.trim()) {
+      failures.push(`seed bundle ${id}: shared/feature 소유권 문장이 없다`)
+    }
+  }
+  return failures.sort()
+}
+
+/** 4-part 문서와 선언 root의 기계 계산 closure를 합친 실제 seed 파일 목록. */
+export function listSeedFiles(bundles = SEED_BUNDLES) {
+  const codeEntrypoints = bundles.flatMap((bundle) => bundle.code)
+  const tests = bundles.flatMap((bundle) => bundle.tests)
+  const documents = bundles.flatMap((bundle) => [
+    ...bundle.skills.map(({ file }) => file),
+    ...bundle.adrs.map(({ file }) => file),
+  ])
+  return [...new Set([
+    'AGENTS.md',
+    ...collectImportClosure(codeEntrypoints),
+    ...collectTestImportClosure(tests),
+    ...documents.map(relativeToProject),
+  ])].sort()
+}
+
+export function findUnexpectedSeedTests(seedFiles, bundles = SEED_BUNDLES) {
+  const declared = new Set(bundles.flatMap((bundle) => bundle.tests).map(relativeToProject))
+  return seedFiles
+    .filter((file) => file.includes('.test.') && !declared.has(relativeToProject(file)))
+    .sort()
+}
+
+/** materialized seed의 어떤 local import도 복사 목록 밖으로 나가지 않아야 한다. */
+export function findSeedLeaks(seedFiles, readImports = readLocalImports) {
+  const seed = new Set(seedFiles)
+  const leaks = []
+  for (const current of seedFiles.filter(isSourceFile)) {
+    for (const target of readImports(current)) {
+      if (!seed.has(target)) leaks.push({ from: current, to: target })
+    }
+  }
+  return leaks.sort((a, b) => `${a.to}${a.from}`.localeCompare(`${b.to}${b.from}`))
+}
+
+/** code와 각 focused test를 독립 실행 단위로 보고 contextual mock을 반영해 폐쇄를 검사한다. */
+export function findBundleClosureLeaks(bundles = SEED_BUNDLES) {
+  const leaks = []
+  for (const bundle of bundles) {
+    const codeFiles = collectImportClosure(bundle.code)
+    for (const leak of findSeedLeaks(codeFiles)) leaks.push({ bundle: bundle.id, ...leak })
+    for (const test of bundle.tests) {
+      const mocked = new Set(readLocalMocks(test))
+      const imports = (file) => readLocalImports(file).filter((target) => !mocked.has(target))
+      const testFiles = collectImportClosure([test], imports)
+      for (const leak of findSeedLeaks(testFiles, imports)) {
+        leaks.push({ bundle: bundle.id, ...leak })
+      }
+    }
+  }
+  return leaks.sort((a, b) => `${a.bundle}${a.to}${a.from}`.localeCompare(`${b.bundle}${b.to}${b.from}`))
+}
+
+/**
+ * 채택 후보가 아닌 이관 재료. 코드 closure로 계산되지 않는 skill 전체·skill이 이름으로 가리키는 ADR(`adrs`)·
+ * 대상 버전과 대조해야 하는 핀 ADR(`conditional`)·같은 제품의 인벤토리(`inventory`)·게이트·설정·test harness·스타일 배선과,
+ * 계약이 아니라 런타임인 i18n core(`core`)·같은 제품의 app shell 카피(`app`, 대상과 병합)를 사람이 명시한다.
+ * 디렉터리는 반출 시 재귀로 펼친다. `templates`는 복사가 아니라 대상과 병합할 파일이다.
+ */
+export const TRANSPLANT_MANIFEST = {
+  skills: [
+    '.agents/skills/api-contract',
+    '.agents/skills/feature-contract',
+    '.agents/skills/shared-ui-contract',
+  ],
+  adrs: [
+    'docs/decisions/0003-datetime-utc.md',
+    'docs/decisions/0005-locale-query-key.md',
+    'docs/decisions/0008-primitive-implementation-selection.md',
+  ],
+  conditional: [
+    'docs/decisions/0002-typescript-version-pin.md',
+    'docs/decisions/0004-runtime-version-pin.md',
+  ],
+  inventory: ['docs/reference'],
+  gates: [
+    'eslint.config.js',
+    'scripts/gates',
+    'tests/gates',
+    'scripts/verify-negative-controls.mjs',
+    'scripts/verify-negative-controls.test.mjs',
+    'scripts/contracts',
+    'scripts/i18n',
+  ],
+  config: [
+    'tsconfig.json',
+    'tsconfig.base.json',
+    'tsconfig.app.json',
+    'tsconfig.node.json',
+    'vitest.config.ts',
+    'vite.config.ts',
+    'playwright.config.ts',
+    '.node-version',
+    '.nvmrc',
+    '.env.example',
+    '.github/workflows/verify.yml',
+  ],
+  harness: ['src/test', 'src/styles.css'],
+  core: [
+    'src/shared/i18n/i18n.ts',
+    'src/shared/i18n/locale.ts',
+    'src/shared/i18n/locale-context.tsx',
+    'src/shared/i18n/locales/ko/shared.json',
+    'src/shared/i18n/locales/en/shared.json',
+    'src/shared/i18n/locales/ja/shared.json',
+  ],
+  app: [
+    'src/app/i18n/resources.ts',
+    'src/shared/i18n/locales/ko/app.json',
+    'src/shared/i18n/locales/en/app.json',
+    'src/shared/i18n/locales/ja/app.json',
+  ],
+  templates: ['package.json'],
+}
+
+function expandManifestEntry(entry) {
+  const absolute = resolve(entry)
+  if (!existsSync(absolute)) return []
+  const stat = statSync(absolute)
+  if (stat.isFile() || stat.isSymbolicLink()) return [relativeToProject(absolute)]
+  return readdirSync(absolute, { recursive: true, withFileTypes: true })
+    .filter((item) => item.isFile() || item.isSymbolicLink())
+    .map((item) => relativeToProject(resolve(item.parentPath, item.name)))
+}
+
+/** manifest의 모든 항목이 실존해야 한다. 값의 타당성은 사람이 판단한다. */
+export function validateTransplantManifest(manifest = TRANSPLANT_MANIFEST) {
+  const failures = []
+  for (const [group, entries] of Object.entries(manifest)) {
+    if (!Array.isArray(entries) || entries.length === 0) {
+      failures.push(`transplant manifest ${group}: 항목이 없다`)
+      continue
+    }
+    for (const entry of entries) {
+      if (!existsSync(resolve(entry))) failures.push(`transplant manifest ${group}: 파일이 없다: ${entry}`)
+    }
+  }
+  return failures.sort()
+}
+
+/** manifest를 실제 파일 목록으로 펼친다(디렉터리 재귀). */
+export function listTransplantManifestFiles(manifest = TRANSPLANT_MANIFEST) {
+  return [...new Set(Object.values(manifest).flat().flatMap(expandManifestEntry))].sort()
+}
+
+/**
+ * seed closure에 들어오면 안 되는 것. feature 코드·리허설 생성물·도메인 번역은 제품 사실이 아니다(ADR 0009 채택 경계).
+ */
+export const FORBIDDEN_SEED_PATTERNS = [
+  /^src\/features\//,
+  /^src\/routes\//,
+  /^src\/api\/generated\//,
+  /\/locales\/[a-z]{2}\/(?!shared\.json$|auth\.json$|app\.json$)[^/]+\.json$/,
+]
+
+export function findForbiddenSeedFiles(seedFiles, patterns = FORBIDDEN_SEED_PATTERNS) {
+  return seedFiles.filter((file) => patterns.some((pattern) => pattern.test(file))).sort()
+}
+
+/**
+ * focused test closure로만 따라온 shared/api 계약 파일은 선언 없는 부수 반출이다.
+ * 계약 레이어(`src/shared/**`, `src/api/**`)의 production 파일은 어느 bundle의 code closure 안에 있어야 한다.
+ * test helper(`src/test/**`)와 test 파일은 증거이므로 대상이 아니다.
+ */
+export function findUndeclaredContractExports(
+  bundles = SEED_BUNDLES,
+  manifestFiles = listTransplantManifestFiles(),
+  readImports = readLocalImports,
+  readMocks = readLocalMocks,
+) {
+  const declared = new Set([
+    ...collectImportClosure(bundles.flatMap((bundle) => bundle.code), readImports),
+    ...manifestFiles,
+  ])
+  const testClosure = collectTestImportClosure(bundles.flatMap((bundle) => bundle.tests), readImports, readMocks)
+  return testClosure
+    .filter((file) => /^src\/(shared|api)\//.test(file))
+    .filter((file) => !file.includes('.test.') && !file.endsWith('.test-d.ts'))
+    .filter((file) => !declared.has(file))
+    .sort()
+}

@@ -1,0 +1,41 @@
+{
+  "shell": {
+    "globalSearch": {
+      "label": "Global search",
+      "placeholder": "Global search",
+      "submit": "Search"
+    },
+    "profile": "Profile",
+    "profileMenu": {
+      "myInfo": "My profile",
+      "signOut": "Sign out"
+    },
+    "fieldTicketing": "On-site ticketing",
+    "notifications": "Notifications",
+    "collapseNavigation": "Collapse navigation",
+    "expandNavigation": "Expand navigation",
+    "copyright": "Copyright 2026 © BOOSTER LAB.",
+    "locale": {
+      "label": "Language",
+      "ko": "한국어",
+      "en": "English",
+      "ja": "日本語"
+    },
+    "navigation": {
+      "label": "Main navigation",
+      "dashboard": "Dashboard",
+      "members": "Members",
+      "performances": "Performances",
+      "ticketing": "Ticketing",
+      "exhibitions": "Exhibitions",
+      "promotions": "Promotions",
+      "community": "Community",
+      "statistics": "Statistics",
+      "settings": "Settings"
+    }
+  },
+  "bootstrap": {
+    "title": "Bootstrap check",
+    "description": "This screen only verifies the router, QueryClient, environment validation, and transport connection; it is not a product screen."
+  }
+}

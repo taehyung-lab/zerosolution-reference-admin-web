@@ -1,163 +1,206 @@
-interface CalendarDate {
-  readonly year: number
-  readonly month: number
-  readonly day: number
+export const REQUEST_TIMEZONE = 'UTC';
+
+/**
+ * 서버가 준 instant를 화면에 그릴 브라우저 IANA timezone을 반환한다.
+ * 언어로 timezone을 추정하지 않는다. 나중에 표시 기준이 공연장 timezone으로 바뀌면
+ * 호출부가 아니라 이 함수만 교체할 수 있도록 함수 경계로 남긴다.
+ */
+export function displayTimeZone(): string {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone;
 }
 
-interface CalendarDateTime extends CalendarDate {
-  readonly hour: number
-  readonly minute: number
-  readonly second: number
-}
-
-const DATE_ONLY = /^(\d{4})-(\d{2})-(\d{2})$/
-const ISO_INSTANT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/
-
-function pad(value: number): string {
-  return String(value).padStart(2, '0')
-}
-
-function formatCalendarDate(date: CalendarDate): string {
-  return `${String(date.year).padStart(4, '0')}-${pad(date.month)}-${pad(date.day)}`
-}
-
-function parseCalendarDate(value: string): CalendarDate {
-  const match = DATE_ONLY.exec(value)
-  if (match === null) throw new Error(`Invalid YYYY-MM-DD value: ${value}`)
-  const yearText = match[1]
-  const monthText = match[2]
-  const dayText = match[3]
-  if (yearText === undefined || monthText === undefined || dayText === undefined) {
-    throw new Error(`Invalid YYYY-MM-DD value: ${value}`)
-  }
-  const date = { year: Number(yearText), month: Number(monthText), day: Number(dayText) }
-  const roundTrip = new Date(Date.UTC(date.year, date.month - 1, date.day))
-  if (
-    roundTrip.getUTCFullYear() !== date.year ||
-    roundTrip.getUTCMonth() + 1 !== date.month ||
-    roundTrip.getUTCDate() !== date.day
-  ) {
-    throw new Error(`Invalid calendar date: ${value}`)
-  }
-  return date
-}
-
-function createFormatter(timeZone: string, includeTime: boolean): Intl.DateTimeFormat {
-  return new Intl.DateTimeFormat('en-GB', {
-    timeZone,
+function parts(instant: number, timezone: string) {
+  const resolved = new Intl.DateTimeFormat('en-CA', {
+    timeZone: timezone,
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
-    ...(includeTime
-      ? { hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' as const }
-      : {}),
-  })
-}
-
-function readPart(parts: Intl.DateTimeFormatPart[], type: Intl.DateTimeFormatPartTypes): number {
-  const part = parts.find((candidate) => candidate.type === type)
-  if (part === undefined) throw new Error(`Intl formatter omitted ${type}`)
-  return Number(part.value)
-}
-
-function partsInTimeZone(epochMs: number, timeZone: string): CalendarDateTime {
-  const parts = createFormatter(timeZone, true).formatToParts(epochMs)
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(new Date(instant));
+  const read = (type: Intl.DateTimeFormatPartTypes) =>
+    Number(resolved.find((part) => part.type === type)?.value);
   return {
-    year: readPart(parts, 'year'),
-    month: readPart(parts, 'month'),
-    day: readPart(parts, 'day'),
-    hour: readPart(parts, 'hour'),
-    minute: readPart(parts, 'minute'),
-    second: readPart(parts, 'second'),
-  }
+    year: read('year'),
+    month: read('month'),
+    day: read('day'),
+    hour: read('hour'),
+    minute: read('minute'),
+    second: read('second'),
+  };
 }
 
-function localMidnightEpochMs(date: CalendarDate, timeZone: string): number {
-  const desired = Date.UTC(date.year, date.month - 1, date.day, 0, 0, 0)
-  let candidate = desired
-  for (let attempt = 0; attempt < 4; attempt += 1) {
-    const actual = partsInTimeZone(candidate, timeZone)
-    const actualAsUtc = Date.UTC(
-      actual.year,
-      actual.month - 1,
-      actual.day,
-      actual.hour,
-      actual.minute,
-      actual.second,
-    )
-    const adjustment = desired - actualAsUtc
-    candidate += adjustment
-    if (adjustment === 0) return candidate
+function zonedDateTimeToUtc(
+  date: string,
+  time: string,
+  timezone: string
+): string {
+  const [year = 0, month = 1, day = 1] = date.split('-').map(Number);
+  const [hour = 0, minute = 0, second = 0] = time.split(':').map(Number);
+  let instant = Date.UTC(year, month - 1, day, hour, minute, second);
+  // The formatter gives the zone's wall-clock value for a candidate instant; two passes handle DST offset.
+  for (let index = 0; index < 2; index += 1) {
+    const local = parts(instant, timezone);
+    const wanted = Date.UTC(year, month - 1, day, hour, minute, second);
+    const actual = Date.UTC(
+      local.year,
+      local.month - 1,
+      local.day,
+      local.hour,
+      local.minute,
+      local.second
+    );
+    instant += wanted - actual;
   }
-  const actual = partsInTimeZone(candidate, timeZone)
-  if (
-    actual.year !== date.year ||
-    actual.month !== date.month ||
-    actual.day !== date.day ||
-    actual.hour !== 0 ||
-    actual.minute !== 0 ||
-    actual.second !== 0
-  ) {
-    throw new Error(`Local day has no resolvable midnight in ${timeZone}`)
-  }
-  return candidate
+  return new Date(instant).toISOString();
 }
 
-function addUtcCalendarDays(date: CalendarDate, days: number): CalendarDate {
-  const result = new Date(Date.UTC(date.year, date.month - 1, date.day + days))
+export function startOfLocalDayAsUtc(date: string, timezone: string) {
+  return zonedDateTimeToUtc(date, '00:00:00', timezone);
+}
+export function endOfLocalDayAsUtc(date: string, timezone: string) {
+  return zonedDateTimeToUtc(date, '23:59:59', timezone).replace(
+    '.000Z',
+    '.999Z'
+  );
+}
+export function utcDayBoundary(
+  date: string,
+  boundary: 'start' | 'end',
+  timezone: string
+) {
+  return boundary === 'start'
+    ? startOfLocalDayAsUtc(date, timezone)
+    : endOfLocalDayAsUtc(date, timezone);
+}
+export function formatDateInTimeZone(
+  instant: string | null | undefined,
+  timezone: string,
+) {
+  if (!instant) return '';
+  const milliseconds = Date.parse(instant);
+  if (!Number.isFinite(milliseconds)) return '';
+  const value = parts(milliseconds, timezone);
+  return `${value.year}-${String(value.month).padStart(2, '0')}-${String(value.day).padStart(2, '0')}`;
+}
+export function formatDate(instant: string | null | undefined): string {
+  return formatDateInTimeZone(instant, displayTimeZone());
+}
+export function formatTimeInTimeZone(instant: string, timezone: string) {
+  const value = parts(Date.parse(instant), timezone);
+  return `${String(value.hour).padStart(2, '0')}:${String(value.minute).padStart(2, '0')}`;
+}
+export function subtractCalendarDays(date: string, days: number) {
+  const [year = 0, month = 1, day = 1] = date.split('-').map(Number);
+  const result = new Date(Date.UTC(year, month - 1, day - days));
+  return result.toISOString().slice(0, 10);
+}
+export function subtractCalendarMonths(date: string, months: number) {
+  const [year = 0, month = 1, day = 1] = date.split('-').map(Number);
+  const end = new Date(Date.UTC(year, month - months, 0)).getUTCDate();
+  const result = new Date(
+    Date.UTC(year, month - months - 1, Math.min(day, end))
+  );
+  return result.toISOString().slice(0, 10);
+}
+export function utcPresetRange(months: number, now = new Date()) {
+  const today = formatDateInTimeZone(now.toISOString(), REQUEST_TIMEZONE);
   return {
-    year: result.getUTCFullYear(),
-    month: result.getUTCMonth() + 1,
-    day: result.getUTCDate(),
+    startDateTime: startOfLocalDayAsUtc(
+      months === 0
+        ? subtractCalendarDays(today, 1)
+        : subtractCalendarMonths(today, months),
+      REQUEST_TIMEZONE
+    ),
+    endDateTime: endOfLocalDayAsUtc(today, REQUEST_TIMEZONE),
+  };
+}
+export function periodPresetRange(
+  preset:
+    | 'ALL'
+    | 'YEAR_1'
+    | 'MONTH_6'
+    | 'MONTH_3'
+    | 'MONTH_1'
+    | 'DAY_7'
+    | 'YESTERDAY'
+    | 'TODAY',
+  timezone: string,
+  now = new Date()
+): { from?: string; to?: string } {
+  const today = formatDateInTimeZone(now.toISOString(), timezone);
+  if (preset === 'ALL') return {};
+  if (preset === 'TODAY') return { from: today, to: today };
+  if (preset === 'YESTERDAY') {
+    const day = subtractCalendarDays(today, 1);
+    return { from: day, to: day };
   }
+  const amount =
+    preset === 'YEAR_1'
+      ? 12
+      : preset === 'MONTH_6'
+        ? 6
+        : preset === 'MONTH_3'
+          ? 3
+          : preset === 'MONTH_1'
+            ? 1
+            : 0;
+  return {
+    from:
+      preset === 'DAY_7'
+        ? subtractCalendarDays(today, 7)
+        : subtractCalendarMonths(today, amount),
+    to: today,
+  };
 }
 
-function assertWholeNonNegative(value: number, name: string): void {
-  if (!Number.isInteger(value) || value < 0) throw new Error(`${name} must be a non-negative integer`)
+export type PeriodPreset =
+  | 'ALL'
+  | 'YEAR_1'
+  | 'MONTH_6'
+  | 'MONTH_3'
+  | 'MONTH_1'
+  | 'DAY_7'
+  | 'YESTERDAY'
+  | 'TODAY';
+export type PeriodValue = PeriodPreset | 'CUSTOM';
+export type DateRange = { readonly from?: string; readonly to?: string };
+
+export function utcRangeToDateRange(
+  range: { readonly startDateTime?: string; readonly endDateTime?: string },
+  timezone: string
+): DateRange {
+  return {
+    from: range.startDateTime
+      ? formatDateInTimeZone(range.startDateTime, timezone)
+      : undefined,
+    to: range.endDateTime
+      ? formatDateInTimeZone(range.endDateTime, timezone)
+      : undefined,
+  };
 }
 
-function parseInstant(value: string): number {
-  const epochMs = Date.parse(value)
-  if (!ISO_INSTANT.test(value) || !Number.isFinite(epochMs)) {
-    throw new Error(`Invalid ISO instant: ${value}`)
-  }
-  return epochMs
-}
-
-/** 지정 local day의 시작을 UTC Z instant 문자열로 변환한다. */
-export function startOfLocalDayAsUtc(date: string, timeZone: string): string {
-  return new Date(localMidnightEpochMs(parseCalendarDate(date), timeZone)).toISOString()
-}
-
-/** 지정 local day 다음 날 시작의 1ms 전을 UTC Z instant 문자열로 변환한다. */
-export function endOfLocalDayAsUtc(date: string, timeZone: string): string {
-  const nextDay = addUtcCalendarDays(parseCalendarDate(date), 1)
-  return new Date(localMidnightEpochMs(nextDay, timeZone) - 1).toISOString()
-}
-
-export function subtractCalendarDays(date: string, days: number, timeZone: string): string {
-  assertWholeNonNegative(days, 'days')
-  createFormatter(timeZone, false)
-  return formatCalendarDate(addUtcCalendarDays(parseCalendarDate(date), -days))
-}
-
-export function subtractCalendarMonths(date: string, months: number, timeZone: string): string {
-  assertWholeNonNegative(months, 'months')
-  createFormatter(timeZone, false)
-  const parsed = parseCalendarDate(date)
-  const targetMonthIndex = parsed.year * 12 + parsed.month - 1 - months
-  const targetYear = Math.floor(targetMonthIndex / 12)
-  const targetMonth = targetMonthIndex - targetYear * 12 + 1
-  const lastDay = new Date(Date.UTC(targetYear, targetMonth, 0)).getUTCDate()
-  return formatCalendarDate({ year: targetYear, month: targetMonth, day: Math.min(parsed.day, lastDay) })
-}
-
-export function formatDateInTimeZone(instant: string, timeZone: string): string {
-  const parts = partsInTimeZone(parseInstant(instant), timeZone)
-  return formatCalendarDate(parts)
-}
-
-export function formatTimeInTimeZone(instant: string, timeZone: string): string {
-  const parts = partsInTimeZone(parseInstant(instant), timeZone)
-  return `${pad(parts.hour)}:${pad(parts.minute)}`
+export function inferPeriodPreset(
+  range: DateRange,
+  timezone: string,
+  now = new Date()
+): PeriodValue {
+  const values: readonly PeriodPreset[] = [
+    'ALL',
+    'YEAR_1',
+    'MONTH_6',
+    'MONTH_3',
+    'MONTH_1',
+    'DAY_7',
+    'YESTERDAY',
+    'TODAY',
+  ];
+  return (
+    values.find((value) => {
+      const candidate = periodPresetRange(value, timezone, now);
+      return candidate.from === range.from && candidate.to === range.to;
+    }) ?? 'CUSTOM'
+  );
 }

@@ -14,6 +14,7 @@ export function readLocale(): string {
 /**
  * X-Locale은 격리된 리허설 계약 고유 헤더다. 서버가 선언한 ko/ja만 보낸다.
  * en은 서버 미지원이므로 값을 발명하지 않고 생략한다.
+ * TRANSPLANT_PENDING_LOCALE_HEADER: 신규 서버가 locale 헤더를 요구하는지, 어떤 값을 받는지 확정되면 교체하거나 제거한다.
  * @see docs/decisions/0001-rehearsal-api-contract.md
  */
 export function readRehearsalLocale(locale: string): 'ko' | 'ja' | undefined {

@@ -1,0 +1,98 @@
+{
+  "error": {
+    "kind": {
+      "network": "Check your network connection and try again.",
+      "timeout": "The request timed out. Try again.",
+      "cancelled": "The request was cancelled.",
+      "business": "The request could not be processed. Try again.",
+      "unauthorized": "Sign in is required.",
+      "forbidden": "You do not have permission to access this.",
+      "validation": "Check the entered values.",
+      "notFound": "The requested information was not found.",
+      "conflict": "This conflicts with another change. Refresh and try again.",
+      "rateLimited": "Too many requests. Try again later.",
+      "serverError": "The server could not process the request. Try again.",
+      "contract": "The response could not be processed. Try again."
+    },
+    "trace": {
+      "inquiryCode": "Inquiry code",
+      "details": "Details",
+      "requestId": "Request ID",
+      "status": "Status",
+      "kind": "Error kind"
+    },
+    "access": {
+      "title": "Access permission error",
+      "description": "You do not have permission. Return to the previous screen.",
+      "back": "Return to previous screen"
+    },
+    "unexpected": {
+      "title": "Something went wrong",
+      "body": "We could not process your request. Please try again.",
+      "retry": "Try again",
+      "home": "Go home"
+    },
+    "notFound": "Page not found."
+  },
+  "asyncField": {
+    "loading": "Loading options.",
+    "error": "Unable to load options.",
+    "retry": "Retry"
+  },
+  "list": {
+    "periodPresets": {
+      "ALL": "All",
+      "YEAR_1": "1 year",
+      "MONTH_6": "6 months",
+      "MONTH_3": "3 months",
+      "MONTH_1": "1 month",
+      "DAY_7": "7 days",
+      "YESTERDAY": "Yesterday",
+      "TODAY": "Today",
+      "CUSTOM": "Custom"
+    },
+    "total": "Results: {{formatted}}"
+  },
+  "calendar": {
+    "navigation": "Calendar navigation",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month"
+  },
+  "alert": {
+    "title": "Alert"
+  },
+  "formSave": {
+    "confirmDescription": "Would you like to save?",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "savedDescription": "Saved.",
+    "acknowledge": "OK"
+  },
+  "formAction": {
+    "save": "Save",
+    "cancel": "Cancel"
+  },
+  "unsavedChanges": {
+    "description": "Leaving this screen will discard all entered information.\nWould you like to continue?",
+    "confirm": "Confirm",
+    "cancel": "Cancel"
+  },
+  "progress": {
+    "loading": "Loading data. Please wait.",
+    "saving": "Registering. Please wait."
+  },
+  "formCancel": {
+    "description": "Cancelling discards everything you entered.\nCancel this entry?",
+    "confirm": "OK",
+    "keep": "Cancel"
+  },
+  "formSection": {
+    "errors": "Errors: {{count}}"
+  },
+  "formError": {
+    "rejectedByServer": "The server rejected this value.",
+    "validation": "The submitted values could not be saved.",
+    "connection": "Check your network connection.",
+    "general": "Could not save. Please try again."
+  }
+}

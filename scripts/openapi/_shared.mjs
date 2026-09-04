@@ -2,17 +2,18 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 export const SNAPSHOT = resolve('openapi/admin.snapshot.json')
+export const SNAPSHOT_META = resolve('openapi/admin.snapshot.meta.json')
 export const PREPARED_DIR = resolve('.openapi-prepared')
 export const PREPARED = resolve('.openapi-prepared/admin.prepared.json')
 
 /** 리허설 스냅샷의 알려진 결함 규모. 실제 값이 다르면 스냅샷이 바뀐 것이므로 실패시킨다. */
 export const EXPECTED_DEFECTS = {
-  duplicateAuthorizationParameters: 256,
-  uppercaseHeaderParameters: 325,
-  invalidComponentKeys: 470,
+  duplicateAuthorizationParameters: 0,
+  uppercaseHeaderParameters: 0,
+  invalidComponentKeys: 353,
   parametersMissingSchema: 1,
   invalidSecuritySchemeProps: 2,
-  missingPathParameters: 2,
+  missingPathParameters: 0,
 }
 
 /** OpenAPI 3 component key 허용 패턴. 스펙이 정의한 값이며 우리가 고른 값이 아니다. */
@@ -51,6 +52,18 @@ export const HTTP_METHODS = ['get', 'put', 'post', 'delete', 'options', 'head', 
 
 export function readSnapshot() {
   return JSON.parse(readFileSync(SNAPSHOT, 'utf8'))
+}
+
+export function readSnapshotMeta() {
+  return JSON.parse(readFileSync(SNAPSHOT_META, 'utf8'))
+}
+
+export function summarizeSpec(spec) {
+  return {
+    paths: Object.keys(spec.paths ?? {}).length,
+    operations: [...eachOperation(spec)].length,
+    schemas: Object.keys(spec.components?.schemas ?? {}).length,
+  }
 }
 
 export function* eachOperation(spec) {

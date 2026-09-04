@@ -4,21 +4,29 @@ Read this file for route creation, params/search validation, auth or permission 
 
 ## Thin route
 
-A route owns validation, entry guards, loader orchestration, and one feature screen or explicit screen composition. It contains no columns, form state, mutation, toast, payload mapping, or domain workflow. Root router context exposes the QueryClient and only confirmed auth readiness/facts; root owns error and not-found boundaries.
+A route owns validation, entry guards, loader orchestration, and one feature screen or explicit screen composition. It contains no columns, form state, mutation, toast, payload mapping, or domain workflow. Root router context exposes the QueryClient, typed current UI locale, and only confirmed auth readiness/facts; it never exposes the mutable i18n instance. Root owns error and not-found boundaries.
+
+## Route file layout
+
+Route files mirror the URL. A single leaf stays a flat file (`managers/new.tsx`). A param or static segment with more than one leaf becomes a directory: `managers/$managerId/index.tsx` (detail) and `managers/$managerId/edit.tsx` (edit). A directory alone creates no route, so these leaves are siblings under `managers`; add `$managerId/route.tsx` only when the screens actually share chrome (header, tabs) and must render through an `<Outlet />`. Do not use the flat non-nesting escape (`$managerId_.edit.tsx`): it needs a comment to explain and hides the layout decision. Co-located tests match `routeFileIgnorePattern` and are not routes.
 
 ## Search and navigation
 
 Use a feature-owned Zod 4 schema directly as TanStack Router's Standard Schema validator; do not add `@tanstack/zod-adapter` while its peer contract is Zod 3. Invalid optional search fields recover to declared defaults with schema fallback, while missing resource params/not-found remain explicit failures. A loader that reads search declares `loaderDeps` from validated search.
 
-Committed filter, sort, page, page size, and shareable tab state live in route search. Local draft exists only until Apply, Enter, or the declared debounce commits it. Filter identity changes reset page according to the schema.
+Committed filter, sort, page, page size, and shareable tab state live in route search. List-specific sparse/resolved search, draft commit, canonicalization, and page-reset rules are owned by [list-workflow.md](list-workflow.md); this file owns only their Router integration.
 
 ## Loader and preload
 
 A loader is optional. Use it only for redirect, data-dependent entry permission, not-found, named first-paint readiness, or intentional preload-on-intent cache warming. The route and screen call the same exported query options.
 
-Trigger and waiting are separate decisions. Inside the same loader, `await ensureQueryData` only for data that must be ready before entry; start independent auxiliary warming with non-awaited `prefetchQuery`. Configure `defaultPreload: 'intent'` only when desired and set `defaultPreloadStaleTime: 0` so Router does not become a second server-cache freshness owner above TanStack Query.
+Trigger and waiting are separate decisions. Use the current QueryClient `query` API: await `queryClient.query(options)` only for data that must be ready before entry, and start independent auxiliary warming with `void queryClient.query(options).catch(...)`. Do not introduce `ensureQueryData`, `prefetchQuery`, `fetchQuery`, or `fetchInfiniteQuery`: TanStack Query 5.102 marks them `@deprecated` in favour of `queryClient.query`/`infiniteQuery` (verified in the installed `query-core` types), and `@typescript-eslint/no-deprecated` fails the build on any deprecated library API. Configure `defaultPreload: 'intent'` only when desired and set `defaultPreloadStaleTime: 0` so Router does not become a second server-cache freshness owner above TanStack Query.
 
 Independent prerequisites may use `Promise.all`. Do not create a second loader-only query definition or fetch generated operations directly.
+
+Every route whose screen renders selects backed by option queries (list filters, create/edit forms) warms those options in its loader with `void queryClient.query(options).catch(() => undefined)`. With `defaultPreload: 'intent'` this runs on link hover, so the field is usually ready before it mounts; if not, the field's inline state covers it and the app-wide overlay stays closed because the option query declares `meta.progress: 'inline'`.
+
+Loaders read `context.locale`; components read `useLocale().locale`. The app-level Router provider projects locale changes into the existing Router context and never recreates the Router.
 
 ## Guards
 

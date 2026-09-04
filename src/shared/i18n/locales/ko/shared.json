@@ -1,0 +1,98 @@
+{
+  "error": {
+    "kind": {
+      "network": "네트워크 연결을 확인한 뒤 다시 시도해 주세요.",
+      "timeout": "요청 시간이 초과되었습니다. 다시 시도해 주세요.",
+      "cancelled": "요청이 취소되었습니다.",
+      "business": "요청을 처리하지 못했습니다. 다시 시도해 주세요.",
+      "unauthorized": "로그인이 필요합니다.",
+      "forbidden": "접근권한이 없습니다.",
+      "validation": "입력값을 확인해 주세요.",
+      "notFound": "요청한 정보를 찾을 수 없습니다.",
+      "conflict": "다른 변경과 충돌했습니다. 최신 내용을 확인한 뒤 다시 시도해 주세요.",
+      "rateLimited": "요청이 많습니다. 잠시 후 다시 시도해 주세요.",
+      "serverError": "서버에서 요청을 처리하지 못했습니다. 다시 시도해 주세요.",
+      "contract": "응답을 처리하지 못했습니다. 다시 시도해 주세요."
+    },
+    "trace": {
+      "inquiryCode": "문의 코드",
+      "details": "상세보기",
+      "requestId": "요청 ID",
+      "status": "상태",
+      "kind": "오류 유형"
+    },
+    "access": {
+      "title": "접근권한 오류",
+      "description": "접근권한이 없습니다. 이전 화면으로 이동하세요.",
+      "back": "이전 화면으로 이동"
+    },
+    "unexpected": {
+      "title": "문제가 발생했습니다",
+      "body": "요청을 처리하지 못했습니다. 다시 시도해 주세요.",
+      "retry": "다시 시도",
+      "home": "홈으로 이동"
+    },
+    "notFound": "페이지를 찾을 수 없습니다."
+  },
+  "asyncField": {
+    "loading": "옵션을 불러오는 중입니다.",
+    "error": "옵션을 불러오지 못했습니다.",
+    "retry": "다시 시도"
+  },
+  "list": {
+    "periodPresets": {
+      "ALL": "전체",
+      "YEAR_1": "1년전",
+      "MONTH_6": "6개월전",
+      "MONTH_3": "3개월전",
+      "MONTH_1": "1개월전",
+      "DAY_7": "7일전",
+      "YESTERDAY": "어제",
+      "TODAY": "오늘",
+      "CUSTOM": "직접입력"
+    },
+    "total": "검색결과 : {{formatted}}"
+  },
+  "calendar": {
+    "navigation": "달력 탐색",
+    "previousMonth": "이전 달",
+    "nextMonth": "다음 달"
+  },
+  "alert": {
+    "title": "알림"
+  },
+  "formSave": {
+    "confirmDescription": "저장하시겠습니까?",
+    "confirm": "확인",
+    "cancel": "취소",
+    "savedDescription": "저장되었습니다.",
+    "acknowledge": "확인"
+  },
+  "formAction": {
+    "save": "저장",
+    "cancel": "취소"
+  },
+  "unsavedChanges": {
+    "description": "화면을 이동할 경우 입력된 정보는 모두 삭제됩니다.\n화면으로 이동하시겠습니까?",
+    "confirm": "확인",
+    "cancel": "취소"
+  },
+  "progress": {
+    "loading": "데이터를 불러오는 중입니다. 잠시만 기다려 주세요.",
+    "saving": "등록 중입니다. 잠시만 기다려 주세요."
+  },
+  "formCancel": {
+    "description": "취소할 경우 입력된 정보는 모두 삭제됩니다.\n입력을 취소하시겠습니까?",
+    "confirm": "확인",
+    "keep": "취소"
+  },
+  "formSection": {
+    "errors": "오류 {{count}}개"
+  },
+  "formError": {
+    "rejectedByServer": "서버에서 사용할 수 없는 값입니다.",
+    "validation": "입력한 값을 저장할 수 없습니다.",
+    "connection": "네트워크 연결을 확인해 주세요.",
+    "general": "저장하지 못했습니다. 잠시 후 다시 시도해 주세요."
+  }
+}

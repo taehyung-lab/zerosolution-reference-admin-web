@@ -1,0 +1,41 @@
+{
+  "shell": {
+    "globalSearch": {
+      "label": "統合検索",
+      "placeholder": "統合検索",
+      "submit": "検索"
+    },
+    "profile": "マイ情報",
+    "profileMenu": {
+      "myInfo": "マイ情報",
+      "signOut": "ログアウト"
+    },
+    "fieldTicketing": "現場発券",
+    "notifications": "通知",
+    "collapseNavigation": "メニューを閉じる",
+    "expandNavigation": "メニューを開く",
+    "copyright": "Copyright 2026 © BOOSTER LAB.",
+    "locale": {
+      "label": "言語",
+      "ko": "한국어",
+      "en": "English",
+      "ja": "日本語"
+    },
+    "navigation": {
+      "label": "メインメニュー",
+      "dashboard": "ダッシュボード",
+      "members": "会員",
+      "performances": "公演",
+      "ticketing": "発券",
+      "exhibitions": "展示",
+      "promotions": "プロモーション",
+      "community": "コミュニティ",
+      "statistics": "統計",
+      "settings": "設定"
+    }
+  },
+  "bootstrap": {
+    "title": "ブートストラップ確認",
+    "description": "ルーター、QueryClient、環境変数の検証、transport 接続のみを確認する画面で、製品画面ではありません。"
+  }
+}

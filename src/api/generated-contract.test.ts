@@ -2,15 +2,16 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
 import { http, HttpResponse } from 'msw'
 import { server } from '@/test/msw/server'
 import {
-  getList3,
-  getList10,
+  getList6,
+  getList8,
+  getList14,
+  get8,
   getManagers,
   getMenus,
   ping,
   reissue,
   signIn,
   signOut,
-  signOut1,
 } from '@/api/generated/endpoints'
 
 /**
@@ -18,10 +19,10 @@ import {
  *
  *   getManagers -> /api/v1/options/managers   (옵션 조회. 운영자 목록이 아니다)
  *   getMenus    -> /api/v1/options/menus      (옵션 조회. 접근 메뉴가 아니다)
- *   signOut     -> /api/v1/auth/app/sign-out  (**앱** 로그아웃. 웹 로그아웃이 아니다)
  *
  * feature adapter 는 이름이 아니라 **경로**로 고른다. 실제 호출을 가로채 URL 을 확인해
  * 그 계약을 고정한다. 스냅샷이 바뀌어 대응이 달라지면 여기서 실패해야 한다.
+ * Admin 그룹에서는 signOut 이 웹 로그아웃을 가리키므로 합본 스펙의 이름 함정은 사라졌다.
  */
 
 const ORIGIN = 'http://localhost:3000'
@@ -53,14 +54,20 @@ describe('생성물 이름-경로 계약 — 첫 slice 가 쓸 operation', () =>
   it('ping -> /api/v1/auth/ping', async () => {
     expect(await pathOf(() => ping())).toBe('/api/v1/auth/ping')
   })
-  it('웹 로그아웃은 signOut1 -> /api/v1/auth/sign-out', async () => {
-    expect(await pathOf(() => signOut1())).toBe('/api/v1/auth/sign-out')
+  it('웹 로그아웃은 signOut -> /api/v1/auth/sign-out', async () => {
+    expect(await pathOf(() => signOut())).toBe('/api/v1/auth/sign-out')
   })
-  it('운영자 목록은 getList3 -> /api/v1/managers', async () => {
-    expect(await pathOf(() => getList3())).toBe('/api/v1/managers')
+  it('운영자 목록은 getList8 -> /api/v1/managers', async () => {
+    expect(await pathOf(() => getList8())).toBe('/api/v1/managers')
   })
-  it('접근 가능 메뉴는 getList10 -> /api/v1/menus', async () => {
-    expect(await pathOf(() => getList10())).toBe('/api/v1/menus')
+  it('운영자 상세는 get8 -> /api/v1/managers/{id}', async () => {
+    expect(await pathOf(() => get8('manager-id'))).toBe('/api/v1/managers/manager-id')
+  })
+  it('접근 권한 목록은 getList6 -> /api/v1/permissions', async () => {
+    expect(await pathOf(() => getList6())).toBe('/api/v1/permissions')
+  })
+  it('접근 가능 메뉴는 getList14 -> /api/v1/menus', async () => {
+    expect(await pathOf(() => getList14())).toBe('/api/v1/menus')
   })
 })
 
@@ -74,10 +81,5 @@ describe('생성물 이름 함정 — 이름만 보고 집으면 다른 리소�
     const path = await pathOf(() => getMenus())
     expect(path).not.toBe('/api/v1/menus')
     expect(path).toBe('/api/v1/options/menus')
-  })
-  it('signOut 은 웹이 아니라 앱 로그아웃이다 (deviceId 를 요구하는 것이 신호)', async () => {
-    const path = await pathOf(() => signOut({ deviceId: 'device-1' }))
-    expect(path).not.toBe('/api/v1/auth/sign-out')
-    expect(path).toBe('/api/v1/auth/app/sign-out')
   })
 })

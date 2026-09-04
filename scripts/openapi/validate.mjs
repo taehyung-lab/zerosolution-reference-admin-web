@@ -4,13 +4,34 @@
  * 결함을 allowlist로 "성공" 처리하지 않는다. 규모가 예상과 다르면 실패한다.
  * 네트워크를 사용하지 않는다.
  */
-import { readSnapshot, eachOperation, EXPECTED_DEFECTS, VALID_COMPONENT_KEY, fail } from './_shared.mjs'
+import {
+  readSnapshot,
+  readSnapshotMeta,
+  summarizeSpec,
+  eachOperation,
+  EXPECTED_DEFECTS,
+  VALID_COMPONENT_KEY,
+  fail,
+} from './_shared.mjs'
 
 const spec = readSnapshot()
+const meta = readSnapshotMeta()
 
 if (!/^3\.\d+\.\d+$/.test(spec.openapi ?? '')) fail(`openapi 버전이 3.x가 아니다: ${spec.openapi}`)
 if (!spec.paths || Object.keys(spec.paths).length === 0) fail('paths가 비어 있다')
 if (!spec.components?.schemas) fail('components.schemas가 없다')
+
+const summary = summarizeSpec(spec)
+if (typeof meta.source !== 'string' || meta.source.length === 0) fail('snapshot meta source가 없다')
+if (typeof meta.pulledAt !== 'string' || !Number.isFinite(Date.parse(meta.pulledAt))) {
+  fail('snapshot meta pulledAt이 유효한 instant가 아니다')
+}
+if (meta.infoVersion !== (spec.info?.version ?? null)) fail('snapshot과 meta의 info.version이 다르다')
+for (const key of ['paths', 'operations', 'schemas']) {
+  if (meta.counts?.[key] !== summary[key]) {
+    fail(`snapshot과 meta의 ${key} count가 다르다 (${meta.counts?.[key]} != ${summary[key]})`)
+  }
+}
 
 // --- 참조 무결성: 모든 로컬 $ref가 실제로 해석되는지 ---
 const schemas = spec.components.schemas
@@ -49,6 +70,7 @@ for (const { op } of eachOperation(spec)) {
 
 console.log(`  스냅샷: ${spec.info?.title} ${spec.info?.version} (openapi ${spec.openapi})`)
 console.log(`  paths ${Object.keys(spec.paths).length} / operations ${operations} / schemas ${Object.keys(schemas).length}`)
+console.log(`  source ${meta.source} / pulledAt ${meta.pulledAt}`)
 console.log(`  $ref 무결성: OK`)
 console.log('')
 console.log('  알려진 리허설 결함 (숨기지 않고 보고):')

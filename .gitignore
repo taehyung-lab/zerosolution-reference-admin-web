@@ -1,6 +1,8 @@
 node_modules
 dist
 coverage
+playwright-report/
+test-results/
 .DS_Store
 *.local
 .env
@@ -9,7 +11,8 @@ coverage
 # OpenAPI: 스냅샷 원본만 커밋한다. 생성물과 변환 산출물은 커밋하지 않는다.
 src/api/generated/
 .openapi-prepared/
-# 작업 문서 (AGENTS.md §8)
+# 세션 작업 문서·에이전트 런타임 캐시. 저장소에 남기는 문서 기준은 AGENTS.md "실행·협업 모델"이 소유한다.
 .ai-work/
+.serena/
 
-# docs/ 를 ignore 하지 마라. docs/decisions 의 승인된 ADR 은 커밋 대상이다 (AGENTS.md §8).
+# docs/ 를 ignore 하지 마라. docs/decisions 의 승인된 ADR 은 커밋 대상이다.

@@ -1,0 +1,98 @@
+{
+  "error": {
+    "kind": {
+      "network": "ネットワーク接続を確認して、もう一度お試しください。",
+      "timeout": "リクエストがタイムアウトしました。もう一度お試しください。",
+      "cancelled": "リクエストがキャンセルされました。",
+      "business": "リクエストを処理できませんでした。もう一度お試しください。",
+      "unauthorized": "ログインが必要です。",
+      "forbidden": "アクセス権限がありません。",
+      "validation": "入力内容を確認してください。",
+      "notFound": "リクエストされた情報が見つかりません。",
+      "conflict": "他の変更と競合しています。最新内容を確認して、もう一度お試しください。",
+      "rateLimited": "リクエストが多すぎます。しばらくしてからもう一度お試しください。",
+      "serverError": "サーバーでリクエストを処理できませんでした。もう一度お試しください。",
+      "contract": "レスポンスを処理できませんでした。もう一度お試しください。"
+    },
+    "trace": {
+      "inquiryCode": "お問い合わせコード",
+      "details": "詳細",
+      "requestId": "リクエストID",
+      "status": "ステータス",
+      "kind": "エラー種別"
+    },
+    "access": {
+      "title": "アクセス権限エラー",
+      "description": "アクセス権限がありません。前の画面に戻ってください。",
+      "back": "前の画面に戻る"
+    },
+    "unexpected": {
+      "title": "問題が発生しました",
+      "body": "リクエストを処理できませんでした。もう一度お試しください。",
+      "retry": "再試行",
+      "home": "ホームへ移動"
+    },
+    "notFound": "ページが見つかりません。"
+  },
+  "asyncField": {
+    "loading": "オプションを読み込み中です。",
+    "error": "オプションを読み込めませんでした。",
+    "retry": "再試行"
+  },
+  "list": {
+    "periodPresets": {
+      "ALL": "すべて",
+      "YEAR_1": "1年前",
+      "MONTH_6": "6か月前",
+      "MONTH_3": "3か月前",
+      "MONTH_1": "1か月前",
+      "DAY_7": "7日前",
+      "YESTERDAY": "昨日",
+      "TODAY": "今日",
+      "CUSTOM": "直接入力"
+    },
+    "total": "検索結果 : {{formatted}}"
+  },
+  "calendar": {
+    "navigation": "カレンダー操作",
+    "previousMonth": "前の月",
+    "nextMonth": "次の月"
+  },
+  "alert": {
+    "title": "お知らせ"
+  },
+  "formSave": {
+    "confirmDescription": "保存しますか?",
+    "confirm": "確認",
+    "cancel": "キャンセル",
+    "savedDescription": "保存しました。",
+    "acknowledge": "確認"
+  },
+  "formAction": {
+    "save": "保存",
+    "cancel": "キャンセル"
+  },
+  "unsavedChanges": {
+    "description": "画面を移動すると入力した情報はすべて削除されます。\n画面を移動しますか?",
+    "confirm": "確認",
+    "cancel": "キャンセル"
+  },
+  "progress": {
+    "loading": "データを読み込んでいます。しばらくお待ちください。",
+    "saving": "登録しています。しばらくお待ちください。"
+  },
+  "formCancel": {
+    "description": "キャンセルすると入力した情報はすべて削除されます。\n入力をキャンセルしますか？",
+    "confirm": "確認",
+    "keep": "キャンセル"
+  },
+  "formSection": {
+    "errors": "エラー{{count}}件"
+  },
+  "formError": {
+    "rejectedByServer": "サーバーで使用できない値です。",
+    "validation": "入力した値を保存できません。",
+    "connection": "ネットワーク接続を確認してください。",
+    "general": "保存できませんでした。しばらくしてからもう一度お試しください。"
+  }
+}

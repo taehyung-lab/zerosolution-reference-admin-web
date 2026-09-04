@@ -2,7 +2,7 @@ import { defineConfig } from 'orval'
 
 /**
  * 타입과 endpoint 함수만 생성한다. React Query hook, key, mutation policy는 생성하지 않는다.
- * 그것들은 features/{domain}/api 가 소유한다 (설계 §7).
+ * 그것들은 features/{domain}/api 가 소유한다 (`api-contract` 경계).
  *
  * input은 원본 스냅샷이 아니라 검증형 변환 산출물이다. 원본은 증거로 보존한다.
  */

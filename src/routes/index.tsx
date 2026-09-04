@@ -1,17 +1,16 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { useTranslation } from 'react-i18next'
 
 export const Route = createFileRoute('/')({
   component: BootstrapIndex,
 })
 
 function BootstrapIndex() {
+  const { t } = useTranslation('app')
   return (
     <section>
-      <h1 className="text-lg font-semibold">bootstrap ok</h1>
-      <p className="mt-2 text-sm text-neutral-600">
-        라우터 · QueryClient · 환경변수 검증 · transport 연결만 확인하는 화면입니다. 제품 화면이
-        아닙니다.
-      </p>
+      <h1 className="text-lg font-semibold">{t('bootstrap.title')}</h1>
+      <p className="mt-2 text-sm text-neutral-600">{t('bootstrap.description')}</p>
     </section>
   )
 }

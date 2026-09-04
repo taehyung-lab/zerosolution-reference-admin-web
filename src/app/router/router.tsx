@@ -1,16 +1,12 @@
 import type { QueryClient } from '@tanstack/react-query'
-import { createRouter, type RouterHistory } from '@tanstack/react-router'
-import { createQueryClient } from '@/app/providers/AppProviders'
+import { createRouter, RouterProvider, type RouterHistory } from '@tanstack/react-router'
 import { routeTree } from '@/routeTree.gen'
-
-export interface RouterAuthContext {
-  readonly ready: boolean
-}
+import { useLocale } from '@/shared/i18n/locale-context'
+import { DEFAULT_UI_LOCALE, type UiLocale } from '@/shared/i18n/locale'
 
 export interface AppRouterContext {
   readonly queryClient: QueryClient
-  /** 인증 readiness 정책은 미확정이므로 context 자리만 두고 아직 값을 만들지 않는다. */
-  readonly auth: RouterAuthContext | undefined
+  readonly locale: UiLocale
 }
 
 interface CreateAppRouterOptions {
@@ -21,7 +17,7 @@ interface CreateAppRouterOptions {
 export function createAppRouter({ queryClient, history }: CreateAppRouterOptions) {
   return createRouter({
     routeTree,
-    context: { queryClient, auth: undefined } satisfies AppRouterContext,
+    context: { queryClient, locale: DEFAULT_UI_LOCALE } satisfies AppRouterContext,
     history,
     defaultPreload: 'intent',
     defaultPreloadStaleTime: 0,
@@ -29,8 +25,14 @@ export function createAppRouter({ queryClient, history }: CreateAppRouterOptions
   })
 }
 
-export const queryClient = createQueryClient()
-export const router = createAppRouter({ queryClient })
+export function AppRouterProvider({
+  router,
+}: {
+  readonly router: ReturnType<typeof createAppRouter>
+}) {
+  const { locale } = useLocale()
+  return <RouterProvider router={router} context={{ locale }} />
+}
 
 declare module '@tanstack/react-router' {
   interface Register {

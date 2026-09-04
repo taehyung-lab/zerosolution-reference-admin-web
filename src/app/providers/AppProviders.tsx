@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
-import { TimezoneProvider } from './TimezoneProvider'
+import { LocaleProvider } from './LocaleProvider'
+import { AuthProvider } from './AuthProvider'
 
 export function createQueryClient(): QueryClient {
   return new QueryClient({
@@ -25,7 +26,9 @@ export function AppProviders({
 }) {
   return (
     <QueryClientProvider client={queryClient}>
-      <TimezoneProvider>{children}</TimezoneProvider>
+      <AuthProvider>
+        <LocaleProvider>{children}</LocaleProvider>
+      </AuthProvider>
     </QueryClientProvider>
   )
 }

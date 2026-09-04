@@ -22,10 +22,10 @@ describe('응답 봉투 판정', () => {
   })
 
   it.each([
-    [4004, 'unauthorized'],
-    [400, 'validation'],
-    [401, 'unauthorized'],
-  ] as const)('HTTP 200 + resultCode %s를 %s로 분류한다', (resultCode, kind) => {
+    4004,
+    400,
+    401,
+  ] as const)('HTTP 200 + 미확인 resultCode %s를 business로 유지한다', (resultCode) => {
     const log = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
     const error = captureApiError(() =>
       unwrapEnvelope(
@@ -34,12 +34,13 @@ describe('응답 봉투 판정', () => {
       ),
     )
 
-    expect(error).toMatchObject({ kind, code: String(resultCode), status: 200, requestId: 'req-1' })
+    expect(error).toMatchObject({ kind: 'business', code: String(resultCode), status: 200, requestId: 'req-1' })
     expect(error.message).not.toContain('서버 원문')
     expect(log).toHaveBeenCalledWith(
-      'API business failure',
-      expect.objectContaining({ resultCode, resultMessage: '서버 원문' }),
+      'Unmapped API business code',
+      expect.objectContaining({ resultCode, requestId: 'req-1' }),
     )
+    expect(JSON.stringify(log.mock.calls)).not.toContain('서버 원문')
     log.mockRestore()
   })
 
@@ -53,8 +54,9 @@ describe('응답 봉투 판정', () => {
     expect(error.kind).not.toBe('conflict')
     expect(log).toHaveBeenCalledWith(
       'Unmapped API business code',
-      expect.objectContaining({ resultCode: 2100, resultMessage: 'NOT EXIST' }),
+      expect.objectContaining({ resultCode: 2100 }),
     )
+    expect(JSON.stringify(log.mock.calls)).not.toContain('NOT EXIST')
     log.mockRestore()
   })
 

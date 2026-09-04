@@ -1,4 +1,5 @@
 import { existsSync, readdirSync } from 'node:fs'
+import { resolve } from 'node:path'
 import js from '@eslint/js'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
@@ -7,9 +8,12 @@ import importX from 'eslint-plugin-import-x'
 import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript'
 import tanstackQuery from '@tanstack/eslint-plugin-query'
 
+const projectRoot = process.env.ESLINT_PROJECT_ROOT ?? import.meta.dirname
+const resolverProject = process.env.ESLINT_PROJECT_TSCONFIG
+
 /**
  * 레이어 import 경계를 실제 import graph 위에서 검사한다.
- * 키워드나 파일 이름 검사가 아니다 (설계 §13).
+ * 키워드나 파일 이름 검사가 아니다 (`AGENTS.md` §3 아키텍처·상태 소유권).
  *
  *   app / routes  ->  features  ->  shared, api  ->  generated
  */
@@ -42,6 +46,14 @@ function crossFeatureZones() {
 }
 
 const RESTRICTED = {
+  paths: [
+    {
+      name: 'react',
+      importNames: ['forwardRef'],
+      message:
+        'React 19에서 ref는 일반 prop이다. @types/react 가 forwardRef 에 @deprecated 를 달면 이 규칙을 제거한다.',
+    },
+  ],
   patterns: [
     {
       group: ['axios', 'axios/*'],
@@ -58,7 +70,102 @@ const RESTRICTED = {
   ],
 }
 
+/**
+ * 규범 문서가 exact 이름으로 금지한 추상화. 이름 회귀만 잡는 좁은 tripwire이며
+ * "사전 카탈로그 금지" 전반을 집행한다고 주장하지 않는다. 의미 판정은 여전히 리뷰가 소유한다.
+ * 이름을 추가할 때는 skill/ADR이 그 exact 문자열로 금지한 근거가 있어야 한다.
+ */
+const PROHIBITED_ABSTRACTION_BINDINGS = new Map([
+  ['ResourcePage', 'feature-contract SKILL.md, list-workflow.md, screen-composition.md'],
+  ['UniversalList', 'ADR 0009'],
+  ['useCrud', 'feature-contract SKILL.md'],
+  ['useListPageController', 'ADR 0009'],
+  ['useListTable', 'list-workflow.md, react-performance.md'],
+  ['usePagedTable', 'list-workflow.md'],
+  ['useResourceQuery', 'ADR 0011'],
+])
+
+/** 금지된 추상화 이름을 선언하거나 import 하면 실패한다. 문자열·주석 속 언급은 대상이 아니다. */
+const noProhibitedAbstraction = {
+  meta: {
+    type: 'problem',
+    messages: { prohibited: "'{{name}}' is a prohibited abstraction ({{source}})." },
+  },
+  create(context) {
+    const report = (node, name) => {
+      const source = PROHIBITED_ABSTRACTION_BINDINGS.get(name)
+      if (source !== undefined) context.report({ node, messageId: 'prohibited', data: { name, source } })
+    }
+    const reportPattern = (pattern) => {
+      if (pattern?.type === 'Identifier') report(pattern, pattern.name)
+    }
+    return {
+      FunctionDeclaration: (node) => reportPattern(node.id),
+      ClassDeclaration: (node) => reportPattern(node.id),
+      TSTypeAliasDeclaration: (node) => reportPattern(node.id),
+      TSInterfaceDeclaration: (node) => reportPattern(node.id),
+      VariableDeclarator: (node) => reportPattern(node.id),
+      ImportSpecifier: (node) => report(node, node.imported.name ?? node.local.name),
+      ImportDefaultSpecifier: (node) => reportPattern(node.local),
+    }
+  },
+}
+
+const USER_VISIBLE_ATTRIBUTES = new Set(['aria-label', 'placeholder', 'title'])
+const hasUserFacingText = (value) => /[\p{L}\p{N}]/u.test(value.trim())
+
+/** User-visible JSX text must come from the caller/i18n. */
+const noUserFacingLiteral = {
+  meta: { type: 'problem', messages: { literal: 'User-facing JSX text must be supplied by i18n/caller.' } },
+  create(context) {
+    return {
+      JSXText(node) {
+        if (hasUserFacingText(node.value)) context.report({ node, messageId: 'literal' })
+      },
+      JSXAttribute(node) {
+        if (
+          USER_VISIBLE_ATTRIBUTES.has(node.name.name) &&
+          node.value?.type === 'Literal' &&
+          typeof node.value.value === 'string' &&
+          hasUserFacingText(node.value.value)
+        ) context.report({ node, messageId: 'literal' })
+      },
+      JSXExpressionContainer(node) {
+        const expression = node.expression
+        if (
+          expression.type === 'Literal' &&
+          typeof expression.value === 'string' &&
+          hasUserFacingText(expression.value)
+        ) context.report({ node, messageId: 'literal' })
+        if (
+          expression.type === 'TemplateLiteral' &&
+          expression.expressions.length === 0 &&
+          hasUserFacingText(expression.quasis[0]?.value.cooked ?? '')
+        ) context.report({ node, messageId: 'literal' })
+      },
+    }
+  },
+}
+
+// feature api 폴더(src/features/<domain>/api)에서 금지하는 TanStack Query 실행 훅. queryOptions·mutationOptions·키 타입은 허용한다.
+const FEATURE_API_FORBIDDEN_HOOKS = [
+  'useQuery',
+  'useQueries',
+  'useSuspenseQuery',
+  'useSuspenseQueries',
+  'useInfiniteQuery',
+  'useSuspenseInfiniteQuery',
+  'useMutation',
+  'useMutationState',
+  'useQueryClient',
+  'useIsFetching',
+  'useIsMutating',
+  'usePrefetchQuery',
+]
+
+// 완화 대상은 레이어별 모듈 허용 범위뿐이다. paths 규칙은 어느 레이어에서도 유지한다.
 const relaxed = (drop) => ({
+  paths: RESTRICTED.paths,
   patterns: RESTRICTED.patterns.filter((p) => !p.group.some((g) => drop.some((d) => g.includes(d)))),
 })
 
@@ -70,9 +177,41 @@ export default tseslint.config(
       '.openapi-prepared/**',
       'src/api/generated/**', // 생성물은 편집·검사 대상이 아니다
       'src/routeTree.gen.ts',
+      'tests/gates/fixtures/**', // 부정 대조군은 gates:negative가 --no-ignore로 개별 실행한다.
       'openapi/**',
       'public/mockServiceWorker.js', // MSW가 생성한다
     ],
+  },
+
+  // local 플러그인은 한 번만 정의한다. 각 룰의 적용 범위는 아래 블록들이 정한다.
+  {
+    plugins: {
+      local: {
+        rules: {
+          'no-user-facing-literal': noUserFacingLiteral,
+          'no-prohibited-abstraction': noProhibitedAbstraction,
+        },
+      },
+    },
+  },
+  {
+    files: [
+      'src/app/**/*.tsx',
+      'src/features/**/*.tsx',
+      'src/routes/**/*.tsx',
+      'src/shared/ui/{form,patterns,primitives}/**/*.tsx',
+    ],
+    ignores: ['**/*.test.tsx'],
+    rules: {
+      'local/no-user-facing-literal': 'error',
+    },
+  },
+
+  // 금지된 추상화 이름은 UI 파일에 한정되지 않는다. hook·model 은 .ts 이므로 소스 전체를 본다.
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['**/*.test.{ts,tsx}'],
+    rules: { 'local/no-prohibited-abstraction': 'error' },
   },
 
   // --- 설정/스크립트: 타입 정보 없는 기본 검사 ---
@@ -82,9 +221,21 @@ export default tseslint.config(
     languageOptions: { globals: globals.node, ecmaVersion: 2023, sourceType: 'module' },
   },
   {
-    files: ['vite.config.ts', 'vitest.config.ts', 'orval.config.ts'],
+    files: ['vite.config.ts', 'vitest.config.ts', 'orval.config.ts', 'playwright.config.ts'],
     extends: [js.configs.recommended, tseslint.configs.recommended],
     languageOptions: { globals: globals.node },
+  },
+
+  {
+    files: ['tests/e2e/**/*.ts'],
+    extends: [js.configs.recommended, tseslint.configs.recommendedTypeChecked],
+    languageOptions: {
+      globals: { ...globals.browser, ...globals.node },
+      parserOptions: { projectService: true, tsconfigRootDir: projectRoot },
+    },
+    rules: {
+      '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
+    },
   },
 
   // --- 애플리케이션 소스: 타입 정보 기반 검사 ---
@@ -100,12 +251,20 @@ export default tseslint.config(
     ],
     languageOptions: {
       globals: globals.browser,
-      parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
+      parserOptions: { projectService: true, tsconfigRootDir: projectRoot },
     },
     settings: {
-      'import-x/resolver-next': [createTypeScriptImportResolver({ alwaysTryTypes: true })],
+      'import-x/resolver-next': [
+        createTypeScriptImportResolver({
+          alwaysTryTypes: true,
+          ...(resolverProject === undefined ? {} : { project: [resolve(resolverProject)] }),
+        }),
+      ],
     },
     rules: {
+      // recommendedTypeChecked 에는 없고 strictTypeChecked 에만 있다. 라이브러리가 표시한
+      // deprecation 은 타입·테스트가 잡지 못하므로 lint 가 소유한다.
+      '@typescript-eslint/no-deprecated': 'error',
       'no-restricted-imports': ['error', RESTRICTED],
       'import-x/no-restricted-paths': ['error', { zones: [...LAYER_ZONES, ...crossFeatureZones()] }],
       'import-x/no-cycle': 'error',
@@ -123,13 +282,44 @@ export default tseslint.config(
     rules: { 'no-restricted-imports': ['error', relaxed(['api/generated'])] },
   },
   {
+    // features/*/api 는 계약(queryOptions·keys·request/response)만 선언한다. Query/Mutation 훅 실행과
+    // facts projection은 화면 옆 workflow 훅이 소유한다(ADR 0011). generated 완화는 그대로 유지한다.
+    files: ['src/features/*/api/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            ...RESTRICTED.paths,
+            {
+              name: '@tanstack/react-query',
+              importNames: FEATURE_API_FORBIDDEN_HOOKS,
+              message: 'features/*/api 는 queryOptions·keys·contract 만 선언한다. 훅은 화면 옆 workflow 훅에 둔다(ADR 0011).',
+            },
+          ],
+          patterns: relaxed(['api/generated']).patterns,
+        },
+      ],
+    },
+  },
+  {
     // src/api/http 는 추가로 Axios를 직접 소유한다. 위 항목보다 뒤에 와야 한다.
     files: ['src/api/http/**/*.ts'],
     rules: { 'no-restricted-imports': ['error', relaxed(['axios', 'api/generated'])] },
   },
   {
+    files: ['src/shared/**/*.{ts,tsx}'],
+    rules: { 'no-restricted-imports': ['error', { paths: RESTRICTED.paths, patterns: [...RESTRICTED.patterns, { group: ['@tanstack/react-router'], message: 'shared는 Router를 모른다. UnsavedChangesGuard만 좁은 dirty-navigation 예외다.' }, { group: ['@tanstack/react-query'], message: 'shared는 Query를 모른다. feature가 Query를 plain facts로 바꿔 넘긴다(ADR 0009).' }] }] },
+  },
+  {
     files: ['src/shared/ui/primitives/**/*.tsx'],
-    rules: { 'no-restricted-imports': ['error', relaxed(['radix'])] },
+    rules: { 'no-restricted-imports': ['error', { paths: RESTRICTED.paths, patterns: [...relaxed(['radix']).patterns, { group: ['@tanstack/react-router'], message: 'shared는 Router를 모른다. UnsavedChangesGuard만 좁은 dirty-navigation 예외다.' }, { group: ['@tanstack/react-query'], message: 'shared는 Query를 모른다. feature가 Query를 plain facts로 바꿔 넘긴다(ADR 0009).' }] }] },
+  },
+  {
+    // 런타임 예외는 UnsavedChangesGuard 하나. shared 테스트는 그 guard 계약을 실제 Router(memory history)로
+    // 증명해야 하므로 Router import를 허용한다 — 테스트는 shared 런타임에 Router 지식을 새지 않는다.
+    files: ['src/shared/ui/form/UnsavedChangesGuard.tsx', 'src/shared/**/*.test.{ts,tsx}'],
+    rules: { 'no-restricted-imports': ['error', RESTRICTED] },
   },
 
   // --- 테스트 ---

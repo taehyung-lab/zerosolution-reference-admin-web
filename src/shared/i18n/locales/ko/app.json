@@ -1,0 +1,41 @@
+{
+  "shell": {
+    "globalSearch": {
+      "label": "통합검색",
+      "placeholder": "통합검색",
+      "submit": "검색"
+    },
+    "profile": "내 정보",
+    "profileMenu": {
+      "myInfo": "내 정보",
+      "signOut": "로그아웃"
+    },
+    "fieldTicketing": "현장발권",
+    "notifications": "알림",
+    "collapseNavigation": "메뉴 접기",
+    "expandNavigation": "메뉴 펼치기",
+    "copyright": "Copyright 2026 © BOOSTER LAB.",
+    "locale": {
+      "label": "언어",
+      "ko": "한국어",
+      "en": "English",
+      "ja": "日本語"
+    },
+    "navigation": {
+      "label": "주 메뉴",
+      "dashboard": "대시보드",
+      "members": "회원",
+      "performances": "공연",
+      "ticketing": "발권",
+      "exhibitions": "전시",
+      "promotions": "프로모션",
+      "community": "커뮤니티",
+      "statistics": "통계",
+      "settings": "설정"
+    }
+  },
+  "bootstrap": {
+    "title": "부트스트랩 확인",
+    "description": "라우터, QueryClient, 환경변수 검증, transport 연결만 확인하는 화면이며 제품 화면이 아닙니다."
+  }
+}

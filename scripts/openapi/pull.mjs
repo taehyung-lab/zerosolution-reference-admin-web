@@ -4,7 +4,7 @@
  * `pnpm verify`에 포함되지 않는다. 신규 clone과 CI가 서버 가용성에 묶이면 안 된다.
  */
 import { writeFileSync } from 'node:fs'
-import { readSnapshot, SNAPSHOT, eachOperation } from './_shared.mjs'
+import { readSnapshot, SNAPSHOT, SNAPSHOT_META, summarizeSpec } from './_shared.mjs'
 
 // 기본값을 두지 않는다. 신규 URL 확정 후 실수로 리허설 스펙을 다시 덮어쓰는 사고를 막는다.
 const url = process.env.ADMIN_OPENAPI_URL
@@ -29,9 +29,8 @@ const next = await res.json()
 let prev = null
 try { prev = readSnapshot() } catch { /* 최초 pull */ }
 
-const summarize = (s) => (s ? { paths: Object.keys(s.paths ?? {}).length, operations: [...eachOperation(s)].length, schemas: Object.keys(s.components?.schemas ?? {}).length } : null)
-console.log('  이전:', JSON.stringify(summarize(prev)))
-console.log('  이후:', JSON.stringify(summarize(next)))
+console.log('  이전:', JSON.stringify(prev === null ? null : summarizeSpec(prev)))
+console.log('  이후:', JSON.stringify(summarizeSpec(next)))
 
 if (prev) {
   const keys = (s) => new Set(Object.keys(s.paths ?? {}))
@@ -44,4 +43,18 @@ if (prev) {
 }
 
 writeFileSync(SNAPSHOT, JSON.stringify(next, null, 2), 'utf8')
-console.log(`\n  ✓ ${SNAPSHOT} 갱신. api:validate로 결함 규모를 다시 확인하라.`)
+writeFileSync(
+  SNAPSHOT_META,
+  `${JSON.stringify(
+    {
+      source: url,
+      pulledAt: new Date().toISOString(),
+      infoVersion: next.info?.version ?? null,
+      counts: summarizeSpec(next),
+    },
+    null,
+    2,
+  )}\n`,
+  'utf8',
+)
+console.log(`\n  ✓ snapshot과 meta 갱신. api:validate로 결함 규모를 다시 확인하라.`)

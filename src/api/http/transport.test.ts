@@ -1,15 +1,34 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
-import { AxiosError, type AxiosAdapter } from 'axios'
+import { AxiosError, type AxiosAdapter, type AxiosRequestConfig } from 'axios'
 import { http, HttpResponse } from 'msw'
-import { ping, signIn } from '@/api/generated/endpoints'
 import { server } from '@/test/msw/server'
 import { ApiError, type ApiErrorKind } from '../error'
 import { client } from './client'
-import { registerTokenGetter } from './credential'
-import { beginSessionEpoch, subscribeIncident, type Incident } from './incident'
+import {
+  clearAccessToken,
+  registerReissueTokenReader,
+  setAccessToken,
+} from './credential'
+import { subscribeIncident, type Incident } from './incident'
 import { registerLocaleGetter } from './locale'
-import { registerSessionExpiryObserver } from './session'
 import { customInstance } from './mutator'
+
+type TestEnvelope<T> = { header?: unknown; data?: T }
+
+function signIn(data: { id: string; password: string }) {
+  return customInstance<TestEnvelope<{ accessToken: string }>>({
+    url: '/api/v1/auth/sign-in',
+    method: 'POST',
+    data,
+  })
+}
+
+function ping(options?: AxiosRequestConfig) {
+  return customInstance<TestEnvelope<unknown>>(
+    { url: '/api/v1/auth/ping', method: 'POST' },
+    options,
+  )
+}
 
 const ORIGIN = 'http://localhost:3000'
 const SIGN_IN = `${ORIGIN}/api/v1/auth/sign-in`
@@ -41,16 +60,16 @@ async function expectApiError(request: Promise<unknown>, kind: ApiErrorKind) {
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 afterEach(() => {
   server.resetHandlers()
-  registerTokenGetter(() => null)
+  clearAccessToken()
+  registerReissueTokenReader(() => undefined)
   registerLocaleGetter(() => 'ko')
-  registerSessionExpiryObserver(() => undefined)
-  beginSessionEpoch()
   vi.restoreAllMocks()
+  vi.unstubAllGlobals()
 })
 afterAll(() => server.close())
 
-describe('transport 통합 (생성물 -> mutator -> 봉투 -> 헤더)', () => {
-  it('생성된 endpoint를 정확한 경로로 호출하고 성공 봉투를 벗긴다', async () => {
+describe('transport 통합 (mutator -> 봉투 -> 헤더)', () => {
+  it('mutator가 정확한 경로를 호출하고 성공 봉투를 벗긴다', async () => {
     let requestedUrl = ''
     server.use(
       http.post(SIGN_IN, ({ request }) => {
@@ -94,10 +113,10 @@ describe('transport 통합 (생성물 -> mutator -> 봉투 -> 헤더)', () => {
   })
 
   it.each([
-    [4004, 'unauthorized'],
-    [400, 'validation'],
-    [401, 'unauthorized'],
-  ] as const)('HTTP 200 + 실패 resultCode %s를 %s로 분류한다', async (resultCode, kind) => {
+    4004,
+    400,
+    401,
+  ] as const)('HTTP 200 + 미확인 resultCode %s를 business로 유지한다', async (resultCode) => {
     vi.spyOn(console, 'warn').mockImplementation(() => undefined)
     server.use(
       http.post(PING, () =>
@@ -108,7 +127,7 @@ describe('transport 통합 (생성물 -> mutator -> 봉투 -> 헤더)', () => {
       ),
     )
 
-    const error = await expectApiError(ping(), kind)
+    const error = await expectApiError(ping(), 'business')
 
     expect(error).toMatchObject({ status: 200, code: String(resultCode), requestId: 'req-business' })
     expect(error.message).not.toContain('서버 원문')
@@ -135,8 +154,21 @@ describe('transport 통합 (생성물 -> mutator -> 봉투 -> 헤더)', () => {
     )
   })
 
+  it('does not write raw resultMessage to developer output', async () => {
+    const log = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    server.use(
+      http.post(PING, () => HttpResponse.json({
+        header: { resultCode: 2100, resultMessage: 'private-server-message' },
+        data: null,
+      })),
+    )
+
+    await expectApiError(ping(), 'business')
+
+    expect(JSON.stringify(log.mock.calls)).not.toContain('private-server-message')
+  })
+
   it.each([
-    [401, 'unauthorized'],
     [403, 'forbidden'],
     [404, 'not-found'],
     [409, 'conflict'],
@@ -206,7 +238,7 @@ describe('transport 통합 (생성물 -> mutator -> 봉투 -> 헤더)', () => {
   })
 
   it('인증 요청에만 Authorization을 붙이고 sign-in/reissue/2fa에는 생략한다', async () => {
-    registerTokenGetter(() => 'tok-1')
+    setAccessToken('tok-1')
     const seen = new Map<string, string | null>()
     const handler = ({ request }: { request: Request }) => {
       seen.set(new URL(request.url).pathname, request.headers.get('authorization'))
@@ -234,6 +266,161 @@ describe('transport 통합 (생성물 -> mutator -> 봉투 -> 헤더)', () => {
     )
   })
 
+  it('sends refresh cookies on every request', () => {
+    expect(client.defaults.withCredentials).toBe(true)
+  })
+
+  it('reissues once after a 401, stores the rotated token, and retries the request once', async () => {
+    setAccessToken('old-token')
+    registerReissueTokenReader((payload) =>
+      typeof payload === 'object' && payload !== null && 'accessToken' in payload
+        ? String(payload.accessToken)
+        : undefined,
+    )
+    const seenTokens: Array<string | null> = []
+    let protectedCalls = 0
+    let reissueCalls = 0
+    server.use(
+      http.post(PING, ({ request }) => {
+        protectedCalls += 1
+        seenTokens.push(request.headers.get('authorization'))
+        return protectedCalls === 1
+          ? HttpResponse.json({}, { status: 401 })
+          : successful()
+      }),
+      http.post(`${ORIGIN}/auth/reissue`, () => {
+        reissueCalls += 1
+        return HttpResponse.json({ accessToken: 'new-token' })
+      }),
+    )
+
+    await ping()
+
+    expect(reissueCalls).toBe(1)
+    expect(seenTokens).toEqual(['Bearer old-token', 'Bearer new-token'])
+    expect(localStorage.getItem('accessToken')).toBe('new-token')
+  })
+
+  it('deduplicates concurrent 401 reissue within the document', async () => {
+    setAccessToken('old-token')
+    registerReissueTokenReader(() => 'new-token')
+    let reissueCalls = 0
+    server.use(
+      http.post(PING, ({ request }) =>
+        request.headers.get('authorization') === 'Bearer old-token'
+          ? HttpResponse.json({}, { status: 401 })
+          : successful(),
+      ),
+      http.post(`${ORIGIN}/auth/reissue`, async () => {
+        reissueCalls += 1
+        await new Promise((resolve) => setTimeout(resolve, 20))
+        return HttpResponse.json({})
+      }),
+    )
+
+    await Promise.all([ping(), ping(), ping()])
+
+    expect(reissueCalls).toBe(1)
+  })
+
+  it('skips reissue after the cross-tab lock when another tab already rotated the token', async () => {
+    setAccessToken('old-token')
+    registerReissueTokenReader(() => 'unexpected-token')
+    let reissueCalls = 0
+    const request = vi.fn(async (_name: string, callback: () => Promise<string>) => {
+      setAccessToken('other-tab-token')
+      return callback()
+    })
+    vi.stubGlobal('navigator', { ...navigator, locks: { request } })
+    server.use(
+      http.post(PING, ({ request: apiRequest }) =>
+        apiRequest.headers.get('authorization') === 'Bearer old-token'
+          ? HttpResponse.json({}, { status: 401 })
+          : successful(),
+      ),
+      http.post(`${ORIGIN}/auth/reissue`, () => {
+        reissueCalls += 1
+        return HttpResponse.json({})
+      }),
+    )
+
+    await ping()
+
+    expect(request).toHaveBeenCalledOnce()
+    expect(reissueCalls).toBe(0)
+  })
+
+  it('replays a retried 401 once with an already-rotated current token without a second reissue', async () => {
+    setAccessToken('old-token')
+    registerReissueTokenReader(() => 'refresh-token')
+    let reissueCalls = 0
+    const seen: Array<string | null> = []
+    server.use(
+      http.post(PING, ({ request }) => {
+        const token = request.headers.get('authorization')
+        seen.push(token)
+        if (token === 'Bearer old-token') return HttpResponse.json({}, { status: 401 })
+        if (token === 'Bearer refresh-token') {
+          setAccessToken('other-tab-token')
+          return HttpResponse.json({}, { status: 401 })
+        }
+        return successful()
+      }),
+      http.post(`${ORIGIN}/auth/reissue`, () => {
+        reissueCalls += 1
+        return HttpResponse.json({})
+      }),
+    )
+
+    await ping()
+
+    expect(reissueCalls).toBe(1)
+    expect(seen).toEqual(['Bearer old-token', 'Bearer refresh-token', 'Bearer other-tab-token'])
+  })
+
+  it('does not retry the reissue request and publishes a refresh incident when it fails', async () => {
+    setAccessToken('old-token')
+    const incidents: Incident[] = []
+    const unsubscribe = subscribeIncident((incident) => incidents.push(incident))
+    let reissueCalls = 0
+    server.use(
+      http.post(PING, () => HttpResponse.json({}, { status: 401 })),
+      http.post(`${ORIGIN}/auth/reissue`, () => {
+        reissueCalls += 1
+        return HttpResponse.json({}, { status: 401 })
+      }),
+    )
+
+    await expectApiError(ping(), 'unauthorized')
+
+    expect(reissueCalls).toBe(1)
+    expect(incidents).toEqual([
+      expect.objectContaining({ type: 'unauthorized', source: 'refresh' }),
+    ])
+    unsubscribe()
+  })
+
+  it('normalizes a non-401 reissue failure to terminal unauthorized after publishing refresh source', async () => {
+    setAccessToken('old-token')
+    const incidents: Incident[] = []
+    const unsubscribe = subscribeIncident((incident) => incidents.push(incident))
+    server.use(
+      http.post(PING, () => HttpResponse.json({}, { status: 401 })),
+      http.post(`${ORIGIN}/auth/reissue`, () => HttpResponse.json({}, {
+        status: 503,
+        headers: { 'x-request-id': 'req-refresh-failure' },
+      })),
+    )
+
+    const error = await expectApiError(ping(), 'unauthorized')
+
+    expect(error).toMatchObject({ status: 503, requestId: 'req-refresh-failure' })
+    expect(incidents).toEqual([
+      expect.objectContaining({ type: 'unauthorized', source: 'refresh', status: 503 }),
+    ])
+    unsubscribe()
+  })
+
   it.each([
     ['ko', 'ko'],
     ['ja', 'ja'],
@@ -256,51 +443,18 @@ describe('transport 통합 (생성물 -> mutator -> 봉투 -> 헤더)', () => {
     expect(rehearsalLocale).toBe(xLocale)
   })
 
-  it('유효한 X-Session-Expires를 observer에 발행한다', async () => {
-    const observer = vi.fn<(isoString: string) => void>()
-    registerSessionExpiryObserver(observer)
-    server.use(
-      http.post(PING, () => successful(null, { 'X-Session-Expires': '2026-08-27T15:00:00Z' })),
-    )
-
-    await ping()
-
-    expect(observer).toHaveBeenCalledWith('2026-08-27T15:00:00Z')
-  })
-
-  it('파싱할 수 없는 X-Session-Expires를 발행하지 않고 개발 로그에 남긴다', async () => {
-    const observer = vi.fn<(isoString: string) => void>()
-    const log = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
-    registerSessionExpiryObserver(observer)
-    server.use(http.post(PING, () => successful(null, { 'X-Session-Expires': 'tomorrow' })))
-
-    await ping()
-
-    expect(observer).not.toHaveBeenCalled()
-    expect(log).toHaveBeenCalledWith('Invalid X-Session-Expires header', 'tomorrow')
-  })
-
-  it('session-terminated incident를 epoch당 한 번만 발행하고 새 epoch에서는 다시 발행한다', async () => {
-    vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+  it('a replayed 401 terminates with an api-source incident', async () => {
+    setAccessToken('old-token')
+    registerReissueTokenReader(() => 'new-token')
     const incidents: Incident[] = []
     const unsubscribe = subscribeIncident((incident) => incidents.push(incident))
     server.use(
-      http.post(PING, () =>
-        HttpResponse.json(
-          { header: { resultCode: 401, resultMessage: 'UNAUTHORIZED' }, data: null },
-          { status: 401 },
-        ),
-      ),
+      http.post(PING, () => HttpResponse.json({}, { status: 401 })),
+      http.post(`${ORIGIN}/auth/reissue`, () => HttpResponse.json({})),
     )
 
     await expectApiError(ping(), 'unauthorized')
-    await expectApiError(ping(), 'unauthorized')
-    expect(incidents).toHaveLength(1)
-    expect(incidents[0]).toMatchObject({ type: 'session-terminated', status: 401, code: '401' })
-
-    beginSessionEpoch()
-    await expectApiError(ping(), 'unauthorized')
-    expect(incidents).toHaveLength(2)
+    expect(incidents).toEqual([expect.objectContaining({ type: 'unauthorized', source: 'api', status: 401 })])
     unsubscribe()
   })
 
@@ -319,7 +473,7 @@ describe('transport 통합 (생성물 -> mutator -> 봉투 -> 헤더)', () => {
 
     await expectApiError(ping(), 'forbidden')
 
-    expect(incidents).toEqual([{ type: 'forbidden', status: 403, code: '403' }])
+    expect(incidents).toEqual([expect.objectContaining({ type: 'forbidden', status: 403, code: '403' })])
     unsubscribe()
   })
 })

@@ -1,0 +1,10 @@
+{
+  "source": "https://dev.api.zeroplussolution.com/v3/api-docs/1.%20Admin%20API",
+  "pulledAt": "2026-08-27T08:58:20.741Z",
+  "infoVersion": "1.0.0",
+  "counts": {
+    "paths": 173,
+    "operations": 214,
+    "schemas": 407
+  }
+}

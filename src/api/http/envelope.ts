@@ -1,7 +1,9 @@
-import { ApiError, type ApiErrorKind, type ApiFieldError } from '../error'
-import { publishIncident } from './incident'
+import { ApiError, type ApiFieldError } from '../error'
 
-/** 격리된 리허설 계약의 응답 봉투. 신규 제품 계약으로 승격하지 않는다. */
+/**
+ * 격리된 리허설 계약의 응답 봉투. 신규 제품 계약으로 승격하지 않는다.
+ * TRANSPLANT_PENDING_ENVELOPE: 신규 OpenAPI가 확정되면 봉투 shape·성공 코드·field error 형식을 그 계약으로 교체한다.
+ */
 export interface Envelope<T> {
   header: { resultCode: number; resultMessage?: string }
   data?: T
@@ -33,31 +35,19 @@ export function normalizeFieldErrors(data: unknown): readonly ApiFieldError[] {
   return result
 }
 
-/** HTTP 실패 본문에서 UI-safe canonical 값과 개발 로그용 원문을 분리해 읽는다. */
+/** HTTP 실패 본문에서 UI-safe canonical 값만 읽는다. */
 export function readFailureEnvelope(payload: unknown): {
   code: string | undefined
   fieldErrors: readonly ApiFieldError[]
-  resultMessage: string | undefined
 } {
   if (!isEnvelope(payload)) {
-    return { code: undefined, fieldErrors: [], resultMessage: undefined }
+    return { code: undefined, fieldErrors: [] }
   }
   const resultCode = payload.header.resultCode
-  const resultMessage = payload.header.resultMessage
   return {
     code: String(resultCode),
     fieldErrors: normalizeFieldErrors(payload.data),
-    resultMessage: typeof resultMessage === 'string' ? resultMessage : undefined,
   }
-}
-
-function classifyBusinessFailure(resultCode: number): ApiErrorKind {
-  if (resultCode === 4004 || resultCode === 401) return 'unauthorized'
-  if (resultCode === 400) return 'validation'
-
-  // 미매핑 코드는 회복 행동을 추측하지 않는다. 실서버 관측 또는 백엔드 확인 전에는
-  // 업무 실패라는 사실만 보존하고, dev 경고로 매핑 누락을 드러낸다(ADR 0001).
-  return 'business'
 }
 
 export function unwrapEnvelope<T>(payload: Envelope<T>, requestId?: string): T
@@ -74,14 +64,9 @@ export function unwrapEnvelope(payload: unknown, requestId?: string): unknown {
 
   const resultCode = payload.header.resultCode
   if (resultCode !== SUCCESS_RESULT_CODE) {
-    const kind = classifyBusinessFailure(resultCode)
-    const resultMessage = payload.header.resultMessage
+    const kind = 'business' as const
     if (import.meta.env.DEV) {
-      const label = kind === 'business' ? 'Unmapped API business code' : 'API business failure'
-      console.warn(label, { resultCode, resultMessage, requestId })
-    }
-    if (kind === 'unauthorized') {
-      publishIncident({ type: 'session-terminated', status: 200, code: String(resultCode), requestId })
+      console.warn('Unmapped API business code', { resultCode, requestId })
     }
     throw new ApiError({
       kind,
