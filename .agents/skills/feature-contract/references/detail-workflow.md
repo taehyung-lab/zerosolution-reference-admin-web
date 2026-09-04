@@ -19,7 +19,7 @@ A detail or edit-load screen composes `DetailStateBoundary` for `ready | error |
 - A fresh `not-found` wins over cached data; any other failure keeps already-loaded data `ready`.
 - Pending and delegated render as `ready` without content because app-wide progress and the incident boundary own them.
 - Settled with neither payload nor `ApiError` is an abnormal recoverable `error`; do not invent not-found meaning.
-- This is not the list workflow's four-state result boundary; list hooks keep their own facts.
+- This is not the list workflow's five-state `notSearched | loading | error | empty | ready` result boundary; list hooks keep their own facts.
 
 ## Composition index
 

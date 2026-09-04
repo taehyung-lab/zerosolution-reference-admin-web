@@ -32,7 +32,7 @@ export const SEED_BUNDLES = [
       'src/shared/ui/patterns/ListResult.test-d.ts',
     ],
     ownership: {
-      shared: 'Receives plain list facts, resolves the four-state result, and owns shared error, retry, live region, and trace presentation.',
+      shared: 'Receives plain list facts, resolves the five-state result, and owns shared error, retry, live region, and trace presentation.',
       feature: 'Owns Query interpretation, plain facts, two domain messages, structural trace mapping, rows, and footer policy.',
     },
   },
