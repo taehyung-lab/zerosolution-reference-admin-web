@@ -102,7 +102,7 @@ API 호출은 `features/*/api`(queryOptions·mutationOptions·contract 선언, �
 
 ## 4. 완료 증거
 
-Bootstrap 작업의 공개 검증 진입점은 `pnpm verify` 하나이며 실제로 통과시킨다. 단계와 fail-fast 순서는 `package.json`이 소유하고, 원격 OpenAPI drift·실제 서버 로그인처럼 네트워크가 필요한 검사는 명시적인 별도 job으로 둔다.
+Bootstrap 작업의 공개 로컬 검증 진입점은 `pnpm verify` 하나이며 실제로 통과시킨다. 단계와 fail-fast 순서는 `package.json`이 소유하고, CI fan-out은 그 단계 집합과 기계적으로 일치해야 한다. 원격 OpenAPI drift·실제 서버 로그인처럼 네트워크가 필요한 검사는 명시적인 별도 job으로 둔다.
 
 `verify` 전체 통과는 **bootstrap 완료 계약**이다. 새 단계는 그 단계를 처음 필요로 하는 작업이 만들어 넣는다. **일부 단계가 빠진 상태의 green `pnpm verify`는 checkpoint이지 bootstrap 완료가 아니며, 완료로 보고해서는 안 된다.** `package.json`의 `verify`에 실제로 존재하는 단계만 연결하고, 빠진 단계를 완료 보고에 명시한다.
 

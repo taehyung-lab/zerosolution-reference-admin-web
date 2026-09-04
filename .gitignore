@@ -17,5 +17,6 @@ src/api/generated/
 # 세션 작업 문서·에이전트 런타임 캐시. 저장소에 남기는 문서 기준은 AGENTS.md "실행·협업 모델"이 소유한다.
 .ai-work/
 .serena/
+.worktrees/
 
 # docs/ 를 ignore 하지 마라. docs/decisions 의 승인된 ADR 은 커밋 대상이다.

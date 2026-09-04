@@ -6,7 +6,11 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from
 import {
   agentsBudgetFailure,
   AGENTS_LINE_BUDGET,
+  CI_VERIFY_SCRIPTS,
   claudeAgentsImportFailure,
+  ciVerifyStageFailures,
+  ciWorkflowConcurrencyFailures,
+  ciWorkflowScriptFailures,
   copilotAgentsPointerFailure,
   documentBudgetFailures,
   ledgerIndexFailures,
@@ -75,6 +79,175 @@ describe('verify chain projection', () => {
 
   it('detects a missing projection row', () => {
     expect(parseReadmeVerifyProjection('| `pnpm build` | 빌드 |')).toBeNull()
+  })
+})
+
+describe('CI verify stage coverage', () => {
+  const completeScripts = {
+    verify: 'pnpm api:check && pnpm contracts:check && pnpm test:unit && pnpm test:e2e:smoke',
+    'ci:static': 'pnpm api:check && pnpm contracts:check',
+    'ci:unit': 'pnpm test:unit',
+    'ci:e2e': 'pnpm test:e2e:smoke',
+  }
+
+  it('accepts an exact one-owner partition of the verify stages', () => {
+    expect(CI_VERIFY_SCRIPTS).toEqual(['ci:static', 'ci:unit', 'ci:e2e'])
+    expect(ciVerifyStageFailures(completeScripts)).toEqual([])
+  })
+
+  it('reports a stage missing from every CI script', () => {
+    const scripts = {
+      ...completeScripts,
+      'ci:e2e': '',
+    }
+
+    expect(ciVerifyStageFailures(scripts)).toEqual([
+      expect.stringContaining('CI script 비어 있음: ci:e2e'),
+      expect.stringContaining('verify에만 존재: test:e2e:smoke'),
+    ])
+  })
+
+  it('rejects a missing required CI script even when another script owns its stages', () => {
+    const scripts = {
+      ...completeScripts,
+      'ci:static': 'pnpm api:check && pnpm contracts:check && pnpm test:unit',
+    }
+    delete scripts['ci:unit']
+
+    expect(ciVerifyStageFailures(scripts)).toEqual([
+      'CI script 누락: ci:unit',
+    ])
+  })
+
+  it('rejects an empty required CI script even when another script owns its stages', () => {
+    const scripts = {
+      ...completeScripts,
+      'ci:static': 'pnpm api:check && pnpm contracts:check && pnpm test:unit',
+      'ci:unit': '   ',
+    }
+
+    expect(ciVerifyStageFailures(scripts)).toEqual([
+      'CI script 비어 있음: ci:unit',
+    ])
+  })
+
+  it('reports a stage that exists only in CI', () => {
+    const scripts = {
+      verify: 'pnpm api:check && pnpm contracts:check && pnpm test:unit',
+      'ci:static': 'pnpm api:check && pnpm contracts:check',
+      'ci:unit': 'pnpm test:unit',
+      'ci:e2e': 'pnpm test:e2e:smoke',
+    }
+
+    expect(ciVerifyStageFailures(scripts)).toEqual([
+      expect.stringContaining('CI에만 존재: test:e2e:smoke'),
+    ])
+  })
+
+  it('reports a stage owned by more than one CI script', () => {
+    const scripts = {
+      ...completeScripts,
+      'ci:unit': 'pnpm test:unit && pnpm api:check',
+    }
+
+    expect(ciVerifyStageFailures(scripts)).toEqual([
+      expect.stringContaining('CI에서 중복: api:check'),
+    ])
+  })
+
+  it('reports a duplicated stage inside verify', () => {
+    const scripts = {
+      ...completeScripts,
+      verify: 'pnpm api:check && pnpm contracts:check && pnpm api:check && pnpm test:unit && pnpm test:e2e:smoke',
+    }
+
+    expect(ciVerifyStageFailures(scripts)).toEqual([
+      expect.stringContaining('verify에서 중복: api:check'),
+    ])
+  })
+})
+
+describe('CI workflow script coverage', () => {
+  const completeWorkflow = `
+jobs:
+  static:
+    steps:
+      - run: pnpm run ci:static
+  unit:
+    steps:
+      - run: pnpm run ci:unit -- --shard=1/2
+  e2e:
+    steps:
+      - run: pnpm run ci:e2e
+`
+
+  it('accepts a workflow that calls each CI script', () => {
+    expect(ciWorkflowScriptFailures(completeWorkflow)).toEqual([])
+  })
+
+  it('reports a CI script missing from the workflow', () => {
+    expect(ciWorkflowScriptFailures(completeWorkflow.replace('      - run: pnpm run ci:e2e\n', ''))).toEqual([
+      expect.stringContaining('ci:e2e'),
+    ])
+  })
+
+  it('does not accept a longer script name as a CI script call', () => {
+    const workflow = completeWorkflow.replace('pnpm run ci:static', 'pnpm run ci:static-extra')
+
+    expect(ciWorkflowScriptFailures(workflow)).toEqual([
+      expect.stringContaining('ci:static'),
+    ])
+  })
+
+  it('does not accept a comment or echo text as a CI script call', () => {
+    const workflow = completeWorkflow.replace(
+      '      - run: pnpm run ci:static',
+      '      # run: pnpm run ci:static\n      - run: echo pnpm run ci:static',
+    )
+
+    expect(ciWorkflowScriptFailures(workflow)).toEqual([
+      expect.stringContaining('ci:static'),
+    ])
+  })
+})
+
+describe('CI workflow concurrency', () => {
+  const protectedConcurrency = `
+concurrency:
+  group: \${{ github.workflow }}-\${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: \${{ github.event_name == 'pull_request' }}
+`
+
+  it('accepts stable PR groups and unique non-PR groups with PR-only cancellation', () => {
+    expect(ciWorkflowConcurrencyFailures(protectedConcurrency)).toEqual([])
+  })
+
+  it('rejects a shared main group and ref-based cancellation', () => {
+    const unsafeConcurrency = `
+concurrency:
+  group: \${{ github.workflow }}-\${{ github.ref }}
+  cancel-in-progress: \${{ github.ref != 'refs/heads/main' }}
+`
+
+    expect(ciWorkflowConcurrencyFailures(unsafeConcurrency)).toEqual([
+      'CI workflow concurrency group은 PR ref와 비-PR run_id를 분리해야 한다.',
+      'CI workflow cancel-in-progress는 pull_request에서만 true여야 한다.',
+    ])
+  })
+
+  it('rejects matching values nested under a job when root concurrency is absent', () => {
+    const jobOnlyConcurrency = `
+jobs:
+  static:
+    concurrency:
+      group: \${{ github.workflow }}-\${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+      cancel-in-progress: \${{ github.event_name == 'pull_request' }}
+`
+
+    expect(ciWorkflowConcurrencyFailures(jobOnlyConcurrency)).toEqual([
+      'CI workflow concurrency group은 PR ref와 비-PR run_id를 분리해야 한다.',
+      'CI workflow cancel-in-progress는 pull_request에서만 true여야 한다.',
+    ])
   })
 })
 

@@ -41,6 +41,79 @@ export function parseVerifyChain(script) {
     .filter((step) => step !== '')
 }
 
+/** CI 는 verify의 각 단계를 정확히 한 job script가 소유하도록 나눈다. */
+export const CI_VERIFY_SCRIPTS = ['ci:static', 'ci:unit', 'ci:e2e']
+
+/** verify 단계와 CI 단계의 누락·추가·중복 소유를 확인한다. */
+export function ciVerifyStageFailures(scripts) {
+  const verifyStages = parseVerifyChain(scripts.verify ?? '')
+  const verifyStageSet = new Set(verifyStages)
+  const verifyStageCounts = new Map()
+  const ciStageOwners = new Map()
+  const failures = []
+
+  for (const stage of verifyStages) {
+    verifyStageCounts.set(stage, (verifyStageCounts.get(stage) ?? 0) + 1)
+  }
+
+  for (const scriptName of CI_VERIFY_SCRIPTS) {
+    if (!Object.hasOwn(scripts, scriptName)) {
+      failures.push(`CI script 누락: ${scriptName}`)
+      continue
+    }
+    const script = scripts[scriptName]
+    if (typeof script !== 'string' || script.trim() === '') {
+      failures.push(`CI script 비어 있음: ${scriptName}`)
+      continue
+    }
+    for (const stage of parseVerifyChain(script)) {
+      const owners = ciStageOwners.get(stage) ?? []
+      owners.push(scriptName)
+      ciStageOwners.set(stage, owners)
+    }
+  }
+
+  for (const [stage, count] of verifyStageCounts) {
+    if (count > 1) failures.push(`verify에서 중복: ${stage}`)
+  }
+  for (const stage of verifyStages) {
+    if (!ciStageOwners.has(stage)) failures.push(`verify에만 존재: ${stage}`)
+  }
+  for (const stage of ciStageOwners.keys()) {
+    if (!verifyStageSet.has(stage)) failures.push(`CI에만 존재: ${stage}`)
+  }
+  for (const [stage, owners] of ciStageOwners) {
+    if (owners.length > 1) failures.push(`CI에서 중복: ${stage} (${owners.join(', ')})`)
+  }
+  return failures
+}
+
+/** workflow가 각 CI stage script를 한 번 이상 호출하는지 텍스트로 확인한다. */
+export function ciWorkflowScriptFailures(workflow) {
+  return CI_VERIFY_SCRIPTS
+    .filter((scriptName) => new RegExp(
+      `^\\s*(?:-\\s+)?run:\\s*pnpm\\s+(?:run\\s+)?${scriptName}(?=\\s|$)`,
+      'm',
+    ).test(workflow) === false)
+    .map((scriptName) => `CI workflow에서 호출하지 않음: ${scriptName}`)
+}
+
+/** PR supersession만 취소하고 main을 포함한 비-PR 실행은 서로 다른 그룹에 둔다. */
+export function ciWorkflowConcurrencyFailures(workflow) {
+  const concurrency = /^concurrency:\r?\n {2}group:\s*(.+)\r?\n {2}cancel-in-progress:\s*(.+)(?:\r?\n|$)/m.exec(workflow)
+  const group = concurrency?.[1].trim()
+  const cancelInProgress = concurrency?.[2].trim()
+  const failures = []
+
+  if (group !== "${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}") {
+    failures.push('CI workflow concurrency group은 PR ref와 비-PR run_id를 분리해야 한다.')
+  }
+  if (cancelInProgress !== "${{ github.event_name == 'pull_request' }}") {
+    failures.push('CI workflow cancel-in-progress는 pull_request에서만 true여야 한다.')
+  }
+  return failures
+}
+
 /** README 의 `pnpm verify` 투영 행에서 `a → b → c` 단계 목록을 뽑는다. */
 export function parseReadmeVerifyProjection(readme) {
   const row = readme.split('\n').find((line) => line.includes('`pnpm verify`') && line.includes('→'))

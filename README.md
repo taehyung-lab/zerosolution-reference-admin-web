@@ -31,7 +31,7 @@ pnpm dev
 | `pnpm build` / `preview` | 프로덕션 빌드 및 미리보기 |
 | `pnpm test:e2e:smoke` | Chromium에서 Managers 첫 consumer의 draft → URL → API → table 흐름 검증 |
 
-전체 script는 `package.json`이 소유한다. CI(`.github/workflows/verify.yml`)는 lockfile 고정 설치와 Chromium 설치 후 `pnpm verify`를 실행한다.
+전체 script는 `package.json`이 소유한다. CI(`.github/workflows/verify.yml`)는 `pnpm verify`와 같은 단계 집합을 static, unit 2개 shard, E2E의 네 runner로 병렬 실행하며, Chromium은 E2E runner만 설치한다.
 
 `pnpm verify` 통과는 완성의 **필요조건이지 충분조건이 아니다.** 화면이 디자인과 같은지, 상호작용이 실제로 동작하는지는 검사하지 않는다. 판정 기준은 [`AGENTS.md`](AGENTS.md) §4에 있다.
 
