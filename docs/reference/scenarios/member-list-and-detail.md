@@ -83,18 +83,18 @@
 | **F12** `[외부]` 권한으로 UI만 숨기고 **payload는 그대로 보냈다.** 내비게이션 접근과 권한도 어긋나 있었다 | 권한을 표시 정책으로만 다뤘다 | 권한은 **payload 생성 정책**이기도 하다는 것 — 필드를 숨기면 요청 본문에서도 빠져야 한다 |
 | **F13** `[외부]` 언어를 바꿔도 **이미 떠 있던 검증·서버 오류가 옛 언어로 남았다**(30개 폼) | 오류 메시지를 렌더 시점 문자열로 form state에 저장했다 | 폼 오류가 캐시된 문자열이라 locale 전환의 대상이며, 그 재검증이 서버 오류를 지워서도 안 된다는 것 |
 
-**대응 관측 없음**: 라우터 이탈 가드(비교 입력에 blocker 사용 0건), 권한 기반 마스킹 해제, 검색결과 전체 선택
-(전체선택은 현재 페이지 한정). 즉 이 세 자리는 **거기서도 미해결**이었고 실패 사례를 빌려올 수 없다. `[외부]`
+**대응 관측 없음**: 라우터 이탈 가드(비교 입력에 blocker 사용 0건), 권한 기반 마스킹 해제, 검색결과 전체 선택.
+비교 입력에서 빌릴 실패 사례는 없으며, 이 제품의 전체선택은 2026-09-04 사용자 답으로 현재 페이지 한정이다. `[외부]` `[확인]`
 
 ## 4. 처음부터 알았다면 이렇게 설계한다
 
 **(a) 검색 상태의 소유자는 URL 하나이고, 판별자도 하나다.** 커밋된 값만 URL에 있고 draft는 들어가지 않는다. **검색 전 `{}` / 검색 후 `{판별자, …}`의 union**이며 Query enablement와 `notSearched`가 **같은 한 사실**에서 파생한다(list-workflow.md:36,60). 두 번째 `searched` 플래그를 만들면 그 순간 두 값이 갈라질 자리가 생긴다. 그리고 판별자는 **제품이 지정한 실제 필터 값**이어야 한다 — "URL이 비었다"를 판별자로 쓰면 F8이 재현된다. 초기화는 기본값 복원이 아니라 `{}`로의 복귀다(:90). `[추론]`
 
-**3 variant를 한 route에 `status` search로 얹지 않는다.** 그 값은 필터인 동시에 화면 정체성이라 초기화가 그것까지 지워야 하는지 답할 수 없고, 필터 그룹과 컬럼이 화면마다 다르다는 사실(:27,:29,:30)이 `variant` 분기로 숨는다. ADR 0009:42가 목록에서, 0010:128-130이 폼에서 이미 거부한 형태다. route 분리가 기본이고, 확정 전에는 구현하지 않는다(미확인 1). `[추론]`
+**3 variant를 한 route에 `status` search로 얹지 않는다.** 그 값은 필터인 동시에 화면 정체성이라 초기화가 그것까지 지워야 하는지 답할 수 없고, 필터 그룹과 컬럼이 화면마다 다르다는 사실(:27,:29,:30)이 `variant` 분기로 숨는다. ADR 0009:42가 목록에서, 0010:128-130이 폼에서 이미 거부한 형태다. Figma·Notion의 별도 화면 정체성과 2026-09-04 사용자 답에 따라 전체·일반·불량은 각각 별도 route다. `[확인]`
 
 **(b) 결과 상태는 화면이 쓰지 않고, 세 사실이 각자 표면에 닿는다.** feature는 plain facts만 만들고 `notSearched → loading → error → empty → ready` 판정은 한 곳에 있다([ListResult.tsx](../../../src/shared/ui/patterns/ListResult.tsx):27-33). **검색 전·빈 결과·오류 중 하나라도 그 표면에 도달하지 못하면 나머지로 위장된다**(F7·F8). 상세는 다른 대수라 같은 boundary를 쓰지 않고 `resolveRequiredQueryOutcome`의 우선순위를 쓴다([required-query.ts](../../../src/api/required-query.ts):22-41). **두 대수를 합치지 않는다** — F5·F6은 상세 축의 실패이고 목록에는 `not-found`·`delegated`가 없다. `[추론]`
 
-**(c) 선택은 결과 정체성에 종속되고, 선택 가능 여부의 소스는 하나다.** 선택 집합은 "지금 보이는 모집단"에 대한 참조다. 그 정체성 키가 바뀌면 선택은 재구축된다 — `useDraftCommit`의 `keyOf`와 같은 대수이되 같은 훅은 아니다([shared-values.md](../../../.agents/skills/shared-ui-contract/references/shared-values.md):23). **무엇을 정체성에 넣는지가 곧 수명 정책이다**: 커밋된 검색 전체를 키로 쓰면 페이지 이동만으로도 선택이 사라지고, 조건만 키로 쓰면 페이지를 넘나드는 선택이 생긴다. 답은 전체선택의 범위가 정한다(미확인 2). 그리고 **행이 선택 가능한가는 한 판정에서만 나오고**(F10), 그 판정이 행 밖 사실에 의존하면 그 사실이 렌더 identity에 들어가야 한다(F11). `[추론]`
+**(c) 선택은 현재 보이는 결과 정체성에 종속되고, 선택 가능 여부의 소스는 하나다.** 헤더 전체선택은 2026-09-04 사용자 답에 따라 **현재 페이지에 보이는 선택 가능 행 전체**다. 페이지·page size·정렬·검색 실행·목록 route가 바뀌면 선택을 지우고, draft만 편집할 때는 유지한다. 같은 조건의 refetch에서는 여전히 존재하고 선택 가능한 ID만 남기며, bulk 실패 시 재시도를 위해 유지하고 성공 후 cache consequence가 끝나면 지운다([bulk-actions.md](../../../.agents/skills/feature-contract/references/bulk-actions.md)). 그리고 **행이 선택 가능한가는 한 판정에서만 나오고**(F10), 그 판정이 행 밖 사실에 의존하면 그 사실이 렌더 identity에 들어가야 한다(F11). `[확인]` `[추론]`
 
 **전체선택의 범위가 payload의 모양을 정한다.** "현재 페이지"면 선택은 ID 목록이지만 "검색결과 전체"면 ID를 셀 수 없어 선택이 **조건**이 되고, bulk 요청은 ID 배열이 아니라 검색 조건을 보내야 한다. 계약은 "안정 ID를 보내고 클라이언트 batching을 발명하지 않는다"고 선언했으므로(bulk-actions.md:6,7) 답이 후자면 서버 계약 자체가 달라진다. `[추론]`
 
@@ -118,7 +118,7 @@
 
 | 이슈 | 채택할 행 |
 | --- | --- |
-| #4 목록 3 variant | 4(a) 판별자·route 분리, 4(b) 세 사실의 표면, 4(c) 선택 정체성·선택 가능 판정, 5절 `선택 수명`·`보기/정렬 기억값`·`bulk 부분 성공` 행, 미확인 1·2·3 |
+| #4 목록 3 variant | 4(a) 판별자·별도 route, 4(b) 세 사실의 표면, 4(c) 현재 페이지 선택 수명·선택 가능 판정, 5절 `보기/정렬 기억값`·`bulk 부분 성공` 행, 미확인 3 |
 | #5 회원 조회 | 4(b) 상세 대수 분리, 4(d)의 인라인 폼 행, 4(f) 자식 목록 격리, 5절 `자식 목록 실패 격리`·`인라인 폼`·`마스킹` 행, 미확인 5·8 |
 | #6 회원 등록 | 4(d)의 페이지 폼 행, 4(e), 5절 `저장 오케스트레이션`·`dialog 폼` 행, 미확인 7 |
 | #7 회원 수정 | #6과 같은 행 + 4(a)의 `mode` 금지 근거, 4(g)④, 5절 `조건부 필드 정리`·`권한` 행, 미확인 4 |
@@ -142,7 +142,7 @@
 | dialog 안 폼(SMS·이메일 발송) | Dialog primitive의 feature 조립. 제목 바 close 옵션이 "첫 dialog를 만들 때" 열기로 예약돼 있다 | [dialogs.md](../../../.agents/skills/shared-ui-contract/references/dialogs.md):7,10 | 수정 필요 — 예약된 `close`가 이 화면에서 처음 필요해진다 |
 | **dialog·인라인 폼의 dirty 이탈** | `useUnsavedChangesGuard`는 **Router 이동만** 막는다. dialog 닫기와 상세 이탈은 blocker를 지나지 않는다 | form-workflow.md:30,40, [UnsavedChangesGuard.tsx](../../../src/shared/ui/form/UnsavedChangesGuard.tsx) | **아예 없음** |
 | 행 선택과 전체선택 | 선택 소유자가 "목록 화면 또는 feature-local table adapter"로 이미 선언됐고 `DataTable`은 선택을 소유하지 않는다 | list-workflow.md:33, bulk-actions.md:5, data-table.md:11 | feature 소유 |
-| **선택의 수명**(검색·정렬·페이지 전환 시 유지/폐기) | 소유자는 지목됐지만 **수명 규칙을 정한 문장이 없다.** `bulk-actions.md:10`은 "선언된 성공 정책 아래에서만 리셋"이라 성공 이후만 다룬다 | bulk-actions.md:10, [0009](../../decisions/0009-shared-boundaries.md):117 | **아예 없음** |
+| **선택의 수명**(검색·정렬·페이지 전환 시 유지/폐기) | 현재 페이지의 선택 가능 행만 전체선택하고 결과 정체성 변경·bulk 성공 때 해제하며 같은 조건 refetch·bulk 실패 때 유효 ID를 유지한다 | [bulk-actions.md](../../../.agents/skills/feature-contract/references/bulk-actions.md) | 커버됨 — 2026-09-04 사용자 답 |
 | bulk 실행 3단계 alert(미선택 오류→확인→완료) | Confirm·Alert primitive와 상호작용 선택 규칙은 있다. 인벤토리 15+ 화면 반복은 후보로만 기록됐다 | [mutation-actions.md](../../../.agents/skills/feature-contract/references/mutation-actions.md):11,12, [zero-sol-figma-analysis.md](../zero-sol-figma-analysis.md):52 | feature 소유 — 승격은 첫 코드 consumer 이후(promotion.md:16) |
 | **bulk 부분 성공의 표면** | "응답이 행 단위 결과를 노출할 때만 보고한다"만 있고 거처는 없다. 4-outcome은 `ApiError` 축이라 성공 응답 안의 실패를 다루지 않는다 | bulk-actions.md:9, error-outcome.ts:25-38 | **아예 없음** (서버 계약 확정 전) |
 | bulk·다운로드 실행 중 진행 표면 | 버튼 pending만으로 시작하고 overlay 여부는 미확인이라고 이미 선언 | [blocking-progress.md](../../../.agents/skills/shared-ui-contract/references/blocking-progress.md):8 | 커버됨(미확인으로 잠금) |
@@ -152,18 +152,17 @@
 | **권한에 따른 action 노출과 payload 제외** | 진입 가드 절차는 있으나 **권한 사실의 소유자가 없다.** `navigation.ts`는 계약 미확인 자리표시자다 | [router.md](../../../.agents/skills/feature-contract/references/router.md):33, [navigation.ts](../../../src/app/config/navigation.ts):1-3 | **아예 없음** |
 | shared/feature 경계 | shared는 feature·Router·Query·DTO·permission을 모르고 ESLint가 강제한다 | AGENTS.md:90, 0009:60 | 커버됨 |
 
-요약: **공용 결손은 다섯 자리다.** ① dialog·인라인 폼의 dirty 이탈 계약, ② 선택의 수명 규칙, ③ bulk 부분 성공의 표면, ④ 보기·정렬 기억값의 소유자, ⑤ 권한 사실의 소유자. ①만 순수 UI 결정이고 나머지 넷은 **제품 답 또는 서버 계약이 소유자를 정한다**(6절). 그리고 ①·②·⑤는 비교 입력에서도 미해결이었으므로 빌려올 답이 없다. `[추론]`
+요약: **공용 결손은 네 자리다.** ① dialog·인라인 폼의 dirty 이탈 계약, ② bulk 부분 성공의 표면, ③ 보기·정렬 기억값의 소유자, ④ 권한 사실의 소유자. ①만 순수 UI 결정이고 나머지 셋은 **제품 답 또는 서버 계약이 소유자를 정한다**(6절). 선택 수명은 2026-09-04 제품 답을 feature 계약 기본값으로 기록해 닫혔다. `[추론]`
 
 나머지는 결손이 아니다. 필터·결과·상세·폼·이력 표면은 이미 닿아 있고, 선택·bulk alert·마스킹 렌더·중복 키워드 정책 넷은 계약이 이미 feature에 넘긴 결정이다. 이 넷을 공용 결손으로 세면 첫 회원 화면 하나로 공용 유형을 만드는 것이 되어 promotion.md:7의 "1회 사용은 feature-local"을 정면으로 어긴다. `[추론]`
 
 ## 6. 미확인
 
-1. **목록 3 variant가 route인가 search인가.** 발생: `/members` 진입과 LNB 이동. 기대: 각 variant의 URL과 초기화 후
-   상태. 답에 따라 route 파일 수, 검색 스키마 개수, 초기화가 지우는 범위, `등록` 버튼의 소유 화면이 갈린다. 세 화면의
-   필터 그룹과 컬럼이 다르다는 것만 확인됐다(04-members.md:27,29,30).
-2. **전체선택의 범위가 현재 페이지인가 검색결과 전체인가.** 발생: 1,000건 결과에서 헤더 checkbox 클릭. 기대: 선택 건수
-   표시와 bulk payload. 후자면 선택이 ID 집합이 아니라 **검색 조건**이 되어 "안정 ID를 보낸다"(bulk-actions.md:6)가
-   성립하지 않고 서버 계약이 달라진다. 이 답이 4(c)의 선택 수명도 함께 정한다. 0009:117이 같은 질문이다.
+1. **목록 3 variant가 route인가 search인가.** 답(2026-09-04): Figma·Notion의 별도 화면 정체성대로 전체·일반·불량은
+   각각 별도 route다. 공용화하는 것은 list mechanic이며 한 route의 `variant`/`mode`로 합치지 않는다.
+2. **전체선택의 범위가 현재 페이지인가 검색결과 전체인가.** 답(2026-09-04): 헤더 checkbox는 현재 페이지에 보이는
+   선택 가능 행 전체만 선택한다. 페이지·page size·정렬·검색 실행·목록 route 변경 시 해제하고, 같은 조건 refetch는
+   남아 있는 선택 가능 ID만 유지한다. bulk 실패 시 유지하고 성공 후 cache consequence가 끝나면 해제한다.
 3. **일괄 변경의 부분 성공을 서버가 행 단위로 답하는가, 그리고 보기·정렬 기억값을 어디에 저장하는가.** 전자: 20건 중
    3건 실패의 응답 형태. "전부 아니면 전무"면 4(f)의 여섯 번째 자리가 사라지고, 행 단위면 완료 alert가 **선택 개수가
    아니라 처리 개수**를 말해야 한다. 후자: 저장 범위(화면/계정/브라우저)와 URL 공유 시 우선권 — 계정이면 서버 데이터,

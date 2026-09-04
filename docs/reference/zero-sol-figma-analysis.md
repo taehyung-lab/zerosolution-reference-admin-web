@@ -33,7 +33,7 @@
 | `SearchFieldPartition`·`filterPartitionKey/Values` | **feature-local로 demote** | production caller 1곳. "view 변경 중 draft 보존"은 설계 계약이지 인벤토리 문장이 아님 | Managers local로 이동. `useDraftCommit`은 shared 유지. 두 번째 route-backed list에서 재승격 판단 |
 | Managers 검색 전 표면 | **feature 불일치 수정** | 11.1 검색전 frame: "검색해주세요." + `등록`만. 현재 `ManagerListResult`는 summary·toolbar를 무조건 렌더 | `data.searched`로 summary·toolbar-left 가림. `ListResult`에 mode 넣지 않음 |
 | toolbar 우측 action | slot 유지, 카탈로그 없음 | 화면별 집합 전부 다름(5개 / 2개 / 0개). SMS·이메일은 회원·발권 공통 문장이지만 마케팅 정책 조회를 포함한 cross-feature use case | — |
-| 행 선택·bulk 3단계·다운로드 scope | feature workflow (지금). §4 후보 | 문장 단위 동일 반복이지만 Managers bulk 정책·endpoint·partial 미확인 | — |
+| 행 선택·bulk 3단계·다운로드 scope | feature workflow (지금). §4 후보 | 헤더 전체선택은 현재 페이지의 선택 가능 행만 대상으로 하고 결과 정체성 변경 시 해제(2026-09-04 사용자 답). bulk endpoint·partial은 미확인 | `bulk-actions.md`에 제품 기본 수명 기록 |
 | lookup 필터·종속 필수 select·range slider·cascade·행 인라인 action | primitive만 shared, 조립은 feature. §4 후보 | lookup 12 화면·종속 select 10 화면·range 1 화면 판독·cascade 1·인라인 1 | — |
 | 팝업/별도 창의 list | 원칙 유지 + reference 연결 | 9.2·14.x | `list-workflow.md`가 kind E를 명시 연결. 루트 §3 표는 바꾸지 않음 |
 
@@ -48,7 +48,7 @@
 
 | 반복 행동 | 근거 | 착수 조건 |
 | --- | --- | --- |
-| 행 checkbox + 전체선택 | 20 화면 | 첫 bulk consumer. selection은 list screen 소유(`bulk-actions.md`) |
+| 행 checkbox + 전체선택 | 20 화면 | 현재 페이지 선택 수명은 확정. 첫 bulk consumer에서 feature-local 상태와 checked/mixed 계산 검증 |
 | 일괄 변경: 미선택 오류 alert → 확인 alert → 완료 alert → 갱신 | Notion 15+ 화면 동일 3문장. 운영자는 확인 문구에 예외 병기 | Managers bulk 정책·endpoint·partial 확정 |
 | 다운로드: 선택/전체 택1, default 미선택, 미선택 오류 alert | Notion 7 화면 | export endpoint·형식 확정 |
 | lookup(검색 → 단일 선택 chip) | Figma 12 화면, Notion "택1·삭제 후 재선택" | 첫 구현 시 접근성 primitive만 |
@@ -66,6 +66,8 @@
 5. Managers(운영자) bulk 변경의 대상 상태와 서버 계약 — 3단계 alert 착수 조건.
 6. 현장발권의 배포 형태(별도 창/앱)와 세션 공유.
 7. 다운로드·일괄 변경 실행 중 표면(전역 overlay인지 버튼 pending만인지) — Figma 공통화면에 해당 frame 없음.
+8. 활성회원 전체·일반·불량 화면 정체성. 답(2026-09-04): Figma page와 Notion Feature처럼 각각 별도 route다. 공용 list mechanic만 재사용하고 한 route의 `variant`/`mode`로 합치지 않는다.
+9. 헤더 전체선택 범위와 수명. 답(2026-09-04): 현재 페이지에 보이는 선택 가능 행 전체만 선택한다. 페이지·page size·정렬·검색 실행·목록 route 변경 시 해제하고, 같은 조건 refetch는 남아 있는 선택 가능 ID만 유지한다. bulk 실패 시 유지하고 성공 후 cache consequence가 끝나면 해제한다. 검색결과 전체 선택은 서버가 조건 기반 payload를 선언할 때 별도 재검토한다.
 
 ### 코드 결함 후보 (2026-09-02 reference 사실 대조에서 발견, Codex·Hermes 교차 리뷰)
 

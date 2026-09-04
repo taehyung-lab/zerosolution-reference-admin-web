@@ -114,7 +114,7 @@ Managers vertical slice는 sparse URL → resolved defaults → draft commit →
 
 - 신규 제품의 endpoint, DTO, enum, permission, option source와 실패 semantics
 - 다른 목록의 명시적 검색과 required prerequisite의 실제 Query gate 정책
-- cross-page selection, bulk의 binary/partial success와 권한
+- bulk의 binary/partial success와 권한. cross-page selection은 2026-09-04 제품 답으로 제외하고 현재 페이지의 선택 가능 행만 선택한다
 - 범위 밖 page의 제품 canonicalization 정책
 - API `timezone` 파라미터의 의미와 값
 - rehearsal `INACTIVE`와 Figma의 거절·비활성 상태 의미의 대응
