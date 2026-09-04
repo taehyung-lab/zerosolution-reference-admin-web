@@ -128,6 +128,17 @@ describe('CI verify stage coverage', () => {
       expect.stringContaining('CI에서 중복: api:check'),
     ])
   })
+
+  it('reports a duplicated stage inside verify', () => {
+    const scripts = {
+      ...completeScripts,
+      verify: 'pnpm api:check && pnpm contracts:check && pnpm api:check && pnpm test:unit && pnpm test:e2e:smoke',
+    }
+
+    expect(ciVerifyStageFailures(scripts)).toEqual([
+      expect.stringContaining('verify에서 중복: api:check'),
+    ])
+  })
 })
 
 describe('CI workflow script coverage', () => {
@@ -151,6 +162,25 @@ jobs:
   it('reports a CI script missing from the workflow', () => {
     expect(ciWorkflowScriptFailures(completeWorkflow.replace('      - run: pnpm run ci:e2e\n', ''))).toEqual([
       expect.stringContaining('ci:e2e'),
+    ])
+  })
+
+  it('does not accept a longer script name as a CI script call', () => {
+    const workflow = completeWorkflow.replace('pnpm run ci:static', 'pnpm run ci:static-extra')
+
+    expect(ciWorkflowScriptFailures(workflow)).toEqual([
+      expect.stringContaining('ci:static'),
+    ])
+  })
+
+  it('does not accept a comment or echo text as a CI script call', () => {
+    const workflow = completeWorkflow.replace(
+      '      - run: pnpm run ci:static',
+      '      # run: pnpm run ci:static\n      - run: echo pnpm run ci:static',
+    )
+
+    expect(ciWorkflowScriptFailures(workflow)).toEqual([
+      expect.stringContaining('ci:static'),
     ])
   })
 })

@@ -48,7 +48,12 @@ export const CI_VERIFY_SCRIPTS = ['ci:static', 'ci:unit', 'ci:e2e']
 export function ciVerifyStageFailures(scripts) {
   const verifyStages = parseVerifyChain(scripts.verify ?? '')
   const verifyStageSet = new Set(verifyStages)
+  const verifyStageCounts = new Map()
   const ciStageOwners = new Map()
+
+  for (const stage of verifyStages) {
+    verifyStageCounts.set(stage, (verifyStageCounts.get(stage) ?? 0) + 1)
+  }
 
   for (const scriptName of CI_VERIFY_SCRIPTS) {
     for (const stage of parseVerifyChain(scripts[scriptName] ?? '')) {
@@ -59,6 +64,9 @@ export function ciVerifyStageFailures(scripts) {
   }
 
   const failures = []
+  for (const [stage, count] of verifyStageCounts) {
+    if (count > 1) failures.push(`verify에서 중복: ${stage}`)
+  }
   for (const stage of verifyStages) {
     if (!ciStageOwners.has(stage)) failures.push(`verify에만 존재: ${stage}`)
   }
@@ -74,7 +82,10 @@ export function ciVerifyStageFailures(scripts) {
 /** workflow가 각 CI stage script를 한 번 이상 호출하는지 텍스트로 확인한다. */
 export function ciWorkflowScriptFailures(workflow) {
   return CI_VERIFY_SCRIPTS
-    .filter((scriptName) => new RegExp(`\\bpnpm\\s+(?:run\\s+)?${scriptName}\\b`).test(workflow) === false)
+    .filter((scriptName) => new RegExp(
+      `^\\s*(?:-\\s+)?run:\\s*pnpm\\s+(?:run\\s+)?${scriptName}(?=\\s|$)`,
+      'm',
+    ).test(workflow) === false)
     .map((scriptName) => `CI workflow에서 호출하지 않음: ${scriptName}`)
 }
 
