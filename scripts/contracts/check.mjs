@@ -27,6 +27,11 @@ import {
   transplantSentinelOccurrences,
 } from './contracts.mjs'
 import {
+  findContractPathMismatches,
+  findUnregisteredPorts,
+  readDeclaredPaths,
+} from './api-surface.mjs'
+import {
   SEED_BUNDLES,
   collectImportClosure,
   collectTestImportClosure,
@@ -102,6 +107,11 @@ failures.push(...prohibitedAbstractionSourceFailures(readFileSync(resolve('eslin
 // 문서 안의 sentinel 은 어느 모드에서도 결정 미해소다.
 failures.push(...transplantSentinelFailures(documents))
 
+// 타입·테스트가 통과해도 런타임에만 죽는 두 실패. 실제로 겪어서 넣었다.
+failures.push(...findUnregisteredPorts())
+const declaredPaths = readDeclaredPaths()
+failures.push(...findContractPathMismatches(declaredPaths))
+
 let seedSummary = null
 if (mode === 'source') {
   failures.push(...validateSeedBundles())
@@ -122,11 +132,14 @@ if (mode === 'source') {
   for (const { bundle, from, to } of findBundleClosureLeaks()) {
     failures.push(`seed bundle ${bundle} 폐쇄 이탈: ${from} → ${to} (진입점을 좁히거나 의존을 끊어야 한다)`)
   }
+  // 지어낸 값과 미확정 계약의 살아 있는 목록. seed 밖(feature)까지 훑어야 화면 작업의 발명이 다 잡힌다.
   const pending = transplantSentinelOccurrences(
-    [...seedFiles, ...manifestFiles].filter((file) => !file.endsWith('.md') && !/\.test\.(ts|tsx|mjs)$/.test(file)),
+    [...new Set([...seedFiles, ...manifestFiles, ...listSourceFiles('src')])]
+      .filter((file) => !file.endsWith('.md') && !/\.test\.(ts|tsx|mjs)$/.test(file)),
   )
   if (pending.length > 0) {
-    notes.push(`이관 대기 sentinel ${pending.length}개 (source 모드에서는 허용, 대상에서 해소): ${[...new Set(pending.map((item) => item.id))].join(', ')}`)
+    const byId = [...new Set(pending.map((item) => item.id))].sort()
+    notes.push(`계약 미확정 자리 ${pending.length}곳 (source 모드에서는 허용, 대상에서 해소): ${byId.join(', ')}`)
   }
   seedSummary = `seed ${SEED_BUNDLES.length}개 4-part bundle의 code-root ${SEED_BUNDLES.flatMap((bundle) => bundle.code).length}개(closure ${codeClosure.length}) + focused-test-root ${new Set(SEED_BUNDLES.flatMap((bundle) => bundle.tests)).size}개(closure ${testClosure.length})가 ${seedFiles.length}파일 안에서 폐쇄, manifest ${manifestFiles.length}파일 실존`
 } else {
@@ -148,5 +161,10 @@ console.log('  ✓ CLAUDE.md 가 AGENTS.md 를 첫 지시로 import')
 if (copilotChecked) console.log('  ✓ Copilot 첫 본문 지시가 AGENTS.md 를 가리킴')
 console.log(`  ✓ 삭제된 문서 이름·옛 AGENTS §번호·금지 추상화 근거 파일 drift 없음 (${citingFiles.length}파일)`)
 console.log(`  ✓ 문서 안 미해소 이관 sentinel 없음${mode === 'target' ? ' (target: 코드 포함)' : ''}`)
+console.log(
+  declaredPaths === null
+    ? '  ✓ transport 포트 등록됨 (계약 snapshot 없음: 경로 대조 건너뜀)'
+    : `  ✓ transport 포트 등록됨 · 손으로 쓴 요청 경로가 선언된 계약 경로 ${declaredPaths.length}개와 일치`,
+)
 if (seedSummary !== null) console.log(`  ✓ ${seedSummary}`)
 for (const note of notes) console.log(`  · ${note}`)

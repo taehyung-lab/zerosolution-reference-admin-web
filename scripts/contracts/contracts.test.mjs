@@ -32,6 +32,11 @@ import {
   validateSeedBundles,
   validateTransplantManifest,
 } from './seed.mjs'
+import {
+  findContractPathMismatches,
+  findUnregisteredPorts,
+  readDeclaredPaths,
+} from './api-surface.mjs'
 
 const temporaryRoots = []
 
@@ -485,5 +490,82 @@ const PROHIBITED_ABSTRACTION_BINDINGS = new Map([
     expect(prohibitedAbstractionSourceFailures(config, exists)).toEqual([
       "eslint.config.js: 'useListTable' 근거 'list-detail.md' 가 실존 규범 파일이 아니다",
     ])
+  })
+})
+
+describe('api surface: ports and contract paths', () => {
+  const graph = {
+    'src/api/http/credential.ts': 'export function registerReissueTokenReader(reader) {}\nexport function registerLocaleGetter(getter) {}\n',
+    'src/api/http/client.ts': 'registerReissueTokenReader\n',
+    'src/app/providers/LocaleProvider.tsx': 'registerLocaleGetter(() => locale)\n',
+    'src/app/providers/AuthProvider.test.tsx': 'registerReissueTokenReader(() => "x")\n',
+  }
+  const read = (file) => graph[file] ?? ''
+  const list = (root) => Object.keys(graph)
+    .filter((file) => file.startsWith(`${root}/`) && !file.includes('.test.'))
+    .sort()
+
+  it('reports a port that only tests register, and accepts one the app registers', () => {
+    const failures = findUnregisteredPorts('src/api', 'src', read, list)
+
+    expect(failures).toHaveLength(1)
+    expect(failures[0]).toContain('registerReissueTokenReader')
+    expect(failures.join(' ')).not.toContain('registerLocaleGetter')
+  })
+
+  it('does not count the declaring layer mentioning its own port as a registration', () => {
+    const selfOnly = { 'src/api/http/credential.ts': graph['src/api/http/credential.ts'], 'src/api/http/client.ts': 'registerLocaleGetter(() => "ko")\n' }
+    const failures = findUnregisteredPorts(
+      'src/api',
+      'src',
+      (file) => selfOnly[file] ?? '',
+      (root) => Object.keys(selfOnly).filter((file) => file.startsWith(`${root}/`)),
+    )
+
+    expect(failures).toHaveLength(2)
+  })
+
+  it('rejects a request path that is only a substring of a declared path', () => {
+    const declared = ['/api/v1/auth/reissue', '/api/v1/auth/sign-in', '/api/v1/auth/2fa/email/send']
+    const source = {
+      'src/api/http/client.ts': "const REISSUE_PATH = '/auth/reissue'\n",
+      'src/api/http/credential.ts': "const PRE_AUTH_PATHS = ['/auth/sign-in', '/auth/2fa/']\n",
+    }
+    const failures = findContractPathMismatches(
+      declared,
+      'src/api',
+      (file) => source[file] ?? '',
+      () => Object.keys(source),
+    )
+
+    expect(failures).toHaveLength(1)
+    expect(failures[0]).toContain('REISSUE_PATH')
+    expect(failures[0]).toContain('정확히 일치')
+  })
+
+  it('accepts an exact request path and rejects a matcher entry no declared path contains', () => {
+    const declared = ['/api/v1/auth/reissue', '/api/v1/auth/sign-in']
+    const source = {
+      'src/api/http/client.ts': "const REISSUE_PATH = '/api/v1/auth/reissue'\n",
+      'src/api/http/credential.ts': "const PRE_AUTH_PATHS = ['/auth/sign-in', '/auth/legacy-sso']\n",
+    }
+    const failures = findContractPathMismatches(
+      declared,
+      'src/api',
+      (file) => source[file] ?? '',
+      () => Object.keys(source),
+    )
+
+    expect(failures).toHaveLength(1)
+    expect(failures[0]).toContain('legacy-sso')
+  })
+
+  it('skips the path check when no contract snapshot is declared', () => {
+    expect(findContractPathMismatches(null, 'src/api', () => '', () => ['src/api/http/client.ts'])).toEqual([])
+  })
+
+  it('holds for the real repository', () => {
+    expect(findUnregisteredPorts()).toEqual([])
+    expect(findContractPathMismatches(readDeclaredPaths())).toEqual([])
   })
 })

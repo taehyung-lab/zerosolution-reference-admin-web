@@ -25,7 +25,7 @@ pnpm dev
 | `pnpm dev` | 개발 서버 |
 | `pnpm verify` | **단일 검증 진입점.** api:check → contracts:check → typecheck → lint → test:unit → i18n:check → gates:negative → build → test:e2e:smoke |
 | `pnpm api:check` | snapshot 검증 + Orval 생성 + 생성물 typecheck |
-| `pnpm contracts:check` | 규범 문서와 저장소 설정의 기계적 정합성. verify 체인 투영, `pnpm` 명령·로컬 link 실존, 에이전트 문서 200줄 예산, 루트 포인터, 삭제 문서 이름·§번호·금지 추상화 근거 drift, 이관 sentinel, seed 4-part 폐쇄·오염·부수 반출, 이관 manifest 실존. `--mode target`은 이관된 저장소용(코드 sentinel도 실패) |
+| `pnpm contracts:check` | 규범 문서와 저장소 설정의 기계적 정합성. verify 체인 투영, `pnpm` 명령·로컬 link 실존, 에이전트 문서 200줄 예산, 루트 포인터, 삭제 문서 이름·§번호·금지 추상화 근거 drift, 이관 sentinel, transport 포트 이음매 tripwire와 이름 붙은 요청 경로 상수의 계약 일치, seed 4-part 폐쇄·오염·부수 반출, 이관 manifest 실존. `--mode target`은 이관된 저장소용(코드 sentinel도 실패) |
 | `pnpm transplant:plan` · `transplant:stage` · `transplant:apply` · `transplant:verify` | 신규 저장소 이관 명령(`--target <repo>`). plan은 copy/merge/conditional/template/exclude 분류만, stage는 ADR 재번호·예시 치환을 적용한 사본과 `PENDING.md`, apply는 대상에 없는 파일만 복사(덮어쓰기 없음), verify는 대상에서 `contracts:check --mode target`→typecheck→lint→test:unit |
 | `pnpm api:pull` / `api:diff` | 원격 Swagger 수집·차이 분석. 네트워크가 필요하므로 `verify` 밖의 별도 작업이다 |
 | `pnpm build` / `preview` | 프로덕션 빌드 및 미리보기 |
