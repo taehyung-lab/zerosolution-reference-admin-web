@@ -6,7 +6,7 @@ import { ErrorTrace, type ErrorTraceValue } from './ErrorTrace';
 export type ListResultState = 'notSearched' | 'loading' | 'error' | 'empty' | 'ready';
 
 /**
- * The four states are a renderable set, not a visit order every list walks, so a list
+ * The five states are a renderable set, not a visit order every list walks, so a list
  * only labels the states it can actually reach.
  */
 export interface ListResultCopy {

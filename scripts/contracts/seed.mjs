@@ -25,14 +25,14 @@ export const SEED_BUNDLES = [
     adrs: [location(
       'docs/decisions/0009-shared-boundaries.md',
       '현재 provisional 계약',
-      '`ListResult`는 `notSearched | error | empty | ready`',
+      '`ListResult`는 `notSearched | loading | error | empty | ready`',
     )],
     tests: [
       'src/shared/ui/patterns/list-patterns.test.tsx',
       'src/shared/ui/patterns/ListResult.test-d.ts',
     ],
     ownership: {
-      shared: 'Receives plain list facts, resolves the four-state result, and owns shared error, retry, live region, and trace presentation.',
+      shared: 'Receives plain list facts, resolves the five-state result, and owns shared error, retry, live region, and trace presentation.',
       feature: 'Owns Query interpretation, plain facts, two domain messages, structural trace mapping, rows, and footer policy.',
     },
   },

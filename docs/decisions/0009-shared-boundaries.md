@@ -89,7 +89,7 @@ Managers가 실제 사용하는 아래 단위는 레퍼런스의 provisional sha
 | pure utility     | search compact/default resolve, datetime/format/option mapping                                                                   | 입력·출력이 domain-free인 순수 변환만 소유; schema·mapper·endpoint 조립은 제외. filter/view partition 선언과 pick/key는 2026-09-02 feature-local로 demote(consumer 1곳)                                                                                                                                                                                                                                                                                                      |
 | shared config    | `standardPageSizeOptions`, `standardPeriodPresetValues`                                                                          | 표준 목록 선택지·기간 preset 값의 provisional named preset만 소유; feature가 명시적으로 선택하고 default(목록 100·전체 / 등록 화면 200 / 통계 1개월 전)·예외를 소유                                                                                                                                                                                                                                                                                                          |
 
-`ListResult`는 `notSearched | error | empty | ready` 네 상태만 렌더하며 `ListResultData`는 renderer가 실제로 읽는 facts(rows·searched·isFetching·isError·trace·retry)만 요구한다(2026-09-02 narrow). total·totalPages는 feature 확장 타입이다. pending 첫 조회는 공용 `BlockingProgress`가 단독으로 표시하며 area skeleton은 두지 않는다. observer가 없는 prefetch는 로딩·에러 표면에서 배제한다. feature는 상태, 검색 전/결과 없음 문구, retry 동작, 구조적 trace, footer와 ready content를 제공한다. shared pattern은 공용 error/retry 문구, live region과 `ErrorTrace` disclosure를 직접 소유하며 API를 import하거나 raw message를 받지 않는다. 이 네 상태는 모든 목록의 필수 단계가 아니며, `DataTable`은 caller의 `meta.sort`로 헤더 버튼·`aria-sort`·glyph를 렌더하고 `onSort`를 호출할 뿐 어떤 컬럼이 정렬 가능한지, 방향 전이, route policy를 소유하지 않는다.
+`ListResult`는 `notSearched | loading | error | empty | ready` 다섯 상태를 판정하며 `ListResultData`는 renderer가 실제로 읽는 facts(rows·searched·isPending·isFetching·isError·trace·retry)만 요구한다(2026-09-02 narrow). total·totalPages는 feature 확장 타입이다. searched entry의 pending 첫 조회는 공용 `BlockingProgress`가 loading 표면을 덮고 area skeleton은 두지 않는다. observer가 없는 prefetch는 로딩·에러 표면에서 배제한다. feature는 상태, 검색 전/결과 없음 문구, retry 동작, 구조적 trace, footer와 ready content를 제공한다. shared pattern은 공용 error/retry 문구, live region과 `ErrorTrace` disclosure를 직접 소유하며 API를 import하거나 raw message를 받지 않는다. 이 다섯 상태는 모든 목록의 필수 단계가 아니며, `DataTable`은 caller의 `meta.sort`로 헤더 버튼·`aria-sort`·glyph를 렌더하고 `onSort`를 호출할 뿐 어떤 컬럼이 정렬 가능한지, 방향 전이, route policy를 소유하지 않는다.
 
 Managers는 제품이 확정한 명시적 검색 화면이다. URL은 검색 전 `{}`와 검색 후 `{ periodType, ...기본값이 아닌 view/filter }`의 discriminated union이며, `periodType`은 실제 서버 필터이자 판별자다. Query enablement와 `notSearched`는 이 한 사실에서 파생한다. 비어 있지 않은 손편집 URL에 `periodType`이 없으면 canonical guard가 기본 기간 기준을 채워 replace하고, `{}`는 그대로 둔다. 같은 조건 재검색은 같은 URL·Query key를 유지하므로 강제 refetch하지 않는다.
 
@@ -114,7 +114,7 @@ Managers vertical slice는 sparse URL → resolved defaults → draft commit →
 
 - 신규 제품의 endpoint, DTO, enum, permission, option source와 실패 semantics
 - 다른 목록의 명시적 검색과 required prerequisite의 실제 Query gate 정책
-- cross-page selection, bulk의 binary/partial success와 권한
+- bulk의 binary/partial success와 권한. cross-page selection은 2026-09-04 제품 답으로 제외하고 현재 페이지의 선택 가능 행만 선택한다
 - 범위 밖 page의 제품 canonicalization 정책
 - API `timezone` 파라미터의 의미와 값
 - rehearsal `INACTIVE`와 Figma의 거절·비활성 상태 의미의 대응
