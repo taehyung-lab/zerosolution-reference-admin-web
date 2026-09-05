@@ -16,7 +16,12 @@ export interface MemberListRow {
   readonly selectable?: boolean;
 }
 
-export type MemberListActionIntent =
+/**
+ * What a member list action would send to the server. The screen assembles it and stops:
+ * `onActionRequest` is the single seam a real mutation replaces.
+ * TRANSPLANT_PENDING_MEMBER_LIST_ACTIONS: no member contract exists yet, so nothing consumes it.
+ */
+export type MemberListActionRequest =
   | {
       readonly type: 'bulkChange';
       readonly targetIds: readonly string[];

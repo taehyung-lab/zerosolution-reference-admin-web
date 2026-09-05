@@ -17,6 +17,15 @@ export function useSelectionGate(selectedCount: number) {
       setMessage(missingSelectionMessage);
       return false;
     },
+    /**
+     * Every precheck an action button runs fails the same way, so a caller's other rules
+     * (an unfinished cascade value, for example) reject into this alert instead of growing
+     * their own inline error state. Returns `false` so a check reads as one `return`.
+     */
+    reject: (message: string) => {
+      setMessage(message);
+      return false;
+    },
     close: () => setMessage(undefined),
   };
 }

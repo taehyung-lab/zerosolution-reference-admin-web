@@ -25,9 +25,12 @@ export function ManagerListScreen({
     onSearchChange,
   });
 
-  // TRANSPLANT_PENDING_MANAGER_LIST_ACTIONS: product active/inactive intents stop here.
-  // Map them to the contracted bulk endpoint and payload when the real API is available.
-  const onActionIntent = () => undefined;
+  /**
+   * The request boundary. See `MemberListScreen` for the shape a real mutation takes here.
+   * TRANSPLANT_PENDING_MANAGER_LIST_ACTIONS: the assembled request stops here until the
+   * manager bulk contract exists.
+   */
+  const onActionRequest = () => undefined;
 
   return (
     <section>
@@ -41,7 +44,7 @@ export function ManagerListScreen({
             searched={data.searched}
             selectedIds={result.selectedIds}
             rows={data.rows}
-            onActionIntent={onActionIntent}
+            onActionRequest={onActionRequest}
           />
         }
       />

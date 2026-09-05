@@ -5,7 +5,7 @@ import { I18nextProvider } from 'react-i18next';
 import { describe, expect, it, vi } from 'vitest';
 import { i18n } from '@/shared/i18n/i18n';
 import { memberListDefinitions, type MemberListDefinition } from './member-list-definition';
-import type { MemberListActionIntent, MemberListRow } from './member-row';
+import type { MemberListActionRequest, MemberListRow } from './member-row';
 import { MemberListResult } from './MemberListResult';
 import { resolveMemberSearch, type MemberRouteSearch } from './search-schema';
 import type { MemberListData } from './useMemberListData';
@@ -25,7 +25,7 @@ function Harness({
   total,
   totalPages,
   onSearchChange = vi.fn(),
-  onActionIntent = vi.fn(),
+  onActionRequest = vi.fn(),
   onMemberActivate = vi.fn(),
   onRegister = vi.fn(),
   state = {},
@@ -36,7 +36,7 @@ function Harness({
   readonly total: number;
   readonly totalPages: number;
   readonly onSearchChange?: (next: MemberRouteSearch) => void;
-  readonly onActionIntent?: (intent: MemberListActionIntent) => void;
+  readonly onActionRequest?: (intent: MemberListActionRequest) => void;
   readonly onMemberActivate?: (memberId: string) => void;
   readonly onRegister?: () => void;
   readonly state?: Partial<Pick<MemberListData, "isPending" | "isError">>;
@@ -62,7 +62,7 @@ function Harness({
     <MemberListResult
       data={data}
       result={result}
-      toolbarRight={<MemberListActions searched={data.searched} selectedIds={result.selectedIds} onActionIntent={onActionIntent} onRegister={onRegister} />}
+      toolbarRight={<MemberListActions searched={data.searched} selectedIds={result.selectedIds} onActionRequest={onActionRequest} onRegister={onRegister} />}
       onMemberActivate={onMemberActivate}
     />
   );
@@ -116,8 +116,8 @@ describe('member list result', () => {
 
   it('keeps selection out of row activation and freezes bulk intent on confirmation', () => {
     const onMemberActivate = vi.fn();
-    const onActionIntent = vi.fn();
-    render(<Harness {...base} onMemberActivate={onMemberActivate} onActionIntent={onActionIntent} />);
+    const onActionRequest = vi.fn();
+    render(<Harness {...base} onMemberActivate={onMemberActivate} onActionRequest={onActionRequest} />);
 
     fireEvent.click(screen.getByRole('button', { name: '변경' }));
     expect(screen.getByRole('dialog')).toHaveTextContent('변경할 항목을 선택해주세요.');
@@ -134,7 +134,7 @@ describe('member list result', () => {
     fireEvent.click(screen.getByRole('button', { name: '변경' }));
     expect(screen.getByRole('dialog')).toHaveTextContent('선택 항목을 변경하시겠습니까?');
     fireEvent.click(screen.getByRole('button', { name: '확인' }));
-    expect(onActionIntent).toHaveBeenCalledExactlyOnceWith({
+    expect(onActionRequest).toHaveBeenCalledExactlyOnceWith({
       type: 'bulkChange',
       targetIds: ['opaque-1'],
       values: { accountStatus: 'general', restrictions: [] },
@@ -142,8 +142,8 @@ describe('member list result', () => {
   });
 
   it.each(['notSearched', 'loading', 'error', 'empty'] as const)('keeps confirmation and its snapshot through %s', (state) => {
-    const onActionIntent = vi.fn();
-    const { rerender } = render(<Harness {...base} onActionIntent={onActionIntent} />);
+    const onActionRequest = vi.fn();
+    const { rerender } = render(<Harness {...base} onActionRequest={onActionRequest} />);
     fireEvent.click(screen.getByRole('checkbox', { name: '김회원 선택' }));
     chooseTarget('일반회원');
     fireEvent.click(screen.getByRole('button', { name: '변경' }));
@@ -151,11 +151,11 @@ describe('member list result', () => {
       search={state === 'notSearched' ? {} : base.search}
       state={{ isPending: state === 'loading', isError: state === 'error' }}
       rows={state === 'empty' ? [] : rows}
-      onActionIntent={onActionIntent}
+      onActionRequest={onActionRequest}
     />);
     expect(screen.getByRole('dialog')).toHaveTextContent('선택 항목을 변경하시겠습니까?');
     fireEvent.click(screen.getByRole('button', { name: '확인' }));
-    expect(onActionIntent).toHaveBeenCalledExactlyOnceWith({ type: 'bulkChange', targetIds: ['opaque-1'], values: { accountStatus: 'general', restrictions: [] } });
+    expect(onActionRequest).toHaveBeenCalledExactlyOnceWith({ type: 'bulkChange', targetIds: ['opaque-1'], values: { accountStatus: 'general', restrictions: [] } });
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
@@ -220,29 +220,33 @@ describe('member list result', () => {
   });
 
   it('keeps the flagged cascade feature-local and blocks an incomplete intent', () => {
-    const onActionIntent = vi.fn();
-    render(<Harness {...base} definition={memberListDefinitions.flagged} onActionIntent={onActionIntent} />);
+    const onActionRequest = vi.fn();
+    render(<Harness {...base} definition={memberListDefinitions.flagged} onActionRequest={onActionRequest} />);
     fireEvent.click(screen.getByRole('checkbox', { name: '김회원 선택' }));
     chooseTarget('불량회원');
     fireEvent.click(screen.getByRole('button', { name: '변경' }));
 
-    expect(screen.getByRole('alert')).toHaveTextContent('변경할 계정 상태와 활동제한을 선택해주세요.');
-    expect(onActionIntent).not.toHaveBeenCalled();
+    // Every precheck rejects into the same alert, so a corrected value clears it by dismissal.
+    expect(screen.getByRole('dialog')).toHaveTextContent('변경할 계정 상태와 활동제한을 선택해주세요.');
+    expect(onActionRequest).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: '확인' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('keeps the flagged cascade through cancel and freezes it only on confirmation', () => {
-    const onActionIntent = vi.fn();
-    render(<Harness {...base} definition={memberListDefinitions.flagged} onActionIntent={onActionIntent} />);
+    const onActionRequest = vi.fn();
+    render(<Harness {...base} definition={memberListDefinitions.flagged} onActionRequest={onActionRequest} />);
     fireEvent.click(screen.getByRole('checkbox', { name: '김회원 선택' }));
     chooseTarget('불량회원');
     fireEvent.click(within(screen.getByRole('group', { name: '활동제한' })).getByRole('checkbox', { name: '스페셜콘텐츠' }));
     fireEvent.click(screen.getByRole('button', { name: '변경' }));
     fireEvent.click(screen.getByRole('button', { name: '취소' }));
-    expect(onActionIntent).not.toHaveBeenCalled();
+    expect(onActionRequest).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole('button', { name: '변경' }));
     fireEvent.click(screen.getByRole('button', { name: '확인' }));
-    expect(onActionIntent).toHaveBeenCalledWith({
+    expect(onActionRequest).toHaveBeenCalledWith({
       type: 'bulkChange',
       targetIds: ['opaque-1'],
       values: { accountStatus: 'flagged', restrictions: ['specialContent'] },
@@ -253,20 +257,20 @@ describe('member list result', () => {
     ['SMS', 'SMS 발송', 'sms'],
     ['이메일', '이메일 발송', 'email'],
   ] as const)('opens %s directly after selection without a confirmation step', (button, title, type) => {
-    const onActionIntent = vi.fn();
-    render(<Harness {...base} onActionIntent={onActionIntent} />);
+    const onActionRequest = vi.fn();
+    render(<Harness {...base} onActionRequest={onActionRequest} />);
     fireEvent.click(screen.getByRole('button', { name: 'SMS' }));
     expect(screen.getByRole('dialog')).toHaveTextContent('SMS를 발송할 항목을 선택해주세요.');
     fireEvent.click(screen.getByRole('button', { name: '확인' }));
     fireEvent.click(screen.getAllByRole('button', { name: '이메일' })[0]!);
     expect(screen.getByRole('dialog')).toHaveTextContent('이메일을 발송할 항목을 선택해주세요.');
     fireEvent.click(screen.getByRole('button', { name: '확인' }));
-    expect(onActionIntent).not.toHaveBeenCalled();
+    expect(onActionRequest).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole('checkbox', { name: '김회원 선택' }));
     fireEvent.click(screen.getAllByRole('button', { name: button })[0]!);
     expect(screen.getByRole('dialog')).toHaveAccessibleName(title);
     expect(screen.queryByRole('button', { name: '확인' })).not.toBeInTheDocument();
-    expect(onActionIntent).toHaveBeenCalledExactlyOnceWith({ type, targetIds: ['opaque-1'] });
+    expect(onActionRequest).toHaveBeenCalledExactlyOnceWith({ type, targetIds: ['opaque-1'] });
   });
 });

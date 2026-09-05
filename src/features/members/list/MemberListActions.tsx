@@ -5,19 +5,27 @@ import { Select } from '@/shared/ui/primitives/Select';
 import { BulkActionDialogs, SelectionAlert } from '@/shared/ui/patterns/BulkActionDialogs';
 import { FilterField } from '@/shared/ui/patterns/FilterField';
 import { useTranslation } from 'react-i18next';
-import type { MemberListActionIntent } from './member-row';
+import type { MemberListActionRequest } from './member-row';
 import { memberRestrictions } from './search-schema';
 import { useMemberListActions } from './useMemberListActions';
 
-export function MemberListActions({ searched, selectedIds, onActionIntent, onRegister }: {
+/**
+ * Owns the toolbar actions and the dialogs they open. The dialogs are mounted outside the
+ * `searched` branch on purpose: `ListResult` renders children only when ready, so an owner
+ * inside it unmounts on the loading transition that follows a confirmed change and the
+ * dialog disappears mid-workflow. Gate the buttons, never the owner.
+ */
+export function MemberListActions({ searched, selectedIds, onActionRequest, onRegister }: {
   readonly searched: boolean;
   readonly selectedIds: readonly string[];
-  readonly onActionIntent: (intent: MemberListActionIntent) => void;
+  readonly onActionRequest: (request: MemberListActionRequest) => void;
   readonly onRegister: () => void;
 }) {
   const { t } = useTranslation('members');
   const { t: sharedT } = useTranslation('shared');
-  const actions = useMemberListActions({ selectedIds, onActionIntent });
+  const actions = useMemberListActions({ selectedIds, onActionRequest });
+  // A local binding so the cascade union narrows inside the branch below.
+  const change = actions.change;
   // TRANSPLANT_PENDING_MEMBER_PERMISSION: replace the visible-action baseline when the
   // product permission identifiers are contracted.
   return (
@@ -28,30 +36,33 @@ export function MemberListActions({ searched, selectedIds, onActionIntent, onReg
             <div>
               <Select
                 aria-label={t('bulk.field')}
-                value={actions.target}
+                value={change?.accountStatus ?? null}
                 placeholder={t('bulk.select')}
                 options={[
                   { value: 'general', label: t('accountStatus.general') },
                   { value: 'flagged', label: t('accountStatus.flagged') },
                 ]}
                 onValueChange={(value) => {
-                  if (value === null || value === 'general' || value === 'flagged') actions.setTarget(value);
+                  if (value === 'general') actions.setChange({ accountStatus: 'general' });
+                  else if (value === 'flagged') actions.setChange({ accountStatus: 'flagged', restrictions: [] });
+                  else actions.setChange(null);
                 }}
               />
-              {actions.target === 'flagged' ? (
+              {change?.accountStatus === 'flagged' ? (
                 <FilterField label={t('filters.restrictions')}>
                   {({ labelId }) => (
                     <CheckboxTree
                       ariaLabelledby={labelId}
                       selectAllLabel={t('filters.all')}
                       nodes={memberRestrictions.map((value) => ({ value, label: t(`restriction.${value}`) }))}
-                      values={actions.restrictions}
-                      onValueChange={actions.setRestrictions}
+                      values={change.restrictions}
+                      onValueChange={(restrictions) =>
+                        actions.setChange({ accountStatus: 'flagged', restrictions })
+                      }
                     />
                   )}
                 </FilterField>
               ) : null}
-              {actions.incompleteError ? <p role="alert">{actions.incompleteError}</p> : null}
             </div>
             <Button onClick={actions.requestBulkChange}>{t('bulk.change')}</Button>
             <Button onClick={() => actions.requestMessage('sms')}>{t('actions.sms')}</Button>
@@ -63,9 +74,14 @@ export function MemberListActions({ searched, selectedIds, onActionIntent, onReg
       <BulkActionDialogs controller={actions.bulk} confirmDescription={sharedT('bulkAction.confirm')} />
       <SelectionAlert controller={actions.selectionGate} />
       <Dialog
-        open={actions.openPopup !== undefined}
-        onOpenChange={(open) => { if (!open) actions.closePopup(); }}
-        title={actions.openPopup ? t(`actions.${actions.openPopup}Title`) : t('dialog.title')}
+        open={actions.smsOpen}
+        onOpenChange={(open) => { if (!open) actions.closeSms(); }}
+        title={t('actions.smsTitle')}
+      />
+      <Dialog
+        open={actions.emailOpen}
+        onOpenChange={(open) => { if (!open) actions.closeEmail(); }}
+        title={t('actions.emailTitle')}
       />
     </>
   );

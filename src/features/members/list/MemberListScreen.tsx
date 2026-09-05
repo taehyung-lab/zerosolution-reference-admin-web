@@ -50,9 +50,23 @@ function MemberListScreen({
   });
   const title = t(definition.titleKey);
 
-  // TRANSPLANT_PENDING_MEMBER_LIST_ACTIONS: the assembled intent stops here until the
-  // member contract exists; wiring it to a mutation is the only change this needs.
-  const onActionIntent = () => undefined;
+  /**
+   * The request boundary. Everything above assembles a `MemberListActionRequest`; this is the
+   * only place that would send it, and today it sends nothing.
+   *
+   * TRANSPLANT_PENDING_MEMBER_LIST_ACTIONS: there is no member contract, so no mutation exists
+   * to call. When one does, this becomes the shape `features/managers` already uses — the
+   * options live in `features/members/api/mutations.ts` and only this function changes:
+   *
+   *   const bulkChange = useMutation(memberBulkChangeMutation());
+   *   const onActionRequest = (request: MemberListActionRequest) => {
+   *     if (request.type === 'bulkChange') void bulkChange.mutateAsync(request);
+   *   };
+   *
+   * The message channels open a composer instead of a request, so they stay separate.
+   * Success handling and cache consequence are outside this repository (AGENTS.md §4).
+   */
+  const onActionRequest = () => undefined;
 
   return (
     <section>
@@ -77,7 +91,7 @@ function MemberListScreen({
           <MemberListActions
             searched={data.searched}
             selectedIds={result.selectedIds}
-            onActionIntent={onActionIntent}
+            onActionRequest={onActionRequest}
             onRegister={onRegister}
           />
         }
