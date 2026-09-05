@@ -1,15 +1,14 @@
-import { filterPartitionKey, filterPartitionValues } from "./search-partition";
+import { filterPartitionKey, filterPartitionValues } from "@/shared/lib/search-partition";
 import { useDraftCommit } from "@/shared/lib/use-draft-commit";
 import { useKeywordDraft } from "@/shared/lib/use-keyword-draft";
 import { usePeriodDraft } from "@/shared/lib/use-period-draft";
-import { useState, type SubmitEvent } from "react";
+import { type SubmitEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { useManagerTypeOptions } from "../options/useManagerOptions";
 import { changeManagerView } from "./manager-list-policy";
 import {
   managerSearchPartition,
   resolveManagerSearch,
-  isManagerPeriodRangeOrdered,
   toManagerRouteSearch,
   type ManagerRouteSearch,
   type ManagerSearch,
@@ -54,15 +53,8 @@ export function useManagerListFilter({
     committed: resolveManagerSearch(search),
     resetKey: committedKey,
   });
-  const periodRangeKey = `${period.range.from ?? ""}:${period.range.to ?? ""}`;
-  const [invalidPeriodKey, setInvalidPeriodKey] = useState<string | null>(null);
   const submit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!isManagerPeriodRangeOrdered(period.range.from, period.range.to)) {
-      setInvalidPeriodKey(periodRangeKey);
-      return;
-    }
-    setInvalidPeriodKey(null);
     const keywords = keyword.itemsIncludingPending().map((item) => ({
       keywordType: item.field,
       keyword: item.value,
@@ -84,7 +76,6 @@ export function useManagerListFilter({
   };
   // The Managers sparse-search contract uses `{}` for its default view and default query.
   const reset = () => {
-    setInvalidPeriodKey(null);
     resetDraft();
     period.reset();
     keyword.reset();
@@ -102,10 +93,6 @@ export function useManagerListFilter({
     draft,
     preset: period.preset,
     range: period.range,
-    periodError:
-      invalidPeriodKey === periodRangeKey
-        ? t("filters.periodRangeOrderError")
-        : undefined,
     pendingKeyword: keyword.pending,
     keywordItems: keyword.items,
     patchDraft,

@@ -1,5 +1,6 @@
 import { formatDate } from '@/shared/lib/datetime';
 import { formatCount } from '@/shared/lib/format';
+import { usePageRowSelection } from '@/shared/lib/use-page-row-selection';
 import type { DataTableProps } from '@/shared/ui/patterns/DataTable';
 import type { ResultSummaryGroup } from '@/shared/ui/patterns/ResultSummary';
 import { useTranslation } from 'react-i18next';
@@ -38,6 +39,11 @@ export function useManagerListResult({
     onSearchChange(toManagerRouteSearch(next));
   const changeSort = (sortType: ManagerSortType) =>
     applySearch(selectManagerSort(search, sortType));
+  const selection = usePageRowSelection({
+    rows: data.rows,
+    getId: (row) => row.id,
+    resetKey: JSON.stringify(toManagerRouteSearch(search)),
+  });
 
   const columns: DataTableProps<ManagerListItem>['columns'] =
     buildManagerColumns({
@@ -45,6 +51,7 @@ export function useManagerListResult({
       formatDate,
       sort: { type: search.sortType, direction: search.sortDirection },
       onSortChange: changeSort,
+      selection,
     });
   const summaryGroups: readonly ResultSummaryGroup[] = [
     {
@@ -61,6 +68,7 @@ export function useManagerListResult({
   ];
 
   return {
+    selectedIds: selection.selectedIds,
     columns,
     summaryGroups,
     pageSize: {

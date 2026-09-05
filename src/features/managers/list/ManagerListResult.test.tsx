@@ -40,10 +40,12 @@ const sortableHeaders = () =>
 function ResultHarness({
   search = managerSearchDefaults,
   onSearchChange = vi.fn(),
+  onActionIntent = vi.fn(),
   value,
 }: {
   readonly search?: ManagerSearch;
   readonly onSearchChange?: (next: ManagerRouteSearch) => void;
+  readonly onActionIntent?: (intent: { readonly type: 'bulkChange'; readonly targetIds: readonly string[]; readonly values: { readonly accountStatus: 'active' | 'inactive' } }) => void;
   readonly value: ManagerListData;
 }) {
   const result = useManagerListResult({
@@ -51,10 +53,64 @@ function ResultHarness({
     data: value,
     onSearchChange,
   });
-  return <ManagerListResult data={value} result={result} />;
+  return <ManagerListResult data={value} result={result} onActionIntent={onActionIntent} />;
 }
 
 describe('ManagerListResult', () => {
+  it('requires rows, confirms the product status, and emits one intent only after confirmation', () => {
+    const onActionIntent = vi.fn();
+    renderResult(<ResultHarness value={data({ rows: [row('1')], total: 1 })} onActionIntent={onActionIntent} />);
+    fireEvent.click(screen.getByRole('button', { name: '변경' }));
+    expect(screen.getByRole('dialog')).toHaveTextContent('변경할 항목을 선택해주세요.');
+    fireEvent.click(screen.getByRole('button', { name: '확인' }));
+    expect(onActionIntent).not.toHaveBeenCalled();
+
+    const target = screen.getByRole('combobox', { name: '변경 항목' });
+    expect(within(target).getAllByRole('option').map((option) => option.textContent)).toEqual(['선택', '활성', '비활성']);
+    fireEvent.click(screen.getByRole('checkbox', { name: '1 선택' }));
+    fireEvent.click(screen.getByRole('button', { name: '변경' }));
+    expect(target).not.toHaveAttribute('aria-invalid');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    fireEvent.change(target, { target: { value: 'inactive' } });
+    fireEvent.click(screen.getByRole('button', { name: '변경' }));
+    expect(screen.getByRole('dialog')).toHaveTextContent('[대기, 거절, 잠금]은 상태를 변경할 수 없습니다.');
+    fireEvent.click(screen.getByRole('button', { name: '취소' }));
+    expect(onActionIntent).not.toHaveBeenCalled();
+    expect(target).toHaveValue('inactive');
+    expect(screen.getByRole('checkbox', { name: '1 선택' })).toBeChecked();
+
+    fireEvent.click(screen.getByRole('button', { name: '변경' }));
+    fireEvent.click(screen.getByRole('button', { name: '확인' }));
+    expect(onActionIntent).toHaveBeenCalledExactlyOnceWith({ type: 'bulkChange', targetIds: ['1'], values: { accountStatus: 'inactive' } });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: '1 선택' })).toBeChecked();
+  });
+
+  it('excludes confirmed waiting and locked rows before emitting an intent', () => {
+    const onActionIntent = vi.fn();
+    renderResult(<ResultHarness value={data({ rows: [
+      row('active'),
+      { ...row('waiting'), status: 'AWAITING' },
+      { ...row('locked'), status: 'LOCKED' },
+      { ...row('unmapped-inactive'), status: 'INACTIVE' },
+    ], total: 4 })} onActionIntent={onActionIntent} />);
+    fireEvent.click(screen.getByRole('checkbox', { name: '현재 페이지 전체 선택' }));
+    fireEvent.change(screen.getByRole('combobox', { name: '변경 항목' }), { target: { value: 'active' } });
+    fireEvent.click(screen.getByRole('button', { name: '변경' }));
+    fireEvent.click(screen.getByRole('button', { name: '확인' }));
+    expect(onActionIntent).toHaveBeenCalledExactlyOnceWith({ type: 'bulkChange', targetIds: ['active', 'unmapped-inactive'], values: { accountStatus: 'active' } });
+  });
+
+  it('does not emit an empty intent when every selected row is blocked', () => {
+    const onActionIntent = vi.fn();
+    renderResult(<ResultHarness value={data({ rows: [{ ...row('waiting'), status: 'AWAITING' }], total: 1 })} onActionIntent={onActionIntent} />);
+    fireEvent.click(screen.getByRole('checkbox', { name: 'waiting 선택' }));
+    fireEvent.change(screen.getByRole('combobox', { name: '변경 항목' }), { target: { value: 'active' } });
+    fireEvent.click(screen.getByRole('button', { name: '변경' }));
+    fireEvent.click(screen.getByRole('button', { name: '확인' }));
+    expect(onActionIntent).not.toHaveBeenCalled();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
   it('shows only the register action before the first search', () => {
     renderResult(<ResultHarness value={data({ searched: false })} />);
     expect(screen.getByText('검색 조건을 입력한 뒤 검색해 주세요.')).toBeInTheDocument();

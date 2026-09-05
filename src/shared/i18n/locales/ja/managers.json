@@ -46,7 +46,6 @@
     "period": "期間",
     "periodType": "期間基準",
     "periodPreset": "期間のクイック選択",
-    "periodRangeOrderError": "開始日は終了日より後にできません。",
     "keyword": "検索語",
     "keywordType": "検索語の区分",
     "type": "種別",
@@ -90,6 +89,15 @@
     "createdAt": "登録日",
     "updatedAt": "最終アクセス日"
   },
+  "bulk": {
+    "field": "変更項目",
+    "select": "選択",
+    "accountStatus": "アカウント状態",
+    "active": "有効",
+    "inactive": "無効",
+    "change": "変更",
+    "confirm": "［承認待ち、拒否、ロック］の状態は変更できません。\n選択項目を変更しますか？"
+  },
   "result": {
     "pageSize": "表示",
     "sort": "並び替え",
@@ -100,7 +108,7 @@
     "error": "一覧を読み込めませんでした。",
     "empty": "検索結果がありません。",
     "retry": "再試行",
-    "selectAll": "すべて選択",
+    "selectAll": "現在のページを全選択",
     "selectRow": "{{id}} を選択"
   },
   "form": {

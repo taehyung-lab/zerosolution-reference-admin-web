@@ -81,7 +81,7 @@ shared   api
 - `app/`: provider, router, shell, app-level boundary와 metadata
 - `routes/`: 입력 검증, entry guard, loader, screen 조립
 - `features/{domain}/`: 도메인 API 조합, model, 화면, workflow
-- `api/`: transport, 정규화 오류, Query 결과를 도메인 없는 facts로 바꾸는 공용 판정(`required-query.ts`), 교체 가능한 OpenAPI 생성물
+- `api/`: transport, 정규화 오류, Query 결과를 도메인 없는 facts로 바꾸는 공용 판정(필수 단건 `required-query.ts`, 페이지 목록 `list-query.ts`), 교체 가능한 OpenAPI 생성물
 - `shared/`: 도메인·서버 계약을 모르는 UI와 순수 공용 코드
 
 `src/shared/ui/form/UnsavedChangesGuard.tsx`만 dirty navigation을 한 곳에서 차단하기 위해 Router를 아는 예외다. Router blocker 없이 같은 이탈 계약을 보존할 수 있을 때 이 예외를 제거한다.

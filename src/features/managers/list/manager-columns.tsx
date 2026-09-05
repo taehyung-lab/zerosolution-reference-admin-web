@@ -1,5 +1,7 @@
+import type { PageRowSelection } from '@/shared/lib/use-page-row-selection';
 import type { DataTableProps } from '@/shared/ui/patterns/DataTable';
 import { Badge } from '@/shared/ui/primitives/Badge';
+import { Checkbox } from '@/shared/ui/primitives/Checkbox';
 import { Link } from '@tanstack/react-router';
 import type { TFunction } from 'i18next';
 import type { ManagerListItem } from '../model/manager';
@@ -26,11 +28,13 @@ export function buildManagerColumns({
   formatDate,
   sort,
   onSortChange,
+  selection,
 }: {
   readonly t: TFunction<'managers'>;
   readonly formatDate: (value: string) => string;
   readonly sort: ManagerSortState;
   readonly onSortChange: (sortType: ManagerSortType) => void;
+  readonly selection: PageRowSelection<ManagerListItem>;
 }): DataTableProps<ManagerListItem>['columns'] {
   /** A sortable column takes its id, label, and sort meta from the single sort table. */
   const sortable = (
@@ -53,6 +57,24 @@ export function buildManagerColumns({
   const dateCell = (value: string) => (value === '-' ? '-' : formatDate(value));
 
   return [
+    {
+      id: 'selection',
+      header: () => (
+        <Checkbox
+          aria-label={t('result.selectAll')}
+          checked={selection.isAllChecked}
+          indeterminate={selection.isMixed}
+          onChange={(event) => selection.togglePage(event.target.checked)}
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          aria-label={t('result.selectRow', { id: row.original.id })}
+          checked={selection.isChecked(row.original)}
+          onChange={(event) => selection.toggleRow(row.original, event.target.checked)}
+        />
+      ),
+    },
     sortable('TYPE', { accessorKey: 'type' }),
     sortable('ORGANIZATION', { accessorKey: 'organization' }),
     sortable('ID', {

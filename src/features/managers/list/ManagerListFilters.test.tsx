@@ -109,7 +109,7 @@ describe("ManagerListFilters", () => {
     ).toBeInTheDocument();
   });
 
-  it("blocks an inverted custom period and exposes a feature-owned error", async () => {
+  it("clears the stale bound when a typed date would reverse the range", async () => {
     const onSearchChange = vi.fn();
     render(
       <Providers>
@@ -126,10 +126,10 @@ describe("ManagerListFilters", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "검색" }));
 
-    expect(onSearchChange).not.toHaveBeenCalled();
-    expect(screen.getByRole("alert")).toHaveTextContent(
-      "시작일은 종료일보다 늦을 수 없습니다.",
-    );
+    expect(screen.getByLabelText("시작일")).toHaveValue("");
+    expect(screen.getByLabelText("종료일")).toHaveValue("2026-08-31");
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(onSearchChange).toHaveBeenCalledTimes(1);
   });
 
   it("uses localized field labels in committed keyword chips", async () => {

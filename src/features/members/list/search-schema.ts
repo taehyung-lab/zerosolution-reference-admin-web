@@ -1,3 +1,4 @@
+import type { SearchFieldPartition } from '@/shared/lib/search-partition';
 import { compactSearchValues } from '@/shared/lib/compact-search-values';
 import { z } from 'zod';
 
@@ -74,6 +75,24 @@ export const generalMemberCanonicalSearchSchema = memberCanonicalSearchSchema.tr
 export const flaggedMemberCanonicalSearchSchema = memberCanonicalSearchSchema.transform(
   (search) => compactSearchValues({ ...search, accountStatuses: undefined }),
 );
+
+/**
+ * Filter fields survive a draft; view fields are read back from the committed search, so a
+ * sort or page-size commit is never undone by the next filter submit.
+ */
+export const memberSearchPartition = {
+  periodType: 'filter',
+  startDateTime: 'filter',
+  endDateTime: 'filter',
+  keywords: 'filter',
+  signupMethods: 'filter',
+  accountStatuses: 'filter',
+  restrictions: 'filter',
+  sortType: 'view',
+  sortDirection: 'view',
+  page: 'view',
+  pageSize: 'view',
+} as const satisfies SearchFieldPartition<MemberRouteSearch>;
 
 export interface MemberSearch {
   readonly periodType: (typeof memberPeriodTypes)[number];

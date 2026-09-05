@@ -70,7 +70,18 @@ export function usePeriodDraft({
     });
   };
 
-  const setRange = (nextRange: DisplayDateRange) =>
+  /**
+   * Notion states every date limit as 선택 불가, never as an error message, and the pickers
+   * already carry min/max. A bound typed past the other one is the one path min/max cannot
+   * stop, so the bound just edited wins and the stale one clears.
+   */
+  const setRange = (input: DisplayDateRange) => {
+    const nextRange =
+      input.from && input.to && input.from > input.to
+        ? input.from === range.from
+          ? { to: input.to }
+          : { from: input.from }
+        : input;
     setDraft({
       preset: 'CUSTOM',
       ...(nextRange.from
@@ -80,6 +91,7 @@ export function usePeriodDraft({
         ? { endDateTime: utcDayBoundary(nextRange.to, 'end', timezone) }
         : {}),
     });
+  };
 
   return {
     preset: draft.preset,

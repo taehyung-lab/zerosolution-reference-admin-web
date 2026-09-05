@@ -46,7 +46,6 @@
     "period": "Period",
     "periodType": "Period basis",
     "periodPreset": "Period quick selection",
-    "periodRangeOrderError": "Start date must not be after end date.",
     "keyword": "Keyword",
     "keywordType": "Keyword field",
     "type": "Type",
@@ -90,6 +89,15 @@
     "createdAt": "Created at",
     "updatedAt": "Last access"
   },
+  "bulk": {
+    "field": "Change field",
+    "select": "Select",
+    "accountStatus": "Account status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "change": "Change",
+    "confirm": "Accounts with awaiting, rejected or locked status cannot be changed.\nChange the selected items?"
+  },
   "result": {
     "pageSize": "Rows",
     "sort": "Sort",
@@ -100,7 +108,7 @@
     "error": "Could not load the list.",
     "empty": "No search results.",
     "retry": "Retry",
-    "selectAll": "Select all",
+    "selectAll": "Select the current page",
     "selectRow": "Select {{id}}"
   },
   "form": {

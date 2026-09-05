@@ -1,5 +1,5 @@
 import { canonicalSearchGuard } from '@/app/router/canonical-search-guard';
-import { FlaggedMemberListScreen } from '@/features/members/list/MemberListScreens';
+import { FlaggedMemberListScreen } from '@/features/members/list/MemberListScreen';
 import { flaggedMemberCanonicalSearchSchema, memberSearchSchema, type MemberRouteSearch } from '@/features/members/list/search-schema';
 import { createFileRoute } from '@tanstack/react-router';
 
@@ -15,9 +15,7 @@ function FlaggedMemberListRoute() {
   return (
     <FlaggedMemberListScreen
       search={search}
-      data={{ rows: [], total: 0, totalPages: 1 }}
       onSearchChange={(next: MemberRouteSearch) => { void navigate({ search: () => next }); }}
-      onActionIntent={() => undefined}
       onMemberActivate={(memberId) => { void navigate({ to: '/members/$memberId', params: { memberId } }); }}
       onRegister={() => { void navigate({ to: '/members/new' }); }}
     />
