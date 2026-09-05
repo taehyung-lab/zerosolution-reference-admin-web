@@ -1,0 +1,16 @@
+{
+  "screens": { "all": "전체회원", "general": "일반회원", "flagged": "불량회원", "allTooltip": "활성회원을 조회 및 관리합니다.", "help": "전체회원 안내" },
+  "breadcrumb": "회원 > 활성회원 > {{title}}",
+  "search": "검색",
+  "reset": "초기화",
+  "filters": { "period": "기간", "periodType": "기간 기준", "periodPreset": "기간 빠른 선택", "periodRangeOrderError": "시작일은 종료일보다 늦을 수 없습니다.", "keyword": "검색어", "keywordType": "검색 대상", "duplicateKeywordTarget": "같은 검색 대상은 한 번만 추가할 수 있습니다.", "signupMethod": "가입방법", "accountStatus": "계정 상태", "restrictions": "활동제한", "all": "전체", "add": "추가", "remove": "{{value}} 삭제", "collapse": "검색 접기", "expand": "검색 펼치기", "startDate": "시작일", "endDate": "종료일", "calendar": "달력 열기" },
+  "signup": { "direct": "직접가입", "kakao": "카카오", "naver": "네이버", "apple": "애플", "melon": "멜론 간편가입" },
+  "accountStatus": { "general": "일반회원", "flagged": "불량회원" },
+  "restriction": { "specialContent": "스페셜콘텐츠", "inquiry": "1:1문의", "entry": "입장제한설정" },
+  "columns": { "grade": "등급", "signupMethod": "가입방법", "email": "이메일", "name": "이름", "phone": "휴대폰번호", "accountStatus": "계정 상태", "joinedAt": "가입일", "lastAccessedAt": "최근접속일", "restrictions": "활동제한" },
+  "result": { "total": "검색결과 : {{count}}", "pageSize": "보기", "sort": "정렬", "paginationLabel": "페이지 이동", "previous": "이전", "next": "다음", "notSearched": "검색해주세요.", "empty": "검색 결과가 없습니다.", "selectPage": "현재 페이지 전체 선택", "selectRow": "{{name}} 선택" },
+  "bulk": { "field": "변경 항목", "select": "선택", "change": "변경", "incomplete": "변경할 계정 상태와 활동제한을 선택해주세요." },
+  "actions": { "sms": "SMS", "email": "이메일", "register": "등록", "smsMissing": "SMS를 발송할 항목을 선택해주세요.", "emailMissing": "이메일을 발송할 항목을 선택해주세요.", "smsTitle": "SMS 발송", "emailTitle": "이메일 발송" },
+  "dialog": { "title": "알림", "acknowledge": "확인" },
+  "stubs": { "detail": "회원 조회는 후속 이슈에서 구현합니다.", "create": "회원 등록은 후속 이슈에서 구현합니다." }
+}

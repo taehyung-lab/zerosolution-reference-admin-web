@@ -61,6 +61,18 @@
   "alert": {
     "title": "Alert"
   },
+  "bulkAction": {
+    "missingSelection": "Select items to change.",
+    "confirm": "Change the selected items?",
+    "acknowledge": "Confirm",
+    "cancel": "Cancel"
+  },
+  "bulkAction": {
+    "missingSelection": "Select items to change.",
+    "confirm": "Change the selected items?",
+    "acknowledge": "Confirm",
+    "cancel": "Cancel"
+  },
   "formSave": {
     "confirmDescription": "Would you like to save?",
     "confirm": "Confirm",

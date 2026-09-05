@@ -1,6 +1,6 @@
 # 0009. 목록·필터 공용화 경계와 레퍼런스 검증
 
-- 상태: 공용화 방향 승인됨 — Managers 첫 consumer, 두 번째 실제 consumer 미확인
+- 상태: 공용화 방향 승인됨 — Managers와 활성회원 목록 비교 완료, 단위별 단계는 아래 표
 - 날짜: 2026-08-28
 - 근거 재확인: 2026-09-04 — Figma frame 보유 leaf page 59개·top-level frame 272개 + Notion Feature 72페이지 전체 인벤토리로 재판정
 - 적용 범위: 레퍼런스 프로젝트의 목록·필터·결과 mechanic
@@ -113,9 +113,19 @@ Figma 원장의 field-level evidence는 현재 surface와 의도적 차이를 �
 판정한다. 코드 변경 후 최신 화면이 같은지 여부는 focused test와 실제 browser 대조가 각각 검사한
 범위로만 보고한다.
 
-## 첫 consumer 판정과 미확인
+## 두 번째 consumer 판정과 미확인
 
-Managers vertical slice는 sparse URL → resolved defaults → draft commit → Query → result/table 흐름에서 위 경계를 소비한다. 이 사실은 구현 가능성과 첫 경계 검증을 뜻하며, 최신 작업 트리의 green이나 디자인 일치를 대신하지 않는다. 완료 판정은 관련 focused test, `pnpm verify`, 필요한 브라우저·Figma 실측이 각각 실제로 검사한 범위만 주장한다.
+2026-09-05 활성회원 전체·일반·불량 3 route가 Managers 다음 실제 consumer가 됐다. 회원 계약이 없어 API·Query는 연결하지 않고 URL commit과 action intent 직전까지만 비교했으며, focused test와 browser가 실제로 검사한 범위만 단계에 반영한다.
+
+| 단위 | 단계 | 두 consumer 비교와 경계 |
+| --- | --- | --- |
+| `CheckboxTree(emptyMeansAll)` | **confirmed** | Managers와 회원 필터 모두 leaf-only 값·전체 선택=`[]`·caller enum 소유가 일치. domain mode 없이 같은 API를 소비한다 |
+| `DataTable` 기본·`meta.sort` | **confirmed** | 두 목록 모두 feature column·opaque `getRowId`·단일 active `aria-sort`를 사용하고 URL/sort policy는 feature에 남긴다 |
+| `Accordion`/filter/draft/period/keyword·page controls | **confirmed** | `FilterPanel`이 공용 `Accordion` disclosure를 조립하고 두 목록의 draft 보존, UTC range, URL commit, page reset이 일치한다. 회원의 중복 target 거부는 feature validation이라 shared API를 넓히지 않았다 |
+| `ListResult`·summary·toolbar | **provisional 유지** | 회원은 API가 없어 `notSearched`·`empty`·ready 조립만 비교했다. loading/error/retry failure lifecycle은 두 번째 real workflow에서 확인하지 못했다 |
+| 행 활성화 | **provisional shared** | 첫 code consumer. `DataTable.onRowActivate(row)`가 pointer·Enter·Space와 interactive child 제외만 소유하고 destination·permission은 feature callback에 남긴다 |
+| 일괄변경 alert 연쇄 | **provisional shared** | 첫 code consumer. 선택 유무 판정과 frozen opaque values·`run(values)`까지만 소유하며 ID·cascade·권한·호출 이후는 feature가 소유한다 |
+| Tooltip | **provisional source-owned primitive** | 첫 code consumer. trigger/content·focus/hover·Escape와 접근 가능한 연결만 소유하며 header copy는 feature에 남긴다 |
 
 다음은 미확인이라 공용화하거나 구현하지 않는다.
 
@@ -127,9 +137,7 @@ Managers vertical slice는 sparse URL → resolved defaults → draft commit →
 - rehearsal `INACTIVE`와 Figma의 거절·비활성 상태 의미의 대응
 - array·object-array query의 실제 서버 wire binding
 
-두 번째 후보는 Figma의 전체회원 목록이지만 신규 회원 계약이 없어 현재 confirm/demote 판정이 불가능하다. 회원별 통계는 목록 전체가 아니라 기간 mechanic만 독립 비교할 후보다. 계약이 연결되기 전에는 리허설 endpoint를 대신 쓰거나 Figma에서 runtime 정책을 추론하지 않는다.
-
-2026-09-04 전수 인벤토리는 근거를 보강했지만 코드 consumer는 여전히 Managers 하나다. 새 관찰 후보는 Tabs(7 surface/8 set, APP PUSH 타겟 포함), Tooltip(디자인 시스템과 page header 반복), 행 활성화(18회), 상태 count 클릭 필터(발권 5 variant), 빈 값 `-` 표현(9회)이다. 이들은 접근성·controlled interaction 또는 표현만 shared가 맡고 URL·Query·권한·destination·absence 판정은 feature에 남긴다는 경계만 기록하며 아직 단계 값을 부여하지 않는다.
+회원별 통계는 목록 전체가 아니라 기간 mechanic만 독립 비교할 후보다. 계약이 연결되기 전에는 리허설 endpoint를 대신 쓰거나 Figma에서 runtime 정책을 추론하지 않는다. 아직 code consumer가 없는 Tabs·상태 count 클릭 필터·빈 값 `-` 표현은 후보일 뿐 단계 값을 부여하지 않는다.
 
 range slider는 `129:32748`에서 출처가 확인됐지만 다른 발권 4 variant에는 미확인이고, 선택 label registry는 cardinality, 보기·정렬 마지막값은 저장 범위, `- 이하 생략 -`은 의미가 미확인이다. 팝업 안 목록은 `table-composition.md` kind E의 component-local params로 충분하며 새 controller가 필요하지 않는다.
 

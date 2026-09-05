@@ -14,8 +14,13 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppManagersIndexRouteImport } from './routes/_app/managers/index'
 import { Route as AppManagersNewRouteImport } from './routes/_app/managers/new'
+import { Route as AppMembersNewRouteImport } from './routes/_app/members/new'
 import { Route as AppManagersManagerIdIndexRouteImport } from './routes/_app/managers/$managerId/index'
 import { Route as AppManagersManagerIdEditRouteImport } from './routes/_app/managers/$managerId/edit'
+import { Route as AppMembersMemberIdIndexRouteImport } from './routes/_app/members/$memberId/index'
+import { Route as AppMembersActiveAllRouteImport } from './routes/_app/members/active/all'
+import { Route as AppMembersActiveFlaggedRouteImport } from './routes/_app/members/active/flagged'
+import { Route as AppMembersActiveGeneralRouteImport } from './routes/_app/members/active/general'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -41,6 +46,11 @@ const AppManagersNewRoute = AppManagersNewRouteImport.update({
   path: '/managers/new',
   getParentRoute: () => AppRoute,
 } as any)
+const AppMembersNewRoute = AppMembersNewRouteImport.update({
+  id: '/members/new',
+  path: '/members/new',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppManagersManagerIdIndexRoute =
   AppManagersManagerIdIndexRouteImport.update({
     id: '/managers/$managerId/',
@@ -53,22 +63,52 @@ const AppManagersManagerIdEditRoute =
     path: '/managers/$managerId/edit',
     getParentRoute: () => AppRoute,
   } as any)
+const AppMembersMemberIdIndexRoute = AppMembersMemberIdIndexRouteImport.update({
+  id: '/members/$memberId/',
+  path: '/members/$memberId/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMembersActiveAllRoute = AppMembersActiveAllRouteImport.update({
+  id: '/members/active/all',
+  path: '/members/active/all',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMembersActiveFlaggedRoute = AppMembersActiveFlaggedRouteImport.update({
+  id: '/members/active/flagged',
+  path: '/members/active/flagged',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMembersActiveGeneralRoute = AppMembersActiveGeneralRouteImport.update({
+  id: '/members/active/general',
+  path: '/members/active/general',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/managers/new': typeof AppManagersNewRoute
+  '/members/new': typeof AppMembersNewRoute
   '/managers/': typeof AppManagersIndexRoute
   '/managers/$managerId/edit': typeof AppManagersManagerIdEditRoute
+  '/members/active/all': typeof AppMembersActiveAllRoute
+  '/members/active/flagged': typeof AppMembersActiveFlaggedRoute
+  '/members/active/general': typeof AppMembersActiveGeneralRoute
   '/managers/$managerId/': typeof AppManagersManagerIdIndexRoute
+  '/members/$memberId/': typeof AppMembersMemberIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/managers/new': typeof AppManagersNewRoute
+  '/members/new': typeof AppMembersNewRoute
   '/managers': typeof AppManagersIndexRoute
   '/managers/$managerId/edit': typeof AppManagersManagerIdEditRoute
+  '/members/active/all': typeof AppMembersActiveAllRoute
+  '/members/active/flagged': typeof AppMembersActiveFlaggedRoute
+  '/members/active/general': typeof AppMembersActiveGeneralRoute
   '/managers/$managerId': typeof AppManagersManagerIdIndexRoute
+  '/members/$memberId': typeof AppMembersMemberIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -76,9 +116,14 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/_app/managers/new': typeof AppManagersNewRoute
+  '/_app/members/new': typeof AppMembersNewRoute
   '/_app/managers/': typeof AppManagersIndexRoute
   '/_app/managers/$managerId/edit': typeof AppManagersManagerIdEditRoute
+  '/_app/members/active/all': typeof AppMembersActiveAllRoute
+  '/_app/members/active/flagged': typeof AppMembersActiveFlaggedRoute
+  '/_app/members/active/general': typeof AppMembersActiveGeneralRoute
   '/_app/managers/$managerId/': typeof AppManagersManagerIdIndexRoute
+  '/_app/members/$memberId/': typeof AppMembersMemberIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -86,26 +131,41 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/managers/new'
+    | '/members/new'
     | '/managers/'
     | '/managers/$managerId/edit'
+    | '/members/active/all'
+    | '/members/active/flagged'
+    | '/members/active/general'
     | '/managers/$managerId/'
+    | '/members/$memberId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/login'
     | '/managers/new'
+    | '/members/new'
     | '/managers'
     | '/managers/$managerId/edit'
+    | '/members/active/all'
+    | '/members/active/flagged'
+    | '/members/active/general'
     | '/managers/$managerId'
+    | '/members/$memberId'
   id:
     | '__root__'
     | '/'
     | '/_app'
     | '/login'
     | '/_app/managers/new'
+    | '/_app/members/new'
     | '/_app/managers/'
     | '/_app/managers/$managerId/edit'
+    | '/_app/members/active/all'
+    | '/_app/members/active/flagged'
+    | '/_app/members/active/general'
     | '/_app/managers/$managerId/'
+    | '/_app/members/$memberId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -151,6 +211,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppManagersNewRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/members/new': {
+      id: '/_app/members/new'
+      path: '/members/new'
+      fullPath: '/members/new'
+      preLoaderRoute: typeof AppMembersNewRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/managers/$managerId/': {
       id: '/_app/managers/$managerId/'
       path: '/managers/$managerId'
@@ -165,21 +232,59 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppManagersManagerIdEditRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/members/$memberId/': {
+      id: '/_app/members/$memberId/'
+      path: '/members/$memberId'
+      fullPath: '/members/$memberId/'
+      preLoaderRoute: typeof AppMembersMemberIdIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/members/active/all': {
+      id: '/_app/members/active/all'
+      path: '/members/active/all'
+      fullPath: '/members/active/all'
+      preLoaderRoute: typeof AppMembersActiveAllRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/members/active/flagged': {
+      id: '/_app/members/active/flagged'
+      path: '/members/active/flagged'
+      fullPath: '/members/active/flagged'
+      preLoaderRoute: typeof AppMembersActiveFlaggedRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/members/active/general': {
+      id: '/_app/members/active/general'
+      path: '/members/active/general'
+      fullPath: '/members/active/general'
+      preLoaderRoute: typeof AppMembersActiveGeneralRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
   AppManagersNewRoute: typeof AppManagersNewRoute
+  AppMembersNewRoute: typeof AppMembersNewRoute
   AppManagersIndexRoute: typeof AppManagersIndexRoute
   AppManagersManagerIdEditRoute: typeof AppManagersManagerIdEditRoute
+  AppMembersActiveAllRoute: typeof AppMembersActiveAllRoute
+  AppMembersActiveFlaggedRoute: typeof AppMembersActiveFlaggedRoute
+  AppMembersActiveGeneralRoute: typeof AppMembersActiveGeneralRoute
   AppManagersManagerIdIndexRoute: typeof AppManagersManagerIdIndexRoute
+  AppMembersMemberIdIndexRoute: typeof AppMembersMemberIdIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppManagersNewRoute: AppManagersNewRoute,
+  AppMembersNewRoute: AppMembersNewRoute,
   AppManagersIndexRoute: AppManagersIndexRoute,
   AppManagersManagerIdEditRoute: AppManagersManagerIdEditRoute,
+  AppMembersActiveAllRoute: AppMembersActiveAllRoute,
+  AppMembersActiveFlaggedRoute: AppMembersActiveFlaggedRoute,
+  AppMembersActiveGeneralRoute: AppMembersActiveGeneralRoute,
   AppManagersManagerIdIndexRoute: AppManagersManagerIdIndexRoute,
+  AppMembersMemberIdIndexRoute: AppMembersMemberIdIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

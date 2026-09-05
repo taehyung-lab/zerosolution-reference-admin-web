@@ -1,4 +1,5 @@
-import { useId, useState, type ReactNode, type SubmitEvent } from "react";
+import { useState, type ReactNode, type SubmitEvent } from "react";
+import { Accordion } from "../primitives/Accordion";
 export function FilterPanel({
   children,
   onSubmit,
@@ -19,7 +20,6 @@ export function FilterPanel({
   resetLabel: string;
 }) {
   const [collapsed, setCollapsed] = useState(false);
-  const controlsId = `filter-panel-${useId()}`;
   return (
     <form
       aria-label={title}
@@ -27,21 +27,19 @@ export function FilterPanel({
       noValidate
       onSubmit={onSubmit}
     >
-      {title ? (
-        <div className="mb-4 flex items-center justify-between border-b pb-3">
-          <strong>{title}</strong>
-          <button
-            aria-controls={controlsId}
-            aria-expanded={!collapsed}
-            aria-label={collapsed ? expandLabel : collapseLabel}
-            type="button"
-            onClick={() => setCollapsed((value) => !value)}
-          >
-            {collapsed ? "+" : "−"}
-          </button>
-        </div>
-      ) : null}
-      <div id={controlsId} hidden={collapsed}>
+      <Accordion
+        open={!collapsed}
+        keepMounted
+        onOpenChange={(open) => setCollapsed(!open)}
+        triggerAriaLabel={collapsed ? expandLabel : collapseLabel}
+        trigger={(
+          <span className="flex items-center justify-between">
+            <strong>{title}</strong>
+            <span aria-hidden="true">{collapsed ? "+" : "−"}</span>
+          </span>
+        )}
+        headerClassName="mb-4 border-b pb-3"
+      >
         <div className="grid gap-4">{children}</div>
         <div className="mt-4 flex justify-center gap-2">
           <button
@@ -58,7 +56,7 @@ export function FilterPanel({
             {resetLabel}
           </button>
         </div>
-      </div>
+      </Accordion>
     </form>
   );
 }
