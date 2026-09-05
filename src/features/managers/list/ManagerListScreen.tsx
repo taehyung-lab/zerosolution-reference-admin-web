@@ -24,11 +24,15 @@ export function ManagerListScreen({
     onSearchChange,
   });
 
+  // TRANSPLANT_PENDING_MANAGER_LIST_ACTIONS: product active/inactive intents stop here.
+  // Map them to the contracted bulk endpoint and payload when the real API is available.
+  const onActionIntent = () => undefined;
+
   return (
     <section>
       <PageHeader breadcrumb={t('breadcrumb')} title={t('title')} />
       <ManagerListFilters filter={filter} />
-      <ManagerListResult data={data} result={result} />
+      <ManagerListResult data={data} result={result} onActionIntent={onActionIntent} />
     </section>
   );
 }

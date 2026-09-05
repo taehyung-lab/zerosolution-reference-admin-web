@@ -1,4 +1,3 @@
-import { useId } from "react";
 import { Calendar } from "../primitives/Calendar";
 import { Popover } from "../primitives/Popover";
 import { RadioGroup, RadioGroupItem } from "../primitives/RadioGroup";
@@ -18,7 +17,6 @@ export interface PeriodFieldProps {
   readonly toLabel: string;
   readonly calendarLabel: string;
   readonly presetGroupLabel?: string;
-  readonly error?: string;
 }
 
 export function PeriodField({
@@ -32,10 +30,7 @@ export function PeriodField({
   toLabel,
   calendarLabel,
   presetGroupLabel,
-  error,
 }: PeriodFieldProps) {
-  const errorId = useId();
-  const describedBy = error ? errorId : undefined;
 
   return (
     <div className="flex flex-wrap items-start gap-2">
@@ -53,11 +48,8 @@ export function PeriodField({
       <div>
         <div
           className="flex min-h-10 items-center rounded border border-neutral-300 bg-white focus-within:ring-2 focus-within:ring-neutral-900"
-          data-invalid={error ? "true" : undefined}
         >
           <input
-            aria-describedby={describedBy}
-            aria-invalid={error ? "true" : undefined}
             aria-label={fromLabel}
             className="min-h-9 w-36 border-0 bg-transparent px-2 text-sm outline-none"
             max={range.to}
@@ -69,8 +61,6 @@ export function PeriodField({
           />
           <span aria-hidden="true" className="text-neutral-400">~</span>
           <input
-            aria-describedby={describedBy}
-            aria-invalid={error ? "true" : undefined}
             aria-label={toLabel}
             className="min-h-9 w-36 border-0 bg-transparent px-2 text-sm outline-none"
             min={range.from}
@@ -110,11 +100,6 @@ export function PeriodField({
             </div>
           </Popover>
         </div>
-        {error ? (
-          <p className="mt-1 text-sm text-red-700" id={errorId} role="alert">
-            {error}
-          </p>
-        ) : null}
       </div>
     </div>
   );

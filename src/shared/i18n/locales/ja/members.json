@@ -3,7 +3,7 @@
   "breadcrumb": "会員 > アクティブ会員 > {{title}}",
   "search": "検索",
   "reset": "初期化",
-  "filters": { "period": "期間", "periodType": "期間基準", "periodPreset": "期間クイック選択", "periodRangeOrderError": "開始日は終了日より後にできません。", "keyword": "検索語", "keywordType": "検索対象", "duplicateKeywordTarget": "同じ検索対象は一度だけ追加できます。", "signupMethod": "登録方法", "accountStatus": "アカウント状態", "restrictions": "活動制限", "all": "全体", "add": "追加", "remove": "{{value}}を削除", "collapse": "検索を閉じる", "expand": "検索を開く", "startDate": "開始日", "endDate": "終了日", "calendar": "カレンダーを開く" },
+  "filters": { "period": "期間", "periodType": "期間基準", "periodPreset": "期間クイック選択", "keyword": "検索語", "keywordType": "検索対象", "signupMethod": "登録方法", "accountStatus": "アカウント状態", "restrictions": "活動制限", "all": "全体", "add": "追加", "remove": "{{value}}を削除", "collapse": "検索を閉じる", "expand": "検索を開く", "startDate": "開始日", "endDate": "終了日", "calendar": "カレンダーを開く" },
   "signup": { "direct": "直接登録", "kakao": "カカオ", "naver": "ネイバー", "apple": "Apple", "melon": "Melon簡単登録" },
   "accountStatus": { "general": "一般会員", "flagged": "不良会員" },
   "restriction": { "specialContent": "スペシャルコンテンツ", "inquiry": "1:1お問い合わせ", "entry": "入場制限設定" },

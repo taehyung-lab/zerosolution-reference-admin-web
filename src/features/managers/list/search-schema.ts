@@ -1,6 +1,6 @@
 import { compactSearchValues } from '@/shared/lib/compact-search-values';
 import { resolveSearchDefaults, type Resolved } from '@/shared/lib/search';
-import type { SearchFieldPartition } from './search-partition';
+import type { SearchFieldPartition } from '@/shared/lib/search-partition';
 import { z } from 'zod';
 import {
   managerPeriodTypes,
@@ -25,13 +25,6 @@ const sparseArray = <T extends z.ZodType>(item: T) =>
     )
     .optional()
     .catch(undefined);
-
-export function isManagerPeriodRangeOrdered(
-  start: string | undefined,
-  end: string | undefined,
-): boolean {
-  return start === undefined || end === undefined || start <= end;
-}
 
 function isManagerPeriodInstantRangeOrdered(
   start: string | undefined,

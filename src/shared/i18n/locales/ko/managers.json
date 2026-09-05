@@ -46,7 +46,6 @@
     "period": "기간",
     "periodType": "기간 기준",
     "periodPreset": "기간 빠른 선택",
-    "periodRangeOrderError": "시작일은 종료일보다 늦을 수 없습니다.",
     "keyword": "검색어",
     "keywordType": "검색어 구분",
     "type": "유형",
@@ -90,6 +89,15 @@
     "createdAt": "가입일",
     "updatedAt": "최근접속일"
   },
+  "bulk": {
+    "field": "변경 항목",
+    "select": "선택",
+    "accountStatus": "계정 상태",
+    "active": "활성",
+    "inactive": "비활성",
+    "change": "변경",
+    "confirm": "[대기, 거절, 잠금]은 상태를 변경할 수 없습니다.\n선택 항목을 변경하시겠습니까?"
+  },
   "result": {
     "pageSize": "보기",
     "sort": "정렬",
@@ -100,7 +108,7 @@
     "error": "목록을 불러오지 못했습니다.",
     "empty": "검색 결과가 없습니다.",
     "retry": "다시 시도",
-    "selectAll": "전체 선택",
+    "selectAll": "현재 페이지 전체 선택",
     "selectRow": "{{id}} 선택"
   },
   "form": {

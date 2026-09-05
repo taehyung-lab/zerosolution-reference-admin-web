@@ -130,32 +130,25 @@ describe("list patterns", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("associates a caller-owned range error with both date inputs", () => {
+  // Notion states date limits as 선택 불가, never as an error message, so each bound bounds the other.
+  it("bounds each date input by the other instead of reporting a reversed range", () => {
     render(
       <PeriodField
         preset="CUSTOM"
         presets={[{ value: "ALL", label: "All" }]}
         customLabel="Custom"
         onPresetChange={vi.fn()}
-        range={{ from: "2026-09-01", to: "2026-08-31" }}
+        range={{ from: "2026-08-31", to: "2026-09-01" }}
         fromLabel="From"
         toLabel="To"
         calendarLabel="Calendar"
-        error="Start date must not be after end date."
         onRangeChange={vi.fn()}
       />,
     );
 
-    expect(screen.getByRole("alert")).toHaveTextContent(
-      "Start date must not be after end date.",
-    );
-    expect(screen.getByLabelText("From")).toHaveAttribute("max", "2026-08-31");
-    expect(screen.getByLabelText("From")).toHaveAttribute(
-      "aria-invalid",
-      "true",
-    );
-    expect(screen.getByLabelText("To")).toHaveAttribute("min", "2026-09-01");
-    expect(screen.getByLabelText("To")).toHaveAttribute("aria-invalid", "true");
+    expect(screen.getByLabelText("From")).toHaveAttribute("max", "2026-09-01");
+    expect(screen.getByLabelText("To")).toHaveAttribute("min", "2026-08-31");
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 
   it("associates one filter label with a grouped control without wrapping it in label", () => {

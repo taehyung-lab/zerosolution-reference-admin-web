@@ -34,6 +34,12 @@ export function KeywordChipField<TField extends string | undefined>({
         className="min-h-10 min-w-72 rounded border border-neutral-300 px-3 text-sm"
         value={pendingValue}
         onChange={(event) => onPendingValueChange(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key !== "Enter" || event.nativeEvent.isComposing) return;
+          // 검색 패널이 <form>이라 엔터는 기본적으로 검색으로 새어 나가고 입력값이 chip이 되지 않은 채 사라진다.
+          event.preventDefault();
+          onAdd();
+        }}
       />
       <button
         className="min-h-10 rounded border px-3 text-sm"

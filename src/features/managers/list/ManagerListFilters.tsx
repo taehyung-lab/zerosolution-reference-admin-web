@@ -49,7 +49,6 @@ export function ManagerListFilters({
         fromLabel={t("filters.startDate")}
         toLabel={t("filters.endDate")}
         calendarLabel={t("filters.calendar")}
-        error={filter.periodError}
       />
       <KeywordFilterField
         label={t("filters.keyword")}

@@ -1,4 +1,6 @@
 import { DataTable } from '@/shared/ui/patterns/DataTable';
+import { BulkActionDialogs, SelectionAlert } from '@/shared/ui/patterns/BulkActionDialogs';
+import { Button } from '@/shared/ui/primitives/Button';
 import { ListResult } from '@/shared/ui/patterns/ListResult';
 import { PageSizeControl } from '@/shared/ui/patterns/PageSizeControl';
 import { Pagination } from '@/shared/ui/patterns/Pagination';
@@ -9,15 +11,23 @@ import { Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import type { ManagerListData } from './useManagerListData';
 import type { useManagerListResult } from './useManagerListResult';
+import { useManagerListActions, type ManagerListActionIntent } from './useManagerListActions';
 
 export function ManagerListResult({
   result,
   data,
+  onActionIntent,
 }: {
   readonly result: ReturnType<typeof useManagerListResult>;
   readonly data: ManagerListData;
+  readonly onActionIntent: (intent: ManagerListActionIntent) => void;
 }) {
   const { t } = useTranslation('managers');
+  const actions = useManagerListActions({
+    selectedIds: result.selectedIds,
+    rows: data.rows,
+    onActionIntent,
+  });
   const pagination = (
     <Pagination
       page={result.pagination.page}
@@ -60,7 +70,28 @@ export function ManagerListResult({
             </>
           ) : null
         }
-        right={registerAction}
+        right={
+          <div className="flex flex-wrap items-start gap-2">
+            {data.searched ? (
+              <>
+                <select
+                  aria-label={t('bulk.field')}
+                  className="min-h-10 rounded-md border border-neutral-300 px-3"
+                  value={actions.target}
+                  onChange={(event) => actions.setTarget(event.target.value as typeof actions.target)}
+                >
+                  <option value="">{t('bulk.select')}</option>
+                  <optgroup label={t('bulk.accountStatus')}>
+                    <option value="active">{t('bulk.active')}</option>
+                    <option value="inactive">{t('bulk.inactive')}</option>
+                  </optgroup>
+                </select>
+                <Button onClick={actions.requestBulkChange}>{t('bulk.change')}</Button>
+              </>
+            ) : null}
+            {registerAction}
+          </div>
+        }
       />
       <ListResult
         data={data}
@@ -73,6 +104,8 @@ export function ManagerListResult({
           getRowId={(row) => row.id}
         />
       </ListResult>
+      <SelectionAlert controller={actions.selectionGate} />
+      <BulkActionDialogs controller={actions.bulk} confirmDescription={t('bulk.confirm')} />
     </section>
   );
 }

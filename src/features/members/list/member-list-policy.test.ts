@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  changeMemberListPage,
-  changeMemberListView,
-  pruneSelectedMemberIds,
-  toggleMemberPageSelection,
-} from './member-list-policy';
+import { changeMemberListPage, changeMemberListView } from './member-list-policy';
 import { resolveMemberSearch } from './search-schema';
 
 describe('member list policy', () => {
@@ -20,14 +15,5 @@ describe('member list policy', () => {
       page: 3,
       periodType: 'joinedAt',
     });
-  });
-
-  it('selects the current selectable page and prunes stale or disabled ids', () => {
-    expect(toggleMemberPageSelection(new Set(), ['a', 'b'], true)).toEqual(
-      new Set(['a', 'b']),
-    );
-    expect(
-      pruneSelectedMemberIds(new Set(['a', 'b', 'stale']), ['b', 'c']),
-    ).toEqual(new Set(['b']));
   });
 });

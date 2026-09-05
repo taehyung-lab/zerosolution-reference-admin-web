@@ -3,7 +3,7 @@
   "breadcrumb": "회원 > 활성회원 > {{title}}",
   "search": "검색",
   "reset": "초기화",
-  "filters": { "period": "기간", "periodType": "기간 기준", "periodPreset": "기간 빠른 선택", "periodRangeOrderError": "시작일은 종료일보다 늦을 수 없습니다.", "keyword": "검색어", "keywordType": "검색 대상", "duplicateKeywordTarget": "같은 검색 대상은 한 번만 추가할 수 있습니다.", "signupMethod": "가입방법", "accountStatus": "계정 상태", "restrictions": "활동제한", "all": "전체", "add": "추가", "remove": "{{value}} 삭제", "collapse": "검색 접기", "expand": "검색 펼치기", "startDate": "시작일", "endDate": "종료일", "calendar": "달력 열기" },
+  "filters": { "period": "기간", "periodType": "기간 기준", "periodPreset": "기간 빠른 선택", "keyword": "검색어", "keywordType": "검색 대상", "signupMethod": "가입방법", "accountStatus": "계정 상태", "restrictions": "활동제한", "all": "전체", "add": "추가", "remove": "{{value}} 삭제", "collapse": "검색 접기", "expand": "검색 펼치기", "startDate": "시작일", "endDate": "종료일", "calendar": "달력 열기" },
   "signup": { "direct": "직접가입", "kakao": "카카오", "naver": "네이버", "apple": "애플", "melon": "멜론 간편가입" },
   "accountStatus": { "general": "일반회원", "flagged": "불량회원" },
   "restriction": { "specialContent": "스페셜콘텐츠", "inquiry": "1:1문의", "entry": "입장제한설정" },
