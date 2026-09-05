@@ -1,0 +1,16 @@
+{
+  "screens": { "all": "全会員", "general": "一般会員", "flagged": "不良会員", "allTooltip": "アクティブ会員を照会・管理します。", "help": "全会員について" },
+  "breadcrumb": "会員 > アクティブ会員 > {{title}}",
+  "search": "検索",
+  "reset": "初期化",
+  "filters": { "period": "期間", "periodType": "期間基準", "periodPreset": "期間クイック選択", "periodRangeOrderError": "開始日は終了日より後にできません。", "keyword": "検索語", "keywordType": "検索対象", "duplicateKeywordTarget": "同じ検索対象は一度だけ追加できます。", "signupMethod": "登録方法", "accountStatus": "アカウント状態", "restrictions": "活動制限", "all": "全体", "add": "追加", "remove": "{{value}}を削除", "collapse": "検索を閉じる", "expand": "検索を開く", "startDate": "開始日", "endDate": "終了日", "calendar": "カレンダーを開く" },
+  "signup": { "direct": "直接登録", "kakao": "カカオ", "naver": "ネイバー", "apple": "Apple", "melon": "Melon簡単登録" },
+  "accountStatus": { "general": "一般会員", "flagged": "不良会員" },
+  "restriction": { "specialContent": "スペシャルコンテンツ", "inquiry": "1:1お問い合わせ", "entry": "入場制限設定" },
+  "columns": { "grade": "等級", "signupMethod": "登録方法", "email": "メール", "name": "名前", "phone": "携帯電話番号", "accountStatus": "アカウント状態", "joinedAt": "登録日", "lastAccessedAt": "最終アクセス日", "restrictions": "活動制限" },
+  "result": { "total": "検索結果：{{count}}", "pageSize": "表示", "sort": "並び順", "paginationLabel": "ページ移動", "previous": "前", "next": "次", "notSearched": "検索してください。", "empty": "検索結果がありません。", "selectPage": "現在のページを全選択", "selectRow": "{{name}}を選択" },
+  "bulk": { "field": "変更項目", "select": "選択", "change": "変更", "incomplete": "アカウント状態と活動制限を選択してください。" },
+  "actions": { "sms": "SMS", "email": "メール", "register": "登録", "smsMissing": "SMSを送信する項目を選択してください。", "emailMissing": "メールを送信する項目を選択してください。", "smsTitle": "SMS送信", "emailTitle": "メール送信" },
+  "dialog": { "title": "お知らせ", "acknowledge": "確認" },
+  "stubs": { "detail": "会員照会は後続課題で実装します。", "create": "会員登録は後続課題で実装します。" }
+}

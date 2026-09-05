@@ -32,6 +32,14 @@ export interface DataTableProps<TData extends object> {
   readonly rows: readonly TData[];
   readonly columns: readonly ColumnDef<typeof features, TData, unknown>[];
   readonly getRowId: (row: TData) => string;
+  readonly onRowActivate?: (row: TData) => void;
+}
+
+const interactiveSelector =
+  'a,button,input,select,textarea,[role="button"],[role="checkbox"],[role="link"],[contenteditable="true"]';
+
+function isInteractiveTarget(target: EventTarget | null): boolean {
+  return target instanceof Element && target.closest(interactiveSelector) !== null;
 }
 
 /** The ▲▼ pair appears only on the active sort; the active arrow is emphasized. */
@@ -55,6 +63,7 @@ export function DataTable<TData extends object>({
   rows,
   columns,
   getRowId,
+  onRowActivate,
 }: DataTableProps<TData>) {
   const table = useTable({
     features,
@@ -96,7 +105,24 @@ export function DataTable<TData extends object>({
         </thead>
         <tbody>
           {table.getRowModel().rows.map((row) => (
-            <tr key={row.id}>
+            <tr
+              key={row.id}
+              tabIndex={onRowActivate === undefined ? undefined : 0}
+              onClick={(event) => {
+                if (!isInteractiveTarget(event.target)) onRowActivate?.(row.original);
+              }}
+              onKeyDown={(event) => {
+                if (
+                  onRowActivate === undefined ||
+                  isInteractiveTarget(event.target) ||
+                  (event.key !== 'Enter' && event.key !== ' ')
+                ) {
+                  return;
+                }
+                event.preventDefault();
+                onRowActivate(row.original);
+              }}
+            >
               {row.getAllCells().map((cell) => (
                 <TableCell key={cell.id}>
                   <table.FlexRender cell={cell} />

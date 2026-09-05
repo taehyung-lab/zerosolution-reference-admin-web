@@ -1,0 +1,16 @@
+{
+  "screens": { "all": "All members", "general": "General members", "flagged": "Flagged members", "allTooltip": "View and manage active members.", "help": "About all members" },
+  "breadcrumb": "Members > Active members > {{title}}",
+  "search": "Search",
+  "reset": "Reset",
+  "filters": { "period": "Period", "periodType": "Period criterion", "periodPreset": "Quick period", "periodRangeOrderError": "The start date cannot be later than the end date.", "keyword": "Keyword", "keywordType": "Search target", "duplicateKeywordTarget": "Each search target can only be added once.", "signupMethod": "Signup method", "accountStatus": "Account status", "restrictions": "Restrictions", "all": "All", "add": "Add", "remove": "Remove {{value}}", "collapse": "Collapse search", "expand": "Expand search", "startDate": "Start date", "endDate": "End date", "calendar": "Open calendar" },
+  "signup": { "direct": "Direct", "kakao": "Kakao", "naver": "Naver", "apple": "Apple", "melon": "Melon quick signup" },
+  "accountStatus": { "general": "General member", "flagged": "Flagged member" },
+  "restriction": { "specialContent": "Special content", "inquiry": "1:1 inquiry", "entry": "Entry restriction" },
+  "columns": { "grade": "Grade", "signupMethod": "Signup method", "email": "Email", "name": "Name", "phone": "Phone", "accountStatus": "Account status", "joinedAt": "Joined at", "lastAccessedAt": "Last access", "restrictions": "Restrictions" },
+  "result": { "total": "Search results: {{count}}", "pageSize": "View", "sort": "Sort", "paginationLabel": "Pagination", "previous": "Previous", "next": "Next", "notSearched": "Please search.", "empty": "No search results.", "selectPage": "Select current page", "selectRow": "Select {{name}}" },
+  "bulk": { "field": "Change field", "select": "Select", "change": "Change", "incomplete": "Select an account status and restrictions." },
+  "actions": { "sms": "SMS", "email": "Email", "register": "Register", "smsMissing": "Select items to send SMS.", "emailMissing": "Select items to send email.", "smsTitle": "Send SMS", "emailTitle": "Send email" },
+  "dialog": { "title": "Alert", "acknowledge": "Confirm" },
+  "stubs": { "detail": "Member details will be implemented in a follow-up issue.", "create": "Member registration will be implemented in a follow-up issue." }
+}

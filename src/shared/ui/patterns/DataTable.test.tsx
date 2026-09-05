@@ -135,4 +135,32 @@ describe('DataTable', () => {
     expect(header).not.toHaveAttribute('aria-sort');
     expect(within(header).queryByRole('button')).toBeNull();
   });
+
+  it('activates a row by pointer and keyboard but ignores interactive descendants', () => {
+    const onRowActivate = vi.fn();
+    render(
+      <DataTable
+        rows={rows}
+        columns={[
+          { id: 'name', header: 'Name', accessorKey: 'name' },
+          {
+            id: 'select',
+            header: 'Select',
+            cell: () => <button type="button">Select Ada</button>,
+          },
+        ]}
+        getRowId={(row) => row.id}
+        onRowActivate={onRowActivate}
+      />,
+    );
+
+    const row = screen.getByRole('row', { name: /ada select ada/i });
+    fireEvent.click(row);
+    fireEvent.keyDown(row, { key: 'Enter' });
+    fireEvent.keyDown(row, { key: ' ' });
+    fireEvent.click(screen.getByRole('button', { name: 'Select Ada' }));
+
+    expect(onRowActivate).toHaveBeenCalledTimes(3);
+    expect(onRowActivate).toHaveBeenNthCalledWith(1, rows[0]);
+  });
 });

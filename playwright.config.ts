@@ -1,9 +1,10 @@
 import { defineConfig } from '@playwright/test'
 
-const baseURL = 'http://127.0.0.1:4173'
+const port = process.env.PLAYWRIGHT_PORT ?? '4173'
+const baseURL = `http://127.0.0.1:${port}`
 const webServerCommand = process.env.CI
-  ? 'pnpm build && pnpm preview --host 127.0.0.1 --port 4173 --strictPort'
-  : 'pnpm dev --host 127.0.0.1 --port 4173 --strictPort'
+  ? `pnpm build && pnpm preview --host 127.0.0.1 --port ${port} --strictPort`
+  : `pnpm dev --host 127.0.0.1 --port ${port} --strictPort`
 
 export default defineConfig({
   testDir: './tests/e2e',

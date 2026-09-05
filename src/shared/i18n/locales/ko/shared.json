@@ -61,6 +61,18 @@
   "alert": {
     "title": "알림"
   },
+  "bulkAction": {
+    "missingSelection": "변경할 항목을 선택해주세요.",
+    "confirm": "선택 항목을 변경하시겠습니까?",
+    "acknowledge": "확인",
+    "cancel": "취소"
+  },
+  "bulkAction": {
+    "missingSelection": "변경할 항목을 선택해주세요.",
+    "confirm": "선택 항목을 변경하시겠습니까?",
+    "acknowledge": "확인",
+    "cancel": "취소"
+  },
   "formSave": {
     "confirmDescription": "저장하시겠습니까?",
     "confirm": "확인",

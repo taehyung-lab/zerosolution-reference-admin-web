@@ -6,7 +6,7 @@ Read this file when changing a filter panel, filter row, period filter, keyword 
 
 | Surface              | Shared owns                                                                  | Caller owns                                                                    |
 | -------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `FilterPanel`        | disclosure, field/action layout, accessible form surface                     | submit/reset behavior, field order, labels                                     |
+| `FilterPanel`        | `Accordion` disclosure, field/action layout, accessible form surface         | submit/reset behavior, field order, labels                                     |
 | `FilterField`        | one label/control association; `group` when one label names sibling controls | control semantics and state                                                    |
 | `PeriodFilterField`  | optional criterion `Select` + `PeriodField` under one named group            | criterion enum/options/default, preset policy, range validation and conversion |
 | `KeywordFilterField` | optional target `Select` + `KeywordChipField` under one named group          | target enum/options/default, keyword validation and commit policy              |
