@@ -10,6 +10,11 @@ import { useTranslation } from 'react-i18next';
 import type { MemberListData } from './useMemberListData';
 import type { useMemberListResult } from './useMemberListResult';
 
+/**
+ * Owns result presentation only: summary, view controls, table, paging and the five list
+ * states. Actions arrive as an assembled `toolbarRight` node, so this never takes a request
+ * callback or mounts an action dialog.
+ */
 export function MemberListResult({
   data,
   result,

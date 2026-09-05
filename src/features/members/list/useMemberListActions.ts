@@ -1,67 +1,82 @@
 import { useBulkActionDialogs, useSelectionGate } from '@/shared/ui/patterns/BulkActionDialogs';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { MemberListActionIntent } from './member-row';
-
-type BulkTarget = null | 'general' | 'flagged';
+import type { MemberListActionRequest } from './member-row';
 
 /**
- * Owns the toolbar workflow up to the request boundary: cascade assembly, the incomplete-value
- * rejection, and which dialog is open. The screen keeps payload shape and popup copy.
+ * The bulk cascade as one value. `일반회원` carries no restrictions, so the union makes
+ * "general with restrictions" unrepresentable and switching the target drops the second
+ * level structurally instead of a guard rebuilding the payload on every submit.
+ */
+export type MemberBulkChange =
+  | null
+  | { readonly accountStatus: 'general' }
+  | { readonly accountStatus: 'flagged'; readonly restrictions: readonly string[] };
+
+/** Returns the value only when the cascade is finished, so the caller narrows by using it. */
+function completed(change: MemberBulkChange): Exclude<MemberBulkChange, null> | null {
+  if (change === null) return null;
+  if (change.accountStatus === 'flagged' && change.restrictions.length === 0) return null;
+  return change;
+}
+
+/**
+ * Owns the toolbar workflow up to the request boundary: the cascade value, the prechecks
+ * every action button shares, and which popup is open. Every precheck rejects into the one
+ * selection alert, so no rule keeps its own error state that a corrected value fails to clear.
  */
 export function useMemberListActions({
   selectedIds,
-  onActionIntent,
+  onActionRequest,
 }: {
   readonly selectedIds: readonly string[];
-  readonly onActionIntent: (intent: MemberListActionIntent) => void;
+  readonly onActionRequest: (request: MemberListActionRequest) => void;
 }) {
   const { t } = useTranslation('members');
   const { t: sharedT } = useTranslation('shared');
-  const [target, setTarget] = useState<BulkTarget>(null);
-  const [restrictions, setRestrictions] = useState<readonly string[]>([]);
-  const [incompleteError, setIncompleteError] = useState<string>();
-  const [openPopup, setOpenPopup] = useState<'sms' | 'email'>();
+  const [change, setChange] = useState<MemberBulkChange>(null);
+  // SMS and email are separate dialogs, not one dialog with a channel: Notion gives SMS a
+  // textarea and email an HTML editor, so a shared open state would become a channel branch.
+  const [smsOpen, setSmsOpen] = useState(false);
+  const [emailOpen, setEmailOpen] = useState(false);
 
   const selectionGate = useSelectionGate(selectedIds.length);
   const bulk = useBulkActionDialogs({
-    run: (intent: MemberListActionIntent) => onActionIntent(intent),
+    run: (request: MemberListActionRequest) => onActionRequest(request),
   });
 
   const requestBulkChange = () => {
     if (!selectionGate.requireSelection(sharedT('bulkAction.missingSelection'))) return;
-    if (target === null || (target === 'flagged' && restrictions.length === 0)) {
-      setIncompleteError(t('bulk.incomplete'));
-      return;
-    }
-    setIncompleteError(undefined);
+    // TRANSPLANT_PENDING_MEMBER_BULK_INCOMPLETE: the ledger states row-level missing selection
+    // but never this cascade's unfinished value, so the wording is ours until it is contracted.
+    const ready = completed(change);
+    if (ready === null) return selectionGate.reject(t('bulk.incomplete'));
     bulk.requestConfirmation({
       type: 'bulkChange',
       targetIds: [...selectedIds],
       values: {
-        accountStatus: target,
-        restrictions: target === 'flagged' ? [...restrictions] : [],
+        accountStatus: ready.accountStatus,
+        restrictions: ready.accountStatus === 'flagged' ? [...ready.restrictions] : [],
       },
     });
   };
 
   const requestMessage = (type: 'sms' | 'email') => {
     if (!selectionGate.requireSelection(t(`actions.${type}Missing`))) return;
-    onActionIntent({ type, targetIds: [...selectedIds] });
-    setOpenPopup(type);
+    onActionRequest({ type, targetIds: [...selectedIds] });
+    (type === 'sms' ? setSmsOpen : setEmailOpen)(true);
   };
 
   return {
     bulk,
     selectionGate,
-    target,
-    setTarget,
-    restrictions,
-    setRestrictions,
-    incompleteError,
+    change,
+    setChange,
     requestBulkChange,
     requestMessage,
-    openPopup,
-    closePopup: () => setOpenPopup(undefined),
+    smsOpen,
+    closeSms: () => setSmsOpen(false),
+    emailOpen,
+    closeEmail: () => setEmailOpen(false),
   };
 }

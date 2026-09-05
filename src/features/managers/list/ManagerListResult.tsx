@@ -10,6 +10,11 @@ import { useTranslation } from 'react-i18next';
 import type { ManagerListData } from './useManagerListData';
 import type { useManagerListResult } from './useManagerListResult';
 
+/**
+ * Owns result presentation only: summary, view controls, table, paging and the five list
+ * states. Actions arrive as an assembled `toolbarRight` node, so this never takes a request
+ * callback or mounts an action dialog.
+ */
 export function ManagerListResult({
   result,
   data,

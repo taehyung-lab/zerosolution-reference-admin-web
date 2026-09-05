@@ -4,16 +4,21 @@ import { Select } from '@/shared/ui/primitives/Select';
 import { Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import type { ManagerListItem } from '../model/manager';
-import { useManagerListActions, type ManagerListActionIntent } from './useManagerListActions';
+import { useManagerListActions, type ManagerListActionRequest } from './useManagerListActions';
 
-export function ManagerListActions({ searched, selectedIds, rows, onActionIntent }: {
+/**
+ * Owns the toolbar actions and the dialogs they open. The dialogs are mounted outside the
+ * `searched` branch on purpose: an owner inside it unmounts on the loading transition that
+ * follows a confirmed change. Gate the buttons, never the owner.
+ */
+export function ManagerListActions({ searched, selectedIds, rows, onActionRequest }: {
   readonly searched: boolean;
   readonly selectedIds: readonly string[];
   readonly rows: readonly ManagerListItem[];
-  readonly onActionIntent: (intent: ManagerListActionIntent) => void;
+  readonly onActionRequest: (intent: ManagerListActionRequest) => void;
 }) {
   const { t } = useTranslation('managers');
-  const actions = useManagerListActions({ selectedIds, rows, onActionIntent });
+  const actions = useManagerListActions({ selectedIds, rows, onActionRequest });
   const registerAction = (
     <Link
       className="inline-flex min-h-10 items-center justify-center rounded-md bg-neutral-900 px-4 text-sm font-medium text-white"
