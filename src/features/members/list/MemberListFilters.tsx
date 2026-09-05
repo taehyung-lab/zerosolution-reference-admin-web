@@ -7,7 +7,7 @@ import { KeywordFilterField } from '@/shared/ui/patterns/KeywordFilterField';
 import { PeriodFilterField } from '@/shared/ui/patterns/PeriodFilterField';
 import { useTranslation } from 'react-i18next';
 import type { MemberListDefinition } from './member-list-definition';
-import type { MemberSearch } from './search-schema';
+import { memberRestrictions, type MemberSearch } from './search-schema';
 import type { useMemberListFilter } from './useMemberListFilter';
 
 export function MemberListFilters({
@@ -26,11 +26,7 @@ export function MemberListFilters({
     { value: 'apple', label: t('signup.apple') },
     { value: 'melon', label: t('signup.melon') },
   ];
-  const restrictionNodes = [
-    { value: 'specialContent', label: t('restriction.specialContent') },
-    { value: 'inquiry', label: t('restriction.inquiry') },
-    { value: 'entry', label: t('restriction.entry') },
-  ];
+  const restrictionNodes = memberRestrictions.map((value) => ({ value, label: t(`restriction.${value}`) }));
   return (
     <FilterPanel
       title={t('search')}

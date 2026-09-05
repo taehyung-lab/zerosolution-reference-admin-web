@@ -23,8 +23,8 @@ export function useManagerListActions({
 }) {
   const { t } = useTranslation('shared');
   const [target, setTarget] = useState<
-    '' | ManagerListActionIntent['values']['accountStatus']
-  >('');
+    null | ManagerListActionIntent['values']['accountStatus']
+  >(null);
   const selectionGate = useSelectionGate(selectedIds.length);
   const bulk = useBulkActionDialogs({
     run: (intent: ManagerListActionIntent) => {
@@ -48,7 +48,7 @@ export function useManagerListActions({
     setTarget,
     requestBulkChange: () => {
       if (!selectionGate.requireSelection(t('bulkAction.missingSelection'))) return;
-      if (target === '') return;
+      if (target === null) return;
       bulk.requestConfirmation({
         type: 'bulkChange',
         targetIds: [...selectedIds],

@@ -92,7 +92,6 @@
   "bulk": {
     "field": "Change field",
     "select": "Select",
-    "accountStatus": "Account status",
     "active": "Active",
     "inactive": "Inactive",
     "change": "Change",

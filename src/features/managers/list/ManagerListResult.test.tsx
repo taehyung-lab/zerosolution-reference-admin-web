@@ -1,3 +1,4 @@
+import { ManagerListActions } from './ManagerListActions';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { I18nextProvider } from 'react-i18next';
 import type { ReactNode } from 'react';
@@ -53,7 +54,12 @@ function ResultHarness({
     data: value,
     onSearchChange,
   });
-  return <ManagerListResult data={value} result={result} onActionIntent={onActionIntent} />;
+  return <ManagerListResult data={value} result={result} toolbarRight={<ManagerListActions searched={value.searched} selectedIds={result.selectedIds} rows={value.rows} onActionIntent={onActionIntent} />} />;
+}
+
+function chooseTarget(label: string) {
+  fireEvent.keyDown(screen.getByRole('combobox', { name: '변경 항목' }), { key: 'ArrowDown' });
+  fireEvent.click(screen.getByRole('option', { name: label }));
 }
 
 describe('ManagerListResult', () => {
@@ -66,17 +72,17 @@ describe('ManagerListResult', () => {
     expect(onActionIntent).not.toHaveBeenCalled();
 
     const target = screen.getByRole('combobox', { name: '변경 항목' });
-    expect(within(target).getAllByRole('option').map((option) => option.textContent)).toEqual(['선택', '활성', '비활성']);
+    expect(target).toHaveTextContent('선택');
     fireEvent.click(screen.getByRole('checkbox', { name: '1 선택' }));
     fireEvent.click(screen.getByRole('button', { name: '변경' }));
     expect(target).not.toHaveAttribute('aria-invalid');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    fireEvent.change(target, { target: { value: 'inactive' } });
+    chooseTarget('비활성');
     fireEvent.click(screen.getByRole('button', { name: '변경' }));
     expect(screen.getByRole('dialog')).toHaveTextContent('[대기, 거절, 잠금]은 상태를 변경할 수 없습니다.');
     fireEvent.click(screen.getByRole('button', { name: '취소' }));
     expect(onActionIntent).not.toHaveBeenCalled();
-    expect(target).toHaveValue('inactive');
+    expect(target).toHaveTextContent('비활성');
     expect(screen.getByRole('checkbox', { name: '1 선택' })).toBeChecked();
 
     fireEvent.click(screen.getByRole('button', { name: '변경' }));
@@ -84,6 +90,22 @@ describe('ManagerListResult', () => {
     expect(onActionIntent).toHaveBeenCalledExactlyOnceWith({ type: 'bulkChange', targetIds: ['1'], values: { accountStatus: 'inactive' } });
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(screen.getByRole('checkbox', { name: '1 선택' })).toBeChecked();
+  });
+
+  it.each(['notSearched', 'loading', 'error', 'empty'] as const)('keeps confirmation cancellable through %s', (state) => {
+    const onActionIntent = vi.fn();
+    const value = data({ rows: [row('1')], total: 1 });
+    const { rerender } = renderResult(<ResultHarness value={value} onActionIntent={onActionIntent} />);
+    fireEvent.click(screen.getByRole('checkbox', { name: '1 선택' }));
+    chooseTarget('활성');
+    fireEvent.click(screen.getByRole('button', { name: '변경' }));
+    rerender(<I18nextProvider i18n={i18n}><ResultHarness value={{ ...value,
+      searched: state !== 'notSearched', isPending: state === 'loading', isError: state === 'error', rows: state === 'empty' ? [] : value.rows,
+    }} onActionIntent={onActionIntent} /></I18nextProvider>);
+    expect(screen.getByRole('dialog')).toHaveTextContent('선택 항목을 변경하시겠습니까?');
+    fireEvent.click(screen.getByRole('button', { name: '취소' }));
+    expect(onActionIntent).not.toHaveBeenCalled();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('excludes confirmed waiting and locked rows before emitting an intent', () => {
@@ -95,7 +117,7 @@ describe('ManagerListResult', () => {
       { ...row('unmapped-inactive'), status: 'INACTIVE' },
     ], total: 4 })} onActionIntent={onActionIntent} />);
     fireEvent.click(screen.getByRole('checkbox', { name: '현재 페이지 전체 선택' }));
-    fireEvent.change(screen.getByRole('combobox', { name: '변경 항목' }), { target: { value: 'active' } });
+    chooseTarget('활성');
     fireEvent.click(screen.getByRole('button', { name: '변경' }));
     fireEvent.click(screen.getByRole('button', { name: '확인' }));
     expect(onActionIntent).toHaveBeenCalledExactlyOnceWith({ type: 'bulkChange', targetIds: ['active', 'unmapped-inactive'], values: { accountStatus: 'active' } });
@@ -105,7 +127,7 @@ describe('ManagerListResult', () => {
     const onActionIntent = vi.fn();
     renderResult(<ResultHarness value={data({ rows: [{ ...row('waiting'), status: 'AWAITING' }], total: 1 })} onActionIntent={onActionIntent} />);
     fireEvent.click(screen.getByRole('checkbox', { name: 'waiting 선택' }));
-    fireEvent.change(screen.getByRole('combobox', { name: '변경 항목' }), { target: { value: 'active' } });
+    chooseTarget('활성');
     fireEvent.click(screen.getByRole('button', { name: '변경' }));
     fireEvent.click(screen.getByRole('button', { name: '확인' }));
     expect(onActionIntent).not.toHaveBeenCalled();
