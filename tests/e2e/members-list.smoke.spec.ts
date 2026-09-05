@@ -27,6 +27,18 @@ test('@smoke active member routes expose the confirmed no-API workflow', async (
   await expect(page.getByRole('combobox', { name: '보기' })).toBeVisible();
   await expect(page.getByRole('combobox', { name: '정렬' })).toBeVisible();
 
+  const bulkTarget = page.getByRole('combobox', { name: '변경 항목' });
+  await expect(bulkTarget).toContainText('선택');
+  await bulkTarget.click();
+  await expect(page.getByRole('option')).toHaveText(['일반회원', '불량회원']);
+  await page.getByRole('option', { name: '불량회원', exact: true }).click();
+  await expect(bulkTarget).toContainText('불량회원');
+  await expect(page.getByRole('group', { name: '활동제한', exact: true })).toHaveCount(2);
+  await page.getByRole('button', { name: '변경', exact: true }).click();
+  await expect(page.getByRole('dialog')).toHaveText(/변경할 항목을 선택해주세요/);
+  await page.getByRole('button', { name: '확인', exact: true }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+
   const locale = page.getByRole('combobox', { name: '언어' });
   await expect(locale.locator('option')).toHaveText(['한국어', 'ENGLISH', '日本語']);
 

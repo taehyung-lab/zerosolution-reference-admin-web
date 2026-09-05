@@ -1,3 +1,4 @@
+import { MemberListActions } from './MemberListActions';
 import { PageHeader } from '@/shared/ui/patterns/PageHeader';
 import { Tooltip } from '@/shared/ui/primitives/Tooltip';
 import { useTranslation } from 'react-i18next';
@@ -72,9 +73,15 @@ function MemberListScreen({
       <MemberListResult
         data={data}
         result={result}
-        onActionIntent={onActionIntent}
+        toolbarRight={
+          <MemberListActions
+            searched={data.searched}
+            selectedIds={result.selectedIds}
+            onActionIntent={onActionIntent}
+            onRegister={onRegister}
+          />
+        }
         onMemberActivate={onMemberActivate}
-        onRegister={onRegister}
       />
     </section>
   );

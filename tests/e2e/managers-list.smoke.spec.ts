@@ -74,14 +74,14 @@ test('@smoke managers bulk change requires selection and stops after confirmatio
 
   await rowCheckbox.check();
   const target = page.getByRole('combobox', { name: '변경 항목' });
-  await target.selectOption({ label: '비활성' });
+  await choose(page, /^변경 항목$/, '비활성');
   await change.click();
   await expect(page.getByRole('dialog')).toContainText('[대기, 거절, 잠금]은 상태를 변경할 수 없습니다.');
   await expect(page.getByRole('dialog')).toContainText('선택 항목을 변경하시겠습니까?');
   await page.getByRole('button', { name: '취소', exact: true }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(rowCheckbox).toBeChecked();
-  await expect(target).toHaveValue('inactive');
+  await expect(target).toContainText('비활성');
   expect(mutationRequests).toEqual([]);
 
   await change.click();

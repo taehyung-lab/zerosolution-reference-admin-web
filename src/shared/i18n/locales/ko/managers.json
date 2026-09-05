@@ -92,7 +92,6 @@
   "bulk": {
     "field": "변경 항목",
     "select": "선택",
-    "accountStatus": "계정 상태",
     "active": "활성",
     "inactive": "비활성",
     "change": "변경",

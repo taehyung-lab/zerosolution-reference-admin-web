@@ -92,7 +92,6 @@
   "bulk": {
     "field": "変更項目",
     "select": "選択",
-    "accountStatus": "アカウント状態",
     "active": "有効",
     "inactive": "無効",
     "change": "変更",

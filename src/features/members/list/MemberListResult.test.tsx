@@ -1,3 +1,4 @@
+import { MemberListActions } from './MemberListActions';
 import { fireEvent, render as renderUi, screen, waitFor, within } from '@testing-library/react';
 import type { ReactElement, ReactNode } from 'react';
 import { I18nextProvider } from 'react-i18next';
@@ -27,6 +28,7 @@ function Harness({
   onActionIntent = vi.fn(),
   onMemberActivate = vi.fn(),
   onRegister = vi.fn(),
+  state = {},
 }: {
   readonly definition?: MemberListDefinition;
   readonly search: MemberRouteSearch;
@@ -37,6 +39,7 @@ function Harness({
   readonly onActionIntent?: (intent: MemberListActionIntent) => void;
   readonly onMemberActivate?: (memberId: string) => void;
   readonly onRegister?: () => void;
+  readonly state?: Partial<Pick<MemberListData, "isPending" | "isError">>;
 }) {
   const data: MemberListData = {
     rows,
@@ -47,6 +50,7 @@ function Harness({
     isFetching: false,
     isError: false,
     retry: () => Promise.resolve(undefined),
+    ...state,
   };
   const result = useMemberListResult({
     search: resolveMemberSearch(search),
@@ -58,9 +62,8 @@ function Harness({
     <MemberListResult
       data={data}
       result={result}
-      onActionIntent={onActionIntent}
+      toolbarRight={<MemberListActions searched={data.searched} selectedIds={result.selectedIds} onActionIntent={onActionIntent} onRegister={onRegister} />}
       onMemberActivate={onMemberActivate}
-      onRegister={onRegister}
     />
   );
 }
@@ -94,6 +97,11 @@ const rows: readonly MemberListRow[] = [
 
 const base = { search: { periodType: 'joinedAt' as const }, rows, total: 2, totalPages: 1 };
 
+function chooseTarget(label: string) {
+  fireEvent.keyDown(screen.getByRole('combobox', { name: '변경 항목' }), { key: 'ArrowDown' });
+  fireEvent.click(screen.getByRole('option', { name: label }));
+}
+
 describe('member list result', () => {
   it('renders masked values and adds the restriction column only for the flagged screen', () => {
     const { rerender } = render(<Harness {...base} />);
@@ -122,7 +130,7 @@ describe('member list result', () => {
     fireEvent.click(firstRow);
     expect(onMemberActivate).toHaveBeenCalledWith('opaque-1');
 
-    fireEvent.change(screen.getByRole('combobox', { name: '변경 항목' }), { target: { value: 'general' } });
+    chooseTarget('일반회원');
     fireEvent.click(screen.getByRole('button', { name: '변경' }));
     expect(screen.getByRole('dialog')).toHaveTextContent('선택 항목을 변경하시겠습니까?');
     fireEvent.click(screen.getByRole('button', { name: '확인' }));
@@ -131,6 +139,24 @@ describe('member list result', () => {
       targetIds: ['opaque-1'],
       values: { accountStatus: 'general', restrictions: [] },
     });
+  });
+
+  it.each(['notSearched', 'loading', 'error', 'empty'] as const)('keeps confirmation and its snapshot through %s', (state) => {
+    const onActionIntent = vi.fn();
+    const { rerender } = render(<Harness {...base} onActionIntent={onActionIntent} />);
+    fireEvent.click(screen.getByRole('checkbox', { name: '김회원 선택' }));
+    chooseTarget('일반회원');
+    fireEvent.click(screen.getByRole('button', { name: '변경' }));
+    rerender(<Harness {...base}
+      search={state === 'notSearched' ? {} : base.search}
+      state={{ isPending: state === 'loading', isError: state === 'error' }}
+      rows={state === 'empty' ? [] : rows}
+      onActionIntent={onActionIntent}
+    />);
+    expect(screen.getByRole('dialog')).toHaveTextContent('선택 항목을 변경하시겠습니까?');
+    fireEvent.click(screen.getByRole('button', { name: '확인' }));
+    expect(onActionIntent).toHaveBeenCalledExactlyOnceWith({ type: 'bulkChange', targetIds: ['opaque-1'], values: { accountStatus: 'general', restrictions: [] } });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('uses one active aria-sort and resets page when a sortable header changes', () => {
@@ -197,7 +223,7 @@ describe('member list result', () => {
     const onActionIntent = vi.fn();
     render(<Harness {...base} definition={memberListDefinitions.flagged} onActionIntent={onActionIntent} />);
     fireEvent.click(screen.getByRole('checkbox', { name: '김회원 선택' }));
-    fireEvent.change(screen.getByRole('combobox', { name: '변경 항목' }), { target: { value: 'flagged' } });
+    chooseTarget('불량회원');
     fireEvent.click(screen.getByRole('button', { name: '변경' }));
 
     expect(screen.getByRole('alert')).toHaveTextContent('변경할 계정 상태와 활동제한을 선택해주세요.');
@@ -208,7 +234,7 @@ describe('member list result', () => {
     const onActionIntent = vi.fn();
     render(<Harness {...base} definition={memberListDefinitions.flagged} onActionIntent={onActionIntent} />);
     fireEvent.click(screen.getByRole('checkbox', { name: '김회원 선택' }));
-    fireEvent.change(screen.getByRole('combobox', { name: '변경 항목' }), { target: { value: 'flagged' } });
+    chooseTarget('불량회원');
     fireEvent.click(within(screen.getByRole('group', { name: '활동제한' })).getByRole('checkbox', { name: '스페셜콘텐츠' }));
     fireEvent.click(screen.getByRole('button', { name: '변경' }));
     fireEvent.click(screen.getByRole('button', { name: '취소' }));

@@ -1,3 +1,4 @@
+import { ManagerListActions } from './ManagerListActions';
 import { PageHeader } from '@/shared/ui/patterns/PageHeader';
 import { useTranslation } from 'react-i18next';
 import { ManagerListFilters } from './ManagerListFilters';
@@ -32,7 +33,18 @@ export function ManagerListScreen({
     <section>
       <PageHeader breadcrumb={t('breadcrumb')} title={t('title')} />
       <ManagerListFilters filter={filter} />
-      <ManagerListResult data={data} result={result} onActionIntent={onActionIntent} />
+      <ManagerListResult
+        data={data}
+        result={result}
+        toolbarRight={
+          <ManagerListActions
+            searched={data.searched}
+            selectedIds={result.selectedIds}
+            rows={data.rows}
+            onActionIntent={onActionIntent}
+          />
+        }
+      />
     </section>
   );
 }
