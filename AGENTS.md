@@ -55,11 +55,11 @@
 
 | 경로·상황                                                            | 읽을 스킬                                                    |
 | -------------------------------------------------------------------- | ------------------------------------------------------------ |
-| `openapi/**`, `src/api/**`, `features/*/api/**`, payload/cache/error | `api-contract`                                               |
+| `openapi/**`, `src/api/**`, `src/features/*/api/**`, payload/cache/error | `api-contract`                                               |
 | `src/app/providers/**`, auth/session/transport boundary              | `api-contract` + `feature-contract`                          |
 | `src/app/shell/**`, config/permission/navigation/notification 조립   | `feature-contract` + 필요한 경우 `shared-ui-contract`        |
 | `src/app/error-boundary/**`, incident/session/error presentation     | `shared-ui-contract` + 분류·transport 변경 시 `api-contract` |
-| `src/routes/**`, feature 화면/list/detail/form/hooks/dialog          | `feature-contract`                                           |
+| `src/routes/**`, `src/features/**`, 화면/list/detail/form/hooks/dialog | `feature-contract`                                           |
 | `src/shared/ui/**`, field/select/dialog/status, 공용 승격·성능       | `shared-ui-contract`                                         |
 | `src/shared/lib/**`, 공용 상태 mechanic·순수 유틸 승격               | `shared-ui-contract` + 소비 흐름의 contract                  |
 | 인증·세션·라우트 가드·실시간처럼 경로로 못 찾는 관심사               | 해당 시나리오 카드(`docs/reference/scenarios/`) 먼저, 그다음 위 표 |
