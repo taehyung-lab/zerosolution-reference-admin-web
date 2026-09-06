@@ -124,6 +124,16 @@ beforeEach(() => {
 })
 
 describe('useSaveForm — 실제 Router 위의 저장 흐름', () => {
+  it('초기값으로 복원하면 버릴 변경이 없어 바로 이동한다', async () => {
+    const router = renderForm()
+    await screen.findByRole('button', { name: 'save' })
+    type('name', 'Kim')
+    type('name', '')
+    fireEvent.click(screen.getByRole('button', { name: 'cancel' }))
+    await waitFor(() => expect(router.state.location.pathname).toBe('/done'))
+    noDialog()
+  })
+
   it('저장 → 확인 → 완료 확인으로 이동할 때 이탈 다이얼로그가 뜨지 않고, 저장값이 유지된다', async () => {
     run.mockResolvedValue(undefined)
     const router = renderForm()

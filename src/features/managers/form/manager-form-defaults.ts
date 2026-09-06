@@ -1,5 +1,5 @@
-import type { ManagerEditDetail } from '../api/manager-form-contract'
-import type { ManagerCreateInput, ManagerEditInput } from './manager-form-schema'
+import type { ManagerEditDetail } from '../api/manager-form-contract';
+import type { ManagerCreateInput, ManagerEditInput } from './manager-form-schema';
 
 /** 등록의 빈 값은 명시 상수다. 수정 defaults 와 공유하지 않는다. */
 export const managerCreateDefaults: ManagerCreateInput = {
@@ -13,7 +13,7 @@ export const managerCreateDefaults: ManagerCreateInput = {
   phone: '',
   email: '',
   organization: '',
-}
+};
 
 /**
  * 수정 조회 응답을 폼 입력 값으로 평탄화한다.
@@ -31,5 +31,5 @@ export function toManagerEditDefaults(detail: ManagerEditDetail): ManagerEditInp
     phone: detail.phone ?? '',
     email: detail.email ?? '',
     organization: detail.organization ?? '',
-  }
+  };
 }

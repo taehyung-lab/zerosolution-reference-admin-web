@@ -13,6 +13,7 @@ import { z } from 'zod'
  */
 export const envSchema = z.object({
   VITE_APP_NAME: z.string().min(1).default('ZERO PLUS+ Admin'),
+  VITE_REFERENCE_SCENARIOS: z.enum(['true', 'false']).default('false').transform((value) => value === 'true'),
   VITE_API_BASE_URL: z
     .string()
     .default('')

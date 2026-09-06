@@ -5,20 +5,20 @@ import {
   getList8,
   getManagerTypes,
   getPermissions,
-} from "@/api/generated/endpoints";
+} from '@/api/generated/endpoints';
 import type {
   CnJsonPagingResultPagingDataMrManagerDTOInventory,
   GetList8Params,
   GetPermissionsType,
   MrManagerDTODetail,
   MrManagerDTOEditDetail,
-} from "@/api/generated/models";
-import type { UiLocale } from "@/shared/i18n/locale";
-import { nonEmptyArray } from "@/shared/lib/search";
-import { blockingProgress, inlineProgress } from "@/api/query-meta";
-import { queryOptions } from "@tanstack/react-query";
-import type { ManagerSearch } from "../list/search-schema";
-import { managerKeys } from "./keys";
+} from '@/api/generated/models';
+import type { UiLocale } from '@/shared/i18n/locale';
+import { nonEmptyArray } from '@/shared/lib/search';
+import { blockingProgress, inlineProgress } from '@/api/query-meta';
+import { queryOptions } from '@tanstack/react-query';
+import type { ManagerSearch } from '../list/search-schema';
+import { managerKeys } from './keys';
 
 export function toManagerListParams(search: ManagerSearch): GetList8Params {
   const keywords = nonEmptyArray(search.keywords);
@@ -47,9 +47,8 @@ export function managerListQuery(locale: UiLocale, search: ManagerSearch) {
   const params = toManagerListParams(search);
   return queryOptions({
     queryKey: managerKeys.list(locale, params),
-    queryFn:
-      async (): Promise<CnJsonPagingResultPagingDataMrManagerDTOInventory> =>
-        getList8(params),
+    queryFn: async (): Promise<CnJsonPagingResultPagingDataMrManagerDTOInventory> =>
+      getList8(params),
   });
 }
 export function managerDetailQuery(locale: UiLocale, id: string) {

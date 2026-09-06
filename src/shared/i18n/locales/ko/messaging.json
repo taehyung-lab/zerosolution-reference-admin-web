@@ -1,0 +1,35 @@
+{
+  "messages": {
+    "smsTitle": "SMS 발송",
+    "emailTitle": "이메일 발송",
+    "sender": "보내는 사람",
+    "senderName": "이름",
+    "senderPhone": "연락처",
+    "senderEmail": "이메일",
+    "recipients": "받는 사람",
+    "recipient": "받는 사람 {{number}}",
+    "add": "받는 사람 추가",
+    "remove": "받는 사람 {{number}} 삭제",
+    "content": "내용",
+    "type": "메시지 유형",
+    "information": "정보성 메시지",
+    "advertisement": "광고성 메시지",
+    "body": "메시지 내용",
+    "send": "보내기",
+    "cancel": "취소",
+    "close": "닫기",
+    "smsDisabled": "SMS가 사용설정되어 있지 않습니다. [설정 > 정책 > 마케팅]에서 SMS를 사용으로 설정을 변경해주세요.",
+    "emailDisabled": "이메일이 사용설정되어 있지 않습니다. [설정 > 정책 > 마케팅]에서 이메일을 사용으로 설정을 변경해주세요.",
+    "errors": {
+      "name": "이름을 1~20자 입력해주세요.",
+      "phone": "연락처를 숫자로 입력해주세요.",
+      "email": "영문·숫자·@._-를 사용한 이메일 주소를 입력해주세요.",
+      "recipients": "받는 사람을 한 명 이상 입력해주세요.",
+      "body": "내용을 입력해주세요."
+    },
+    "bold": "굵게",
+    "italic": "기울임",
+    "list": "목록",
+    "htmlSource": "HTML 원문"
+  }
+}

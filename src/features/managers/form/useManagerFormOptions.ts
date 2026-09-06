@@ -21,7 +21,11 @@ export interface ManagerFormOptions {
   readonly agency: ManagerSelectOptions;
 }
 
-const noOptions: ManagerSelectOptions = { state: 'ready', items: [], retry: () => undefined };
+const noOptions: ManagerSelectOptions = {
+  state: 'ready',
+  items: [],
+  retry: () => undefined,
+};
 
 function toSelectOptions(query: {
   readonly data?: readonly { value: string; label: string }[];
@@ -46,7 +50,7 @@ export function useManagerFormOptions(type: string): ManagerFormOptions {
   const typeSelected = type !== '';
   const types = useManagerTypeOptions();
   const permissions = useManagerPermissionOptions(
-    typeSelected ? (type as ManagerPermissionScope) : undefined
+    typeSelected ? (type as ManagerPermissionScope) : undefined,
   );
   const agencies = useManagerAgencyOptions();
   return {

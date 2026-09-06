@@ -1,8 +1,5 @@
 import type { DataTableSortDirection } from '@/shared/ui/patterns/DataTable';
-import type {
-  ManagerApiSortType,
-  ManagerSortDirection,
-} from '../api/manager-list-contract';
+import type { ManagerApiSortType, ManagerSortDirection } from '../api/manager-list-contract';
 
 /** Column IDs the Managers table renders; order and cells stay in manager-columns. */
 export type ManagerColumnId =
@@ -33,17 +30,12 @@ export const managerSortFields = {
   PERMISSION: { columnId: 'permission', labelKey: 'columns.permission' },
   STATUS: { columnId: 'status', labelKey: 'columns.status' },
 } as const satisfies Partial<
-  Record<
-    ManagerApiSortType,
-    { columnId: ManagerColumnId; labelKey: `columns.${ManagerColumnId}` }
-  >
+  Record<ManagerApiSortType, { columnId: ManagerColumnId; labelKey: `columns.${ManagerColumnId}` }>
 >;
 
 export type ManagerSortType = keyof typeof managerSortFields;
 
-export const managerSortTypes = Object.keys(
-  managerSortFields,
-) as readonly ManagerSortType[];
+export const managerSortTypes = Object.keys(managerSortFields) as readonly ManagerSortType[];
 
 export interface ManagerSortState {
   readonly type: ManagerSortType;
@@ -59,10 +51,6 @@ export function sortDirectionFor(
   return sort.direction === 'ASC' ? 'ascending' : 'descending';
 }
 
-export function sortTypeOfColumn(
-  columnId: ManagerColumnId,
-): ManagerSortType | undefined {
-  return managerSortTypes.find(
-    (type) => managerSortFields[type].columnId === columnId,
-  );
+export function sortTypeOfColumn(columnId: ManagerColumnId): ManagerSortType | undefined {
+  return managerSortTypes.find((type) => managerSortFields[type].columnId === columnId);
 }

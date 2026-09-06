@@ -9,23 +9,29 @@ import { SectionCard } from '@/shared/ui/patterns/SectionCard';
 import { useSelector, type DeepValue } from '@tanstack/react-form';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import type {
-  ManagerCreateInput,
-  ManagerEditInput,
-} from './manager-form-schema';
-import { useManagerFormOptions } from './useManagerFormOptions';
+import type { ManagerCreateInput, ManagerEditInput } from './manager-form-schema';
+import { useManagerFormOptions, type ManagerFormOptions } from './useManagerFormOptions';
 
 /** The save lifecycle a screen declares with `useSaveForm`; this component only consumes it. */
-type ManagerSaveForm<TValues, TOutput> = ReturnType<
-  typeof useSaveForm<TValues, TOutput, 'info'>
->;
+export type ManagerSaveForm<TValues, TOutput> = Pick<
+  ReturnType<typeof useSaveForm<TValues, TOutput, 'info'>>,
+  'sections' | 'stage' | 'guard' | 'dialogs'
+> & {
+  readonly form: FieldForm<TValues> & Pick<ReturnType<typeof useSaveForm<TValues, TOutput, 'info'>>['form'], 'setFieldValue'> & {
+    readonly store: Parameters<typeof useSelector<{ values: TValues }>>[0];
+  };
+  readonly submit: {
+    readonly run: () => Promise<void>;
+    readonly isPending: boolean;
+  };
+};
 
 /**
  * The manager form that both the create and the edit screen render. It owns everything the two
- * screens share: the option queries, the type policy ("유형 변경시 권한은 초기화됨", Notion; the
- * agency belongs to the AGENCY type alone), the seven common fields in Figma reading order, and
+ * screens share: option sources, the type policy ("유형 변경시 권한은 초기화됨", Notion),
+ * the common fields in Figma reading order, and
  * the section/action shell. A screen declares `useSaveForm` (schema, defaults, mutation,
- * destination) and passes only what differs: the `identity` slot between the agency and the name
+ * destination) and passes only what differs: the `identity` slot before the name
  * (create: ID and password pair, edit: read-only ID) and where cancel goes.
  *
  * Generic with the edit input as the lower bound because `FormApi<ManagerCreateInput>` is not
@@ -38,20 +44,55 @@ export function ManagerForm<TValues extends ManagerEditInput, TOutput>({
   save,
   identity,
   onCancel,
+  optionsForType,
 }: {
   readonly save: ManagerSaveForm<TValues, TOutput>;
   readonly identity: ReactNode;
   readonly onCancel: () => void;
+  readonly optionsForType?: (type: string) => ManagerFormOptions;
+}) {
+  const { form } = save;
+  const type = useSelector(form.store, (state) => state.values.type);
+  return optionsForType ? (
+    <ManagerFormContent
+      save={save}
+      identity={identity}
+      onCancel={onCancel}
+      options={optionsForType(type)}
+    />
+  ) : (
+    <ManagerFormWithQueries save={save} identity={identity} onCancel={onCancel} type={type} />
+  );
+}
+
+function ManagerFormWithQueries<TValues extends ManagerEditInput, TOutput>({
+  type,
+  ...props
+}: {
+  readonly type: string;
+  readonly save: ManagerSaveForm<TValues, TOutput>;
+  readonly identity: ReactNode;
+  readonly onCancel: () => void;
+}) {
+  const options = useManagerFormOptions(type);
+  return <ManagerFormContent {...props} options={options} />;
+}
+
+function ManagerFormContent<TValues extends ManagerEditInput, TOutput>({
+  save,
+  identity,
+  onCancel,
+  options,
+}: {
+  readonly save: ManagerSaveForm<TValues, TOutput>;
+  readonly identity: ReactNode;
+  readonly onCancel: () => void;
+  readonly options: ManagerFormOptions;
 }) {
   const { t } = useTranslation('managers');
   const { form } = save;
-  const type = useSelector(form.store, (state) => state.values.type);
-  const options = useManagerFormOptions(type);
   const clearTypeDependents = () => {
-    form.setFieldValue(
-      'permissionId',
-      '' as DeepValue<TValues, 'permissionId'>
-    );
+    form.setFieldValue('permissionId', '' as DeepValue<TValues, 'permissionId'>);
     form.setFieldValue('agencyId', '' as DeepValue<TValues, 'agencyId'>);
   };
 
@@ -59,18 +100,14 @@ export function ManagerForm<TValues extends ManagerEditInput, TOutput>({
     <>
       {save.dialogs}
       <form
+        noValidate
         onSubmit={(event) => {
           event.preventDefault();
           void save.submit.run();
         }}
       >
-        {save.stage.kind === 'failed' ? (
-          <FormSaveFailureMessage failure={save.stage.root} />
-        ) : null}
-        <SectionCard
-          title={t('form.section')}
-          {...save.sections.sectionProps('info')}
-        >
+        {save.stage.kind === 'failed' ? <FormSaveFailureMessage failure={save.stage.root} /> : null}
+        <SectionCard title={t('form.section')} {...save.sections.sectionProps('info')}>
           <div className="grid gap-x-8 gap-y-5 md:grid-cols-2">
             <FormSelectField
               form={form}

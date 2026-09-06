@@ -5,6 +5,7 @@ Read this file for create/edit form ownership, validation, conditional sections,
 ## Form ownership
 
 - TanStack Form owns values, dirty/touched state, and field errors.
+- Unsaved input is `state.isDirty && !state.isDefaultValue`: restoring defaults leaves nothing to discard, while a successful save's reset remains clean even when the original defaults are retained. Do not use the sticky `isDirty` flag alone for exit protection.
 - Feature Zod schemas define UI input. Keep explicit input/output aliases when validation transforms values.
 - Bind the schema as `validators: { onDynamic: schema }` with `validationLogic: revalidateLogic()` (validate on submit; after the first rejected submit, revalidate on every change). Do not use a bare `onSubmit` validator: TanStack Form clears a field's `onSubmit` error when a blur/change run finds no validator, so leaving a failed field would silently remove its message (ADR 0010).
 - Create and edit share a schema only when fields and validation match. Otherwise share stable fragments and keep separate schemas.
@@ -12,11 +13,18 @@ Read this file for create/edit form ownership, validation, conditional sections,
 - Submit orchestration is `useSaveForm` (shared): it takes `schema`, `defaultValues`, `sections`, `save.run/isPending`, `mapError`, `onDone` and returns `form`, `sections`, `stage`, `submit`, `guard`, `dialogs`. Render `dialogs` once — it holds the dirty-leave question and the save confirm/acknowledge pair, so the blocker never runs without its dialog. The feature passes `mapError: (e) => classifyFormError(e, fieldOrder)` (`src/api/form-error.ts`) and reads `stage.kind === 'failed'` for the root line (`FormSaveFailureMessage`). Do not add resource descriptors, a domain `mode`, or callback overrides to it; a differing workflow stays feature-local.
 - Do not mirror fields in component state, use Query cache as form state, or build a schema-driven renderer.
 - Conditional controls explicitly clear values when product behavior requires it; mapper whitelists do not fix dirty state or validation.
+- When the product instead requires restoring hidden input, keep values in the parent `useForm`. `MemberEditScreen` uses React `Activity` only for restriction UI visibility; its schema and confirmed-input mapper use account status, not DOM visibility. General-member input clears restrictions without mutating the editing draft. Hidden Activity cleans up child Effects, so test field hide/restore and validation with the real Form; do not replace every `keepMounted` section with Activity.
 - Fields bind through typed `shared/ui/form` adapters. Feature schema, defaults, conditional behavior, normalization, and payload mapping remain outside shared UI.
 - Server option `queryOptions` return raw reference records. A feature option hook may use Query `select` to expose `{ value, label }` while preserving the raw loader-warmed cache; forms consume that hook instead of calling `useQuery` and mapping records themselves. The hook projects each option query to `{ state, items, retry }` and the select renders that state in place (`FormSelectField state/onRetry`); `data ?? []` alone makes a failed request look like an empty list. Dependent options keep their prerequisite in the hook/query contract; clearing dependent values is wired by the screen at the select's `onValueChange`, next to the field, not in an effect.
 - A domain's create and edit screens render one feature form component (`{Domain}Form`) that owns what they share: the option queries, the dependent-value policy, the common fields in Figma order, and the shell (`{save.dialogs}`, `<form>`, `FormSaveFailureMessage`, `SectionCard` with the whole `sectionProps(section)` object, action row). Each screen declares `useSaveForm` (schema, defaults, mutation, destination) and passes only what differs — a slot for the differing fields and where cancel goes. That component is domain-specific by construction; do not reduce it to a domain-free shell (the next domain would copy it) and do not lift it to shared.
 
 A consuming form keeps its fields, schema, defaults, validation copy, conditional clearing, option sources, mapper, destination, and whether save uses the confirm/acknowledge pair. It adopts `SectionCard`, adapters, and `useUnsavedChangesGuard.leave()` through the contracts above; missing issue text does not justify a second cancel dialog, inline-form hook, or form controller.
+
+For an explicitly scoped pre-request scenario with no save implementation, compose `useForm`, the
+existing adapters/guard and `ConfirmDialog` directly, as `MemberCreateScreen` does. Confirmation passes
+validated input to the feature callback; it does not reset dirty state, acknowledge success or navigate.
+Do not resolve a fake mutation, leave a promise pending forever, or add a rehearsal mode to `useSaveForm`.
+Revisit shared validation composition when another real caller demonstrates the same lifecycle.
 
 ## Composition index
 
@@ -38,6 +46,14 @@ A collapsed section can hide an invalid field and make submit appear silent. For
 Server field errors: `useSaveForm` writes `fieldMeta.errorMap.onServer` for the classified fields, reveals their sections, and focuses the first in declared order. Ordinary validation never clears `onServer`, so the hook clears every `onServer` at the start of the next submit — the server decides again. A failure with no field becomes `stage.kind === 'failed'`, replaced by the next valid submit. Preserve entered values; the real-Router test `useSaveForm.test.tsx` owns this transition.
 
 ## Cancel and tabs
+
+2026-09-05 user decision: dirty input protection also applies to dialog and inline forms. Compose
+`useUnsavedChangesGuard` with the form's dirty fact, render its dialog once, use `leave` for Router
+navigation and `close(discard)` for local dismiss/edit cancellation. The app mounts one `UnsavedChangesProvider`
+inside Router: concurrent inline and popup forms register dirty/pending facts, not values, and share one
+route confirmation. Without the provider the hook remains standalone. `close(discard, { when })` scopes
+a local cancellation to the affected form when the caller aggregates multiple dirty facts. Keep the form mounted while asking;
+canceling the question preserves its values. Route every dialog close affordance through that same callback.
 
 Two confirmed sentences guard a leave: the cancel button's "취소할 경우 입력된 정보는 모두 삭제됩니다. 입력을 취소하시겠습니까?" (Notion, 20+ screens) and, for navigation the user did not start from the form (LNB, back), "화면을 이동할 경우 입력된 정보는 모두 삭제됩니다. 화면으로 이동하시겠습니까?" (Figma `1.1.3.1.2`). Both appear only while the form is dirty (decided 2026-09-02, ADR 0010). Both run through the same Router blocker: the cancel button calls `guard.leave(navigate)` and `useUnsavedChangesGuard` picks the sentence by entry path. Add no second cancel dialog and never disable the guard to get past it — a clean form leaves without asking.
 

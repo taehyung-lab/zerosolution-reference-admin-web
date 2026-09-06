@@ -14,13 +14,21 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppManagersIndexRouteImport } from './routes/_app/managers/index'
 import { Route as AppManagersNewRouteImport } from './routes/_app/managers/new'
+import { Route as AppMembersAccessRouteImport } from './routes/_app/members/access'
+import { Route as AppMembersCounselRouteImport } from './routes/_app/members/counsel'
+import { Route as AppMembersDormantRouteImport } from './routes/_app/members/dormant'
 import { Route as AppMembersNewRouteImport } from './routes/_app/members/new'
 import { Route as AppManagersManagerIdIndexRouteImport } from './routes/_app/managers/$managerId/index'
 import { Route as AppManagersManagerIdEditRouteImport } from './routes/_app/managers/$managerId/edit'
 import { Route as AppMembersMemberIdIndexRouteImport } from './routes/_app/members/$memberId/index'
+import { Route as AppMembersMemberIdEditRouteImport } from './routes/_app/members/$memberId/edit'
 import { Route as AppMembersActiveAllRouteImport } from './routes/_app/members/active/all'
 import { Route as AppMembersActiveFlaggedRouteImport } from './routes/_app/members/active/flagged'
 import { Route as AppMembersActiveGeneralRouteImport } from './routes/_app/members/active/general'
+import { Route as AppMembersAppealsIndexRouteImport } from './routes/_app/members/appeals/index'
+import { Route as AppMembersAppealsAppealIdRouteImport } from './routes/_app/members/appeals/$appealId'
+import { Route as AppMembersWithdrawnIndexRouteImport } from './routes/_app/members/withdrawn/index'
+import { Route as AppMembersWithdrawnMemberIdRouteImport } from './routes/_app/members/withdrawn/$memberId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -46,6 +54,21 @@ const AppManagersNewRoute = AppManagersNewRouteImport.update({
   path: '/managers/new',
   getParentRoute: () => AppRoute,
 } as any)
+const AppMembersAccessRoute = AppMembersAccessRouteImport.update({
+  id: '/members/access',
+  path: '/members/access',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMembersCounselRoute = AppMembersCounselRouteImport.update({
+  id: '/members/counsel',
+  path: '/members/counsel',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMembersDormantRoute = AppMembersDormantRouteImport.update({
+  id: '/members/dormant',
+  path: '/members/dormant',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppMembersNewRoute = AppMembersNewRouteImport.update({
   id: '/members/new',
   path: '/members/new',
@@ -68,6 +91,11 @@ const AppMembersMemberIdIndexRoute = AppMembersMemberIdIndexRouteImport.update({
   path: '/members/$memberId/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppMembersMemberIdEditRoute = AppMembersMemberIdEditRouteImport.update({
+  id: '/members/$memberId/edit',
+  path: '/members/$memberId/edit',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppMembersActiveAllRoute = AppMembersActiveAllRouteImport.update({
   id: '/members/active/all',
   path: '/members/active/all',
@@ -83,32 +111,71 @@ const AppMembersActiveGeneralRoute = AppMembersActiveGeneralRouteImport.update({
   path: '/members/active/general',
   getParentRoute: () => AppRoute,
 } as any)
+const AppMembersAppealsIndexRoute = AppMembersAppealsIndexRouteImport.update({
+  id: '/members/appeals/',
+  path: '/members/appeals/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMembersAppealsAppealIdRoute =
+  AppMembersAppealsAppealIdRouteImport.update({
+    id: '/members/appeals/$appealId',
+    path: '/members/appeals/$appealId',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppMembersWithdrawnIndexRoute =
+  AppMembersWithdrawnIndexRouteImport.update({
+    id: '/members/withdrawn/',
+    path: '/members/withdrawn/',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppMembersWithdrawnMemberIdRoute =
+  AppMembersWithdrawnMemberIdRouteImport.update({
+    id: '/members/withdrawn/$memberId',
+    path: '/members/withdrawn/$memberId',
+    getParentRoute: () => AppRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/managers/new': typeof AppManagersNewRoute
+  '/members/access': typeof AppMembersAccessRoute
+  '/members/counsel': typeof AppMembersCounselRoute
+  '/members/dormant': typeof AppMembersDormantRoute
   '/members/new': typeof AppMembersNewRoute
   '/managers/': typeof AppManagersIndexRoute
   '/managers/$managerId/edit': typeof AppManagersManagerIdEditRoute
+  '/members/$memberId/edit': typeof AppMembersMemberIdEditRoute
   '/members/active/all': typeof AppMembersActiveAllRoute
   '/members/active/flagged': typeof AppMembersActiveFlaggedRoute
   '/members/active/general': typeof AppMembersActiveGeneralRoute
+  '/members/appeals/$appealId': typeof AppMembersAppealsAppealIdRoute
+  '/members/withdrawn/$memberId': typeof AppMembersWithdrawnMemberIdRoute
   '/managers/$managerId/': typeof AppManagersManagerIdIndexRoute
   '/members/$memberId/': typeof AppMembersMemberIdIndexRoute
+  '/members/appeals/': typeof AppMembersAppealsIndexRoute
+  '/members/withdrawn/': typeof AppMembersWithdrawnIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/managers/new': typeof AppManagersNewRoute
+  '/members/access': typeof AppMembersAccessRoute
+  '/members/counsel': typeof AppMembersCounselRoute
+  '/members/dormant': typeof AppMembersDormantRoute
   '/members/new': typeof AppMembersNewRoute
   '/managers': typeof AppManagersIndexRoute
   '/managers/$managerId/edit': typeof AppManagersManagerIdEditRoute
+  '/members/$memberId/edit': typeof AppMembersMemberIdEditRoute
   '/members/active/all': typeof AppMembersActiveAllRoute
   '/members/active/flagged': typeof AppMembersActiveFlaggedRoute
   '/members/active/general': typeof AppMembersActiveGeneralRoute
+  '/members/appeals/$appealId': typeof AppMembersAppealsAppealIdRoute
+  '/members/withdrawn/$memberId': typeof AppMembersWithdrawnMemberIdRoute
   '/managers/$managerId': typeof AppManagersManagerIdIndexRoute
   '/members/$memberId': typeof AppMembersMemberIdIndexRoute
+  '/members/appeals': typeof AppMembersAppealsIndexRoute
+  '/members/withdrawn': typeof AppMembersWithdrawnIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -116,14 +183,22 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/_app/managers/new': typeof AppManagersNewRoute
+  '/_app/members/access': typeof AppMembersAccessRoute
+  '/_app/members/counsel': typeof AppMembersCounselRoute
+  '/_app/members/dormant': typeof AppMembersDormantRoute
   '/_app/members/new': typeof AppMembersNewRoute
   '/_app/managers/': typeof AppManagersIndexRoute
   '/_app/managers/$managerId/edit': typeof AppManagersManagerIdEditRoute
+  '/_app/members/$memberId/edit': typeof AppMembersMemberIdEditRoute
   '/_app/members/active/all': typeof AppMembersActiveAllRoute
   '/_app/members/active/flagged': typeof AppMembersActiveFlaggedRoute
   '/_app/members/active/general': typeof AppMembersActiveGeneralRoute
+  '/_app/members/appeals/$appealId': typeof AppMembersAppealsAppealIdRoute
+  '/_app/members/withdrawn/$memberId': typeof AppMembersWithdrawnMemberIdRoute
   '/_app/managers/$managerId/': typeof AppManagersManagerIdIndexRoute
   '/_app/members/$memberId/': typeof AppMembersMemberIdIndexRoute
+  '/_app/members/appeals/': typeof AppMembersAppealsIndexRoute
+  '/_app/members/withdrawn/': typeof AppMembersWithdrawnIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -131,41 +206,65 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/managers/new'
+    | '/members/access'
+    | '/members/counsel'
+    | '/members/dormant'
     | '/members/new'
     | '/managers/'
     | '/managers/$managerId/edit'
+    | '/members/$memberId/edit'
     | '/members/active/all'
     | '/members/active/flagged'
     | '/members/active/general'
+    | '/members/appeals/$appealId'
+    | '/members/withdrawn/$memberId'
     | '/managers/$managerId/'
     | '/members/$memberId/'
+    | '/members/appeals/'
+    | '/members/withdrawn/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/login'
     | '/managers/new'
+    | '/members/access'
+    | '/members/counsel'
+    | '/members/dormant'
     | '/members/new'
     | '/managers'
     | '/managers/$managerId/edit'
+    | '/members/$memberId/edit'
     | '/members/active/all'
     | '/members/active/flagged'
     | '/members/active/general'
+    | '/members/appeals/$appealId'
+    | '/members/withdrawn/$memberId'
     | '/managers/$managerId'
     | '/members/$memberId'
+    | '/members/appeals'
+    | '/members/withdrawn'
   id:
     | '__root__'
     | '/'
     | '/_app'
     | '/login'
     | '/_app/managers/new'
+    | '/_app/members/access'
+    | '/_app/members/counsel'
+    | '/_app/members/dormant'
     | '/_app/members/new'
     | '/_app/managers/'
     | '/_app/managers/$managerId/edit'
+    | '/_app/members/$memberId/edit'
     | '/_app/members/active/all'
     | '/_app/members/active/flagged'
     | '/_app/members/active/general'
+    | '/_app/members/appeals/$appealId'
+    | '/_app/members/withdrawn/$memberId'
     | '/_app/managers/$managerId/'
     | '/_app/members/$memberId/'
+    | '/_app/members/appeals/'
+    | '/_app/members/withdrawn/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -211,6 +310,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppManagersNewRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/members/access': {
+      id: '/_app/members/access'
+      path: '/members/access'
+      fullPath: '/members/access'
+      preLoaderRoute: typeof AppMembersAccessRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/members/counsel': {
+      id: '/_app/members/counsel'
+      path: '/members/counsel'
+      fullPath: '/members/counsel'
+      preLoaderRoute: typeof AppMembersCounselRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/members/dormant': {
+      id: '/_app/members/dormant'
+      path: '/members/dormant'
+      fullPath: '/members/dormant'
+      preLoaderRoute: typeof AppMembersDormantRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/members/new': {
       id: '/_app/members/new'
       path: '/members/new'
@@ -239,6 +359,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppMembersMemberIdIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/members/$memberId/edit': {
+      id: '/_app/members/$memberId/edit'
+      path: '/members/$memberId/edit'
+      fullPath: '/members/$memberId/edit'
+      preLoaderRoute: typeof AppMembersMemberIdEditRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/members/active/all': {
       id: '/_app/members/active/all'
       path: '/members/active/all'
@@ -260,31 +387,75 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppMembersActiveGeneralRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/members/appeals/': {
+      id: '/_app/members/appeals/'
+      path: '/members/appeals'
+      fullPath: '/members/appeals/'
+      preLoaderRoute: typeof AppMembersAppealsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/members/appeals/$appealId': {
+      id: '/_app/members/appeals/$appealId'
+      path: '/members/appeals/$appealId'
+      fullPath: '/members/appeals/$appealId'
+      preLoaderRoute: typeof AppMembersAppealsAppealIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/members/withdrawn/': {
+      id: '/_app/members/withdrawn/'
+      path: '/members/withdrawn'
+      fullPath: '/members/withdrawn/'
+      preLoaderRoute: typeof AppMembersWithdrawnIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/members/withdrawn/$memberId': {
+      id: '/_app/members/withdrawn/$memberId'
+      path: '/members/withdrawn/$memberId'
+      fullPath: '/members/withdrawn/$memberId'
+      preLoaderRoute: typeof AppMembersWithdrawnMemberIdRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
   AppManagersNewRoute: typeof AppManagersNewRoute
+  AppMembersAccessRoute: typeof AppMembersAccessRoute
+  AppMembersCounselRoute: typeof AppMembersCounselRoute
+  AppMembersDormantRoute: typeof AppMembersDormantRoute
   AppMembersNewRoute: typeof AppMembersNewRoute
   AppManagersIndexRoute: typeof AppManagersIndexRoute
   AppManagersManagerIdEditRoute: typeof AppManagersManagerIdEditRoute
+  AppMembersMemberIdEditRoute: typeof AppMembersMemberIdEditRoute
   AppMembersActiveAllRoute: typeof AppMembersActiveAllRoute
   AppMembersActiveFlaggedRoute: typeof AppMembersActiveFlaggedRoute
   AppMembersActiveGeneralRoute: typeof AppMembersActiveGeneralRoute
+  AppMembersAppealsAppealIdRoute: typeof AppMembersAppealsAppealIdRoute
+  AppMembersWithdrawnMemberIdRoute: typeof AppMembersWithdrawnMemberIdRoute
   AppManagersManagerIdIndexRoute: typeof AppManagersManagerIdIndexRoute
   AppMembersMemberIdIndexRoute: typeof AppMembersMemberIdIndexRoute
+  AppMembersAppealsIndexRoute: typeof AppMembersAppealsIndexRoute
+  AppMembersWithdrawnIndexRoute: typeof AppMembersWithdrawnIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppManagersNewRoute: AppManagersNewRoute,
+  AppMembersAccessRoute: AppMembersAccessRoute,
+  AppMembersCounselRoute: AppMembersCounselRoute,
+  AppMembersDormantRoute: AppMembersDormantRoute,
   AppMembersNewRoute: AppMembersNewRoute,
   AppManagersIndexRoute: AppManagersIndexRoute,
   AppManagersManagerIdEditRoute: AppManagersManagerIdEditRoute,
+  AppMembersMemberIdEditRoute: AppMembersMemberIdEditRoute,
   AppMembersActiveAllRoute: AppMembersActiveAllRoute,
   AppMembersActiveFlaggedRoute: AppMembersActiveFlaggedRoute,
   AppMembersActiveGeneralRoute: AppMembersActiveGeneralRoute,
+  AppMembersAppealsAppealIdRoute: AppMembersAppealsAppealIdRoute,
+  AppMembersWithdrawnMemberIdRoute: AppMembersWithdrawnMemberIdRoute,
   AppManagersManagerIdIndexRoute: AppManagersManagerIdIndexRoute,
   AppMembersMemberIdIndexRoute: AppMembersMemberIdIndexRoute,
+  AppMembersAppealsIndexRoute: AppMembersAppealsIndexRoute,
+  AppMembersWithdrawnIndexRoute: AppMembersWithdrawnIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

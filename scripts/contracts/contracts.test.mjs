@@ -4,15 +4,13 @@ import { tmpdir } from 'node:os'
 import { basename, join, resolve } from 'node:path'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import {
-  agentsBudgetFailure,
-  AGENTS_LINE_BUDGET,
   CI_VERIFY_SCRIPTS,
   claudeAgentsImportFailure,
   ciVerifyStageFailures,
   ciWorkflowConcurrencyFailures,
   ciWorkflowScriptFailures,
   copilotAgentsPointerFailure,
-  documentBudgetFailures,
+  documentBudgetNotices,
   ledgerIndexFailures,
   DOCUMENT_LINE_BUDGET,
   parseReadmeVerifyProjection,
@@ -286,37 +284,30 @@ describe('local markdown links', () => {
   })
 })
 
-describe('AGENTS line budget', () => {
-  it('passes at the budget', () => {
-    expect(agentsBudgetFailure(`${'x\n'.repeat(AGENTS_LINE_BUDGET)}`)).toBeNull()
-  })
-
-  it('fails one line over the budget', () => {
-    expect(agentsBudgetFailure(`${'x\n'.repeat(AGENTS_LINE_BUDGET + 1)}`)).toContain(
-      String(AGENTS_LINE_BUDGET + 1),
-    )
-  })
-})
-
 describe('agent-facing document line budget', () => {
-  it('passes when every document stays at the shared budget', () => {
+  it('says nothing when every document stays at the recommended length', () => {
     const files = createDocuments({
       'AGENTS.md': 'x\n'.repeat(DOCUMENT_LINE_BUDGET),
       'references/contract.md': 'x\n'.repeat(DOCUMENT_LINE_BUDGET),
     })
 
-    expect(documentBudgetFailures(files)).toEqual([])
+    expect(documentBudgetNotices(files)).toEqual([])
   })
 
-  it('reports only documents over the shared budget', () => {
+  // 권고이므로 실패가 아니다. 넘긴 파일에는 무엇을 볼지 함께 적는다.
+  it('advises only the documents over the recommended length, and says what to check', () => {
     const files = createDocuments({
       'ok.md': 'x\n'.repeat(DOCUMENT_LINE_BUDGET),
       'too-long.md': 'x\n'.repeat(DOCUMENT_LINE_BUDGET + 1),
     })
 
-    expect(documentBudgetFailures(files)).toEqual([
+    const notices = documentBudgetNotices(files)
+    expect(notices).toEqual([
       expect.stringContaining(`too-long.md 가 ${DOCUMENT_LINE_BUDGET + 1}줄`),
     ])
+    expect(notices[0]).toContain('중복')
+    expect(notices[0]).toContain('소유자')
+    expect(notices[0]).toContain('나눌 수')
   })
 })
 

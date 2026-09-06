@@ -1,21 +1,21 @@
-import { filterPartitionKey, filterPartitionValues } from "@/shared/lib/search-partition";
-import { useDraftCommit } from "@/shared/lib/use-draft-commit";
-import { useKeywordDraft } from "@/shared/lib/use-keyword-draft";
-import { usePeriodDraft } from "@/shared/lib/use-period-draft";
-import { type SubmitEvent } from "react";
-import { useTranslation } from "react-i18next";
-import { useManagerTypeOptions } from "../options/useManagerOptions";
-import { changeManagerView } from "./manager-list-policy";
+import { filterPartitionKey, filterPartitionValues } from '@/shared/lib/search-partition';
+import { useDraftCommit } from '@/shared/lib/use-draft-commit';
+import { useKeywordDraft } from '@/shared/lib/use-keyword-draft';
+import { usePeriodDraft } from '@/shared/lib/use-period-draft';
+import { type SubmitEvent } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useManagerTypeOptions } from '../options/useManagerOptions';
+import { changeManagerView } from './manager-list-policy';
 import {
   managerSearchPartition,
   resolveManagerSearch,
   toManagerRouteSearch,
   type ManagerRouteSearch,
   type ManagerSearch,
-} from "./search-schema";
+} from './search-schema';
 
-type KeywordItem = ManagerSearch["keywords"][number];
-type KeywordField = KeywordItem["keywordType"];
+type KeywordItem = ManagerSearch['keywords'][number];
+type KeywordField = KeywordItem['keywordType'];
 
 function committedFilterKey(search: ManagerRouteSearch): string {
   return filterPartitionKey(search, managerSearchPartition);
@@ -28,7 +28,7 @@ export function useManagerListFilter({
   readonly search: ManagerRouteSearch;
   readonly onSearchChange: (next: ManagerRouteSearch) => void;
 }) {
-  const { t } = useTranslation("managers");
+  const { t } = useTranslation('managers');
   const managerTypeOptions = useManagerTypeOptions();
   const committedKey = committedFilterKey(search);
   // The draft holds filter fields only, so view state can never be edited and then discarded.
@@ -36,17 +36,14 @@ export function useManagerListFilter({
     committed: search,
     keyOf: committedFilterKey,
     createDraft: (value) =>
-      filterPartitionValues(
-        resolveManagerSearch(value),
-        managerSearchPartition,
-      ),
+      filterPartitionValues(resolveManagerSearch(value), managerSearchPartition),
   });
   const keyword = useKeywordDraft<KeywordField>({
     committedItems: resolveManagerSearch(search).keywords.map((item) => ({
       field: item.keywordType,
       value: item.keyword,
     })),
-    initialField: "ID",
+    initialField: 'ID',
     resetKey: committedKey,
   });
   const period = usePeriodDraft({
@@ -82,11 +79,11 @@ export function useManagerListFilter({
     onSearchChange({});
   };
   const keywordOptions = [
-    { value: "ID", label: t("filterOptions.id") },
-    { value: "NAME", label: t("filterOptions.name") },
-    { value: "PHONE", label: t("filterOptions.phone") },
-    { value: "ORGANIZATION", label: t("filterOptions.organization") },
-    { value: "PERMISSION", label: t("filterOptions.permission") },
+    { value: 'ID', label: t('filterOptions.id') },
+    { value: 'NAME', label: t('filterOptions.name') },
+    { value: 'PHONE', label: t('filterOptions.phone') },
+    { value: 'ORGANIZATION', label: t('filterOptions.organization') },
+    { value: 'PERMISSION', label: t('filterOptions.permission') },
   ] as const;
 
   return {
@@ -107,10 +104,10 @@ export function useManagerListFilter({
     typeOptions: {
       state:
         managerTypeOptions.data !== undefined
-          ? ("ready" as const)
+          ? ('ready' as const)
           : managerTypeOptions.isError
-            ? ("error" as const)
-            : ("loading" as const),
+            ? ('error' as const)
+            : ('loading' as const),
       items: managerTypeOptions.data ?? [],
       retry: managerTypeOptions.refetch,
     },
@@ -118,19 +115,19 @@ export function useManagerListFilter({
       keywordOptions.find((option) => option.value === field)?.label ?? field,
     options: {
       periodType: [
-        { value: "CREATED_AT", label: t("filterOptions.createdAt") },
-        { value: "UPDATED_AT", label: t("filterOptions.lastAccessAt") },
+        { value: 'CREATED_AT', label: t('filterOptions.createdAt') },
+        { value: 'UPDATED_AT', label: t('filterOptions.lastAccessAt') },
       ] as const,
       keywordType: keywordOptions,
       registrationRoute: [
-        { value: "ADMIN", label: t("filterOptions.web") },
-        { value: "APP", label: "APP" },
+        { value: 'ADMIN', label: t('filterOptions.web') },
+        { value: 'APP', label: 'APP' },
       ],
       status: [
-        { value: "AWAITING", label: t("status.awaiting") },
-        { value: "INACTIVE", label: t("status.inactive") },
-        { value: "ACTIVE", label: t("status.active") },
-        { value: "LOCKED", label: t("status.locked") },
+        { value: 'AWAITING', label: t('status.awaiting') },
+        { value: 'INACTIVE', label: t('status.inactive') },
+        { value: 'ACTIVE', label: t('status.active') },
+        { value: 'LOCKED', label: t('status.locked') },
       ],
     },
   };

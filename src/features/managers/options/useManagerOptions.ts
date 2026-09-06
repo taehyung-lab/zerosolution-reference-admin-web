@@ -1,12 +1,12 @@
-import { useLocale } from "@/shared/i18n/locale-context";
-import { useQuery } from "@tanstack/react-query";
-import type { ManagerPermissionScope } from "../api/manager-form-contract";
-import { managerTypes } from "../api/manager-list-contract";
+import { useLocale } from '@/shared/i18n/locale-context';
+import { useQuery } from '@tanstack/react-query';
+import type { ManagerPermissionScope } from '../api/manager-form-contract';
+import { managerTypes } from '../api/manager-list-contract';
 import {
   managerAgencyOptionsQuery,
   managerPermissionOptionsQuery,
   managerTypeOptionsQuery,
-} from "../api/queries";
+} from '../api/queries';
 
 interface StringIdNameOptionSource {
   readonly id?: string;
@@ -20,9 +20,7 @@ interface IdNameOptionSource {
 
 function toManagerTypeOptions(options: readonly StringIdNameOptionSource[]) {
   return options.flatMap(({ id, name }) =>
-    id && Object.hasOwn(managerTypes, id)
-      ? [{ value: id, label: name ?? "" }]
-      : [],
+    id && Object.hasOwn(managerTypes, id) ? [{ value: id, label: name ?? '' }] : [],
   );
 }
 
@@ -40,9 +38,7 @@ export function useManagerTypeOptions() {
   });
 }
 
-export function useManagerPermissionOptions(
-  type: ManagerPermissionScope | undefined,
-) {
+export function useManagerPermissionOptions(type: ManagerPermissionScope | undefined) {
   const { locale } = useLocale();
   return useQuery({
     ...managerPermissionOptionsQuery(locale, type),

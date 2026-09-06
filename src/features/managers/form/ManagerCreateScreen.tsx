@@ -7,10 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { useCreateManagerMutation } from './useCreateManagerMutation';
 import { managerCreateDefaults } from './manager-form-defaults';
 import { toManagerCreateRequest } from './manager-form-request';
-import {
-  managerCreateFieldOrder,
-  managerCreateSchema,
-} from './manager-form-schema';
+import { managerCreateFieldOrder, managerCreateSchema } from './manager-form-schema';
 import { ManagerCreateIdentityFields, ManagerForm } from './ManagerForm';
 
 export function ManagerCreateScreen() {

@@ -8,27 +8,26 @@ import { UpdateHistory } from '@/shared/ui/patterns/UpdateHistory';
 import { Badge } from '@/shared/ui/primitives/Badge';
 import { Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
+import { Button } from '@/shared/ui/primitives/Button';
+import { ConfirmDialog } from '@/shared/ui/patterns/ConfirmDialog';
 import type { ManagerDetail } from '../api/manager-detail-contract';
 import { safeErrorKey } from '../model/error-copy';
 import { managerStatusMeta } from '../model/status';
 import { toManagerHistoryEntries } from './manager-history';
 import { useManagerDetail } from './useManagerDetail';
+import { ManagerActionForm } from './ManagerActionForm';
+import { maskManagerEmail, maskManagerPhone } from './manager-contact-display';
+import type { ManagerAccountStatus, ManagerDetailActionRequest } from './manager-detail-actions';
 
-export function ManagerDetailScreen({
-  managerId,
-}: {
-  readonly managerId: string;
-}) {
+export function ManagerDetailScreen({ managerId }: { readonly managerId: string }) {
   const { t } = useTranslation('managers');
   const { t: sharedT } = useTranslation('shared');
   const detail = useManagerDetail(managerId);
 
   return (
     <section>
-      <PageHeader
-        breadcrumb={t('detail.breadcrumb')}
-        title={t('detailTitle')}
-      />
+      <PageHeader breadcrumb={t('detail.breadcrumb')} title={t('detailTitle')} />
       <DetailStateBoundary
         state={detail.state}
         labels={{
@@ -39,41 +38,50 @@ export function ManagerDetailScreen({
         onRetry={() => void detail.retry()}
         trace={detail.error ? <ErrorTrace value={detail.error} /> : null}
       >
-        {detail.data ? (
-          <ManagerDetailContent manager={detail.data} managerId={managerId} />
-        ) : null}
+        {detail.data ? <ManagerDetailContent manager={detail.data} managerId={managerId} /> : null}
       </DetailStateBoundary>
     </section>
   );
 }
 
-function ManagerDetailContent({
+export function ManagerDetailContent({
   manager,
   managerId,
+  accountStatus,
+  onActionRequest,
 }: {
   readonly manager: ManagerDetail;
   readonly managerId: string;
+  readonly accountStatus?: ManagerAccountStatus;
+  readonly onActionRequest?: (request: ManagerDetailActionRequest) => void;
 }) {
   const { t } = useTranslation('managers');
+  const { t: shared } = useTranslation('shared');
+  const [action, setAction] = useState<ManagerDetailActionRequest['type']>();
   const status = managerStatusMeta(manager.status?.id);
   const empty = t('detail.emptyValue');
+  const editable =
+    accountStatus === 'active' || accountStatus === 'inactive' || accountStatus === 'locked';
+  const confirmAction =
+    action === 'approve' || action === 'delete' || action === 'activate' || action === 'deactivate'
+      ? action
+      : undefined;
   return (
     <>
       <SectionCard title={t('detail.section')}>
         <dl className="grid md:grid-cols-2 md:gap-x-8">
-          <DetailField label={t('detail.type')}>
-            {manager.type?.name ?? empty}
-          </DetailField>
+          <DetailField label={t('detail.type')}>{manager.type?.name ?? empty}</DetailField>
           <DetailField label={t('detail.id')}>{manager.id ?? empty}</DetailField>
-          <DetailField label={t('detail.name')}>
-            {manager.name ?? empty}
-          </DetailField>
-          <DetailField label={t('detail.phone')}>
-            {manager.phone ?? empty}
-          </DetailField>
-          <DetailField label={t('detail.email')}>
-            {manager.email ?? empty}
-          </DetailField>
+          {accountStatus ? (
+            <DetailField label={t('form.password')}>
+              <Button disabled={!editable} onClick={() => setAction('password')}>
+                {t('actions.password')}
+              </Button>
+            </DetailField>
+          ) : null}
+          <DetailField label={t('detail.name')}>{manager.name ?? empty}</DetailField>
+          <DetailField label={t('detail.phone')}>{manager.phone ? (accountStatus ? maskManagerPhone(manager.phone) : manager.phone) : empty}</DetailField>
+          <DetailField label={t('detail.email')}>{manager.email ? (accountStatus ? maskManagerEmail(manager.email) : manager.email) : empty}</DetailField>
           <DetailField label={t('detail.organization')}>
             {manager.organization ?? manager.agency?.name ?? empty}
           </DetailField>
@@ -84,18 +92,50 @@ function ManagerDetailContent({
             {manager.registrationRoute?.name ?? empty}
           </DetailField>
           <DetailField label={t('detail.status')}>
-            <Badge tone={status.tone}>{t(status.labelKey)}</Badge>
+            <Badge tone={status.tone}>
+              {accountStatus ? t(`accountStatus.${accountStatus}`) : t(status.labelKey)}
+            </Badge>
+            {accountStatus === 'active' ? (
+              <Button onClick={() => setAction('deactivate')}>{t('actions.deactivate')}</Button>
+            ) : null}
+            {accountStatus === 'inactive' ? (
+              <Button onClick={() => setAction('activate')}>{t('actions.activate')}</Button>
+            ) : null}
+            {accountStatus === 'locked' ? (
+              <Button onClick={() => setAction('unlock')}>{t('actions.unlock')}</Button>
+            ) : null}
           </DetailField>
           <DetailField label={t('detail.createdAt')}>
             {formatDate(manager.createdAt) || empty}
           </DetailField>
-          {manager.status?.id === 'INACTIVE' && manager.statusReason ? (
-            <DetailField label={t('detail.statusReason')}>
-              {manager.statusReason}
-            </DetailField>
+          {(accountStatus === 'rejected' ||
+            (accountStatus === undefined && manager.status?.id === 'INACTIVE')) &&
+          manager.statusReason ? (
+            <DetailField label={t('detail.statusReason')}>{manager.statusReason}</DetailField>
           ) : null}
         </dl>
       </SectionCard>
+      {accountStatus ? (
+        <div className="mt-6 flex justify-center gap-2">
+          {accountStatus !== 'rejected' ? (
+            <Button onClick={() => setAction('reveal')}>{t('actions.reveal')}</Button>
+          ) : null}
+          {accountStatus === 'awaiting' ? (
+            <>
+              <Button onClick={() => setAction('approve')}>{t('actions.approve')}</Button>
+              <Button onClick={() => setAction('reject')}>{t('actions.reject')}</Button>
+            </>
+          ) : null}
+          {accountStatus === 'rejected' ? (
+            <Button onClick={() => setAction('delete')}>{t('actions.delete')}</Button>
+          ) : null}
+          {editable ? (
+            <Button onClick={() => setAction('verifyWithdrawal')}>
+              {t('actions.verifyWithdrawal')}
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
       <div className="mt-5">
         <SectionCard title={t('detail.history')}>
           <UpdateHistory
@@ -109,15 +149,44 @@ function ManagerDetailContent({
           />
         </SectionCard>
       </div>
-      <div className="mt-8 flex justify-center">
-        <Link
-          className="inline-flex min-h-10 items-center justify-center rounded-md bg-neutral-900 px-8 text-sm font-medium text-white"
-          params={{ managerId }}
-          to="/managers/$managerId/edit"
-        >
-          {t('form.editAction')}
-        </Link>
-      </div>
+      {accountStatus === undefined || editable ? (
+        <div className="mt-8 flex justify-center">
+          <Link
+            className="inline-flex min-h-10 items-center justify-center rounded-md bg-neutral-900 px-8 text-sm font-medium text-white"
+            params={{ managerId }}
+            to="/managers/$managerId/edit"
+          >
+            {t('form.editAction')}
+          </Link>
+        </div>
+      ) : null}
+      {confirmAction ? (
+        <ConfirmDialog
+          open
+          title={shared('alert.title')}
+          description={t(`actions.${confirmAction}Description`)}
+          confirmLabel={
+            confirmAction === 'approve' ? t('actions.approveConfirm') : shared('formSave.confirm')
+          }
+          cancelLabel={shared('formSave.cancel')}
+          onOpenChange={(open) => {
+            if (!open) setAction(undefined);
+          }}
+          onConfirm={() => {
+            onActionRequest?.({ type: confirmAction, managerId });
+            setAction(undefined);
+          }}
+        />
+      ) : null}
+      {action !== undefined && confirmAction === undefined ? (
+        <ManagerActionForm
+          key={action}
+          action={action as 'reject' | 'password' | 'unlock' | 'reveal' | 'verifyWithdrawal'}
+          managerId={managerId}
+          onClose={() => setAction(undefined)}
+          onActionRequest={(request) => onActionRequest?.(request)}
+        />
+      ) : null}
     </>
   );
 }

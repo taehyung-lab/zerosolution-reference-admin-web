@@ -32,7 +32,7 @@ function parts(instant: number, timezone: string) {
   };
 }
 
-function zonedDateTimeToUtc(
+export function zonedDateTimeToUtc(
   date: string,
   time: string,
   timezone: string
@@ -88,9 +88,10 @@ export function formatDateInTimeZone(
 export function formatDate(instant: string | null | undefined): string {
   return formatDateInTimeZone(instant, displayTimeZone());
 }
-export function formatTimeInTimeZone(instant: string, timezone: string) {
+export function formatTimeInTimeZone(instant: string, timezone: string, precision: 'minute' | 'second' = 'minute') {
   const value = parts(Date.parse(instant), timezone);
-  return `${String(value.hour).padStart(2, '0')}:${String(value.minute).padStart(2, '0')}`;
+  const time = `${String(value.hour).padStart(2, '0')}:${String(value.minute).padStart(2, '0')}`;
+  return precision === 'second' ? `${time}:${String(value.second).padStart(2, '0')}` : time;
 }
 export function subtractCalendarDays(date: string, days: number) {
   const [year = 0, month = 1, day = 1] = date.split('-').map(Number);

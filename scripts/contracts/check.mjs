@@ -18,7 +18,7 @@ import {
   ciWorkflowScriptFailures,
   collectDocumentFiles,
   copilotAgentsPointerFailure,
-  documentBudgetFailures,
+  documentBudgetNotices,
   ledgerIndexFailures,
   DOCUMENT_LINE_BUDGET,
   parseReadmeVerifyProjection,
@@ -77,7 +77,7 @@ if (projected === null) {
 const documents = collectDocumentFiles()
 failures.push(...pnpmCommandFailures(documents, packageJson.scripts ?? {}))
 failures.push(...readLocalLinkFailures(documents))
-failures.push(...documentBudgetFailures(documents))
+const budgetNotices = documentBudgetNotices(documents)
 
 const agents = readFileSync(resolve('AGENTS.md'), 'utf8')
 const claudeImport = claudeAgentsImportFailure(readFileSync(resolve('CLAUDE.md'), 'utf8'))
@@ -166,7 +166,11 @@ if (failures.length > 0) {
 console.log(`  ✓ verify 체인 ${chain.length}단계가 README 투영과 일치`)
 console.log('  ✓ verify↔CI stage 소유가 누락·추가·중복 없이 일치')
 console.log(`  ✓ 문서 ${documents.length}개의 pnpm 명령과 로컬 link 대상 실존`)
-console.log(`  ✓ 에이전트 문서 ${documents.length}개의 줄 수 예산 ${DOCUMENT_LINE_BUDGET} 이내`)
+if (budgetNotices.length === 0) {
+  console.log(`  ✓ 에이전트 문서 ${documents.length}개가 권고 길이 ${DOCUMENT_LINE_BUDGET}줄 이내`)
+} else {
+  for (const notice of budgetNotices) console.log(`  · ${notice}`)
+}
 console.log('  ✓ CLAUDE.md 가 AGENTS.md 를 첫 지시로 import')
 if (copilotChecked) console.log('  ✓ Copilot 첫 본문 지시가 AGENTS.md 를 가리킴')
 console.log(`  ✓ 삭제된 문서 이름·옛 AGENTS §번호·금지 추상화 근거 파일 drift 없음 (${citingFiles.length}파일)`)

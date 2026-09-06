@@ -3,11 +3,7 @@ import { I18nextProvider } from 'react-i18next';
 import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { i18n } from '@/shared/i18n/i18n';
-import {
-  managerSortTypes,
-  sortTypeOfColumn,
-  type ManagerColumnId,
-} from './manager-sort';
+import { managerSortTypes, sortTypeOfColumn, type ManagerColumnId } from './manager-sort';
 import { managerSearchDefaults } from './search-schema';
 import { useManagerListResult } from './useManagerListResult';
 import type { ManagerListData } from './useManagerListData';
@@ -24,9 +20,7 @@ const baseData: ManagerListData = {
 };
 
 function wrapper({ children }: { readonly children: ReactNode }) {
-  return (
-    <I18nextProvider i18n={i18n}>{children}</I18nextProvider>
-  );
+  return <I18nextProvider i18n={i18n}>{children}</I18nextProvider>;
 }
 
 describe('useManagerListResult', () => {
@@ -43,9 +37,7 @@ describe('useManagerListResult', () => {
     );
 
     act(() => result.current.pageSize.onChange(200));
-    expect(onSearchChange).toHaveBeenLastCalledWith(
-      expect.objectContaining({ pageSize: 200 }),
-    );
+    expect(onSearchChange).toHaveBeenLastCalledWith(expect.objectContaining({ pageSize: 200 }));
     expect(onSearchChange.mock.calls.at(-1)?.[0]).not.toHaveProperty('page');
 
     act(() => result.current.sort.onValueChange('UPDATED_AT'));
@@ -64,9 +56,7 @@ describe('useManagerListResult', () => {
     expect(onSearchChange.mock.calls.at(-1)?.[0]).not.toHaveProperty('sortType');
     expect(onSearchChange.mock.calls.at(-1)?.[0]).not.toHaveProperty('page');
     act(() => result.current.pagination?.onPageChange(2));
-    expect(onSearchChange).toHaveBeenLastCalledWith(
-      expect.objectContaining({ page: 2 }),
-    );
+    expect(onSearchChange).toHaveBeenLastCalledWith(expect.objectContaining({ page: 2 }));
   });
 
   it('always returns the pagination model and leaves single-page visibility to Pagination', () => {

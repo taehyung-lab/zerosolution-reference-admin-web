@@ -1,0 +1,187 @@
+import { expect, test } from '@playwright/test';
+
+const ready = '입력과 대상 확인이 끝났습니다. API는 호출하지 않았으며 데이터는 변경되지 않았습니다.';
+
+test('@reference appeal notification uses the saved result while unsaved processing is preserved', async ({ page }) => {
+  const writes: string[] = [];
+  page.on('request', (request) => { if (request.url().includes('/api/') && request.method() !== 'GET') writes.push(request.url()); });
+  await page.goto('/members/appeals');
+  await page.getByRole('row').nth(1).click();
+  await expect(page).toHaveURL(/appeals\/appeal-1/);
+  await page.getByRole('combobox', { name: '소명결과', exact: true }).click();
+  await page.getByRole('option', { name: '거절', exact: true }).click();
+  await page.getByRole('button', { name: '저장', exact: true }).click();
+  await expect(page.getByRole('alert')).toContainText('필수');
+  await page.getByRole('button', { name: '회원에게 결과 통보하기', exact: true }).click();
+  const notice = page.getByRole('dialog', { name: '회원에게 결과 통보하기', exact: true });
+  await expect(notice).toContainText('완료');
+  await expect(notice.getByRole('combobox')).toHaveCount(0);
+  await notice.getByRole('button', { name: '취소', exact: true }).last().click();
+  await expect(page.getByRole('combobox', { name: '소명결과', exact: true })).toContainText('거절');
+  await page.getByRole('button', { name: 'SMS', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: '받는 사람 1', exact: true })).toHaveValue('010-1234-5678');
+  await page.getByRole('dialog').getByRole('button', { name: '취소', exact: true }).click();
+  expect(writes).toEqual([]);
+});
+
+test('@reference counsel edit cancellation preserves the new note, and reissue reaches its input boundary', async ({ page }) => {
+  await page.goto('/members/counsel');
+  await page.getByRole('cell', { name: '시나리오 검증용 문의 내용', exact: true }).click();
+  const create = page.getByRole('form', { name: '신규 상담 등록' });
+  await create.getByRole('textbox', { name: '상담내용 및 처리결과' }).fill('새 상담 초안');
+  await page.getByRole('button', { name: '수정', exact: true }).click();
+  const edit = page.getByRole('form', { name: '수정', exact: true });
+  await edit.getByRole('textbox', { name: '상담내용 및 처리결과' }).fill('수정 초안');
+  await edit.getByRole('button', { name: '취소', exact: true }).click();
+  await page.getByRole('dialog', { name: '알림', exact: true }).getByRole('button', { name: '취소', exact: true }).click();
+  await expect(edit.getByRole('textbox', { name: '상담내용 및 처리결과' })).toHaveValue('수정 초안');
+  await edit.getByRole('button', { name: '취소', exact: true }).click();
+  await page.getByRole('dialog', { name: '알림', exact: true }).getByRole('button', { name: '확인', exact: true }).click();
+  await expect(edit).toHaveCount(0);
+  await expect(create.getByRole('textbox', { name: '상담내용 및 처리결과' })).toHaveValue('새 상담 초안');
+  await page.getByRole('button', { name: '티켓재발권', exact: true }).click();
+  const print = page.getByRole('dialog', { name: '티켓재발권', exact: true });
+  await expect(print.getByRole('button', { name: '발권 시작하기' })).toBeDisabled();
+  await print.getByRole('combobox', { name: '스마트프린터 선택' }).click();
+  await page.getByRole('option', { name: '참고 프린터' }).click();
+  await print.getByRole('button', { name: '테스트 발권' }).click();
+  await expect(page.getByText(ready)).toBeVisible();
+  await print.getByRole('button', { name: '취소', exact: true }).last().click();
+  await expect(create.getByRole('textbox', { name: '상담내용 및 처리결과' })).toHaveValue('새 상담 초안');
+});
+
+test('@reference dormant paging and messaging, withdrawn detail and access download validation', async ({ page }) => {
+  await page.goto('/members/dormant');
+  await page.getByRole('form', { name: '검색' }).getByRole('button', { name: '검색', exact: true }).click();
+  await page.getByRole('button', { name: 'SMS', exact: true }).click();
+  await expect(page.getByRole('dialog')).toContainText('선택');
+  await page.getByRole('dialog').getByRole('button', { name: '확인', exact: true }).click();
+  await page.getByRole('button', { name: '2', exact: true }).click();
+  await expect(page).toHaveURL(/page=2/);
+  await page.getByRole('row').nth(1).getByRole('checkbox').check();
+  await page.getByRole('button', { name: 'SMS', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: '받는 사람 1', exact: true })).toHaveValue('010-1234-5678');
+  await page.getByRole('dialog').getByRole('button', { name: '취소', exact: true }).click();
+  await page.goto('/members/withdrawn');
+  await page.getByRole('form', { name: '검색' }).getByRole('button', { name: '검색', exact: true }).click();
+  await page.getByRole('row').nth(1).click();
+  await expect(page).toHaveURL(/withdrawn\/withdrawn-1/);
+  await expect(page.getByRole('button', { name: '회원 탈퇴', exact: true })).toHaveCount(0);
+  await page.goto('/members/access');
+  await page.getByRole('form', { name: '검색' }).getByRole('button', { name: '검색', exact: true }).click();
+  await page.getByRole('combobox', { name: '다운로드 범위' }).click();
+  await page.getByRole('option', { name: '선택한 항목' }).click();
+  await page.getByRole('button', { name: '다운로드', exact: true }).click();
+  await expect(page.getByRole('dialog')).toContainText('다운로드할 항목을 선택해주세요.');
+});
+
+test('@reference member list → detail → edit retains hidden restrictions and binds the target', async ({ page }) => {
+  await page.goto('/members/active/flagged');
+  await page.getByRole('form', { name: '검색' }).getByRole('button', { name: '검색', exact: true }).click();
+  await expect(page.getByText('검색결과 : 1')).toBeVisible();
+  await page.getByRole('row').filter({ hasText: '예시불량' }).click();
+  await expect(page).toHaveURL(/members\/example-flagged$/);
+  await expect(page.getByText('flag***@example.test', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '수정', exact: true }).first().click();
+  await expect(page).toHaveURL(/example-flagged\/edit$/);
+  await expect(page.getByRole('checkbox', { name: '1:1문의' })).toBeChecked();
+  await page.getByRole('combobox', { name: '계정 상태' }).click();
+  await page.getByRole('option', { name: '일반회원', exact: true }).click();
+  await expect(page.getByRole('checkbox', { name: '1:1문의' })).toHaveCount(0);
+  await page.getByRole('button', { name: '저장', exact: true }).click();
+  await page.getByRole('dialog').getByRole('button', { name: '확인', exact: true }).click();
+  await expect(page.getByText(ready)).toBeVisible();
+  await page.getByRole('combobox', { name: '계정 상태' }).click();
+  await page.getByRole('option', { name: '불량회원', exact: true }).click();
+  await expect(page.getByRole('checkbox', { name: '1:1문의' })).toBeChecked();
+  await page.getByRole('button', { name: '취소', exact: true }).click();
+  await expect(page).toHaveURL(/example-flagged$/);
+});
+
+test('@reference member detail activity deletion, empty search and section preservation', async ({ page }) => {
+  await page.goto('/members/example-flagged');
+  await page.getByRole('button', { name: '선택삭제', exact: true }).click();
+  await expect(page.getByRole('dialog')).toContainText('변경할 항목을 선택해주세요.');
+  await page.getByRole('dialog').getByRole('button', { name: '확인' }).click();
+  await page.getByRole('checkbox', { name: 'EXAMPLE-001 선택' }).check();
+  await page.getByRole('button', { name: '선택삭제', exact: true }).click();
+  await page.getByRole('dialog').getByRole('button', { name: '확인' }).click();
+  await expect(page.getByText(ready)).toBeVisible();
+  await expect(page.getByRole('cell', { name: 'EXAMPLE-001', exact: true })).toBeVisible();
+  await page.getByRole('tab', { name: '재관람', exact: true }).click();
+  await expect(page.getByRole('checkbox', { name: 'EXAMPLE-001 선택' })).not.toBeChecked();
+  await page.getByRole('tabpanel').getByRole('textbox', { name: '검색' }).fill('not-found');
+  await page.getByRole('tabpanel').getByRole('button', { name: '검색', exact: true }).click();
+  await expect(page.getByText('일치하는 검색결과가 없습니다.', { exact: true })).toBeVisible();
+  await page.getByRole('tabpanel').getByRole('button', { name: '초기화' }).click();
+  await page.getByRole('tab', { name: '입장기록', exact: true }).click();
+  await expect(page.getByRole('button', { name: '선택삭제' })).toHaveCount(0);
+  const content = page.getByRole('form', { name: '신규 상담 등록' }).getByRole('textbox', { name: '상담내용 및 처리결과' });
+  await content.fill('preserved counsel input');
+  await page.getByRole('button', { name: '회원상담', exact: true }).click();
+  await expect(content).toBeHidden();
+  await page.getByRole('button', { name: '회원상담', exact: true }).click();
+  await expect(content).toHaveValue('preserved counsel input');
+});
+
+test('@reference dirty counsel and SMS ask once on browser back; local dismissal keeps the other form', async ({ page }) => {
+  await page.goto('/members/active/all');
+  await page.getByRole('form', { name: '검색' }).getByRole('button', { name: '검색', exact: true }).click();
+  await page.getByRole('row').filter({ hasText: '예시불량' }).click();
+  await page.getByRole('textbox', { name: '상담내용 및 처리결과' }).fill('counsel draft');
+  await page.getByRole('button', { name: 'SMS', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: '받는 사람 1', exact: true })).toHaveValue('010-4000-5000');
+  await page.getByRole('textbox', { name: '메시지 내용' }).fill('message draft');
+  await page.keyboard.press('Escape');
+  const confirmation = page.getByRole('dialog').filter({ hasText: '입력을 취소하시겠습니까?' });
+  await confirmation.getByRole('button', { name: '취소', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: '메시지 내용' })).toHaveValue('message draft');
+  await page.goBack();
+  const navigation = page.getByRole('dialog').filter({ hasText: '화면을 이동할 경우' });
+  await navigation.getByRole('button', { name: '취소', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: '메시지 내용' })).toHaveValue('message draft');
+  await page.goBack();
+  await navigation.getByRole('button', { name: '확인', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '전체회원', exact: true })).toBeVisible();
+  await expect(page.getByRole('dialog', { includeHidden: true })).toHaveCount(0);
+});
+
+test('@reference privacy and withdrawal stop at verification input, password mismatch recovers', async ({ page }) => {
+  await page.goto('/members/example-general');
+  await page.getByRole('button', { name: '개인정보 전체보기', exact: true }).click();
+  await page.getByRole('dialog').getByRole('button', { name: '확인', exact: true }).click();
+  await expect(page.getByRole('alert')).toContainText('비밀번호를 다시 입력해주세요.');
+  await page.getByRole('textbox', { name: '운영자 비밀번호' }).fill('reference-only');
+  await page.getByRole('dialog').getByRole('button', { name: '확인', exact: true }).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.getByRole('dialog').getByRole('button', { name: '취소', exact: true }).click();
+  await page.getByRole('dialog').filter({ hasText: '입력을 취소하시겠습니까?' }).getByRole('button', { name: '확인', exact: true }).click();
+  await expect(page.getByText('gene***@example.test', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '회원 탈퇴', exact: true }).click();
+  await page.getByRole('textbox', { name: '탈퇴 사유' }).fill('짧음');
+  await page.getByRole('textbox', { name: '운영자 비밀번호' }).fill('reference-only');
+  await page.getByRole('dialog').getByRole('button', { name: '확인', exact: true }).click();
+  await expect(page.getByRole('alert')).toContainText('사유를 5자 이상');
+  await page.getByRole('textbox', { name: '탈퇴 사유' }).fill('레퍼런스 입력 검증');
+  await page.getByRole('dialog').getByRole('button', { name: '확인', exact: true }).click();
+  await expect(page.getByText('회원을 탈퇴 처리하시겠습니까?')).toHaveCount(0);
+});
+
+test('@reference manager states expose their own actions without changing the fixture', async ({ page }) => {
+  await page.goto('/managers/example-awaiting');
+  await expect(page.getByRole('button', { name: '비밀번호 변경', exact: true })).toBeDisabled();
+  await page.getByRole('button', { name: '승인', exact: true }).click();
+  await page.getByRole('dialog').getByRole('button', { name: '가입 승인하기', exact: true }).click();
+  await expect(page.getByText(ready)).toBeVisible();
+  await expect(page.getByRole('button', { name: '승인', exact: true })).toBeVisible();
+  await page.goto('/managers/example-rejected');
+  await expect(page.getByRole('button', { name: '삭제', exact: true })).toBeVisible();
+  await expect(page.getByRole('link', { name: '수정', exact: true })).toHaveCount(0);
+  await page.goto('/managers/example-active');
+  await expect(page.getByRole('button', { name: '비활성화', exact: true })).toBeVisible();
+  await page.goto('/managers/example-inactive');
+  await expect(page.getByRole('button', { name: '활성', exact: true })).toBeVisible();
+  await page.goto('/managers/example-locked');
+  await page.getByRole('button', { name: '잠금해제', exact: true }).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+});

@@ -95,6 +95,7 @@
     "active": "有効",
     "inactive": "無効",
     "change": "変更",
+    "unavailable": "［承認待ち、拒否、ロック］の状態は変更できません。",
     "confirm": "［承認待ち、拒否、ロック］の状態は変更できません。\n選択項目を変更しますか？"
   },
   "result": {
@@ -145,10 +146,59 @@
       "password": "パスワードは英大/小文字・数字・記号のうち3種類以上を含む8~20文字です。",
       "passwordConfirmRequired": "パスワード確認を入力してください。",
       "passwordMismatch": "パスワードが一致しません。",
-      "name": "氏名は韓国語または英字の2~10文字です。",
-      "phone": "携帯番号は数字とハイフンの9~15文字です。",
+      "name": "名前は韓国語、英語、日本語、中国語、数字の1～10文字です。",
+      "phone": "電話番号は数字とハイフンの1～20文字です。",
       "email": "メールの形式が正しくありません。",
       "organization": "所属は20文字以内です。"
     }
+  },
+  "accountStatus": {
+    "awaiting": "承認待ち",
+    "rejected": "拒否",
+    "active": "有効",
+    "inactive": "無効",
+    "locked": "ロック"
+  },
+  "actions": {
+    "sms": "SMS",
+    "email": "メール",
+    "approve": "承認",
+    "approveConfirm": "登録を承認",
+    "approveDescription": "登録を承認しますか？",
+    "reject": "拒否",
+    "rejectConfirm": "登録を拒否",
+    "rejectDescription": "登録を拒否する理由を入力してください。",
+    "rejectionReason": "拒否理由",
+    "reasonRequired": "拒否理由を入力してください。",
+    "delete": "削除",
+    "deleteDescription": "削除しますか？",
+    "activate": "有効化",
+    "activateDescription": "有効な状態に変更しますか？",
+    "deactivate": "無効化",
+    "deactivateDescription": "無効な状態に変更しますか？",
+    "password": "パスワード変更",
+    "passwordDescription": "新しいパスワードを入力してください。",
+    "unlock": "ロック解除",
+    "unlockDescription": "ロック解除のため新しいパスワードを入力してください。",
+    "reveal": "個人情報をすべて表示",
+    "revealDescription": "個人情報は保護されています。保護を解除するにはログイン中の運営者のパスワードを入力してください。",
+    "verifyWithdrawal": "退会",
+    "verifyWithdrawalDescription": "退会理由とログイン中の運営者のパスワードを入力してください。",
+    "withdrawalReason": "退会理由",
+    "withdrawalReasonError": "理由を5文字以上で入力してください。",
+    "passwordRequired": "パスワードをもう一度入力してください。"
+  },
+  "scenarioSort": {
+    "joinedAt": "登録日",
+    "lastAccessAt": "最終アクセス日",
+    "type": "種類",
+    "organization": "所属",
+    "id": "ID",
+    "name": "名前",
+    "phone": "電話番号",
+    "email": "メール",
+    "permission": "権限",
+    "registrationRoute": "登録経路",
+    "accountStatus": "アカウント状態"
   }
 }

@@ -30,48 +30,23 @@ function isManagerPeriodInstantRangeOrdered(
   start: string | undefined,
   end: string | undefined,
 ): boolean {
-  return (
-    start === undefined ||
-    end === undefined ||
-    Date.parse(start) <= Date.parse(end)
-  );
+  return start === undefined || end === undefined || Date.parse(start) <= Date.parse(end);
 }
 
 export const managerSearchSchema = z.object({
   keywords: sparseArray(
     z.object({
-      keywordType: z.enum([
-        'ID',
-        'NAME',
-        'PHONE',
-        'ORGANIZATION',
-        'PERMISSION',
-      ]),
+      keywordType: z.enum(['ID', 'NAME', 'PHONE', 'ORGANIZATION', 'PERMISSION']),
       keyword: z.string().min(1),
     }),
   ),
-  periodType: z
-    .enum(managerPeriodTypes)
-    .optional()
-    .catch(undefined),
-  types: sparseArray(
-    z.enum(managerTypes),
-  ),
-  statuses: sparseArray(
-    z.enum(managerStatuses),
-  ),
+  periodType: z.enum(managerPeriodTypes).optional().catch(undefined),
+  types: sparseArray(z.enum(managerTypes)),
+  statuses: sparseArray(z.enum(managerStatuses)),
   agencyIds: sparseArray(z.coerce.number()),
-  registrationRouteTypes: sparseArray(
-    z.enum(managerRegistrationRouteTypes),
-  ),
-  sortType: z
-    .enum(managerSortTypes)
-    .optional()
-    .catch(undefined),
-  sortDirection: z
-    .enum(managerSortDirections)
-    .optional()
-    .catch(undefined),
+  registrationRouteTypes: sparseArray(z.enum(managerRegistrationRouteTypes)),
+  sortType: z.enum(managerSortTypes).optional().catch(undefined),
+  sortDirection: z.enum(managerSortDirections).optional().catch(undefined),
   page: z.coerce.number().int().min(1).optional().catch(undefined),
   pageSize: z.coerce.number().int().min(1).optional().catch(undefined),
   startDateTime: z.iso.datetime().optional().catch(undefined),
@@ -84,26 +59,16 @@ export type ManagerUnsearchedRouteSearch = {
   readonly [K in keyof ManagerRouteSearchFields]?: never;
 };
 
-export type ManagerSearchedRouteSearch = Omit<
-  ManagerRouteSearchFields,
-  'periodType'
-> & {
+export type ManagerSearchedRouteSearch = Omit<ManagerRouteSearchFields, 'periodType'> & {
   readonly periodType: ManagerPeriodType;
 };
 
-export type ManagerRouteSearch =
-  | ManagerUnsearchedRouteSearch
-  | ManagerSearchedRouteSearch;
+export type ManagerRouteSearch = ManagerUnsearchedRouteSearch | ManagerSearchedRouteSearch;
 
 export const managerCanonicalSearchSchema = managerSearchSchema.transform(
   (search): ManagerRouteSearch => {
     let validSearch = search;
-    if (
-      !isManagerPeriodInstantRangeOrdered(
-        validSearch.startDateTime,
-        validSearch.endDateTime,
-      )
-    ) {
+    if (!isManagerPeriodInstantRangeOrdered(validSearch.startDateTime, validSearch.endDateTime)) {
       validSearch = { ...validSearch };
       delete validSearch.startDateTime;
       delete validSearch.endDateTime;
@@ -156,36 +121,25 @@ export const managerSearchDefaults = {
 } as const satisfies Readonly<Record<keyof ManagerRouteSearch, unknown>> &
   Partial<ManagerRouteSearch>;
 
-export type ManagerSearch = Resolved<
-  ManagerRouteSearch,
-  typeof managerSearchDefaults
->;
+export type ManagerSearch = Resolved<ManagerRouteSearch, typeof managerSearchDefaults>;
 
 export function resolveManagerSearch(search: ManagerRouteSearch): ManagerSearch {
   return resolveSearchDefaults(search, managerSearchDefaults);
 }
 
-export function toManagerRouteSearch(
-  search: ManagerSearch,
-): ManagerRouteSearch {
+export function toManagerRouteSearch(search: ManagerSearch): ManagerRouteSearch {
   const { periodType, ...routeValues } = search;
   return {
     periodType,
     ...compactSearchValues({
       ...routeValues,
-      sortType:
-        search.sortType === managerSearchDefaults.sortType
-          ? undefined
-          : search.sortType,
+      sortType: search.sortType === managerSearchDefaults.sortType ? undefined : search.sortType,
       sortDirection:
         search.sortDirection === managerSearchDefaults.sortDirection
           ? undefined
           : search.sortDirection,
       page: search.page > 1 ? search.page : undefined,
-      pageSize:
-        search.pageSize === managerSearchDefaults.pageSize
-          ? undefined
-          : search.pageSize,
+      pageSize: search.pageSize === managerSearchDefaults.pageSize ? undefined : search.pageSize,
     }),
   };
 }

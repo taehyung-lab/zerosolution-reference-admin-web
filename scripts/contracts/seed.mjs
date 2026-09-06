@@ -166,6 +166,8 @@ export const SEED_BUNDLES = [
       'src/shared/ui/form/FormFileField.test.tsx',
       'src/shared/ui/form/FormActionButtons.test.tsx',
       'src/shared/ui/form/UnsavedChangesGuard.test.tsx',
+      'src/shared/ui/form/UnsavedChangesGuard.integration.test.tsx',
+      'src/shared/ui/patterns/dialogs.test.tsx',
     ],
     ownership: {
       shared: 'Owns typed field association, server-error placement and rendering, section disclosure, focus-target mechanics, and the save stage/guard lifecycle (useSaveForm).',

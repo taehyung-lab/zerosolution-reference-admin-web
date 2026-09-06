@@ -11,7 +11,12 @@ import { useManagerListActions, type ManagerListActionRequest } from './useManag
  * `searched` branch on purpose: an owner inside it unmounts on the loading transition that
  * follows a confirmed change. Gate the buttons, never the owner.
  */
-export function ManagerListActions({ searched, selectedIds, rows, onActionRequest }: {
+export function ManagerListActions({
+  searched,
+  selectedIds,
+  rows,
+  onActionRequest,
+}: {
   readonly searched: boolean;
   readonly selectedIds: readonly string[];
   readonly rows: readonly ManagerListItem[];
@@ -42,7 +47,8 @@ export function ManagerListActions({ searched, selectedIds, rows, onActionReques
                 { value: 'inactive', label: t('bulk.inactive') },
               ]}
               onValueChange={(value) => {
-                if (value === null || value === 'active' || value === 'inactive') actions.setTarget(value);
+                if (value === null || value === 'active' || value === 'inactive')
+                  actions.setTarget(value);
               }}
             />
             <Button onClick={actions.requestBulkChange}>{t('bulk.change')}</Button>

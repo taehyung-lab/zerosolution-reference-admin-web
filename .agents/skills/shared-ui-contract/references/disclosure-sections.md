@@ -4,7 +4,7 @@ Read this file only for `SectionCard`, the `Accordion` primitive, or a collapsib
 
 ## Which surface
 
-- A titled block of a detail/form/settings screen (회원정보, 운영자정보, 업데이트 이력, 자동 발송 설정): `SectionCard`. Every such block in the inventory carries the same header with a `^` disclosure.
+- A titled block of a detail/form/settings screen (회원정보, 운영자정보, 업데이트 이력, 자동 발송 설정): `SectionCard`. Collapsible blocks repeat the `^` header; fixed sections such as member creation use `collapsible={false}` from their inventory.
 - The bare `Accordion` is consumed only through `SectionCard`; features do not import it. The implementation is Radix Accordion either way — here a single-item wrapper, in a shadcn/ui project the `Accordion/AccordionItem/AccordionTrigger/AccordionContent` source (ADR 0008 개정 3). This file states the contract, not the implementation; a new project keeps every bullet below and swaps the primitive.
 - Disclosure glyph: the inventory shows `^` at the header end of every section, always drawn open. The closed glyph and any rotation rule are unconfirmed and the current `SectionCard` renders no glyph. Add it only from a confirmed closed frame or product answer; `aria-expanded` is the state of record until then.
 - A filter frame is `FilterPanel`, not `SectionCard`, even though both disclose.

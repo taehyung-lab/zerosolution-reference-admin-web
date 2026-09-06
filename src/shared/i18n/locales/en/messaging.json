@@ -1,0 +1,35 @@
+{
+  "messages": {
+    "smsTitle": "Send SMS",
+    "emailTitle": "Send email",
+    "sender": "Sender",
+    "senderName": "Name",
+    "senderPhone": "Phone number",
+    "senderEmail": "Email",
+    "recipients": "Recipients",
+    "recipient": "Recipient {{number}}",
+    "add": "Add recipient",
+    "remove": "Remove recipient {{number}}",
+    "content": "Content",
+    "type": "Message type",
+    "information": "Informational",
+    "advertisement": "Advertisement",
+    "body": "Message content",
+    "send": "Send",
+    "cancel": "Cancel",
+    "close": "Close",
+    "smsDisabled": "SMS is not enabled. Enable SMS in Settings > Policy > Marketing.",
+    "emailDisabled": "Email is not enabled. Enable email in Settings > Policy > Marketing.",
+    "errors": {
+      "name": "Enter a name with 1–20 characters.",
+      "phone": "Enter a phone number using digits.",
+      "email": "Enter an email address using letters, numbers, and @._-.",
+      "recipients": "Enter at least one recipient.",
+      "body": "Enter message content."
+    },
+    "bold": "Bold",
+    "italic": "Italic",
+    "list": "List",
+    "htmlSource": "HTML source"
+  }
+}

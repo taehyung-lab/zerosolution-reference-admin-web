@@ -25,6 +25,9 @@ function Harness({ when }: { readonly when: boolean }) {
       <button onClick={() => guard.leave(navigate)} type="button">
         leave
       </button>
+      <button onClick={() => guard.close(navigate)} type="button">close</button>
+      <button onClick={() => guard.close(navigate, { when: false })} type="button">close clean section</button>
+      <button onClick={() => guard.close(navigate, { when: true })} type="button">close dirty section</button>
       {guard.dialog}
     </>
   )
@@ -47,6 +50,37 @@ beforeEach(() => {
 })
 
 describe('useUnsavedChangesGuard', () => {
+  it('scopes local dismissal to its form without disabling the page blocker', () => {
+    render(ui(true))
+    fireEvent.click(screen.getByRole('button', { name: 'close clean section' }))
+    expect(navigate).toHaveBeenCalledOnce()
+    expect(lastBlockerOpts?.disabled).toBe(false)
+    expect(screen.queryByRole('dialog')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'close dirty section' }))
+    expect(navigate).toHaveBeenCalledOnce()
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+  })
+  it('asks before a dirty local dismiss and keeps the form when cancelled', () => {
+    render(ui(true))
+    fireEvent.click(screen.getByRole('button', { name: 'close' }))
+    expect(navigate).not.toHaveBeenCalled()
+    expect(screen.getByRole('dialog')).toHaveTextContent('입력을 취소하시겠습니까?')
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: '취소' }))
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(navigate).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: 'close' }))
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: '확인' }))
+    expect(navigate).toHaveBeenCalledOnce()
+    expect(proceed).not.toHaveBeenCalled()
+  })
+
+  it('dismisses a clean local form immediately', () => {
+    render(ui(false))
+    fireEvent.click(screen.getByRole('button', { name: 'close' }))
+    expect(navigate).toHaveBeenCalledOnce()
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
   it('disables the blocker while the form is clean and lets leave() navigate without asking', () => {
     render(ui(false))
     expect(lastBlockerOpts?.disabled).toBe(true)

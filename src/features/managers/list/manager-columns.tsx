@@ -18,9 +18,7 @@ export type { ManagerSortState } from './manager-sort';
 type ManagerColumn = DataTableProps<ManagerListItem>['columns'][number];
 
 /** `ColumnDef` is a union, so a plain `Omit` would drop `accessorKey`; omit per member instead. */
-type DistributiveOmit<T, K extends PropertyKey> = T extends unknown
-  ? Omit<T, K>
-  : never;
+type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
 type SortableColumnRest = DistributiveOmit<ManagerColumn, 'id' | 'header' | 'meta'>;
 
 export function buildManagerColumns({
@@ -37,10 +35,7 @@ export function buildManagerColumns({
   readonly selection: PageRowSelection<ManagerListItem>;
 }): DataTableProps<ManagerListItem>['columns'] {
   /** A sortable column takes its id, label, and sort meta from the single sort table. */
-  const sortable = (
-    sortType: ManagerSortType,
-    column: SortableColumnRest,
-  ): ManagerColumn => {
+  const sortable = (sortType: ManagerSortType, column: SortableColumnRest): ManagerColumn => {
     const field = managerSortFields[sortType];
     return {
       ...column,
@@ -99,7 +94,13 @@ export function buildManagerColumns({
     sortable('STATUS', {
       cell: ({ row }) => {
         const { labelKey, tone } = managerStatusMeta(row.original.status);
-        return <Badge tone={tone}>{t(labelKey)}</Badge>;
+        return (
+          <Badge tone={tone}>
+            {row.original.accountStatus
+              ? t(`accountStatus.${row.original.accountStatus}`)
+              : t(labelKey)}
+          </Badge>
+        );
       },
     }),
     sortable('CREATED_AT', {
