@@ -1,13 +1,19 @@
-import { PageHeader } from '@/shared/ui/patterns/PageHeader';
-import { createFileRoute } from '@tanstack/react-router';
-import { useTranslation } from 'react-i18next';
+import { MemberCreateScreen } from "@/features/members/form/MemberCreateScreen";
+import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
+import { DevelopmentNotice } from "@/app/shell/DevelopmentNotice";
 
-export const Route = createFileRoute('/_app/members/new')({
-  component: MemberCreatePlaceholder,
+export const Route = createFileRoute("/_app/members/new")({
+  component: MemberCreateRoute,
 });
 
-function MemberCreatePlaceholder() {
-  const { t } = useTranslation('members');
-  // #6이 이 placeholder를 회원 등록 폼과 데이터 흐름으로 교체한다.
-  return <PageHeader title={t('stubs.create')} />;
+function MemberCreateRoute() {
+  const [ready, setReady] = useState(false);
+  // TRANSPLANT_PENDING_MEMBER_CREATE_CONTRACT: 신규 회원 등록 API 계약이 확정되면 확인된 입력을 연결한다.
+  return (
+    <>
+      <DevelopmentNotice ready={ready} />
+      <MemberCreateScreen onConfirm={() => setReady(true)} />
+    </>
+  );
 }

@@ -25,6 +25,10 @@ function utcResults() {
 }
 
 describe('datetime 순수 변환', () => {
+  it('formats seconds only when explicitly requested', () => {
+    expect(formatTimeInTimeZone('2026-08-27T15:04:37Z', 'Asia/Seoul', 'second')).toBe('00:04:37')
+    expect(formatTimeInTimeZone('2026-08-27T15:04:37Z', 'Asia/Seoul')).toBe('00:04')
+  })
   it('UTC local day의 시작과 끝을 Z instant로 변환한다', () => {
     expect(startOfLocalDayAsUtc('2026-08-27', 'UTC')).toBe('2026-08-27T00:00:00.000Z')
     expect(endOfLocalDayAsUtc('2026-08-27', 'UTC')).toBe('2026-08-27T23:59:59.999Z')

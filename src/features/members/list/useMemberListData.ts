@@ -1,28 +1,27 @@
-import { toTotalPages } from '@/shared/lib/search';
-import type { ListResultData } from '@/shared/ui/patterns/ListResult';
-import type { MemberListRow } from './member-row';
-import { resolveMemberSearch, type MemberRouteSearch } from './search-schema';
+import { toTotalPages } from "@/shared/lib/search";
+import type { ListResultData } from "@/shared/ui/patterns/ListResult";
+import type { MemberListRow } from "./member-row";
+import { resolveMemberSearch, type MemberRouteSearch } from "./search-schema";
+import { env } from "@/env";
+import { selectMemberFixtures } from "../fixtures/members";
 
 export type MemberListData = ListResultData<MemberListRow> & {
   readonly total: number;
   readonly totalPages: number;
 };
 
-/**
- * Owns the member contract the way `useManagerListData` owns the manager one, so the route
- * stops inventing result facts and every list state stays reachable from one place.
- *
- * TRANSPLANT_PENDING_MEMBER_LIST_QUERY: no member contract exists yet, so the committed
- * search settles into an empty result instead of running a request. Once the contract lands
- * this body becomes `useListQuery({ options, searched, select })` like `useManagerListData`;
- * nothing else on the screen changes.
- */
-export function useMemberListData(routeSearch: MemberRouteSearch): MemberListData {
+// TRANSPLANT_PENDING_MEMBER_LIST_QUERY: opt-in examples exercise pre-request UI, not a backend response.
+export function useMemberListData(
+  routeSearch: MemberRouteSearch,
+  variant: "all" | "general" | "flagged",
+): MemberListData {
   const search = resolveMemberSearch(routeSearch);
-  const total = 0;
+  const { rows, total } = env.VITE_REFERENCE_SCENARIOS
+    ? selectMemberFixtures(search, variant)
+    : { rows: [], total: 0 };
 
   return {
-    rows: [],
+    rows,
     total,
     totalPages: toTotalPages(total, search.pageSize),
     searched: routeSearch.periodType !== undefined,

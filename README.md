@@ -18,6 +18,17 @@ pnpm install --frozen-lockfile
 pnpm dev
 ```
 
+실서버 없이 제품 CRUD 입력 흐름을 확인하려면 `VITE_REFERENCE_SCENARIOS=true pnpm dev`로 실행한다.
+회원·운영자 목록의 예시 행에서 상세·수정·연결 팝업으로 이동할 수 있다. 예시임을 화면에 표시하며,
+검증·확인 후에도 실제 저장·발송·인증 성공이나 캐시 변경을 만들지 않는다. 기본값은 `false`다.
+
+화면·업무 코드는 실제 제품과 동일한 `features/{domain}` 소유권을 따른다. 회원의 휴면·탈퇴·상담·소명·접속은 각각
+`members/{dormant,withdrawn,counsel,appeals,access}`에 있으며, 예시 값은 각 feature의 `fixtures/`에 둔다.
+회원 목록은 업무별 Filters·Result·Actions와 상태 훅·columns를 Screen이 조립한다. 여러 업무의 검색·조회 대용·다운로드 입력은 `members/records/`, 활성목록 전용 구현은 `members/list/`가 소유한다. 소명 상세는 처리 폼·통보 액션·읽기 sections로 분리하고, 회원 메시지 상태/수신자 해석은 feature 훅에 두어 route는 독립 메시지 UI와의 연결만 맡는다.
+화면 타입은 `model/`, 데이터 읽기는 화면 옆 데이터 훅이 소유한다. 회원과 메시지 기능의 연결은 route에서 조립하고,
+앱 전체 개발 안내만 `app/shell/DevelopmentNotice`에 둔다. 제품 운영자 목록은 `ManagerListScreen`, 기존 계약 검증용
+API 소비 화면은 `ManagerApiListScreen`이다. 두 검색 계약의 통합은 신규 서버 계약에서 제품 필터·상태를 확정한 뒤 수행한다.
+
 ## 주요 명령
 
 | 명령 | 하는 일 |

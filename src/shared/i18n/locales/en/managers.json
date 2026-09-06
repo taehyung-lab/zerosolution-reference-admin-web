@@ -95,6 +95,7 @@
     "active": "Active",
     "inactive": "Inactive",
     "change": "Change",
+    "unavailable": "Accounts with awaiting, rejected or locked status cannot be changed.",
     "confirm": "Accounts with awaiting, rejected or locked status cannot be changed.\nChange the selected items?"
   },
   "result": {
@@ -145,10 +146,59 @@
       "password": "The password must be 8-20 characters with at least 3 of upper case, lower case, digits and symbols.",
       "passwordConfirmRequired": "Confirm the password.",
       "passwordMismatch": "The passwords do not match.",
-      "name": "The name must be 2-10 Korean or Latin letters.",
-      "phone": "The mobile number must be 9-15 digits and hyphens.",
+      "name": "Use 1–10 Korean, Latin, Japanese, Chinese characters or digits.",
+      "phone": "Use 1–20 digits or hyphens for the phone number.",
       "email": "Enter a valid email address.",
       "organization": "The organization must be 20 characters or fewer."
     }
+  },
+  "accountStatus": {
+    "awaiting": "Pending",
+    "rejected": "Rejected",
+    "active": "Active",
+    "inactive": "Inactive",
+    "locked": "Locked"
+  },
+  "actions": {
+    "sms": "SMS",
+    "email": "Email",
+    "approve": "Approve",
+    "approveConfirm": "Approve registration",
+    "approveDescription": "Approve this registration?",
+    "reject": "Reject",
+    "rejectConfirm": "Reject registration",
+    "rejectDescription": "Enter a reason for rejecting this registration.",
+    "rejectionReason": "Rejection reason",
+    "reasonRequired": "Enter a rejection reason.",
+    "delete": "Delete",
+    "deleteDescription": "Delete this account?",
+    "activate": "Activate",
+    "activateDescription": "Change this account to active?",
+    "deactivate": "Deactivate",
+    "deactivateDescription": "Change this account to inactive?",
+    "password": "Change password",
+    "passwordDescription": "Enter the new password.",
+    "unlock": "Unlock",
+    "unlockDescription": "Enter a new password to unlock this account.",
+    "reveal": "View personal information",
+    "revealDescription": "Personal information is protected. Enter the password of the currently signed-in operator to remove protection.",
+    "verifyWithdrawal": "Withdraw",
+    "verifyWithdrawalDescription": "Enter the withdrawal reason and the password of the currently signed-in operator.",
+    "withdrawalReason": "Withdrawal reason",
+    "withdrawalReasonError": "Enter a reason with at least 5 characters.",
+    "passwordRequired": "Enter your password again."
+  },
+  "scenarioSort": {
+    "joinedAt": "Joined",
+    "lastAccessAt": "Last access",
+    "type": "Type",
+    "organization": "Organization",
+    "id": "ID",
+    "name": "Name",
+    "phone": "Phone",
+    "email": "Email",
+    "permission": "Permission",
+    "registrationRoute": "Registration channel",
+    "accountStatus": "Account status"
   }
 }

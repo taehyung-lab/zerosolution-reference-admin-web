@@ -6,22 +6,14 @@ import type { ResultSummaryGroup } from '@/shared/ui/patterns/ResultSummary';
 import { useTranslation } from 'react-i18next';
 import type { ManagerListItem } from '../model/manager';
 import { buildManagerColumns } from './manager-columns';
-import {
-  managerSortFields,
-  managerSortTypes,
-  type ManagerSortType,
-} from './manager-sort';
+import { managerSortFields, managerSortTypes, type ManagerSortType } from './manager-sort';
 import {
   changeManagerPageSize,
   goToManagerPage,
   managerPageSizeOptions,
   selectManagerSort,
 } from './manager-list-policy';
-import {
-  toManagerRouteSearch,
-  type ManagerRouteSearch,
-  type ManagerSearch,
-} from './search-schema';
+import { toManagerRouteSearch, type ManagerRouteSearch, type ManagerSearch } from './search-schema';
 import type { ManagerListData } from './useManagerListData';
 
 export function useManagerListResult({
@@ -35,8 +27,7 @@ export function useManagerListResult({
 }) {
   const { i18n, t } = useTranslation('managers');
   const { t: sharedT } = useTranslation('shared');
-  const applySearch = (next: ManagerSearch) =>
-    onSearchChange(toManagerRouteSearch(next));
+  const applySearch = (next: ManagerSearch) => onSearchChange(toManagerRouteSearch(next));
   const changeSort = (sortType: ManagerSortType) =>
     applySearch(selectManagerSort(search, sortType));
   const selection = usePageRowSelection({
@@ -45,14 +36,13 @@ export function useManagerListResult({
     resetKey: JSON.stringify(toManagerRouteSearch(search)),
   });
 
-  const columns: DataTableProps<ManagerListItem>['columns'] =
-    buildManagerColumns({
-      t,
-      formatDate,
-      sort: { type: search.sortType, direction: search.sortDirection },
-      onSortChange: changeSort,
-      selection,
-    });
+  const columns: DataTableProps<ManagerListItem>['columns'] = buildManagerColumns({
+    t,
+    formatDate,
+    sort: { type: search.sortType, direction: search.sortDirection },
+    onSortChange: changeSort,
+    selection,
+  });
   const summaryGroups: readonly ResultSummaryGroup[] = [
     {
       key: 'total',
@@ -74,8 +64,7 @@ export function useManagerListResult({
     pageSize: {
       value: search.pageSize,
       options: managerPageSizeOptions,
-      onChange: (pageSize: number) =>
-        applySearch(changeManagerPageSize(search, pageSize)),
+      onChange: (pageSize: number) => applySearch(changeManagerPageSize(search, pageSize)),
     },
     sort: {
       value: search.sortType,

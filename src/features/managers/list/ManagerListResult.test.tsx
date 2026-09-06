@@ -20,8 +20,20 @@ vi.mock('@tanstack/react-router', () => ({
   Link: ({ children }: { children: ReactNode }) => <a href="/managers/id">{children}</a>,
 }));
 
-const row = (id: string) => ({ id, type: '기획사', organization: 'Zero', name: 'Kim', phone: '010', permission: 'Admin', registrationRoute: 'WEB', status: 'ACTIVE' as const, createdAt: '2026-08-28T00:00:00Z', updatedAt: '2026-08-31T00:00:00Z' });
-const renderResult = (element: ReactNode) => render(<I18nextProvider i18n={i18n}>{element}</I18nextProvider>);
+const row = (id: string) => ({
+  id,
+  type: '기획사',
+  organization: 'Zero',
+  name: 'Kim',
+  phone: '010',
+  permission: 'Admin',
+  registrationRoute: 'WEB',
+  status: 'ACTIVE' as const,
+  createdAt: '2026-08-28T00:00:00Z',
+  updatedAt: '2026-08-31T00:00:00Z',
+});
+const renderResult = (element: ReactNode) =>
+  render(<I18nextProvider i18n={i18n}>{element}</I18nextProvider>);
 const data = (overrides: Partial<ManagerListData> = {}): ManagerListData => ({
   rows: [],
   total: 0,
@@ -36,7 +48,9 @@ const data = (overrides: Partial<ManagerListData> = {}): ManagerListData => ({
 const sortLabel = (type: (typeof managerSortTypes)[number]) =>
   i18n.t(managerSortFields[type].labelKey, { ns: 'managers' });
 const sortableHeaders = () =>
-  screen.getAllByRole('columnheader').filter((header) => within(header).queryByRole('button') !== null);
+  screen
+    .getAllByRole('columnheader')
+    .filter((header) => within(header).queryByRole('button') !== null);
 
 function ResultHarness({
   search = managerSearchDefaults,
@@ -46,7 +60,11 @@ function ResultHarness({
 }: {
   readonly search?: ManagerSearch;
   readonly onSearchChange?: (next: ManagerRouteSearch) => void;
-  readonly onActionRequest?: (intent: { readonly type: 'bulkChange'; readonly targetIds: readonly string[]; readonly values: { readonly accountStatus: 'active' | 'inactive' } }) => void;
+  readonly onActionRequest?: (intent: {
+    readonly type: 'bulkChange';
+    readonly targetIds: readonly string[];
+    readonly values: { readonly accountStatus: 'active' | 'inactive' };
+  }) => void;
   readonly value: ManagerListData;
 }) {
   const result = useManagerListResult({
@@ -54,18 +72,38 @@ function ResultHarness({
     data: value,
     onSearchChange,
   });
-  return <ManagerListResult data={value} result={result} toolbarRight={<ManagerListActions searched={value.searched} selectedIds={result.selectedIds} rows={value.rows} onActionRequest={onActionRequest} />} />;
+  return (
+    <ManagerListResult
+      data={value}
+      result={result}
+      toolbarRight={
+        <ManagerListActions
+          searched={value.searched}
+          selectedIds={result.selectedIds}
+          rows={value.rows}
+          onActionRequest={onActionRequest}
+        />
+      }
+    />
+  );
 }
 
 function chooseTarget(label: string) {
-  fireEvent.keyDown(screen.getByRole('combobox', { name: '변경 항목' }), { key: 'ArrowDown' });
+  fireEvent.keyDown(screen.getByRole('combobox', { name: '변경 항목' }), {
+    key: 'ArrowDown',
+  });
   fireEvent.click(screen.getByRole('option', { name: label }));
 }
 
 describe('ManagerListResult', () => {
   it('requires rows, confirms the product status, and emits one intent only after confirmation', () => {
     const onActionRequest = vi.fn();
-    renderResult(<ResultHarness value={data({ rows: [row('1')], total: 1 })} onActionRequest={onActionRequest} />);
+    renderResult(
+      <ResultHarness
+        value={data({ rows: [row('1')], total: 1 })}
+        onActionRequest={onActionRequest}
+      />,
+    );
     fireEvent.click(screen.getByRole('button', { name: '변경' }));
     expect(screen.getByRole('dialog')).toHaveTextContent('변경할 항목을 선택해주세요.');
     fireEvent.click(screen.getByRole('button', { name: '확인' }));
@@ -79,7 +117,9 @@ describe('ManagerListResult', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     chooseTarget('비활성');
     fireEvent.click(screen.getByRole('button', { name: '변경' }));
-    expect(screen.getByRole('dialog')).toHaveTextContent('[대기, 거절, 잠금]은 상태를 변경할 수 없습니다.');
+    expect(screen.getByRole('dialog')).toHaveTextContent(
+      '[대기, 거절, 잠금]은 상태를 변경할 수 없습니다.',
+    );
     fireEvent.click(screen.getByRole('button', { name: '취소' }));
     expect(onActionRequest).not.toHaveBeenCalled();
     expect(target).toHaveTextContent('비활성');
@@ -87,51 +127,95 @@ describe('ManagerListResult', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '변경' }));
     fireEvent.click(screen.getByRole('button', { name: '확인' }));
-    expect(onActionRequest).toHaveBeenCalledExactlyOnceWith({ type: 'bulkChange', targetIds: ['1'], values: { accountStatus: 'inactive' } });
+    expect(onActionRequest).toHaveBeenCalledExactlyOnceWith({
+      type: 'bulkChange',
+      targetIds: ['1'],
+      values: { accountStatus: 'inactive' },
+    });
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(screen.getByRole('checkbox', { name: '1 선택' })).toBeChecked();
   });
 
-  it.each(['notSearched', 'loading', 'error', 'empty'] as const)('keeps confirmation cancellable through %s', (state) => {
-    const onActionRequest = vi.fn();
-    const value = data({ rows: [row('1')], total: 1 });
-    const { rerender } = renderResult(<ResultHarness value={value} onActionRequest={onActionRequest} />);
-    fireEvent.click(screen.getByRole('checkbox', { name: '1 선택' }));
-    chooseTarget('활성');
-    fireEvent.click(screen.getByRole('button', { name: '변경' }));
-    rerender(<I18nextProvider i18n={i18n}><ResultHarness value={{ ...value,
-      searched: state !== 'notSearched', isPending: state === 'loading', isError: state === 'error', rows: state === 'empty' ? [] : value.rows,
-    }} onActionRequest={onActionRequest} /></I18nextProvider>);
-    expect(screen.getByRole('dialog')).toHaveTextContent('선택 항목을 변경하시겠습니까?');
-    fireEvent.click(screen.getByRole('button', { name: '취소' }));
-    expect(onActionRequest).not.toHaveBeenCalled();
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-  });
+  it.each(['notSearched', 'loading', 'error', 'empty'] as const)(
+    'keeps confirmation cancellable through %s',
+    (state) => {
+      const onActionRequest = vi.fn();
+      const value = data({ rows: [row('1')], total: 1 });
+      const { rerender } = renderResult(
+        <ResultHarness value={value} onActionRequest={onActionRequest} />,
+      );
+      fireEvent.click(screen.getByRole('checkbox', { name: '1 선택' }));
+      chooseTarget('활성');
+      fireEvent.click(screen.getByRole('button', { name: '변경' }));
+      rerender(
+        <I18nextProvider i18n={i18n}>
+          <ResultHarness
+            value={{
+              ...value,
+              searched: state !== 'notSearched',
+              isPending: state === 'loading',
+              isError: state === 'error',
+              rows: state === 'empty' ? [] : value.rows,
+            }}
+            onActionRequest={onActionRequest}
+          />
+        </I18nextProvider>,
+      );
+      expect(screen.getByRole('dialog')).toHaveTextContent('선택 항목을 변경하시겠습니까?');
+      fireEvent.click(screen.getByRole('button', { name: '취소' }));
+      expect(onActionRequest).not.toHaveBeenCalled();
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    },
+  );
 
   it('excludes confirmed waiting and locked rows before emitting an intent', () => {
     const onActionRequest = vi.fn();
-    renderResult(<ResultHarness value={data({ rows: [
-      row('active'),
-      { ...row('waiting'), status: 'AWAITING' },
-      { ...row('locked'), status: 'LOCKED' },
-      { ...row('unmapped-inactive'), status: 'INACTIVE' },
-    ], total: 4 })} onActionRequest={onActionRequest} />);
+    renderResult(
+      <ResultHarness
+        value={data({
+          rows: [
+            row('active'),
+            { ...row('waiting'), status: 'AWAITING' },
+            { ...row('locked'), status: 'LOCKED' },
+            { ...row('unmapped-inactive'), status: 'INACTIVE' },
+            { ...row('rejected'), accountStatus: 'rejected' },
+          ],
+          total: 5,
+        })}
+        onActionRequest={onActionRequest}
+      />,
+    );
     fireEvent.click(screen.getByRole('checkbox', { name: '현재 페이지 전체 선택' }));
     chooseTarget('활성');
     fireEvent.click(screen.getByRole('button', { name: '변경' }));
     fireEvent.click(screen.getByRole('button', { name: '확인' }));
-    expect(onActionRequest).toHaveBeenCalledExactlyOnceWith({ type: 'bulkChange', targetIds: ['active', 'unmapped-inactive'], values: { accountStatus: 'active' } });
+    expect(onActionRequest).toHaveBeenCalledExactlyOnceWith({
+      type: 'bulkChange',
+      targetIds: ['active', 'unmapped-inactive'],
+      values: { accountStatus: 'active' },
+    });
   });
 
-  it('does not emit an empty intent when every selected row is blocked', () => {
+  it.each(['awaiting', 'rejected', 'locked'] as const)('alerts and preserves selection when the selected row is %s', (accountStatus) => {
     const onActionRequest = vi.fn();
-    renderResult(<ResultHarness value={data({ rows: [{ ...row('waiting'), status: 'AWAITING' }], total: 1 })} onActionRequest={onActionRequest} />);
+    renderResult(
+      <ResultHarness
+        value={data({
+          rows: [{ ...row('waiting'), accountStatus }],
+          total: 1,
+        })}
+        onActionRequest={onActionRequest}
+      />,
+    );
     fireEvent.click(screen.getByRole('checkbox', { name: 'waiting 선택' }));
     chooseTarget('활성');
     fireEvent.click(screen.getByRole('button', { name: '변경' }));
+    expect(screen.getByRole('dialog')).toHaveTextContent('[대기, 거절, 잠금]은 상태를 변경할 수 없습니다.');
+    expect(screen.getByRole('dialog')).not.toHaveTextContent('선택 항목을 변경하시겠습니까?');
     fireEvent.click(screen.getByRole('button', { name: '확인' }));
     expect(onActionRequest).not.toHaveBeenCalled();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: 'waiting 선택' })).toBeChecked();
   });
   it('shows only the register action before the first search', () => {
     renderResult(<ResultHarness value={data({ searched: false })} />);
@@ -157,15 +241,11 @@ describe('ManagerListResult', () => {
 
   it('renders an empty date cell without crashing the list', () => {
     renderResult(
-      <ResultHarness
-        value={data({ rows: [{ ...row('1'), createdAt: '' }], total: 1 })}
-      />,
+      <ResultHarness value={data({ rows: [{ ...row('1'), createdAt: '' }], total: 1 })} />,
     );
 
     const headers = screen.getAllByRole('columnheader');
-    const createdAtIndex = headers.findIndex((header) =>
-      within(header).queryByText('가입일'),
-    );
+    const createdAtIndex = headers.findIndex((header) => within(header).queryByText('가입일'));
     const cells = within(screen.getAllByRole('row')[1]!).getAllByRole('cell');
     expect(cells[createdAtIndex]).toBeEmptyDOMElement();
   });
@@ -187,9 +267,17 @@ describe('ManagerListResult', () => {
 
   it('reflects the route sort state on the sortable header and updates the same search', () => {
     const onSearchChange = vi.fn();
-    renderResult(<ResultHarness onSearchChange={onSearchChange} value={data({ rows: [row('1')], total: 1 })} />);
+    renderResult(
+      <ResultHarness
+        onSearchChange={onSearchChange}
+        value={data({ rows: [row('1')], total: 1 })}
+      />,
+    );
 
-    expect(screen.getByRole('columnheader', { name: '가입일' })).toHaveAttribute('aria-sort', 'descending');
+    expect(screen.getByRole('columnheader', { name: '가입일' })).toHaveAttribute(
+      'aria-sort',
+      'descending',
+    );
     expect(screen.getByRole('columnheader', { name: '이름' })).not.toHaveAttribute('aria-sort');
     expect(screen.getByRole('combobox', { name: '정렬' })).toHaveTextContent('가입일');
 
@@ -226,13 +314,21 @@ describe('ManagerListResult', () => {
         page: 3,
       };
       renderResult(
-        <ResultHarness search={activeElsewhere} onSearchChange={onSearchChange} value={data({ rows: [row('1')], total: 1 })} />,
+        <ResultHarness
+          search={activeElsewhere}
+          onSearchChange={onSearchChange}
+          value={data({ rows: [row('1')], total: 1 })}
+        />,
       );
 
       fireEvent.click(screen.getByRole('button', { name: sortLabel(type) }));
       const routeSearch = onSearchChange.mock.calls[0]?.[0] as ManagerRouteSearch;
       expect(toManagerListParams(resolveManagerSearch(routeSearch))).toEqual(
-        expect.objectContaining({ sortType: type, sortDirection: 'ASC', pageNo: 1 }),
+        expect.objectContaining({
+          sortType: type,
+          sortDirection: 'ASC',
+          pageNo: 1,
+        }),
       );
     },
   );
@@ -240,17 +336,28 @@ describe('ManagerListResult', () => {
   it('marks only the active header with the direction glyph and aria-sort', () => {
     renderResult(
       <ResultHarness
-        search={{ ...managerSearchDefaults, sortType: 'NAME', sortDirection: 'ASC' }}
+        search={{
+          ...managerSearchDefaults,
+          sortType: 'NAME',
+          sortDirection: 'ASC',
+        }}
         value={data({ rows: [row('1')], total: 1 })}
       />,
     );
 
     const nameHeader = screen.getByRole('columnheader', { name: '이름' });
     expect(nameHeader).toHaveAttribute('aria-sort', 'ascending');
-    expect(nameHeader.querySelector('[aria-hidden="true"]')).toHaveAttribute('data-direction', 'ascending');
+    expect(nameHeader.querySelector('[aria-hidden="true"]')).toHaveAttribute(
+      'data-direction',
+      'ascending',
+    );
     expect(screen.getByRole('columnheader', { name: '가입일' })).not.toHaveAttribute('aria-sort');
-    expect(screen.getAllByRole('columnheader').filter((h) => h.hasAttribute('aria-sort'))).toEqual([nameHeader]);
-    expect(screen.getAllByRole('columnheader').filter((h) => h.querySelector('[aria-hidden="true"]'))).toHaveLength(1);
+    expect(screen.getAllByRole('columnheader').filter((h) => h.hasAttribute('aria-sort'))).toEqual([
+      nameHeader,
+    ]);
+    expect(
+      screen.getAllByRole('columnheader').filter((h) => h.querySelector('[aria-hidden="true"]')),
+    ).toHaveLength(1);
     expect(screen.getByRole('combobox', { name: '정렬' })).toHaveTextContent('이름');
   });
 
@@ -265,7 +372,12 @@ describe('ManagerListResult', () => {
   });
 
   it('keeps a recovery pager visible when the URL page is out of range', () => {
-    renderResult(<ResultHarness search={{ ...managerSearchDefaults, page: 40 }} value={data({ total: 250, totalPages: 3 })} />);
+    renderResult(
+      <ResultHarness
+        search={{ ...managerSearchDefaults, page: 40 }}
+        value={data({ total: 250, totalPages: 3 })}
+      />,
+    );
     expect(screen.getByRole('navigation', { name: '페이지 이동' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '3' })).not.toHaveAttribute('aria-current');
     expect(screen.getByRole('button', { name: '다음' })).toBeDisabled();

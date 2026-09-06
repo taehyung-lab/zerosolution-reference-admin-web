@@ -12,6 +12,24 @@ Inspect only the confirmed product screens and adjacent workflows needed to iden
 - The feature composes only the visible surfaces its selected workflow reference requires.
 - Cross-domain navigation and permission-evaluator metadata lives in `app/config`, not `shared` or another feature.
 
+## Feature-internal decomposition
+
+Apply the same ownership test to every sibling workflow, not only the first representative screen. Being feature-local does not justify keeping independent filter, result, action, and data workflows in one Screen file.
+
+- A Screen is the composition entry: it connects named surfaces and their owners. When a list contains filter draft/commit, result selection/paging, and action confirmation workflows, separate those responsibilities into feature-local Filters, Result, and Actions components and focused state/data hooks. Keep the Screen readable as their wiring.
+- Columns belong beside the result surface; move a substantial column definition out of the Screen. Pure render-local formatting stays with its renderer. Extract hooks for state or workflow ownership, not to wrap every calculation.
+- `Screen → Filters / Result / Actions` with `useData / useResult / useActions` and columns is a responsibility map, not a mandatory seven-file template. Omit absent responsibilities. File length is a review signal, not a pass/fail threshold; a small read-only surface does not need empty adapters.
+- Detail screens follow their actual sections, forms, and dialogs rather than the list template. Split independently validated forms and action lifecycles while preserving one owner for each draft.
+- Keep action/dialog owners mounted across searched/loading/empty result branches. Only their triggers or result content follow those branches; moving the owner to a route is not the remedy. Cross-feature wiring follows [router.md](router.md).
+
+## Placement and naming
+
+Place a screen's implementation in its business/workflow directory. Names and paths identify the consumer scope: a single workflow's `list/` is not a catch-all for helpers used by sibling workflows. Put genuinely reused feature code in a purpose-named sibling directory at their nearest common owner, and leave single-consumer code with its consumer. A `common/` dumping ground or a `shared` promotion does not resolve unclear ownership; domain code remains feature-owned.
+
+Use product responsibility names for production screens and hooks. Example data belongs in explicit `fixtures/`; a reference/demo label does not justify moving domain workflows into `app/`. New directories or abstractions must reduce actual ownership ambiguity, not anticipate hypothetical consumers.
+
+When comparing an existing screen with this contract, distinguish implemented ownership from pending decomposition. Tests passing or a representative screen adopting the pattern does not establish adoption by its siblings.
+
 ## Never
 
 - Shared screen shells or schema/config-driven universal pages

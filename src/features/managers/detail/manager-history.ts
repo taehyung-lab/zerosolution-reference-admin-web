@@ -27,9 +27,11 @@ const redactedFields: ReadonlySet<string> = new Set(['password', 'passwordConfir
 /** before/after 를 표시 문자열로. 구조를 모르는 값은 null 을 돌려 호출부가 줄을 접게 한다. 원문 JSON은 노출하지 않는다. */
 function formatValue(value: unknown, t: Translate): string | null {
   if (value === null || value === undefined || value === '') return t('detail.emptyValue');
-  if (typeof value === 'boolean') return t(value ? 'detail.historyValue.true' : 'detail.historyValue.false');
+  if (typeof value === 'boolean')
+    return t(value ? 'detail.historyValue.true' : 'detail.historyValue.false');
   if (typeof value === 'string' || typeof value === 'number') return String(value);
-  if (typeof value === 'object' && 'name' in value && typeof value.name === 'string') return value.name;
+  if (typeof value === 'object' && 'name' in value && typeof value.name === 'string')
+    return value.name;
   return null;
 }
 
@@ -41,7 +43,8 @@ function changeLine(change: ManagerChangeLogChange, t: Translate): string {
   if (redactedFields.has(field)) return label;
   const before = formatValue(change.before, t);
   const after = formatValue(change.after, t);
-  if (before === null || after === null) return t('detail.historyLine.unsupported', { field: label });
+  if (before === null || after === null)
+    return t('detail.historyLine.unsupported', { field: label });
   // 해석된 좌우가 같으면 `A > A`가 버그로 읽히므로 서버가 변경이라 말한 사실(필드명)만 남긴다.
   if (before === after) return label;
   return t('detail.historyLine.change', { field: label, before, after });
@@ -50,7 +53,11 @@ function changeLine(change: ManagerChangeLogChange, t: Translate): string {
 function lines(log: ManagerChangeLog, t: Translate): readonly string[] {
   if (log.type === 'C') return [t('detail.changeType.C')];
   if (log.type === 'D') return [t('detail.changeType.D')];
-  if (log.type === 'U') return [t('detail.changeType.U'), ...(log.changes ?? []).map((change) => changeLine(change, t))];
+  if (log.type === 'U')
+    return [
+      t('detail.changeType.U'),
+      ...(log.changes ?? []).map((change) => changeLine(change, t)),
+    ];
   return [t('detail.changeType.unknown')];
 }
 

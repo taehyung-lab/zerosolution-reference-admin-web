@@ -54,5 +54,46 @@ test('@smoke active member routes expose the confirmed no-API workflow', async (
 
   await page.getByRole('button', { name: '등록' }).click();
   await expect(page).toHaveURL(/\/members\/new$/);
-  await expect(page.getByRole('heading', { name: '회원 등록은 후속 이슈에서 구현합니다.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '회원 등록' })).toBeVisible();
+});
+
+test('@smoke member create validates, confirms without fake success, and protects unsaved input', async ({ page }) => {
+  await page.goto('/members/new');
+  const email = page.getByRole('textbox', { name: '이메일' });
+  const save = page.getByRole('button', { name: '저장', exact: true });
+  await save.click();
+  await expect(page.getByRole('alert')).toHaveCount(5);
+  await expect(email).toBeFocused();
+  await email.fill('reference@example.com');
+  await page.getByRole('textbox', { name: '비밀번호' }).fill('Rt7!vK9@q');
+  await page.getByRole('textbox', { name: '이름' }).fill('검증회원');
+  await page.getByRole('textbox', { name: '휴대폰번호' }).fill('010-0000-0000');
+  await page.getByRole('group', { name: '생년월일' }).locator('[data-today] button').click();
+  await save.click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toContainText('저장하시겠습니까?');
+  await dialog.getByRole('button', { name: '취소' }).click();
+  await expect(email).toHaveValue('reference@example.com');
+  await expect(save).toBeFocused();
+  await save.click();
+  await dialog.getByRole('button', { name: '확인' }).click();
+  await expect(dialog).toHaveCount(0);
+  await expect(page).toHaveURL(/\/members\/new$/);
+  await expect(email).toHaveValue('reference@example.com');
+  await expect(page.getByText('저장되었습니다.')).toHaveCount(0);
+  const cancel = page.getByRole('button', { name: '취소', exact: true });
+  await cancel.click();
+  await expect(dialog).toContainText('입력을 취소하시겠습니까?');
+  await dialog.getByRole('button', { name: '취소' }).click();
+  await expect(email).toHaveValue('reference@example.com');
+  await expect(cancel).toBeFocused();
+  await cancel.click();
+  await dialog.getByRole('button', { name: '확인' }).click();
+  await expect(page).toHaveURL(/\/members\/active\/all$/);
+  await page.getByRole('button', { name: '등록' }).click();
+  await email.fill('a');
+  await email.fill('');
+  await cancel.click();
+  await expect(page).toHaveURL(/\/members\/active\/all$/);
+  await expect(dialog).toHaveCount(0);
 });

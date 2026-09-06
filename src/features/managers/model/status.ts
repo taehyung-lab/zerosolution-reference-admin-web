@@ -1,9 +1,4 @@
-export const managerStatuses = [
-  "AWAITING",
-  "ACTIVE",
-  "LOCKED",
-  "INACTIVE",
-] as const;
+export const managerStatuses = ['AWAITING', 'ACTIVE', 'LOCKED', 'INACTIVE'] as const;
 export type ManagerStatus = (typeof managerStatuses)[number];
 
 export function managerStatusMeta(status: string | undefined): {
@@ -11,30 +6,30 @@ export function managerStatusMeta(status: string | undefined): {
   tone: 'neutral' | 'success' | 'warning' | 'danger';
 } {
   switch (status) {
-    case "AWAITING":
+    case 'AWAITING':
       return {
-        labelKey: "status.awaiting",
-        tone: "warning",
+        labelKey: 'status.awaiting',
+        tone: 'warning',
       };
-    case "ACTIVE":
+    case 'ACTIVE':
       return {
-        labelKey: "status.active",
-        tone: "success",
+        labelKey: 'status.active',
+        tone: 'success',
       };
-    case "LOCKED":
+    case 'LOCKED':
       return {
-        labelKey: "status.locked",
-        tone: "danger",
+        labelKey: 'status.locked',
+        tone: 'danger',
       };
-    case "INACTIVE":
+    case 'INACTIVE':
       return {
-        labelKey: "status.inactive",
-        tone: "neutral",
+        labelKey: 'status.inactive',
+        tone: 'neutral',
       };
     default:
       return {
-        labelKey: "status.unknown",
-        tone: "neutral",
+        labelKey: 'status.unknown',
+        tone: 'neutral',
       };
   }
 }

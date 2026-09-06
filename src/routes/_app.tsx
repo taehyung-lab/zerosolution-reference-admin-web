@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { readAccessToken } from "@/api/http/credential";
 import { AppShell } from "@/app/shell/AppShell";
+import { UnsavedChangesProvider } from '@/shared/ui/form/UnsavedChangesGuard';
 
 export const Route = createFileRoute("/_app")({
   /**
@@ -18,8 +19,10 @@ export const Route = createFileRoute("/_app")({
 
 function AppLayout() {
   return (
-    <AppShell>
-      <Outlet />
-    </AppShell>
+    <UnsavedChangesProvider>
+      <AppShell>
+        <Outlet />
+      </AppShell>
+    </UnsavedChangesProvider>
   );
 }

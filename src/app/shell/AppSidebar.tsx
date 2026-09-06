@@ -1,7 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { AppNavigationItem } from "@/app/config/navigation";
+import {
+  memberNavigationItems,
+  type AppNavigationItem,
+} from "@/app/config/navigation";
 
 export function AppSidebar({
   appName,
@@ -20,13 +23,18 @@ export function AppSidebar({
           : "w-52 bg-neutral-800 text-white"
       }
     >
-      <div className="px-4 py-5 text-sm font-semibold">{collapsed ? appName.slice(0, 1) : appName}</div>
+      <div className="px-4 py-5 text-sm font-semibold">
+        {collapsed ? appName.slice(0, 1) : appName}
+      </div>
       <button
         className="mx-3 text-sm text-neutral-300"
         type="button"
         onClick={() => setCollapsed((current) => !current)}
       >
-        <span aria-hidden="true">{collapsed ? '›' : '‹'}</span><span className="sr-only">{t(collapsed ? "shell.expandNavigation" : "shell.collapseNavigation")}</span>
+        <span aria-hidden="true">{collapsed ? "›" : "‹"}</span>
+        <span className="sr-only">
+          {t(collapsed ? "shell.expandNavigation" : "shell.collapseNavigation")}
+        </span>
       </button>
       <nav aria-label={t("shell.navigation.label")}>
         <ul className="space-y-1 px-3">
@@ -47,6 +55,20 @@ export function AppSidebar({
                   {collapsed ? t(item.labelKey).slice(0, 1) : t(item.labelKey)}
                 </Link>
               )}
+              {item.id === "members" && !collapsed ? (
+                <ul className="ml-3 border-l border-neutral-600">
+                  {memberNavigationItems.map((child) => (
+                    <li key={child.id}>
+                      <Link
+                        className="block px-3 py-2 text-sm text-white hover:bg-neutral-700"
+                        to={child.to}
+                      >
+                        {t(child.labelKey)}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
             </li>
           ))}
         </ul>

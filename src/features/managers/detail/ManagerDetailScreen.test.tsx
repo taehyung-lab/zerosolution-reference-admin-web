@@ -14,13 +14,22 @@ vi.mock('@tanstack/react-router', () => ({
   Link: ({ children }: { children: ReactNode }) => <a href="/managers">{children}</a>,
 }));
 
-const renderScreen = () => render(<TestLocaleProvider><ManagerDetailScreen managerId="manager-1" /></TestLocaleProvider>);
+const renderScreen = () =>
+  render(
+    <TestLocaleProvider>
+      <ManagerDetailScreen managerId="manager-1" />
+    </TestLocaleProvider>,
+  );
 
 describe('ManagerDetailScreen', () => {
   beforeEach(() => vi.mocked(useQuery).mockReset());
 
   it('keeps the page context while detail data is loading', () => {
-    vi.mocked(useQuery).mockReturnValue({ isPending: true, isError: false, data: undefined } as never);
+    vi.mocked(useQuery).mockReturnValue({
+      isPending: true,
+      isError: false,
+      data: undefined,
+    } as never);
     renderScreen();
     expect(screen.getByRole('heading', { name: '운영자 조회' })).toBeInTheDocument();
     expect(screen.getByText('설정 > 운영자 > 조회')).toBeInTheDocument();
@@ -35,7 +44,14 @@ describe('ManagerDetailScreen', () => {
         name: 'Kim',
         status: { id: 'ACTIVE' },
         createdAt: '2026-08-28T00:00:00Z',
-        changeLogs: [{ id: 1, type: 'U', createdAt: '2026-08-28T00:00:00Z', manager: { name: 'Admin' } }],
+        changeLogs: [
+          {
+            id: 1,
+            type: 'U',
+            createdAt: '2026-08-28T00:00:00Z',
+            manager: { name: 'Admin' },
+          },
+        ],
       },
     } as never);
     renderScreen();
@@ -45,7 +61,11 @@ describe('ManagerDetailScreen', () => {
   });
 
   it('does not render not-found while the detail request is pending', () => {
-    vi.mocked(useQuery).mockReturnValue({ isPending: true, isError: false, data: undefined } as never);
+    vi.mocked(useQuery).mockReturnValue({
+      isPending: true,
+      isError: false,
+      data: undefined,
+    } as never);
     renderScreen();
     expect(screen.queryByText('운영자를 찾을 수 없습니다.')).not.toBeInTheDocument();
   });
@@ -69,7 +89,11 @@ describe('ManagerDetailScreen', () => {
     vi.mocked(useQuery).mockReturnValue({
       isPending: false,
       isError: true,
-      error: new ApiError({ kind: 'not-found', message: 'raw missing', status: 404 }),
+      error: new ApiError({
+        kind: 'not-found',
+        message: 'raw missing',
+        status: 404,
+      }),
     } as never);
     renderScreen();
     expect(screen.getByText('운영자를 찾을 수 없습니다.')).toBeInTheDocument();
@@ -81,7 +105,12 @@ describe('ManagerDetailScreen', () => {
     vi.mocked(useQuery).mockReturnValue({
       isPending: false,
       isError: true,
-      error: new ApiError({ kind: 'timeout', message: 'server raw', status: 504, requestId: 'req-detail' }),
+      error: new ApiError({
+        kind: 'timeout',
+        message: 'server raw',
+        status: 504,
+        requestId: 'req-detail',
+      }),
       refetch,
     } as never);
     renderScreen();

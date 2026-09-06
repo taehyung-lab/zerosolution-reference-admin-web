@@ -52,11 +52,7 @@ describe('shared dialogs', () => {
     )
   })
 
-  it('leaves no focus trapped in the removed dialog', async () => {
-    // The dialog does not own a trigger, so restoration is delegated to Radix and owned by
-    // the caller (shared-ui-contract `dialogs.md`). jsdom does not reproduce browser focus restoration,
-    // so this asserts only that nothing stays focused inside the detached subtree; the
-    // restored target itself is covered by the browser smoke suite.
+  it('restores focus to the external opener after closing', async () => {
     render(<ConfirmHarness />)
     const trigger = screen.getByText('open')
     trigger.focus()
@@ -70,6 +66,7 @@ describe('shared dialogs', () => {
     )
     expect(dialog.contains(document.activeElement)).toBe(false)
     expect(document.body.contains(document.activeElement)).toBe(true)
+    await waitFor(() => expect(trigger).toHaveFocus())
   })
 
   it('closes on Escape when no action is pending', async () => {

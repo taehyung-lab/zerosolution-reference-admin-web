@@ -48,10 +48,9 @@ describe('useManagerListData', () => {
   });
 
   it('fetches an applied search with the same resolved contract', async () => {
-    const { result } = renderHook(
-      () => useManagerListData({ periodType: 'CREATED_AT' }),
-      { wrapper: createWrapper() },
-    );
+    const { result } = renderHook(() => useManagerListData({ periodType: 'CREATED_AT' }), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => expect(getList8).toHaveBeenCalledTimes(1));
     expect(result.current.searched).toBe(true);

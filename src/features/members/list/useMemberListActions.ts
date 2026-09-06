@@ -1,7 +1,10 @@
-import { useBulkActionDialogs, useSelectionGate } from '@/shared/ui/patterns/BulkActionDialogs';
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import type { MemberListActionRequest } from './member-row';
+import {
+  useBulkActionDialogs,
+  useSelectionGate,
+} from "@/shared/ui/patterns/BulkActionDialogs";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import type { MemberListActionRequest } from "./member-row";
 
 /**
  * The bulk cascade as one value. `일반회원` carries no restrictions, so the union makes
@@ -10,13 +13,19 @@ import type { MemberListActionRequest } from './member-row';
  */
 export type MemberBulkChange =
   | null
-  | { readonly accountStatus: 'general' }
-  | { readonly accountStatus: 'flagged'; readonly restrictions: readonly string[] };
+  | { readonly accountStatus: "general" }
+  | {
+      readonly accountStatus: "flagged";
+      readonly restrictions: readonly string[];
+    };
 
 /** Returns the value only when the cascade is finished, so the caller narrows by using it. */
-function completed(change: MemberBulkChange): Exclude<MemberBulkChange, null> | null {
+function completed(
+  change: MemberBulkChange,
+): Exclude<MemberBulkChange, null> | null {
   if (change === null) return null;
-  if (change.accountStatus === 'flagged' && change.restrictions.length === 0) return null;
+  if (change.accountStatus === "flagged" && change.restrictions.length === 0)
+    return null;
   return change;
 }
 
@@ -32,13 +41,9 @@ export function useMemberListActions({
   readonly selectedIds: readonly string[];
   readonly onActionRequest: (request: MemberListActionRequest) => void;
 }) {
-  const { t } = useTranslation('members');
-  const { t: sharedT } = useTranslation('shared');
+  const { t } = useTranslation("members");
+  const { t: sharedT } = useTranslation("shared");
   const [change, setChange] = useState<MemberBulkChange>(null);
-  // SMS and email are separate dialogs, not one dialog with a channel: Notion gives SMS a
-  // textarea and email an HTML editor, so a shared open state would become a channel branch.
-  const [smsOpen, setSmsOpen] = useState(false);
-  const [emailOpen, setEmailOpen] = useState(false);
 
   const selectionGate = useSelectionGate(selectedIds.length);
   const bulk = useBulkActionDialogs({
@@ -46,25 +51,26 @@ export function useMemberListActions({
   });
 
   const requestBulkChange = () => {
-    if (!selectionGate.requireSelection(sharedT('bulkAction.missingSelection'))) return;
+    if (!selectionGate.requireSelection(sharedT("bulkAction.missingSelection")))
+      return;
     // TRANSPLANT_PENDING_MEMBER_BULK_INCOMPLETE: the ledger states row-level missing selection
     // but never this cascade's unfinished value, so the wording is ours until it is contracted.
     const ready = completed(change);
-    if (ready === null) return selectionGate.reject(t('bulk.incomplete'));
+    if (ready === null) return selectionGate.reject(t("bulk.incomplete"));
     bulk.requestConfirmation({
-      type: 'bulkChange',
+      type: "bulkChange",
       targetIds: [...selectedIds],
       values: {
         accountStatus: ready.accountStatus,
-        restrictions: ready.accountStatus === 'flagged' ? [...ready.restrictions] : [],
+        restrictions:
+          ready.accountStatus === "flagged" ? [...ready.restrictions] : [],
       },
     });
   };
 
-  const requestMessage = (type: 'sms' | 'email') => {
+  const requestMessage = (type: "sms" | "email") => {
     if (!selectionGate.requireSelection(t(`actions.${type}Missing`))) return;
     onActionRequest({ type, targetIds: [...selectedIds] });
-    (type === 'sms' ? setSmsOpen : setEmailOpen)(true);
   };
 
   return {
@@ -74,9 +80,5 @@ export function useMemberListActions({
     setChange,
     requestBulkChange,
     requestMessage,
-    smsOpen,
-    closeSms: () => setSmsOpen(false),
-    emailOpen,
-    closeEmail: () => setEmailOpen(false),
   };
 }

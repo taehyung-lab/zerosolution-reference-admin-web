@@ -18,7 +18,7 @@
     "locale": {
       "label": "言語",
       "ko": "한국어",
-    "en": "ENGLISH",
+      "en": "ENGLISH",
       "ja": "日本語"
     },
     "navigation": {
@@ -31,11 +31,23 @@
       "promotions": "プロモーション",
       "community": "コミュニティ",
       "statistics": "統計",
-      "settings": "設定"
+      "settings": "設定",
+      "allMembers": "全会員",
+      "generalMembers": "一般会員",
+      "flaggedMembers": "不良会員",
+      "dormantMembers": "休眠会員",
+      "withdrawnMembers": "退会会員",
+      "memberCounsel": "会員相談",
+      "memberAppeals": "不良会員の弁明申請",
+      "memberAccess": "会員アクセス"
     }
   },
   "bootstrap": {
     "title": "ブートストラップ確認",
     "description": "ルーター、QueryClient、環境変数の検証、transport 接続のみを確認する画面で、製品画面ではありません。"
+  },
+  "reference": {
+    "notice": "レファレンス用のサンプルデータです。実際の取得・保存・送信は行いません。",
+    "ready": "入力と対象を確認しました。APIは呼び出しておらず、データは変更されていません。"
   }
 }

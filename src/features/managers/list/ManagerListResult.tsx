@@ -63,14 +63,13 @@ export function ManagerListResult({
       />
       <ListResult
         data={data}
-        copy={{ notSearched: t('result.notSearched'), empty: t('result.empty') }}
+        copy={{
+          notSearched: t('result.notSearched'),
+          empty: t('result.empty'),
+        }}
         footer={pagination}
       >
-        <DataTable
-          rows={data.rows}
-          columns={result.columns}
-          getRowId={(row) => row.id}
-        />
+        <DataTable rows={data.rows} columns={result.columns} getRowId={(row) => row.id} />
       </ListResult>
     </section>
   );

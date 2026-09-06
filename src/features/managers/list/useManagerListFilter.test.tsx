@@ -3,9 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { TestLocaleProvider } from '@/test/locale';
-import {
-  type ManagerRouteSearch,
-} from './search-schema';
+import { type ManagerRouteSearch } from './search-schema';
 import { useManagerListFilter } from './useManagerListFilter';
 
 const { getManagerTypes } = vi.hoisted(() => ({
@@ -43,14 +41,11 @@ describe('useManagerListFilter', () => {
 
   it('records only periodType when submitting default filters', () => {
     const onSearchChange = vi.fn();
-    const { result } = renderHook(
-      () => useManagerListFilter({ search: {}, onSearchChange }),
-      { wrapper: Providers },
-    );
+    const { result } = renderHook(() => useManagerListFilter({ search: {}, onSearchChange }), {
+      wrapper: Providers,
+    });
 
-    act(() =>
-      result.current.submit({ preventDefault: vi.fn() } as never),
-    );
+    act(() => result.current.submit({ preventDefault: vi.fn() } as never));
 
     expect(onSearchChange).toHaveBeenCalledWith({
       periodType: 'CREATED_AT',
@@ -60,7 +55,11 @@ describe('useManagerListFilter', () => {
   it('drops the committed page when applying a filter from a later page', () => {
     const onSearchChange = vi.fn();
     const { result } = renderHook(
-      () => useManagerListFilter({ search: { periodType: 'CREATED_AT', page: 3 }, onSearchChange }),
+      () =>
+        useManagerListFilter({
+          search: { periodType: 'CREATED_AT', page: 3 },
+          onSearchChange,
+        }),
       { wrapper: Providers },
     );
 
@@ -69,15 +68,14 @@ describe('useManagerListFilter', () => {
 
     // Apply 는 같은 navigation 에서 page 를 되돌린다. 새 조건의 결과를 3페이지부터 보여 주지 않는다.
     expect(onSearchChange.mock.calls.at(-1)?.[0]).not.toHaveProperty('page');
-    expect(onSearchChange).toHaveBeenLastCalledWith(
-      expect.objectContaining({ types: ['AGENCY'] }),
-    );
+    expect(onSearchChange).toHaveBeenLastCalledWith(expect.objectContaining({ types: ['AGENCY'] }));
   });
 
   it('replaces stale draft when committed route search changes externally', () => {
     const onSearchChange = vi.fn();
     const { result, rerender } = renderHook(
-      ({ search }: { search: ManagerRouteSearch }) => useManagerListFilter({ search, onSearchChange }),
+      ({ search }: { search: ManagerRouteSearch }) =>
+        useManagerListFilter({ search, onSearchChange }),
       {
         wrapper: Providers,
         initialProps: { search: { periodType: 'CREATED_AT' } },
@@ -86,7 +84,9 @@ describe('useManagerListFilter', () => {
     act(() => result.current.patchDraft({ types: ['AGENCY'] }));
     expect(result.current.draft.types).toEqual(['AGENCY']);
 
-    rerender({ search: { periodType: 'CREATED_AT', page: 2, sortDirection: 'ASC' } });
+    rerender({
+      search: { periodType: 'CREATED_AT', page: 2, sortDirection: 'ASC' },
+    });
     expect(result.current.draft.types).toEqual(['AGENCY']);
     // View state never enters the draft, so a page or sort change cannot discard it.
     expect(result.current.draft).not.toHaveProperty('page');
@@ -102,10 +102,9 @@ describe('useManagerListFilter', () => {
 
   it('clears the draft and navigates to an empty search even when the URL is already empty', () => {
     const onSearchChange = vi.fn();
-    const { result } = renderHook(
-      () => useManagerListFilter({ search: {}, onSearchChange }),
-      { wrapper: Providers },
-    );
+    const { result } = renderHook(() => useManagerListFilter({ search: {}, onSearchChange }), {
+      wrapper: Providers,
+    });
     act(() => result.current.patchDraft({ types: ['AGENCY'] }));
     act(() => result.current.setRange({ from: '2026-09-01', to: '2026-08-31' }));
     act(() => result.current.setPendingKeywordField('PHONE'));
@@ -127,7 +126,8 @@ describe('useManagerListFilter', () => {
   it('preserves uncommitted filters when only page size changes', () => {
     const onSearchChange = vi.fn();
     const { result, rerender } = renderHook(
-      ({ search }: { search: ManagerRouteSearch }) => useManagerListFilter({ search, onSearchChange }),
+      ({ search }: { search: ManagerRouteSearch }) =>
+        useManagerListFilter({ search, onSearchChange }),
       {
         wrapper: Providers,
         initialProps: { search: { periodType: 'CREATED_AT' } },
@@ -146,9 +146,7 @@ describe('useManagerListFilter', () => {
   });
 
   it('keeps resolved option data visible when a background retry fails', async () => {
-    getManagerTypes.mockResolvedValueOnce([
-      { id: 'AGENCY', name: '기획사' },
-    ]);
+    getManagerTypes.mockResolvedValueOnce([{ id: 'AGENCY', name: '기획사' }]);
     const { result } = renderHook(
       () => useManagerListFilter({ search: {}, onSearchChange: vi.fn() }),
       { wrapper: Providers },
@@ -161,8 +159,6 @@ describe('useManagerListFilter', () => {
     });
 
     expect(result.current.typeOptions.state).toBe('ready');
-    expect(result.current.typeOptions.items).toEqual([
-      { value: 'AGENCY', label: '기획사' },
-    ]);
+    expect(result.current.typeOptions.items).toEqual([{ value: 'AGENCY', label: '기획사' }]);
   });
 });

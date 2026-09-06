@@ -1,0 +1,35 @@
+{
+  "messages": {
+    "smsTitle": "SMS送信",
+    "emailTitle": "メール送信",
+    "sender": "送信者",
+    "senderName": "名前",
+    "senderPhone": "電話番号",
+    "senderEmail": "メールアドレス",
+    "recipients": "受信者",
+    "recipient": "受信者 {{number}}",
+    "add": "受信者を追加",
+    "remove": "受信者 {{number}} を削除",
+    "content": "内容",
+    "type": "メッセージの種類",
+    "information": "情報メッセージ",
+    "advertisement": "広告メッセージ",
+    "body": "メッセージ内容",
+    "send": "送信",
+    "cancel": "キャンセル",
+    "close": "閉じる",
+    "smsDisabled": "SMSが有効になっていません。設定 > ポリシー > マーケティングでSMSを有効にしてください。",
+    "emailDisabled": "メールが有効になっていません。設定 > ポリシー > マーケティングでメールを有効にしてください。",
+    "errors": {
+      "name": "名前を1〜20文字で入力してください。",
+      "phone": "電話番号を数字で入力してください。",
+      "email": "英数字と@._-を使用してメールアドレスを入力してください。",
+      "recipients": "受信者を1人以上入力してください。",
+      "body": "内容を入力してください。"
+    },
+    "bold": "太字",
+    "italic": "斜体",
+    "list": "リスト",
+    "htmlSource": "HTMLソース"
+  }
+}

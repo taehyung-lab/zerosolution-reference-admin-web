@@ -31,6 +31,7 @@ Select references by the surfaces actually present, not by the page type alone. 
 ## Boundaries
 
 - Route ownership and loader/preload rules are owned by [references/router.md](references/router.md).
+- Screen-internal responsibility decomposition and feature file placement, including existing screens, are owned by [references/screen-composition.md](references/screen-composition.md#feature-internal-decomposition).
 - `features/{domain}` owns `api/`, `model/`, `list/`, `detail/`, `form/`, use-case state, domain UI, schemas, and mapping. Form schema/defaults/request mapper live under `form/` unless shared by multiple views, then move only the stable model to `model/`.
 - There is no `pages` layer. Features do not import another feature's UI, model, or hooks; a route composes multiple screens. Cross-feature API leaf exceptions are limited to the cases defined by [api-contract](../api-contract/references/query-cache.md).
 - Components do not call generated operations or reconstruct query keys.

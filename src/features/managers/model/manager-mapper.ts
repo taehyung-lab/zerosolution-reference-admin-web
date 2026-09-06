@@ -16,9 +16,7 @@ interface ManagerListItemSource {
   readonly updatedAt?: string;
 }
 
-export function toManagerListItem(
-  manager: ManagerListItemSource
-): ManagerListItem {
+export function toManagerListItem(manager: ManagerListItemSource): ManagerListItem {
   return {
     id: manager.id ?? emptyValue,
     type: manager.type?.name ?? emptyValue,

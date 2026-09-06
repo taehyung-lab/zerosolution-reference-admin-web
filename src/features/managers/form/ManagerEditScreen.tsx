@@ -19,11 +19,7 @@ import { ManagerForm } from './ManagerForm';
 import { useManagerEditDetail } from './useManagerEditDetail';
 import { useUpdateManagerMutation } from './useUpdateManagerMutation';
 
-export function ManagerEditScreen({
-  managerId,
-}: {
-  readonly managerId: string;
-}) {
+export function ManagerEditScreen({ managerId }: { readonly managerId: string }) {
   const { t } = useTranslation('managers');
   const { t: sharedT } = useTranslation('shared');
   const detail = useManagerEditDetail(managerId);

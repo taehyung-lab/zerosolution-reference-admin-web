@@ -2,6 +2,12 @@ import { describe, expect, it } from 'vitest'
 import { parseEnv } from '@/env'
 
 describe('환경변수 계약', () => {
+  it('reference scenarios are opt-in and reject ambiguous flags', () => {
+    expect(parseEnv({}).VITE_REFERENCE_SCENARIOS).toBe(false)
+    expect(parseEnv({ VITE_REFERENCE_SCENARIOS: 'true' }).VITE_REFERENCE_SCENARIOS).toBe(true)
+    expect(parseEnv({ VITE_REFERENCE_SCENARIOS: 'false' }).VITE_REFERENCE_SCENARIOS).toBe(false)
+    expect(() => parseEnv({ VITE_REFERENCE_SCENARIOS: 'yes' })).toThrow()
+  })
   it('기본값으로 채운다 (baseURL은 same-origin 빈 문자열)', () => {
     const env = parseEnv({})
     expect(env.VITE_API_BASE_URL).toBe('')

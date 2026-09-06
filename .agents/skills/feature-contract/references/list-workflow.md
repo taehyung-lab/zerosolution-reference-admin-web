@@ -12,6 +12,8 @@ A consuming screen names which existing mechanics it adopts and keeps its search
 
 ## Composition index
 
+Feature-internal decomposition and file placement follow [screen-composition.md](screen-composition.md#feature-internal-decomposition); this applies to every list consumer, including fixture-backed workflows.
+
 Select only the surfaces the current list uses. A surface nested inside a cell, toolbar, or dialog is selected the same way through its own reference.
 
 | Surface            | Shared mechanic                                                                                | Feature owns                                                                                                                                                                                                                                                                                                                                                                           | Read next only when changing it                                                                                                                               |

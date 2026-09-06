@@ -2,7 +2,6 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 
 export const DOCUMENT_LINE_BUDGET = 200
-export const AGENTS_LINE_BUDGET = DOCUMENT_LINE_BUDGET
 
 /** 문서가 `pnpm <cmd>` 로 부를 수 있는 내장 명령. script 가 아니어도 실재한다. */
 const PNPM_BUILTINS = new Set([
@@ -263,25 +262,22 @@ export function prohibitedAbstractionSourceFailures(eslintConfig, exists = (path
   return failures
 }
 
-export function agentsBudgetFailure(agents) {
-  const lineCount = countDocumentLines(agents)
-  return lineCount > AGENTS_LINE_BUDGET
-    ? `AGENTS.md 가 ${lineCount}줄이다. 예산은 ${AGENTS_LINE_BUDGET}줄이다.`
-    : null
-}
-
 function countDocumentLines(document) {
   return document.split('\n').filter((line, index, all) => index < all.length - 1 || line !== '').length
 }
 
-export function documentBudgetFailures(files, budget = DOCUMENT_LINE_BUDGET) {
-  const failures = []
+/**
+ * 권고이지 실패가 아니다. 길이를 맞추려고 내용을 눌러 담으면 판단이 표 칸 안으로 숨는다.
+ * 넘긴 문서는 줄 수를 줄일 게 아니라 중복·소유자·분할을 먼저 보게 한다.
+ */
+export function documentBudgetNotices(files, budget = DOCUMENT_LINE_BUDGET) {
+  const notices = []
   for (const file of files) {
     const lineCount = countDocumentLines(readFileSync(resolve(file), 'utf8'))
     if (lineCount <= budget) continue
-    failures.push(`${file} 가 ${lineCount}줄이다. 문서 예산은 ${budget}줄이다.`)
+    notices.push(`${file} 가 ${lineCount}줄이다(권고 ${budget}). 줄이기 전에 보라 — 중복이 있는지, 이 파일이 소유자가 맞는지, 나눌 수 있는지.`)
   }
-  return failures
+  return notices
 }
 
 export function claudeAgentsImportFailure(claude) {

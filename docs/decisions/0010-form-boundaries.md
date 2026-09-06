@@ -4,7 +4,7 @@
 - 날짜: 2026-09-01 · 개정 2026-09-03 ①: 저장 오케스트레이션을 `shared/ui/form/useSaveForm` 으로 승격(사용자 결정, Codex 교차 리뷰 반영) — §저장 오케스트레이션과 서버 오류의 거처 · 개정 2026-09-03 ②: Codex·Claude 독립 리뷰 → 교차 대조로 단순화 — §개정 ② 요약
 - 근거 재확인: 2026-09-02 — 전체 인벤토리(폼·상세·팝업 판독)와 Notion Feature 문장으로 재판정. 판정 기록은 [ZEROsol 공용화 판정 §8](../reference/zero-sol-figma-analysis.md)
 - 적용 범위: 레퍼런스 프로젝트의 등록·수정(form) mechanic
-- 관찰 근거: [ZEROsol 인벤토리 11 설정](../reference/zero-sol/11-settings.md) 의 `11.1.3 운영자 등록`, `11.1.4 운영자 수정`(레이어 확인, 이번 인벤토리에서 미판독)
+- 관찰 근거: [ZEROsol 인벤토리 11 설정](../reference/zero-sol/11-settings.md)의 운영자 등록·수정 frame과 Notion 입력·상태별 action(2026-09-06 직접 재대조). UI 입력 근거와 리허설 wire 계약은 분리한다.
 - 관련 결정: 목록·필터 경계는 [0009](0009-shared-boundaries.md), primitive 구현 선택은 [0008](0008-primitive-implementation-selection.md)
 
 ## 이 ADR 의 책임
@@ -84,7 +84,7 @@ feature 가 값을 명시적으로 정리해야 한다. request mapper 의 white
 | 섹션 개폐 상태 대수와 "오류 있는 섹션 열기" 알고리즘      | 어떤 필드가 어느 섹션에 속하는지                            |
 | confirm/alert dialog 의 상호작용 mechanic                 | 저장 흐름의 문구·목적지·권한·실패 workflow                  |
 
-shared 는 feature, Query, endpoint, server DTO, permission 을 알지 않는다. `useUnsavedChangesGuard`(`UnsavedChangesGuard.tsx`)만 dirty navigation의 pending destination을 복제하지 않기 위해 Router blocker를 직접 쓰는 이름 붙은 예외이며, ESLint가 그 파일 하나만 허용한다. 특히 섹션 개폐
+shared 는 feature, Query, endpoint, server DTO, permission 을 알지 않는다. `UnsavedChangesGuard.tsx`의 hook/provider만 dirty navigation의 pending destination을 복제하지 않기 위해 Router blocker를 직접 쓰는 이름 붙은 예외이며, ESLint가 그 파일 하나만 허용한다. 특히 섹션 개폐
 mechanic 은 form errors 객체나 스키마를 받지 않는다. 필드↔섹션 매핑은 caller 가 준다.
 
 ### 폼 라이브러리 경계
@@ -148,7 +148,7 @@ Codex 는 consumer 수를 이유로 반대했고 그 이견을 기록으로 남�
 
 서버 field error 는 `fieldMeta.errorMap.onServer` 에 쓰고 reveal → 첫 rejected field focus 순으로 처리한다. 일반 검증은
 `onServer` 를 절대 지우지 않아 다음 submit 을 영구 차단하므로, **submit 시작 시 모든 `onServer` 를 지운다**(서버가 다시
-판단). 이탈 가드의 `when` 은 `isDirty` 하나다: 저장 중 이동은 **묻지 않고 거부**한다(`refuseSilently: isPending` — Chromium 실측에서
+판단). 이탈 가드의 `when`은 `isDirty && !isDefaultValue`다(기본값 복원은 clean): 저장 중 이동은 **묻지 않고 거부**한다(`refuseSilently: isPending` — Chromium 실측에서
 질문 dialog 가 진행 overlay 아래 깔려 조작 불가였다; 이전 `!isPending` 우회는 폐기), 성공 시 기준선 갱신으로 풀린다. 이 계약은 실제 Router(memory history) 위의 `useSaveForm.test.tsx` 가 검증하며, `useBlocker` mock 테스트는 잡지 못한다.
 
 ## 개정 ② (2026-09-03)
@@ -168,11 +168,16 @@ feature-local 인 것: `useManagerFormOptions(type)`, 유형 select 의 `onValue
 이탈 확인 문장은 둘이다. 취소 버튼은 "취소할 경우 입력된 정보는 모두 삭제됩니다. 입력을 취소하시겠습니까?"(Notion 20+ 화면,
 운영자 포함), 폼 밖 이동(LNB·뒤로가기)은 "화면을 이동할 경우 입력된 정보는 모두 삭제됩니다. 화면으로 이동하시겠습니까?"
 (Figma `1.1.3.1.2 화면 이동`). Notion 은 취소 alert 를 조건 없이 적지만 문장이 입력을 전제해 dirty 아닌 경우를 다루지 않았다고 읽었고, **2026-09-02 사용자 결정으로 둘 다 dirty일 때만 뜬다.**
-결과가 같으므로(입력 삭제) 취소 버튼은 별도 dialog 없이 `useUnsavedChangesGuard().leave(navigate)` 로 같은 Router blocker를
-지나가고, 가드가 진입 경로에 따라 두 문장 중 하나를 고른다. 이전 구현(항상 확인 → 확인 뒤 가드를 끄고 effect로 이동)은 그
-순서 보장 코드를 폼마다 요구해 폐기했다. 문장 두 개는 모두 확인된 것이라 하나로 합치지 않는다.
+취소 버튼의 `useUnsavedChangesGuard().leave(navigate)`도 같은 Router blocker를 지나며 진입 경로에 따라 문장을 고른다. 이전 구현(항상 확인 → 가드를 끄고 effect로 이동)은 순서 보장 코드를 폼마다 요구해 폐기했다. 문장 두 개는 모두 확인된 것이라 하나로 합치지 않는다.
 
 Tabs는 인벤토리 7 surface/8 set과 APP PUSH 타겟 영역에서 반복된 새 primitive 후보다. 실제 구현 전까지 form/dialog 안 tab은 nearest component가 소유하고, 제품이 deep link·복원을 확정한 경우에만 route search로 올린다.
+
+## 입력 경계 적용 (2026-09-06)
+
+2026-09-05 사용자 결정: dirty 보호를 팝업·인라인에도 적용. 값은 form, local 닫기 callback은 각 guard가 소유하며 `close(discard, { when })`로 자기 범위만 취소한다. 상담·공연 섹션·SMS/이메일의 같은 입력 손실이 근거다.
+상담+SMS 동시 dirty에서 Router 확인이 순차 2회 뜬 결함을 실측해 `UnsavedChangesProvider`가 dirty/pending 사실만 모으는 단일 route blocker를 소유하게 했다. `leave` API·standalone hook은 유지하며 목적지나 폼 값을 provider에 복제하지 않는다.
+`UnsavedChangesGuard.router.test.tsx`가 2consumer 확인 1회·취소 보존·pending 거부·local 범위·unmount cleanup·browser-history beforeunload를 검증한다. 실제 Chromium에서도 상담+SMS dirty→뒤로가기→확인 1회→목록/dialog 0을 재측정했다. 기존 Form+중첩 Dialog 검사는 `UnsavedChangesGuard.integration.test.tsx`다.
+회원 등록과 reference mode 운영자 등록·수정은 API 직전까지만 구현했다. 운영자는 `ManagerInputScreens`·`useManagerInputForm`이 기존 `ManagerForm`과 어댑터/guard/확인을 재사용하고 예시 옵션에서는 Query를 실행하지 않는다. 저장 성공을 만들거나 `useSaveForm`의 서버 오류·완료 lifecycle까지 이 소비 흐름에서 검증했다고 판정하지 않는다.
 
 ## 미확인
 
@@ -183,7 +188,7 @@ Tabs는 인벤토리 7 surface/8 set과 APP PUSH 타겟 영역에서 반복된 �
 - 아이디 중복확인의 trigger 와 상태 표현. endpoint 는 있으나 Figma·Notion 에 UI 가 없다
 - 이메일 최대 길이: UI 제약은 Figma placeholder "3~100자 내외"(회원·운영자 등록 동일)로 확인. 서버 제약은 신규 OpenAPI 가 확정. 비밀번호 규칙 "영문 대/소문자+숫자+특수문자 중 3종류 이상, 8~20자"(Figma placeholder + Notion Case01) 확인
 - 권한 옵션은 "[설정 > 접근권한] 중 사용 상태이고 선택한 유형에 속한 권한" 이며 "유형 변경시 권한은 초기화됨"(Notion) — 현재 종속 option query 와 clearing 은 리허설 가정이 아니라 확인된 정책
-- 운영자 조회 5 상태(대기·거절·활성·비활성·잠금)별 action 집합과 서버 계약. Figma 대기 = 승인·거절
+- 운영자 조회 5상태 action 입력은 [11 설정](../reference/zero-sol/11-settings.md)에서 확인·구현했다. 실제 저장/상태변경·발송 및 재인증 성공 뒤 공개/탈퇴 처리는 서버 계약 미확인으로 남는다.
 - 서버 오류 코드와 Manager 필드의 대응. 매핑 메커니즘(`ApiError.fieldErrors`)은 확인됐다
 - 수정 조회 refetch 와 편집 중 폼의 충돌 정책
 - 수정 저장 중 별도 카피는 미확인이라 확인된 등록 중 카피를 임시 재사용한다. edit counterpart가 확인되면 분리한다

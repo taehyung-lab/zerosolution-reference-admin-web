@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { useForm } from '@tanstack/react-form'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, expectTypeOf, it } from 'vitest'
 import { z } from 'zod'
 import { FormField } from './FormField'
 
@@ -44,7 +44,30 @@ function Harness() {
   )
 }
 
+function MixedValueHarness() {
+  const form = useForm({ defaultValues: { title: '', count: 0, recipients: [{ address: '' }] } })
+  return <FormField form={form} label="Address" name="recipients[0].address">
+    {(field, control) => {
+      expectTypeOf(field.state.value).toEqualTypeOf<string>()
+      return <input {...control} value={field.state.value} onChange={(event) => field.handleChange(event.target.value)} />
+    }}
+  </FormField>
+}
+
 describe('FormField', () => {
+  it('preserves the selected nested field value type in a mixed-value form', () => {
+    render(<MixedValueHarness />)
+    fireEvent.change(screen.getByLabelText('Address'), { target: { value: 'example@test.invalid' } })
+    expect(screen.getByLabelText('Address')).toHaveValue('example@test.invalid')
+  })
+  it('isolates labels and controls for the same field name in two forms', () => {
+    render(<><Harness /><Harness /></>)
+    const controls = screen.getAllByRole('textbox')
+    expect(controls[0]?.id).not.toBe(controls[1]?.id)
+    const labels = Array.from(document.querySelectorAll<HTMLLabelElement>('label'))
+    expect(labels[0]?.control).toBe(controls[0])
+    expect(labels[1]?.control).toBe(controls[1])
+  })
   it('normalizes a Zod issue and connects the field ARIA contract', async () => {
     render(<Harness />)
     fireEvent.click(screen.getByRole('button', { name: '저장' }))

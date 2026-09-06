@@ -86,15 +86,13 @@ describe('managerSearchSchema', () => {
   });
 
   it('preserves valid array elements while removing invalid elements', () => {
-    expect(
-      managerSearchSchema.parse({ types: ['AGENCY', 'BOGUS'] }),
-    ).toEqual({ types: ['AGENCY'] });
+    expect(managerSearchSchema.parse({ types: ['AGENCY', 'BOGUS'] })).toEqual({
+      types: ['AGENCY'],
+    });
   });
 
   it('removes client enum vocabulary from the URL', () => {
-    expect(
-      managerSearchSchema.parse({ sortType: 'createdAt' }),
-    ).toEqual({});
+    expect(managerSearchSchema.parse({ sortType: 'createdAt' })).toEqual({});
   });
 
   it('records only the searched discriminator when every view value is default', () => {
@@ -110,18 +108,16 @@ describe('managerSearchSchema', () => {
 
   it('fills the searched discriminator for a hand-edited filter and is idempotent', () => {
     const rawSearch = { statuses: ['ACTIVE'] };
-    const canonical = canonicalizeRouteSearch(
-      managerCanonicalSearchSchema,
-      rawSearch,
-    );
+    const canonical = canonicalizeRouteSearch(managerCanonicalSearchSchema, rawSearch);
 
     expect(canonical).toEqual({
       search: { periodType: 'CREATED_AT', statuses: ['ACTIVE'] },
       changed: true,
     });
-    expect(
-      canonicalizeRouteSearch(managerCanonicalSearchSchema, canonical.search),
-    ).toEqual({ search: canonical.search, changed: false });
+    expect(canonicalizeRouteSearch(managerCanonicalSearchSchema, canonical.search)).toEqual({
+      search: canonical.search,
+      changed: false,
+    });
   });
 
   it.each([
@@ -145,7 +141,9 @@ describe('managerSearchSchema', () => {
     const canonical = canonicalizeRouteSearch(managerCanonicalSearchSchema, rawSearch);
 
     expect(canonical.changed).toBe(firstChanged);
-    expect(canonicalizeRouteSearch(managerCanonicalSearchSchema, canonical.search).changed).toBe(false);
+    expect(canonicalizeRouteSearch(managerCanonicalSearchSchema, canonical.search).changed).toBe(
+      false,
+    );
   });
 });
 
@@ -153,11 +151,16 @@ describe('managerSearchSchema sort vocabulary', () => {
   it('drops the rehearsal AGENCY sort key that Managers does not expose', () => {
     expect(managerSearchSchema.parse({ sortType: 'AGENCY' })).toEqual({});
     expect(
-      managerCanonicalSearchSchema.parse({ periodType: 'CREATED_AT', sortType: 'AGENCY' }),
+      managerCanonicalSearchSchema.parse({
+        periodType: 'CREATED_AT',
+        sortType: 'AGENCY',
+      }),
     ).toEqual({ periodType: 'CREATED_AT' });
   });
 
   it('keeps every exposed sort key', () => {
-    expect(managerSearchSchema.parse({ sortType: 'ID' })).toEqual({ sortType: 'ID' });
+    expect(managerSearchSchema.parse({ sortType: 'ID' })).toEqual({
+      sortType: 'ID',
+    });
   });
 });

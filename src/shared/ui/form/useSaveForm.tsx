@@ -93,7 +93,7 @@ export function useSaveForm<TInput, TOutput, TSection extends string>({
     )
   );
   const sectionState = useFormSections(sections, { invalidFields });
-  const isDirty = useSelector(form.store, (state) => state.isDirty);
+  const isDirty = useSelector(form.store, (state) => state.isDirty && !state.isDefaultValue);
   const guard = useUnsavedChangesGuard({
     when: isDirty,
     refuseSilently: save.isPending,
@@ -105,7 +105,7 @@ export function useSaveForm<TInput, TOutput, TSection extends string>({
       target = sectionState.revealInvalid(names);
     });
     if (target === undefined) return;
-    const id = formFieldControlId<TInput>(target);
+    const id = formFieldControlId<TInput>(form, target);
     if (defer) window.setTimeout(() => document.getElementById(id)?.focus(), 0);
     else document.getElementById(id)?.focus();
   }
