@@ -32,9 +32,6 @@ describe('negative gate manifest', () => {
   })
 })
 
-// Both cases below run the whole negative gate, which spawns one ESLint process per fixture.
-// The runtime therefore grows with the fixture count: at 18 fixtures a single run measured ~36s,
-// so the previous 30s budget failed on gate size rather than on the behaviour being asserted.
 describe('negative gate workspace', () => {
   it('runs fixtures outside the application source tree', () => {
     const before = sourceFiles()
@@ -45,6 +42,10 @@ describe('negative gate workspace', () => {
 
     expect(result.status).toBe(0)
     expect(result.stdout).toContain('workspace=.ai-work/gates/')
+    for (const { fixture } of CASES) expect(result.stdout).toContain(`✓ ${fixture}:`)
+    const workspace = /workspace=(\.ai-work\/gates\/run-[^/]+)\//.exec(result.stdout)?.[1]
+    expect(workspace).toBeDefined()
+    expect(existsSync(resolve(workspace))).toBe(false)
     expect(sourceFiles()).toEqual(before)
   }, 120_000)
 

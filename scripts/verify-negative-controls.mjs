@@ -42,7 +42,7 @@ for (const signal of ['SIGINT', 'SIGTERM']) {
   })
 }
 
-function runLint(target) {
+function runLint(targets) {
   return new Promise((resolveResult, rejectResult) => {
     const child = spawn(
       process.execPath,
@@ -53,7 +53,7 @@ function runLint(target) {
         'json',
         '--config',
         resolve(repositoryRoot, 'eslint.config.js'),
-        target,
+        ...targets,
       ],
       {
         cwd: workspaceRoot,
@@ -103,13 +103,17 @@ try {
     cpSync(resolve(fixtureRoot, fixture), destination)
   }
 
+  // 모든 파일이 같은 격리 workspace와 설정을 쓰므로 ESLint/타입 프로그램을 한 번만 시작한다.
+  const batch = await runLint(cases.map(({ target }) => target))
+  if (batch.status !== 0 && batch.status !== 1) throw new Error(`ESLint failed to run (exit ${batch.status})`)
+  const reports = batch.stdout === '' ? [] : JSON.parse(batch.stdout)
+  const byPath = new Map(reports.map((report) => [resolve(report.filePath), report]))
   let failed = false
   for (const { fixture, target, expectedRule } of cases) {
-    const result = await runLint(target)
-    const reports = result.stdout === '' ? [] : JSON.parse(result.stdout)
-    const ruleIds = reports.flatMap((report) =>
-      report.messages.map((message) => message.ruleId).filter((ruleId) => ruleId !== null),
-    )
+    const report = byPath.get(resolve(workspaceRoot, target))
+    if (report === undefined) throw new Error(`ESLint did not report ${fixture}`)
+    const result = { status: report.errorCount > 0 ? 1 : 0 }
+    const ruleIds = report.messages.map((message) => message.ruleId).filter((ruleId) => ruleId !== null)
 
     if (expectedRule === null) {
       if (result.status !== 0) {
