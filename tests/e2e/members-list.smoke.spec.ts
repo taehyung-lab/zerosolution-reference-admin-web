@@ -10,6 +10,8 @@ test('@smoke active member routes expose the confirmed no-API workflow', async (
   await expect(page.getByRole('group', { name: '활동제한' })).toBeVisible();
 
   const help = page.getByRole('button', { name: '전체회원 안내' });
+  await expect(page.locator('header').filter({ has: page.getByRole('heading', { name: '전체회원', exact: true }) }).getByRole('navigation', { name: '현재 위치' })).toContainText('!');
+  await expect(page.getByRole('navigation', { name: '현재 위치' }).getByRole('listitem')).toHaveText(['회원', '›활성회원', '›전체회원']);
   await help.hover();
   await expect(page.getByRole('tooltip')).toHaveText('활성회원을 조회 및 관리합니다.');
   await help.press('Escape');
@@ -22,8 +24,8 @@ test('@smoke active member routes expose the confirmed no-API workflow', async (
 
   await page.getByRole('form', { name: '검색' }).getByRole('button', { name: '검색', exact: true }).click();
   await expect(page).toHaveURL(/periodType=joinedAt/);
-  await expect(page.getByText('검색결과 : 0')).toBeVisible();
-  await expect(page.getByText('검색 결과가 없습니다.')).toBeVisible();
+  await expect(page.getByRole('table')).toBeVisible();
+  await expect(page.getByRole('row')).toHaveCount(3);
   await expect(page.getByRole('combobox', { name: '보기' })).toBeVisible();
   await expect(page.getByRole('combobox', { name: '정렬' })).toBeVisible();
 

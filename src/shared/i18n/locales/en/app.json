@@ -45,9 +45,5 @@
   "bootstrap": {
     "title": "Bootstrap check",
     "description": "This screen only verifies the router, QueryClient, environment validation, and transport connection; it is not a product screen."
-  },
-  "reference": {
-    "notice": "Reference example data. No real requests, saves, or messages are sent.",
-    "ready": "Input and target are ready. No API was called and no data was changed."
   }
 }

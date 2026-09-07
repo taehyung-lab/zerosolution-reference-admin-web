@@ -1,6 +1,10 @@
+/**
+ * 회원 등록 입력·유효성 검사·이탈 방지·최종 확인을 조립하는 화면이다.
+ * 현재는 onConfirm 호출까지이며 저장 성공은 만들지 않는다. API 연결 시 같은 입력 흐름 뒤에 mutation과 확인된 후처리를 연결한다.
+ */
+import { useConfirmation } from "@/shared/lib/use-confirmation";
 import { revalidateLogic, useForm, useSelector } from "@tanstack/react-form";
 import { useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { formatDate } from "@/shared/lib/datetime";
 import { FormCancelButton } from "@/shared/ui/form/FormCancelButton";
@@ -27,12 +31,13 @@ export function MemberCreateScreen({
   const { t } = useTranslation("members");
   const { t: shared } = useTranslation("shared");
   const navigate = useNavigate();
-  const [candidate, setCandidate] = useState<MemberCreateValues>();
+  const confirmation = useConfirmation({ run: onConfirm });
   const form = useForm({
     defaultValues: memberCreateDefaults,
     validationLogic: revalidateLogic(),
     validators: { onDynamic: memberCreateSchema },
-    onSubmit: ({ value }) => setCandidate(memberCreateSchema.parse(value)),
+    onSubmit: ({ value }) =>
+      confirmation.requestConfirmation(memberCreateSchema.parse(value)),
     onSubmitInvalid: ({ formApi }) => {
       const first = memberCreateFieldOrder.find(
         (name) => (formApi.getFieldMeta(name)?.errors.length ?? 0) > 0,
@@ -62,19 +67,15 @@ export function MemberCreateScreen({
       <PageHeader title={t("form.createTitle")} />
       {guard.dialog}
       <ConfirmDialog
-        open={candidate !== undefined}
+        open={confirmation.state.kind === "confirm"}
         title={shared("alert.title")}
         description={shared("formSave.confirmDescription")}
         confirmLabel={shared("formSave.confirm")}
         cancelLabel={shared("formSave.cancel")}
         onOpenChange={(open) => {
-          if (!open) setCandidate(undefined);
+          if (!open) confirmation.close();
         }}
-        onConfirm={() => {
-          if (candidate === undefined) return;
-          setCandidate(undefined);
-          onConfirm(candidate);
-        }}
+        onConfirm={confirmation.confirm}
       />
       <form
         noValidate

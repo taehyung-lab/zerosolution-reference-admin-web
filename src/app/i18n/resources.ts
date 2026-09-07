@@ -1,3 +1,6 @@
+import jaPerformances from '@/shared/i18n/locales/ja/performances.json'
+import enPerformances from '@/shared/i18n/locales/en/performances.json'
+import koPerformances from '@/shared/i18n/locales/ko/performances.json'
 import { i18n } from '@/shared/i18n/i18n'
 import { UI_LOCALES, type UiLocale } from '@/shared/i18n/locale'
 import enApp from '@/shared/i18n/locales/en/app.json'
@@ -21,13 +24,13 @@ import koMessaging from '@/shared/i18n/locales/ko/messaging.json'
  * 도메인 feature(`managers`) namespace는 화면을 조립하는 app 층이 여기서 등록한다.
  * 파일은 `pnpm i18n:check`가 읽는 단일 root(`src/shared/i18n/locales`)에 남긴다.
  */
-export const appI18nNamespaces = ['app', 'auth', 'managers', 'members', 'messaging'] as const
+export const appI18nNamespaces = ['app', 'auth', 'managers', 'members', 'messaging', 'performances'] as const
 export type AppI18nNamespace = (typeof appI18nNamespaces)[number]
 
 const resources: Record<UiLocale, Record<AppI18nNamespace, object>> = {
-  ko: { app: koApp, auth: koAuth, managers: koManagers, members: koMembers, messaging: koMessaging },
-  en: { app: enApp, auth: enAuth, managers: enManagers, members: enMembers, messaging: enMessaging },
-  ja: { app: jaApp, auth: jaAuth, managers: jaManagers, members: jaMembers, messaging: jaMessaging },
+  ko: { app: koApp, auth: koAuth, managers: koManagers, members: koMembers, messaging: koMessaging, performances: koPerformances },
+  en: { app: enApp, auth: enAuth, managers: enManagers, members: enMembers, messaging: enMessaging, performances: enPerformances },
+  ja: { app: jaApp, auth: jaAuth, managers: jaManagers, members: jaMembers, messaging: jaMessaging, performances: jaPerformances },
 }
 
 export function registerAppI18nResources(): void {

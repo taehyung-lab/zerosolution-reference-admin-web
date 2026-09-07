@@ -26,6 +26,6 @@ Read this file only for a shadcn-style copied component, Radix primitive, Tailwi
 
 These are inventory-backed candidates with no second code consumer. Do not add APIs or raise their lifecycle stage until a real screen needs the domain-free contract; range slider, selected-label registry, last-value persistence, and `- 이하 생략 -` remain unresolved rather than candidates for implementation.
 
-Which primitive a feature may use directly: `Button`, `Input`, `Checkbox`, `Badge`, `Table*`, `Select`, `Combobox`, `MultiSelect`, `RadioGroup`, `Calendar`, `FileInput`, `Dialog`. Consumed only through a pattern: `Accordion` (→ `SectionCard`), `Popover` (→ `Combobox`, `PeriodField`), `BlockingProgress` (→ app shell).
+Which primitive a feature may use directly: `Button`, `Input`, `Checkbox`, `Badge`, `Table*`, `Select`, `Combobox`, `InlineSearchSelect`, `MultiSelect`, `RadioGroup`, `Calendar`, `FileInput`, `Dialog`. Consumed only through a pattern: `Accordion` (→ `SectionCard`), `Popover` (→ `Combobox`, `PeriodField`), `BlockingProgress` (→ app shell).
 
 Test the interaction actually changed: accessible name/description, keyboard operation, focus entry/restoration, disabled state, controlled value, and relevant visual variants. Read a more specific reference as well when the primitive is a selection control, date/file control, dialog, or table surface.

@@ -8,6 +8,11 @@ import { createRoot } from "react-dom/client";
 const rootElement = document.getElementById("root");
 if (!rootElement) throw new Error("#root element를 찾을 수 없습니다.");
 
+if (import.meta.env.DEV && import.meta.env.MODE === 'mock') {
+  const { startApiMocks } = await import('@/api/mocks/browser');
+  await startApiMocks();
+}
+
 const queryClient = createQueryClient();
 const router = createAppRouter({ queryClient });
 

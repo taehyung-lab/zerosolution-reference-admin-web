@@ -91,4 +91,32 @@ describe('useListQuery', () => {
     expect(progressOf('entry')).toBe('blocking')
     expect(progressOf('sorted')).toBe('content')
   })
+
+  it('keeps the rows already on screen while the next committed view is still loading', async () => {
+    let release!: (page: Response) => void
+    const pending = () => new Promise<Response>((resolve) => { release = resolve })
+    const { rerender, result } = renderHook(
+      ({ key, fetch }: { key: string; fetch: () => Promise<Response> }) =>
+        useListQuery({ options: listOptions(key, fetch), searched: true, select }),
+      {
+        wrapper: createWrapper(),
+        initialProps: {
+          key: 'first',
+          fetch: (): Promise<Response> => Promise.resolve({ list: ['first-row'], totalCount: 1 }),
+        },
+      },
+    )
+    await waitFor(() => expect(result.current.rows).toEqual(['first-row']))
+
+    rerender({ key: 'second', fetch: pending })
+    await waitFor(() => expect(result.current.isFetching).toBe(true))
+    // The committed page stays rendered instead of collapsing to the loading surface.
+    expect(result.current.rows).toEqual(['first-row'])
+    expect(result.current.total).toBe(1)
+    expect(result.current.isPending).toBe(false)
+
+    release({ list: ['second-row'], totalCount: 1 })
+    await waitFor(() => expect(result.current.rows).toEqual(['second-row']))
+    expect(result.current.isFetching).toBe(false)
+  })
 })

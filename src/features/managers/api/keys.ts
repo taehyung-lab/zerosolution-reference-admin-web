@@ -1,3 +1,7 @@
+/**
+ * 운영자 목록·상세·수정 초기값·옵션의 locale/조건별 Query 캐시 주소를 정의한다.
+ * 실제 API에서도 필요하며 같은 응답을 공유할 수 있는 조회만 같은 키를 사용한다.
+ */
 import type { GetList8Params, GetPermissionsType } from '@/api/generated/models';
 import { localizedQueryKey } from '@/api/query-key';
 

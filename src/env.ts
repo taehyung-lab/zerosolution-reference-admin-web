@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod';
 
 /**
  * 환경변수 계약. 앱 부팅 시 한 번 검증하고, 실패하면 조용히 넘어가지 않고 즉시 실패한다.
@@ -13,27 +13,27 @@ import { z } from 'zod'
  */
 export const envSchema = z.object({
   VITE_APP_NAME: z.string().min(1).default('ZERO PLUS+ Admin'),
-  VITE_REFERENCE_SCENARIOS: z.enum(['true', 'false']).default('false').transform((value) => value === 'true'),
   VITE_API_BASE_URL: z
     .string()
     .default('')
     .refine((v) => !/\/api\/?$/.test(v), {
-      error: 'baseURL 에 /api 를 넣지 마라. 생성된 endpoint 가 이미 /api/v1 을 포함한다.',
+      error:
+        'baseURL 에 /api 를 넣지 마라. 생성된 endpoint 가 이미 /api/v1 을 포함한다.',
     }),
   VITE_API_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
-})
+});
 
-export type Env = z.infer<typeof envSchema>
+export type Env = z.infer<typeof envSchema>;
 
 export function parseEnv(raw: unknown): Env {
-  const result = envSchema.safeParse(raw)
+  const result = envSchema.safeParse(raw);
   if (!result.success) {
     const detail = result.error.issues
       .map((i) => `  - ${i.path.join('.') || '(root)'}: ${i.message}`)
-      .join('\n')
-    throw new Error(`환경변수 검증 실패\n${detail}`)
+      .join('\n');
+    throw new Error(`환경변수 검증 실패\n${detail}`);
   }
-  return result.data
+  return result.data;
 }
 
-export const env: Env = parseEnv(import.meta.env)
+export const env: Env = parseEnv(import.meta.env);

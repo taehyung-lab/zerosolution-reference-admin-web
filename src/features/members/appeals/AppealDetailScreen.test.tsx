@@ -54,20 +54,7 @@ describe("appeal detail surface ownership", () => {
       "보존할 처리 초안",
     );
     fireEvent.click(screen.getByRole("button", { name: "취소" }));
-    fireEvent.click(
-      within(screen.getByRole("dialog", { name: "알림" })).getByRole("button", {
-        name: "취소",
-      }),
-    );
-    expect(screen.getByRole("textbox", { name: "담당자 의견" })).toHaveValue(
-      "보존할 처리 초안",
-    );
-    fireEvent.click(screen.getByRole("button", { name: "취소" }));
-    fireEvent.click(
-      within(screen.getByRole("dialog", { name: "알림" })).getByRole("button", {
-        name: "확인",
-      }),
-    );
+    expect(screen.queryByRole("dialog", { name: "알림" })).not.toBeInTheDocument();
     await waitFor(() =>
       expect(screen.getByRole("textbox", { name: "담당자 의견" })).toHaveValue(
         record.processing.opinion,

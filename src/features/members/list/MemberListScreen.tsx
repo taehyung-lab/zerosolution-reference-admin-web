@@ -1,18 +1,21 @@
-import { MemberListActions } from "./MemberListActions";
+/**
+ * 전체·일반·불량 회원의 동일한 목록 workflow를 화면 정의로 조립한다.
+ * 필터·데이터·결과·액션 소유자를 연결하는 역할은 API 연결 후에도 유지하고 조회 방식의 차이를 화면 종류로 만들지 않는다.
+ */
+import { MemberListActions } from "./ui/MemberListActions";
 import { PageHeader } from "@/shared/ui/patterns/PageHeader";
-import { Tooltip } from "@/shared/ui/primitives/Tooltip";
 import { useTranslation } from "react-i18next";
 import {
   memberListDefinitions,
   type MemberListDefinition,
-} from "./member-list-definition";
-import { MemberListFilters } from "./MemberListFilters";
-import { MemberListResult } from "./MemberListResult";
-import { resolveMemberSearch, type MemberRouteSearch } from "./search-schema";
-import { useMemberListData } from "./useMemberListData";
-import { useMemberListFilter } from "./useMemberListFilter";
-import { useMemberListResult } from "./useMemberListResult";
-import type { MemberListActionRequest } from "./member-row";
+} from "./model/member-list-definition";
+import { MemberListFilters } from "./ui/MemberListFilters";
+import { MemberListResult } from "./ui/MemberListResult";
+import { resolveMemberSearch, type MemberRouteSearch } from "./model/search-schema";
+import { useMemberListData } from "./model/useMemberListData";
+import { useMemberListFilter } from "./model/useMemberListFilter";
+import { useMemberListResult } from "./model/useMemberListResult";
+import type { MemberListActionRequest } from "./model/member-row";
 
 export interface MemberListScreenProps {
   readonly search: MemberRouteSearch;
@@ -60,21 +63,12 @@ function MemberListScreen({
   return (
     <section>
       <PageHeader
-        breadcrumb={t("breadcrumb", { title })}
+        breadcrumbs={[t("path.members"), t("path.active"), title]}
+        tooltip={definition.tooltip ? {
+          content: t("screens.allTooltip"),
+          label: t("screens.help"),
+        } : undefined}
         title={title}
-        actions={
-          definition.tooltip ? (
-            <Tooltip content={t("screens.allTooltip")}>
-              <button
-                aria-label={t("screens.help")}
-                className="rounded-full"
-                type="button"
-              >
-                ⓘ
-              </button>
-            </Tooltip>
-          ) : undefined
-        }
       />
       <MemberListFilters filter={filter} definition={definition} />
       <MemberListResult

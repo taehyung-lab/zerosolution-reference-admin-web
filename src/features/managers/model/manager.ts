@@ -1,3 +1,7 @@
+/**
+ * 기존 API 목록 행과 제품 운영자 목록 행의 표시 모델을 정의한다.
+ * 두 모델의 필드·상태 의미가 달라 함께 존재한다. 실제 API 전환 시 제품 표시 모델과 서버 변환의 경계를 정리해야 한다.
+ */
 import type { ManagerAccountStatus } from '../detail/manager-detail-actions';
 
 export interface ManagerListItem {

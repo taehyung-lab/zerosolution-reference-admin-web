@@ -1,3 +1,7 @@
+/**
+ * 회원 기록 목록과 상담·소명 상세·재발행 입력을 재현하는 예시 데이터다.
+ * 필터·정렬 함수는 mock에서 서버 처리를 대신할 수 있지만, 서버 페이지 API를 사용하는 제품 코드의 공용 조회 로직으로 승격하지 않는다.
+ */
 import { i18n } from "@/shared/i18n/i18n";
 import type { MemberRecordSearch } from "../records/member-record-search";
 import type { CounselDetail } from "../counsel/CounselDetailDialog";
@@ -10,7 +14,8 @@ import type {
   CounselRow,
   AppealRow,
 } from "../model/member-records";
-// TRANSPLANT_PENDING_SECONDARY_REFERENCE_DATA: opt-in readonly scenario inputs; replace with confirmed member API data and category sources.
+// TRANSPLANT_PENDING_SECONDARY_REFERENCE_DATA: 읽기 전용 예시다. 확인된 회원 API 데이터와 문의 유형 출처로 교체해야 한다.
+/** 여러 업무 화면을 재현할 읽기 전용 행을 만든다. 101건 예시는 페이지 이동을 확인하기 위한 개수다. */
 export function memberRecordFixtures() {
   const name = i18n.t("members:secondary.example.name");
   const base = {
@@ -78,6 +83,7 @@ export function memberRecordFixtures() {
   return { dormant, withdrawn, access, counsel, appeals };
 }
 
+/** 예시 행에 UI 검색 조건을 적용하는 mock용 판정이다. 키워드 AND 등 현재 계산을 실제 서버 검색 의미로 확정하지 않는다. */
 export function matchesMemberRecordSearch(
   values: Readonly<Record<string, string>>,
   search: MemberRecordSearch,
@@ -106,6 +112,7 @@ export function matchesMemberRecordSearch(
   );
 }
 
+/** 원본 fixture를 변경하지 않고 정렬한 배열을 반환한다. 서버 정렬 API가 연결된 화면에서는 실행할 필요가 없다. */
 export function sortMemberRecords<T>(
   rows: readonly T[],
   read: (row: T) => string,
@@ -116,6 +123,7 @@ export function sortMemberRecords<T>(
   );
 }
 
+/** 목록의 상담 ID에 연결된 상세·기록·예약 예시를 만든다. 실제 상담 상세 응답은 미확정이다. */
 export function counselDetailFixture(id: string): CounselDetail | undefined {
   const row = memberRecordFixtures().counsel.find((item) => item.id === id);
   if (!row) return undefined;
@@ -140,6 +148,7 @@ export function counselDetailFixture(id: string): CounselDetail | undefined {
     },
   };
 }
+/** 소명 목록과 같은 ID로 상세/저장된 처리 결과 예시를 만든다. 제출 후 서버 상태 전이를 재현하지 않는다. */
 export function appealDetailFixture(id: string): AppealRecord | undefined {
   const row = memberRecordFixtures().appeals.find((item) => item.id === id);
   if (!row) return undefined;
@@ -161,6 +170,7 @@ export function appealDetailFixture(id: string): AppealRecord | undefined {
     notified: false,
   };
 }
+/** 프린터 선택과 미리보기 UI를 확인하는 예시다. 실제 프린터 연결·가용 상태·인쇄 성공은 검증하지 않는다. */
 export function reissueInputFixture() {
   return {
     printers: [

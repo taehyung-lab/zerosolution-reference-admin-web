@@ -1,3 +1,24 @@
+// 리허설 API 소비자의 회귀 검증용 route다. 실제 /managers 제품 route는 product-route.test.tsx에서 별도로 검증한다.
+vi.mock('@/routes/_app/managers/index', async () => {
+  const { createFileRoute, defaultStringifySearch } = await import('@tanstack/react-router');
+  const { canonicalSearchGuard } = await import('@/app/router/canonical-search-guard');
+  const { managerSearchSchema, managerCanonicalSearchSchema } = await import('@/features/managers/list/model/search-schema');
+  const { managerTypeOptionsQuery } = await import('@/features/managers/api/queries');
+  const { ManagerApiListScreen } = await import('@/features/managers/list/ManagerApiListScreen');
+  const Route = createFileRoute('/_app/managers/')({
+    validateSearch: managerSearchSchema,
+    beforeLoad: canonicalSearchGuard(managerCanonicalSearchSchema),
+    loader: ({ context: { locale, queryClient } }) => { void queryClient.query(managerTypeOptionsQuery(locale)).catch(() => undefined); },
+    component: ApiRoute,
+  });
+  function ApiRoute() {
+    const search = managerCanonicalSearchSchema.parse(Route.useSearch());
+    const navigate = Route.useNavigate();
+    return <ManagerApiListScreen search={search} onSearchChange={next => { void navigate({ href: "/managers" + defaultStringifySearch(next) }); }} />;
+  }
+  return { Route };
+});
+
 import { AppProviders, createQueryClient } from "@/app/providers/AppProviders";
 import { createAppRouter } from "@/app/router/router";
 import { RouterProvider, createMemoryHistory } from "@tanstack/react-router";
@@ -18,6 +39,7 @@ import {
   describe,
   expect,
   it,
+  vi,
 } from "vitest";
 import { clearAccessToken, setAccessToken } from "@/api/http/credential";
 

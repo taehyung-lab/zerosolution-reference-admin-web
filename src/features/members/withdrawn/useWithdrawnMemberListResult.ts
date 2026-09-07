@@ -1,6 +1,12 @@
+/**
+ * 탈퇴 목록의 현재 페이지 선택 상태·컬럼·정렬 옵션과 조건 변경 callback을 조립한다.
+ * 실제 API에서도 선택/표시 책임은 필요하다. 현재 타입이 임시 데이터 함수의 반환형에 의존하므로 조회 교체 때 행/페이지 계약으로 분리한다.
+ */
+import { toggleMemberRecordSort } from "../records/member-record-view";
 import { useTranslation } from "react-i18next";
 import { usePageRowSelection } from "@/shared/lib/use-page-row-selection";
-import type { withdrawnData } from "../records/member-record-data";
+import type { MemberRecordListData } from "../records/member-record-data";
+import type { WithdrawnMemberRow } from "../model/member-records";
 import { buildWithdrawnMemberListColumns } from "./withdrawn-member-columns";
 import type { MemberRecordSearch } from "../records/member-record-search";
 export function useWithdrawnMemberListResult({
@@ -9,7 +15,7 @@ export function useWithdrawnMemberListResult({
   onSearchChange,
 }: {
   readonly search: MemberRecordSearch;
-  readonly data: ReturnType<typeof withdrawnData>;
+  readonly data: MemberRecordListData<WithdrawnMemberRow>;
   readonly onSearchChange: (next: MemberRecordSearch) => void;
 }) {
   const { t } = useTranslation("members");
@@ -19,15 +25,7 @@ export function useWithdrawnMemberListResult({
     resetKey: JSON.stringify(search),
   });
   const onSort = (sortType: NonNullable<MemberRecordSearch["sortType"]>) =>
-    onSearchChange({
-      ...search,
-      sortType,
-      sortDirection:
-        search.sortType === sortType && search.sortDirection === "asc"
-          ? "desc"
-          : "asc",
-      page: undefined,
-    });
+    onSearchChange(toggleMemberRecordSort(search, sortType));
   const sorts = [
     { value: "withdrawnAt", label: t("secondary.fields.withdrawnAt") },
     { value: "joinedAt", label: t("columns.joinedAt") },
@@ -46,11 +44,6 @@ export function useWithdrawnMemberListResult({
       search,
       onSort,
     }),
-    viewControls: { search, onChange: onSearchChange, sortOptions: sorts },
-    pagination: {
-      page: data.page,
-      totalPages: data.totalPages,
-      onPageChange: (page: number) => onSearchChange({ ...search, page }),
-    },
+    sorts,
   };
 }

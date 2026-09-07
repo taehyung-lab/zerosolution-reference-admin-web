@@ -3,7 +3,6 @@ import {
   render,
   screen,
   waitFor,
-  within,
 } from "@testing-library/react";
 import {
   createMemoryHistory,
@@ -130,7 +129,7 @@ describe("member detail action boundaries", () => {
   });
 
   it.each(["cancel", "close", "escape"] as const)(
-    "protects dirty %s and preserves operator input when kept",
+    "dismisses dirty %s without a cancellation question",
     async (method) => {
       setup("reveal");
       const input = await screen.findByLabelText(/운영자 비밀번호/);
@@ -141,19 +140,7 @@ describe("member detail action boundaries", () => {
         fireEvent.click(screen.getByRole("button", { name: "닫기" }));
       if (method === "escape")
         fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
-      const question = await screen.findByRole("dialog", { name: "알림" });
-      fireEvent.click(within(question).getByRole("button", { name: "취소" }));
-      await waitFor(() =>
-        expect(screen.queryByRole("dialog", { name: "알림" })).toBeNull(),
-      );
-      expect(input).toHaveValue("keep-input");
-      fireEvent.click(screen.getByRole("button", { name: "취소" }));
-      fireEvent.click(
-        within(await screen.findByRole("dialog", { name: "알림" })).getByRole(
-          "button",
-          { name: "확인" },
-        ),
-      );
+      expect(screen.queryByRole("dialog", { name: "알림" })).toBeNull();
       expect(await screen.findByText("closed")).toBeVisible();
     },
   );

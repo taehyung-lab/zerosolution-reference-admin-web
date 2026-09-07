@@ -1,12 +1,11 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { waitFor, fireEvent, render, screen, within } from "@testing-library/react";
 import { expect, it, vi } from "vitest";
-import { TestLocaleProvider } from "@/test/locale";
+import { TestQueryLocaleProvider as TestLocaleProvider } from "@/test/query-locale";
 import { MemberCounselListScreen } from "./MemberCounselListScreen";
 import type { MemberRecordSearch } from "../records/member-record-search";
 
-vi.mock("@/env", () => ({ env: { VITE_REFERENCE_SCENARIOS: true } }));
 
-it("passes selected counsel IDs to download and preserves its mode and alert when committed results become empty", () => {
+it("passes selected counsel IDs to download and preserves its mode and alert when committed results become empty", async () => {
   const onDownload = vi.fn();
   const view = (search: MemberRecordSearch) => (
     <TestLocaleProvider>
@@ -21,7 +20,7 @@ it("passes selected counsel IDs to download and preserves its mode and alert whe
   );
   const { rerender } = render(view({}));
   fireEvent.click(
-    screen.getByRole("checkbox", { name: "현재 페이지 전체 선택" }),
+    await screen.findByRole("checkbox", { name: "현재 페이지 전체 선택" }),
   );
   fireEvent.keyDown(screen.getByRole("combobox", { name: "다운로드 범위" }), {
     key: "ArrowDown",
@@ -40,7 +39,7 @@ it("passes selected counsel IDs to download and preserves its mode and alert whe
   fireEvent.click(
     within(screen.getByRole("dialog")).getByRole("button", { name: "확인" }),
   );
-  expect(screen.queryByRole("table")).not.toBeInTheDocument();
+  await waitFor(() => expect(screen.queryByRole("table")).not.toBeInTheDocument());
   expect(screen.getByRole("button", { name: "다운로드" })).toBeEnabled();
   expect(onDownload).toHaveBeenCalledTimes(1);
 });

@@ -1,4 +1,9 @@
+/**
+ * 운영자 등록·수정의 UI 검증·공통 필드·오류 포커스 순서를 정의한다.
+ * 실제 API에서도 프런트 검증은 필요하며 인증·중복·서버 상태 전이 검증을 대신하지 않는다.
+ */
 import { z } from 'zod';
+import { hasRepeatedOrSequentialAsciiTriplet } from '@/shared/lib/ascii-triplet';
 import { i18n } from '@/shared/i18n/i18n';
 
 /**
@@ -22,32 +27,14 @@ const ID_PATTERN = /^[A-Za-z0-9]{6,20}$/;
 const PHONE_PATTERN = /^[0-9-]{1,20}$/;
 const EMAIL_PATTERN = /^[A-Za-z0-9@._-]+$/;
 
-// The product distinguishes upper/lowercase letters, digits and special characters.
+// 제품 비밀번호 정책은 영문 대문자·소문자·숫자·특수문자를 서로 다른 문자군으로 센다.
 const PASSWORD_CHARACTER_CLASSES = [/[a-z]/, /[A-Z]/, /[0-9]/, /[^A-Za-z0-9\s]/];
 const PASSWORD_MIN_CLASSES = 3;
 
-// Notion confirms the UI limits; server-specific constraints remain outside this schema.
+// Notion에서 확인한 입력 길이 제한이다. 서버 전용 제약은 별도의 계약으로 확인한다.
 const EMAIL_MAX_LENGTH = 100;
 const ORGANIZATION_MAX_LENGTH = 20;
 
-function hasPasswordSequence(value: string) {
-  const normalized = value.toLowerCase();
-  for (let i = 0; i < normalized.length - 2; i += 1) {
-    const triplet = normalized.slice(i, i + 3);
-    if (!/^[a-z]{3}$|^[0-9]{3}$/.test(triplet)) continue;
-    const [first, second, third] = [...triplet].map((character) => character.charCodeAt(0));
-    if (first === second && second === third) return true;
-    if (
-      first !== undefined &&
-      second !== undefined &&
-      third !== undefined &&
-      Math.abs(second - first) === 1 &&
-      second - first === third - second
-    )
-      return true;
-  }
-  return false;
-}
 
 export const managerPasswordSchema = z
   .string()
@@ -59,12 +46,12 @@ export const managerPasswordSchema = z
       PASSWORD_MIN_CLASSES,
     message('password'),
   )
-  .refine((value) => !hasPasswordSequence(value), message('password'));
+  .refine((value) => !hasRepeatedOrSequentialAsciiTriplet(value), message('password'));
 
 /** 등록·수정에서 규칙까지 동일하다고 확인된 필드만 공유한다. 아이디·비밀번호는 등록 전용이라 여기 없다. */
 const managerProfileShape = {
   type: z.string().min(1, message('typeRequired')),
-  // Retained for the legacy form adapter; only the wire mapper imposes the rehearsal agency rule.
+  // 기존 폼 연결을 위해 기획사 입력을 유지한다. 기존 API의 기획사 조건은 요청 mapper에서만 적용한다.
   agencyId: z.string(),
   permissionId: z.string().min(1, message('permissionRequired')),
   name: z.string().regex(NAME_PATTERN, message('name')),

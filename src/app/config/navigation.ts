@@ -5,13 +5,13 @@
 export interface AppNavigationItem {
   readonly id: string;
   readonly labelKey: string;
-  readonly to?: "/managers" | "/members/active/all" | "/members/active/general" | "/members/active/flagged" | "/members/dormant" | "/members/withdrawn" | "/members/counsel" | "/members/appeals" | "/members/access";
+  readonly to?: "/performances" | "/managers" | "/members/active/all" | "/members/active/general" | "/members/active/flagged" | "/members/dormant" | "/members/withdrawn" | "/members/counsel" | "/members/appeals" | "/members/access";
 }
 
 export const appNavigationItems: readonly AppNavigationItem[] = [
   { id: "dashboard", labelKey: "shell.navigation.dashboard" },
   { id: "members", labelKey: "shell.navigation.members", to: "/members/active/all" },
-  { id: "performances", labelKey: "shell.navigation.performances" },
+  { id: "performances", labelKey: "shell.navigation.performances", to: "/performances" },
   { id: "ticketing", labelKey: "shell.navigation.ticketing" },
   { id: "exhibitions", labelKey: "shell.navigation.exhibitions" },
   { id: "promotions", labelKey: "shell.navigation.promotions" },

@@ -10,6 +10,7 @@
   "scripts": {
     "postinstall": "pnpm api:generate",
     "dev": "vite",
+    "dev:mock": "vite --mode mock",
     "preview": "vite preview",
     "api:pull": "node scripts/openapi/pull.mjs",
     "api:diff": "node scripts/openapi/diff.mjs",
@@ -30,10 +31,12 @@
     "gates:negative": "node scripts/verify-negative-controls.mjs",
     "build": "vite build",
     "test:e2e:smoke": "playwright test --project=chromium --grep @smoke",
+    "test:e2e:mock": "PLAYWRIGHT_API_MOCK=true playwright test --project=chromium",
     "ci:static": "pnpm api:check && pnpm contracts:check && pnpm typecheck && pnpm lint && pnpm i18n:check && pnpm gates:negative && pnpm build",
     "ci:unit": "pnpm test:unit",
-    "ci:e2e": "pnpm test:e2e:smoke",
-    "verify": "pnpm api:check && pnpm contracts:check && pnpm typecheck && pnpm lint && pnpm test:unit && pnpm i18n:check && pnpm gates:negative && pnpm build && pnpm test:e2e:smoke"
+    "ci:e2e": "pnpm test:e2e:verify",
+    "verify": "pnpm api:check && pnpm contracts:check && pnpm typecheck && pnpm lint && pnpm test:unit && pnpm i18n:check && pnpm gates:negative && pnpm build && pnpm test:e2e:verify",
+    "test:e2e:verify": "playwright test --project=chromium --grep \"@smoke|@reference\""
   },
   "dependencies": {
     "@tanstack/react-form": "1.33.5",

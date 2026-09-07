@@ -1,5 +1,6 @@
 import { useState, type SubmitEvent } from "react";
 import { useTranslation } from "react-i18next";
+import { requestGlobalSearch, requestMyInfo } from './shell-requests';
 
 export function AppHeader({
   appName,
@@ -13,8 +14,7 @@ export function AppHeader({
 
   const submitGlobalSearch = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
-    // The global-search target API and result route are unconfirmed; retain this UI seam without dispatching a request.
-    void globalSearch;
+    requestGlobalSearch(globalSearch);
   };
 
   return (
@@ -43,7 +43,7 @@ export function AppHeader({
         <details>
           <summary className="cursor-pointer">{t("shell.profile")}</summary>
           <div className="absolute z-10 mt-2 rounded border bg-white p-2 shadow-sm">
-            <button className="block px-2 py-1 text-left" type="button">
+            <button className="block px-2 py-1 text-left" type="button" onClick={requestMyInfo}>
               {t("shell.profileMenu.myInfo")}
             </button>
             <button

@@ -1,3 +1,7 @@
+/**
+ * 정규화된 오류 종류를 운영자 화면에서 보여줄 안전한 번역 키로 변환한다.
+ * 실제 API에서도 필요하며 서버 메시지나 내부 오류 내용을 그대로 화면에 출력하지 않는다.
+ */
 import type { ApiErrorKind } from '@/api/error';
 
 export type SafeErrorKey =

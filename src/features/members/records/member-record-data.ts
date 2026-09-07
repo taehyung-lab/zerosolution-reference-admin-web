@@ -1,100 +1,34 @@
-import { env } from "@/env";
-import {
-  matchesMemberRecordSearch,
-  memberRecordFixtures,
-  sortMemberRecords,
-} from "../fixtures/member-records";
-import type { MemberRecordSearch } from "./member-record-search";
+/** 회원 기록 목록의 조회 상태·페이지 표시값을 연결한다. 업무별 Query와 검색 시작 정책은 호출부가 정한다. */
+import { useListQuery, type ListQueryResult } from '@/api/list-query';
+import { useLocale } from '@/shared/i18n/locale-context';
+import { toTotalPages } from '@/shared/lib/search';
+import type { QueryKey, UseQueryOptions } from '@tanstack/react-query';
+import type { MemberRecordSearch } from './member-record-search';
 
-function page<T>(rows: readonly T[], search: MemberRecordSearch) {
-  const pageSize = search.pageSize ?? 100;
-  const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
-  const current = Math.min(search.page ?? 1, totalPages);
-  return {
-    rows: rows.slice((current - 1) * pageSize, current * pageSize),
-    total: rows.length,
-    totalPages,
-    page: current,
-  };
-}
-export function dormantData(search: MemberRecordSearch) {
-  const rows = env.VITE_REFERENCE_SCENARIOS
-    ? memberRecordFixtures().dormant.filter((row) =>
-        matchesMemberRecordSearch({ ...row }, search),
-      )
-    : [];
-  return page(
-    sortMemberRecords(
-      rows,
-      (row) => row[search.sortType as keyof typeof row] ?? row.joinedAt,
-      search.sortDirection,
-    ),
-    search,
-  );
-}
-export function withdrawnData(search: MemberRecordSearch) {
-  const rows = env.VITE_REFERENCE_SCENARIOS
-    ? memberRecordFixtures().withdrawn.filter((row) =>
-        matchesMemberRecordSearch({ ...row }, search),
-      )
-    : [];
-  return page(
-    sortMemberRecords(
-      rows,
-      (row) => row[search.sortType as keyof typeof row] ?? row.withdrawnAt,
-      search.sortDirection,
-    ),
-    search,
-  );
-}
-export function accessData(search: MemberRecordSearch) {
-  const rows = env.VITE_REFERENCE_SCENARIOS
-    ? memberRecordFixtures().access.filter((row) =>
-        matchesMemberRecordSearch({ ...row }, search),
-      )
-    : [];
-  return page(
-    sortMemberRecords(
-      rows,
-      (row) => row[search.sortType as keyof typeof row] ?? row.accessedAt,
-      search.sortDirection,
-    ),
-    search,
-  );
-}
-export function counselData(search: MemberRecordSearch) {
-  const rows = env.VITE_REFERENCE_SCENARIOS
-    ? memberRecordFixtures().counsel.filter((row) =>
-        matchesMemberRecordSearch({ ...row }, search),
-      )
-    : [];
-  return page(
-    sortMemberRecords(
-      rows,
-      (row) => row[search.sortType as keyof typeof row] ?? row.receivedAt,
-      search.sortDirection,
-    ),
-    search,
-  );
-}
-export function appealData(search: MemberRecordSearch) {
-  const rows = env.VITE_REFERENCE_SCENARIOS
-    ? memberRecordFixtures().appeals.filter(
-        ({ restrictions, ...row }) =>
-          matchesMemberRecordSearch(row, search) &&
-          (!search.restrictions?.length ||
-            search.restrictions.some((value) => restrictions.includes(value))),
-      )
-    : [];
-  return page(
-    sortMemberRecords(
-      rows,
-      (row) => {
-        const value = row[search.sortType as keyof typeof row] ?? row.appliedAt;
-        return typeof value === "string" ? value : value.join(",");
-      },
-      search.sortDirection,
-    ),
-    search,
-  );
+export type MemberRecordListData<T> = ListQueryResult<T> & {
+  readonly page: number;
+  readonly totalPages: number;
+};
+type RecordPage<T> = { readonly rows: readonly T[]; readonly total: number };
+
+/** 다섯 기록 목록이 같은 결과 모델을 소비하므로 Query 실행과 페이지 계산만 한 곳에서 소유한다. */
+export function useMemberRecordListData<
+  TPage extends RecordPage<unknown>,
+  TKey extends QueryKey,
+>(
+  search: MemberRecordSearch,
+  query: (
+    locale: string,
+    search: MemberRecordSearch
+  ) => UseQueryOptions<TPage, Error, TPage, TKey>,
+  searched: boolean
+): MemberRecordListData<TPage['rows'][number]> {
+  const { locale } = useLocale();
+  const data = useListQuery<TPage, TPage['rows'][number], TKey>({
+    options: query(locale, search),
+    searched,
+    select: (page) => page,
+  });
+  const totalPages = toTotalPages(data.total, search.pageSize ?? 100);
+  return { ...data, totalPages, page: Math.min(search.page ?? 1, totalPages) };
 }

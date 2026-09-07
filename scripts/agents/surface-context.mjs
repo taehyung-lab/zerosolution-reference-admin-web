@@ -1,0 +1,103 @@
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
+import { resolve } from 'node:path'
+import { readReference, referenceOf } from './document-context.mjs'
+
+export const SURFACE_INDEX = 'docs/reference/zero-sol/context.json'
+const text = (value) => typeof value === 'string' && value.trim().length > 0
+const list = (value) => Array.isArray(value)
+const inside = (path, prefix) => path === prefix || (prefix.endsWith('/') && path.startsWith(prefix))
+const overlaps = (left, right) => inside(left, right) || inside(right, left)
+const productPath = (path) => ['src/', 'src/app/'].includes(path) || /^src\/(features|routes|app\/shell)\//.test(path)
+const safePath = (path) => text(path) && !path.startsWith('/') && !path.includes('\\') && !path.split('/').some((part) => part === '..' || part === '.')
+
+export function readSurfaceIndex(root) {
+  if (!existsSync(resolve(root, SURFACE_INDEX))) return { judgment: [], surfaces: [] }
+  const index = JSON.parse(readFileSync(resolve(root, SURFACE_INDEX), 'utf8'))
+  if (!list(index.surfaces) || !list(index.judgment)) throw new Error('Surface index needs surfaces and judgment references')
+  return index
+}
+
+export function surfaceIndexFailures(root) {
+  const failures = []
+  try {
+    const index = readSurfaceIndex(root)
+    const ids = new Set()
+    for (const surface of index.surfaces) {
+      if (!text(surface.id) || ids.has(surface.id)) throw new Error(`Duplicate or empty surface id: ${surface.id}`)
+      ids.add(surface.id)
+      if (!text(surface.title) || !['group', 'surface'].includes(surface.coverage) || !list(surface.paths) || !surface.paths.every(safePath) || !list(surface.related) || !list(surface.scenarios) || !list(surface.references)) throw new Error(`Invalid surface: ${surface.id}`)
+      if (!referenceOf(surface.inventory).file.startsWith('docs/reference/zero-sol/')) throw new Error(`Inventory location required: ${surface.id}`)
+      if (!surface.scenarios.length && !text(surface.gap)) throw new Error(`Scenario or explicit gap required: ${surface.id}`)
+      if (!surface.scenarios.every((ref) => referenceOf(ref).file.startsWith('docs/reference/scenarios/'))) throw new Error(`Scenario location required: ${surface.id}`)
+      for (const ref of [surface.inventory, ...surface.scenarios, ...surface.references]) readReference(root, ref)
+    }
+    for (const surface of index.surfaces) {
+      for (const id of surface.related) if (!ids.has(id) || id === surface.id) throw new Error(`Dangling related surface: ${surface.id} → ${id}`)
+    }
+    for (const ref of index.judgment) readReference(root, ref)
+    const directory = resolve(root, 'docs/reference/zero-sol')
+    if (existsSync(directory)) for (const file of readdirSync(directory).filter((name) => /^\d{2}-.+\.md$/.test(name))) {
+      if (!index.surfaces.some((surface) => referenceOf(surface.inventory).file === `docs/reference/zero-sol/${file}`)) failures.push(`Inventory without context entry: ${file}`)
+    }
+  } catch (error) { failures.push(error.message) }
+  return failures
+}
+
+export function workKind(checkpoint) {
+  const kind = checkpoint.work?.kind ?? (checkpoint.scope.some(productPath) ? 'workflow' : 'infrastructure')
+  if (!['workflow', 'maintenance', 'infrastructure'].includes(kind)) throw new Error('Unknown work kind')
+  if (checkpoint.work && kind !== 'workflow' && !text(checkpoint.work.reason)) throw new Error('Non-workflow work needs a reason')
+  return kind
+}
+
+export function workflowContext(root, checkpoint, paths = checkpoint.scope) {
+  if (workKind(checkpoint) !== 'workflow') return { references: [], included: [], indexed: false }
+  const index = readSurfaceIndex(root)
+  const decisions = checkpoint.surfaces ?? []
+  const gaps = checkpoint.evidenceGaps ?? []
+  if (!list(decisions) || !list(gaps)) throw new Error('Declare surface decisions and evidence gaps')
+  const byId = new Map(index.surfaces.map((surface) => [surface.id, surface]))
+  const chosen = new Map()
+  for (const decision of decisions) {
+    if (!byId.has(decision.id) || chosen.has(decision.id)) throw new Error(`Unknown or duplicate surface: ${decision.id}`)
+    if (!['include', 'exclude'].includes(decision.decision) || (decision.decision === 'exclude' && !text(decision.reason))) throw new Error(`Surface exclusion needs a reason: ${decision.id}`)
+    chosen.set(decision.id, decision)
+  }
+  const included = decisions.filter((decision) => decision.decision === 'include').map((decision) => byId.get(decision.id))
+  for (const gap of gaps) {
+    if (!text(gap.reason) || !list(gap.paths) || !gap.paths.length || !gap.paths.every((path) => safePath(path) && checkpoint.scope.some((scope) => inside(path, scope))) || !list(gap.references) || !gap.references.length) throw new Error('Evidence gaps need scoped paths, reason and existing references')
+  }
+  if (checkpoint.stage === 'settled' && (gaps.length || included.some((surface) => surface.gap))) throw new Error('A settled workflow cannot have evidence gaps')
+  for (const path of paths.filter(productPath)) {
+    const known = index.surfaces.filter((surface) => surface.paths.some((prefix) => overlaps(path, prefix)))
+    if (known.length) {
+      if (!included.some((surface) => known.includes(surface))) throw new Error(`Declare relevant surface context for ${path}: ${known.map((surface) => surface.id).join(', ')}`)
+    } else if (!gaps.some((gap) => gap.paths.some((prefix) => inside(path, prefix)))) throw new Error(`Uncovered workflow path: ${path}. Declare evidenceGaps or index its surface.`)
+  }
+  if (!included.length && !gaps.length) throw new Error('Declare workflow surfaces or evidence gaps')
+  for (const surface of included) {
+    for (const id of surface.related) if (!chosen.has(id)) throw new Error(`Decide included/excluded inner surface: ${id}`)
+  }
+  const references = [...index.judgment, ...included.flatMap((surface) => [surface.inventory, ...surface.scenarios, ...surface.references]), ...gaps.flatMap((gap) => gap.references)]
+  for (const requirement of checkpoint.requirements) {
+    if (!list(requirement.surfaces) || !requirement.surfaces.every((id) => included.some((surface) => surface.id === id)) || (!requirement.surfaces.length && !gaps.length)) throw new Error(`Requirement ${requirement.id} needs included surfaces`)
+    if (!list(requirement.sources) || !requirement.sources.length) throw new Error(`Requirement ${requirement.id} needs sources (Markdown locations or user)`)
+    if (!list(requirement.contracts) || !requirement.contracts.every((id) => checkpoint.contracts.some((contract) => contract.id === id)) || (!requirement.contracts.length && !text(requirement.contractReason))) throw new Error(`Requirement ${requirement.id} needs declared contracts or contractReason`)
+    const evidence = [...included.filter((surface) => requirement.surfaces.includes(surface.id)).flatMap((surface) => [surface.inventory, ...surface.scenarios, ...surface.references]), ...gaps.flatMap((gap) => gap.references)].map((ref) => referenceOf(ref).file)
+    if (!requirement.sources.some((source) => source === 'user' || evidence.includes(referenceOf(source).file))) throw new Error(`Requirement ${requirement.id} sources must include its surface evidence or the explicit user request`)
+    references.push(...requirement.sources.filter((source) => source !== 'user'))
+  }
+  for (const surface of included) if (!checkpoint.requirements.some((requirement) => requirement.surfaces.includes(surface.id))) throw new Error(`Included surface needs a requirement: ${surface.id}`)
+  return { references, included, indexed: existsSync(resolve(root, SURFACE_INDEX)) }
+}
+
+export function describeContext(root, id) {
+  const index = readSurfaceIndex(root)
+  if (!id) return index.surfaces.map((surface) => `${surface.id} — ${surface.title} [${surface.coverage}]`).join('\n') + '\n'
+  const surface = index.surfaces.find((item) => item.id === id)
+  if (!surface) throw new Error(`Unknown surface: ${id}. Run context without an id to list targets.`)
+  return JSON.stringify({ ...surface, judgment: index.judgment, related: surface.related.map((related) => {
+    const target = index.surfaces.find((item) => item.id === related)
+    return { id: related, title: target?.title, instruction: 'Explicitly include or exclude with a reason.' }
+  }), note: 'Paths route evidence; they never assign code ownership or prescribe new product architecture. Feature API/model modules can serve several surfaces. Group entries require manual decomposition of their inner surfaces. Read linked facts; this is not a product specification.' }, null, 2) + '\n'
+}

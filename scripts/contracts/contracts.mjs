@@ -17,6 +17,8 @@ const DOCUMENT_FILES = [
   'CLAUDE.md',
   '.github/copilot-instructions.md',
   'openapi/README.md',
+  'scripts/agents/README.md',
+  'scripts/contracts/README.md',
 ]
 
 export function collectDocumentFiles() {

@@ -17,6 +17,10 @@
 
 ## 2. 상태와 전이
 
+공연목록은 2026-09-06 사용자 확인으로 진입 즉시 조회한다. 기간 기준은 Notion의 공연일·등록일·최근업데이트일이다. 공연장은 한 개만 draft로 선택하고 삭제 후 재선택한다. 검색 시 URL에 commit하고 page를 초기화한다. 초기화는 Notion대로 조건을 비우고 검색 전 상태로 돌아간다(`searched: false`, 다시 검색하면 제거). 콘텐츠의 진입 정책은 이 답으로 확정하지 않는다.
+
+`PerformanceListScreen`은 이 전이를 reference query source와 검증하며 실 API·공연장 원격 조회·공연 상세는 미구현이다. fixture 결과는 제품 데이터나 서버 계약의 증거가 아니다.
+
 | 상태 | 소유자 |
 | --- | --- |
 | 목록 결과·상세 facts | Query |
@@ -29,7 +33,8 @@
 콘텐츠 행 선택 → 사용 상태 선택 → 미선택/필수 입력 검사 → 변경 호출 직전
 공연목록 행 확인 → 조회 목적지 확정(행 활성화 방식은 후보)
 입장안내 편집 → 파일·반복 행 변경 → 검증 → 저장 확인 → 호출 직전
-취소 → dirty이면 useUnsavedChangesGuard.leave() 질문 → 이동 또는 유지
+독립 수정 화면의 취소 → dirty일 때 확인 → 이동 또는 유지
+상세 안 local 편집 종료·팝업 닫기 → 추가 dirty 취소 경고 없이 기존 동작
 미리보기 열기 → 현재 화면이 가진 이미지·영상 표시 → 닫기
 ```
 
@@ -62,7 +67,7 @@ values·dirty·per-row error를 한 폼이 소유하고, caller가 row schema·�
 | 기간 입력 | `PeriodField` 구현, preset/default는 caller 소유 | 채택 — [filter-fields.md](../../../.agents/skills/shared-ui-contract/references/filter-fields.md):11,19 |
 | 다중선택 필터 | `CheckboxTree(emptyMeansAll)` 구현 | 채택 — [list-workflow.md](../../../.agents/skills/feature-contract/references/list-workflow.md):20 |
 | 섹션 disclosure | `SectionCard(collapsible)` 구현 | 채택 — form-workflow.md:19,28 |
-| 취소와 dirty 이탈 | `useUnsavedChangesGuard.leave()` 구현 | 채택 — form-workflow.md:19 |
+| 취소와 dirty 이탈 | 독립 등록·수정 화면에만 dirty 취소 확인; 상세 inline/dialog local 닫기는 제외 | 2026-09-07 시나리오 채택 — [form-workflow](../../../.agents/skills/feature-contract/references/form-workflow.md#cancel-and-tabs). 해당 공연 편집 surface의 실제 조립·검증은 미완료 |
 | 반복 행·파일 workflow | kind D와 file boundary가 feature 소유 | 커버됨 — table-composition.md:14, file-workflow.md:3-13 |
 | 언어 tab | 다섯 shared 후보 중 `Tabs` | 후보 유지 — [primitives-and-tokens.md](../../../.agents/skills/shared-ui-contract/references/primitives-and-tokens.md):21 |
 | 미리보기 없음의 `-` | 다섯 shared 후보 중 빈 값 표현 | 후보 유지 — primitives-and-tokens.md:25 |
@@ -73,4 +78,3 @@ values·dirty·per-row error를 한 폼이 소유하고, caller가 row schema·�
 2. 업로드 지원확장자 원문과 파일 크기 상한.
 3. 언어 tab이 URL로 공유·복원돼야 하는지와 panel 전환 시 입력 보존 정책.
 4. 콘텐츠 `등록전`/`등록후` 상태의 의미와 미리보기 대상.
-

@@ -1,3 +1,8 @@
+/**
+ * 탈퇴 정보와 활동 목록·선택삭제를 표시하는 상세 화면이다.
+ * 활동 조회는 탭·검색·페이지 상태를 가진 이 화면이 자기 Query로 실행한다. 비어 있는 업데이트 이력을 실제 없음으로 단정하지 않는다.
+ */
+import { maskEmail } from "@/shared/lib/mask-contact";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { PageHeader } from "@/shared/ui/patterns/PageHeader";
@@ -6,25 +11,20 @@ import { DetailField } from "@/shared/ui/patterns/DetailField";
 import { UpdateHistory } from "@/shared/ui/patterns/UpdateHistory";
 import {
   MemberActivitySection,
-  type MemberActivityRow,
   type MemberActivitySearch,
   type MemberActivityDelete,
 } from "../detail/activity/MemberActivitySection";
-import { maskMemberEmail } from "../model/member-profile";
+import { useMemberActivity } from "../detail/activity/useMemberActivity";
+
 import type { WithdrawnMemberRow } from "../model/member-records";
 import { formatMemberInstant } from "../model/format-member-instant";
 
 export function WithdrawnMemberDetailScreen({
   member,
-  selectActivity,
   onDeleteActivity,
 }: {
   readonly member: WithdrawnMemberRow;
-  readonly selectActivity: (query: MemberActivitySearch) => {
-    rows: readonly MemberActivityRow[];
-    total: number;
-  };
-  readonly onDeleteActivity: (input: MemberActivityDelete) => void;
+  readonly onDeleteActivity: (request: { memberId: string; input: MemberActivityDelete }) => void;
 }) {
   const { t } = useTranslation("members");
   const [query, setQuery] = useState<MemberActivitySearch>({
@@ -33,7 +33,7 @@ export function WithdrawnMemberDetailScreen({
     page: 1,
     pageSize: 100,
   });
-  const activity = selectActivity(query);
+  const activity = useMemberActivity(member.id, query);
   return (
     <>
       <PageHeader title={t("secondary.withdrawnDetail")} />
@@ -43,7 +43,7 @@ export function WithdrawnMemberDetailScreen({
             {t(`accountStatus.${member.accountStatus}`)}
           </DetailField>
           <DetailField label={t("columns.email")}>
-            {maskMemberEmail(member.email)}
+            {maskEmail(member.email)}
           </DetailField>
           <DetailField label={t("columns.joinedAt")}>
             {formatMemberInstant(member.joinedAt)}
@@ -61,11 +61,10 @@ export function WithdrawnMemberDetailScreen({
       </SectionCard>
       <SectionCard title={t("activity.title")}>
         <MemberActivitySection
-          rows={activity.rows}
-          total={activity.total}
+          data={activity}
           query={query}
           onSearch={setQuery}
-          onDelete={onDeleteActivity}
+          onDelete={(input) => onDeleteActivity({ memberId: member.id, input })}
         />
       </SectionCard>
       <SectionCard title={t("detail.history")}>

@@ -1,3 +1,7 @@
+/**
+ * 소명 목록의 선택 대상과 일괄변경 값을 검증하고 확인 뒤 업무 요청을 전달한다.
+ * 실제 API에서도 이 입력 절차는 유지하며 서버의 부분 성공·상태 변경 결과는 현재 구현하지 않았다.
+ */
 import { useTranslation } from "react-i18next";
 import { Select } from "@/shared/ui/primitives/Select";
 import { CheckboxTree } from "@/shared/ui/primitives/CheckboxTree";
@@ -7,7 +11,7 @@ import {
   BulkActionDialogs,
   SelectionAlert,
 } from "@/shared/ui/patterns/BulkActionDialogs";
-import { useMemberListActions } from "../list/useMemberListActions";
+import { useMemberListActions } from "../list/model/useMemberListActions";
 
 export interface AppealBulkChange {
   readonly ids: readonly string[];

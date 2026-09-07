@@ -1,3 +1,7 @@
+/**
+ * 운영자 조회 요청 조건 변환과 생성 API를 실행하는 query options를 선언한다.
+ * 실제 API에서도 남는 연결부다. endpoint·DTO는 OpenAPI에 맞춰 교체하고, 화면의 선택/폼 상태는 이 파일에 넣지 않는다.
+ */
 import {
   get8,
   getAgencies,
@@ -17,9 +21,10 @@ import type { UiLocale } from '@/shared/i18n/locale';
 import { nonEmptyArray } from '@/shared/lib/search';
 import { blockingProgress, inlineProgress } from '@/api/query-meta';
 import { queryOptions } from '@tanstack/react-query';
-import type { ManagerSearch } from '../list/search-schema';
+import type { ManagerSearch } from '../list/model/search-schema';
 import { managerKeys } from './keys';
 
+/** 확정 화면 검색값을 기존 API 필드명과 빈 배열 생략 규칙으로 변환한다. 실제 API에서도 필요한 요청 mapper다. */
 export function toManagerListParams(search: ManagerSearch): GetList8Params {
   const keywords = nonEmptyArray(search.keywords);
   const types = nonEmptyArray(search.types);
@@ -43,6 +48,7 @@ export function toManagerListParams(search: ManagerSearch): GetList8Params {
   };
 }
 
+/** 같은 변환 params를 캐시 키와 생성 API 호출에 함께 사용해 다른 검색 결과가 섞이지 않게 한다. */
 export function managerListQuery(locale: UiLocale, search: ManagerSearch) {
   const params = toManagerListParams(search);
   return queryOptions({
@@ -51,6 +57,7 @@ export function managerListQuery(locale: UiLocale, search: ManagerSearch) {
       getList8(params),
   });
 }
+/** 표시용 상세를 조회한다. 수정용 원본 조회와 캐시를 구분한다. */
 export function managerDetailQuery(locale: UiLocale, id: string) {
   return queryOptions({
     queryKey: managerKeys.detail(locale, id),
@@ -59,6 +66,7 @@ export function managerDetailQuery(locale: UiLocale, id: string) {
   });
 }
 
+/** 목록 검색 전에도 필요한 운영자 유형 옵션을 독립 캐시로 조회한다. */
 export function managerTypeOptionsQuery(locale: UiLocale) {
   return queryOptions({
     queryKey: managerKeys.typeOptions(locale),
@@ -68,6 +76,7 @@ export function managerTypeOptionsQuery(locale: UiLocale) {
   });
 }
 
+/** 수정 초기값용 상세를 조회한다. 편집 중 초기값 재주입을 피하는 캐시 정책을 이 조회가 소유한다. */
 export function managerEditDetailQuery(locale: UiLocale, id: string) {
   return queryOptions({
     queryKey: managerKeys.editDetail(locale, id),
@@ -97,6 +106,7 @@ export function managerPermissionOptionsQuery(
   });
 }
 
+/** 기획사 선택용 원본 옵션을 조회한다. value/label 변환은 옵션 소비 훅에서 한다. */
 export function managerAgencyOptionsQuery(locale: UiLocale) {
   return queryOptions({
     queryKey: managerKeys.agencyOptions(locale),

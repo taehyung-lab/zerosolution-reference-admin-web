@@ -77,17 +77,17 @@ describe('router 진입', () => {
   it('역전된 Manager 기간만 URL에서 제거하고 다른 정상 검색값은 보존한다', async () => {
     setAccessToken('token-1')
     const { router } = renderAt(
-      '/managers?startDateTime=2026-09-01T00%3A00%3A00.000Z&endDateTime=2026-08-31T23%3A59%3A59.999Z&periodType=UPDATED_AT&sortDirection=ASC',
+      '/managers?startDateTime=2026-09-01T00%3A00%3A00.000Z&endDateTime=2026-08-31T23%3A59%3A59.999Z&periodType=lastAccessAt&direction=asc',
     )
 
     await waitFor(() =>
       expect(router.state.location.href).toBe(
-        '/managers?periodType=UPDATED_AT&sortDirection=ASC',
+        '/managers?periodType=lastAccessAt&direction=asc',
       ),
     )
     expect(router.state.location.search).toEqual({
-      periodType: 'UPDATED_AT',
-      sortDirection: 'ASC',
+      periodType: 'lastAccessAt',
+      direction: 'asc',
     })
   })
 })

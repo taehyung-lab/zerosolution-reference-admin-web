@@ -103,12 +103,14 @@
 | 저장 | 흐름 | 이탈 계약 | 조립 |
 | --- | --- | --- | --- |
 | 페이지 폼(등록·수정) | 확인 alert → 저장 → 완료 alert(:81) | Router blocker, dirty일 때만, 두 문장 | `useSaveForm`; API 직전만 다루는 회원 등록은 `useForm`+확인 |
-| 상세 안 인라인 폼(회원상담) | 확인 없이 저장 후 갱신(:43) | Router 이동은 blocker, local 이탈은 `guard.close`; dirty만 확인 | `MemberCounselForm` + 어댑터 직접, 신규·기존 입력 경계 구현 |
-| dialog 안 폼(SMS·이메일 발송, 비밀번호 변경) | 보내기/확인 → 완료 alert(:83, notion/04-members.md:5) | Router 이동은 blocker, 닫기는 `guard.close`; dirty만 확인 | 독립 messaging feature 및 `MemberActionDialog`에서 입력 경계 구현 |
+| 상세 안 인라인 폼(회원상담) | 확인 없이 저장 후 갱신(:43) | 2026-09-07 시나리오: local 취소는 dirty 경고 없이 기존 취소 동작. Router 이동 보호는 유지 | `MemberCounselForm` + 어댑터 직접; local 취소 경고 제외 반영 |
+| dialog 안 폼(SMS·이메일 발송, 비밀번호 변경) | 보내기/확인 → 완료 alert(:83, notion/04-members.md:5) | 2026-09-07 시나리오: 닫기는 dirty 경고 없이 기존 닫기 동작. Router 이동 보호는 유지 | 독립 messaging feature 및 `MemberActionDialog`; local 취소 경고 제외 반영 |
 
 셋을 한 훅의 옵션으로 흡수하면 `mode`가 생기고 그것이 곧 demotion 신호다([promotion.md](../../../.agents/skills/shared-ui-contract/references/promotion.md):40). 갈라 두는 것이 설계다. `[추론]`
 
-**(e) 이탈 가드는 이동과 local 닫기를 구분한다.** 상세·팝업 안 폼이라도 route 이탈은 Router blocker가 맡는다. 같은 route 안 닫기·편집 종료는 `guard.close(discard)`가 맡고, dirty일 때만 확인하며 취소하면 입력을 유지한다(2026-09-05 사용자 결정). 2026-09-06 Chromium에서 상담+SMS 동시 dirty 뒤로가기에 확인이 두 번 뜨는 결함을 재현했다. `UnsavedChangesProvider`로 route 확인을 한곳에 모은 뒤 한 번 승인→목록 이동, 질문 취소→입력 유지까지 실측했다. local 닫기는 각 폼에 남는다. `[확인]`
+**(e) 취소 경고 대상과 route 이동을 구분한다.** 2026-09-07 사용자 결정으로 dirty 취소 경고는 독립 등록·수정 화면에만 적용한다. 상세 안 상담 신규/수정과 SMS·이메일·비밀번호 등 action dialog는 dirty여도 추가 취소 경고 없이 기존 local 취소/닫기를 실행한다. 공용 적용 범위의 정본은 [form-workflow.md의 Cancel and tabs](../../../.agents/skills/feature-contract/references/form-workflow.md#cancel-and-tabs)다. 현재 consumer에 적용했다. `crud-reference.spec.ts`에서 상담 수정 취소 시 신규 초안 보존, SMS 취소·×·Escape·바깥 클릭의 경고·요청 없음, 상담+SMS dirty 뒤로가기 확인 1회를 Chromium으로 검증했다(2026-09-07). 이번 취소 범위 결정으로 LNB·뒤로가기 보호를 제거하지 않는다.
+
+과거 증거: 2026-09-05에는 local dirty 보호까지 확대했고, 2026-09-06에는 상담+SMS 동시 dirty 뒤로가기 확인이 두 번 뜨는 결함을 `UnsavedChangesProvider`로 한 번에 모아 검증했다. 이 검증은 기존 동작의 기록이며 새 취소 시나리오의 구현 완료 증거가 아니다. `[확인]`
 
 **(f) 오류 표면의 거처는 요청 하나가 아니라 요청의 자리가 정한다.** 배치 판정은 `resolveErrorOutcome(context, kind)` 하나다([error-outcome.ts](../../../src/api/error-outcome.ts):25-38). 이 계열의 자리는 다섯이다: 목록 결과 · 상세(DetailStateBoundary) · **자식 목록(그 절 안에서 끝나고 부모를 다시 쓰지 않는다** — [table-composition.md](../../../.agents/skills/feature-contract/references/table-composition.md):21) · 폼 필드(`onServer`) · 세션·권한(incident boundary). **여섯 번째가 이 계열에서 처음 생긴다: bulk의 부분 성공.** "20건 중 3건 실패"는 `ApiError`가 아니라 **성공 응답 안의 사실**이라 4-outcome의 대상이 아니다. 계약은 "응답이 행 단위 결과를 노출할 때만 보고한다"고 잠갔을 뿐(bulk-actions.md:9) 표면의 거처를 말하지 않는다. Notion이 확정한 것은 성공 경로의 3단계 alert뿐이다(:94). 서버 계약 전에는 표면을 만들지 않는다(미확인 3). `[추론]`
 
@@ -140,10 +142,10 @@
 | 상세 안 인라인 폼(회원상담) | 섹션 하나가 자기 폼이고 성공 시 상세를 invalidate한다고 이미 선언 | detail-workflow.md:11 | 커버됨 |
 | locale 전환 시 이미 뜬 폼 오류 | 어댑터가 `fieldMeta.errors`를 그대로 읽고 `onServer`는 다음 submit까지 남는다. **오류 문자열의 locale 재계산을 다룬 문장이 없다** | [form-fields.md](../../../.agents/skills/shared-ui-contract/references/form-fields.md):7,10, form-workflow.md:36 | **수정 필요** — F13이 닿는 자리 |
 | dialog 안 폼(SMS·이메일 발송) | Dialog primitive의 feature 조립, `closeLabel`과 opener focus 복원 구현 | [dialogs.md](../../../.agents/skills/shared-ui-contract/references/dialogs.md) | messaging feature 소비 및 회원/운영자 route 연결 구현, 실발송 제외 |
-| **dialog·인라인 폼의 dirty 이탈** | Router 이동과 `close(discard)`를 같은 guard에서 확인하며 취소 시 값 유지 | [UnsavedChangesGuard.tsx](../../../src/shared/ui/form/UnsavedChangesGuard.tsx), [통합 테스트](../../../src/shared/ui/form/UnsavedChangesGuard.integration.test.tsx) | 상담·메시지·회원 action 폼 소비와 동시 dirty 단일 확인 검증됨 |
+| **dialog·인라인 폼의 dirty 이탈** | local 취소 경고 제외, route 보호 유지 | [form-workflow.md](../../../.agents/skills/feature-contract/references/form-workflow.md#cancel-and-tabs), [기존 통합 테스트](../../../src/shared/ui/form/UnsavedChangesGuard.integration.test.tsx) | 2026-09-07 현재 consumer 구현 및 Chromium 대조; 실서버 연결은 제외 |
 | 행 선택과 전체선택 | 선택 소유자가 "목록 화면 또는 feature-local table adapter"로 이미 선언됐고 `DataTable`은 선택을 소유하지 않는다 | list-workflow.md:33, bulk-actions.md:5, data-table.md:11 | feature 소유 |
 | **선택의 수명**(검색·정렬·페이지 전환 시 유지/폐기) | 현재 페이지의 선택 가능 행만 전체선택하고 결과 정체성 변경·bulk 성공 때 해제하며 같은 조건 refetch·bulk 실패 때 유효 ID를 유지한다 | [bulk-actions.md](../../../.agents/skills/feature-contract/references/bulk-actions.md) | 커버됨 — 2026-09-04 사용자 답 |
-| bulk 실행 3단계 alert(미선택 오류→확인→완료) | `useSelectionGate`·`useBulkActionDialogs`·`BulkActionDialogs`를 members/managers가 소비한다. 대상·실행·완료 사실은 feature 소유 | [zero-sol-figma-analysis.md](../zero-sol-figma-analysis.md) | mechanic 공용 적용됨; 실제 성공 응답은 이번 범위 밖 |
+| bulk 실행 3단계 alert(미선택 오류→확인→완료) | `useSelectionGate`·`useConfirmation`·`BulkActionDialogs`를 members/managers가 소비한다. 대상·실행·완료 사실은 feature 소유 | [zero-sol-figma-analysis.md](../zero-sol-figma-analysis.md) | mechanic 공용 적용됨; 실제 성공 응답은 이번 범위 밖 |
 | **bulk 부분 성공의 표면** | "응답이 행 단위 결과를 노출할 때만 보고한다"만 있고 거처는 없다. 4-outcome은 `ApiError` 축이라 성공 응답 안의 실패를 다루지 않는다 | bulk-actions.md:9, error-outcome.ts:25-38 | **아예 없음** (서버 계약 확정 전) |
 | bulk·다운로드 실행 중 진행 표면 | 버튼 pending만으로 시작하고 overlay 여부는 미확인이라고 이미 선언 | [blocking-progress.md](../../../.agents/skills/shared-ui-contract/references/blocking-progress.md):8 | 커버됨(미확인으로 잠금) |
 | 마스킹된 값의 렌더 | `DetailField`가 마스킹을 명시적으로 feature에 뒀고 컬럼 포맷도 feature다 | page-and-detail-surfaces.md:8, table-composition.md:26 | feature 소유 — 남은 것은 표시가 아니라 **해제 권한**(미확인 5) |
@@ -152,7 +154,7 @@
 | **권한에 따른 action 노출과 payload 제외** | 진입 가드 절차는 있으나 **권한 사실의 소유자가 없다.** `navigation.ts`는 계약 미확인 자리표시자다 | [router.md](../../../.agents/skills/feature-contract/references/router.md):33, [navigation.ts](../../../src/app/config/navigation.ts):1-3 | **아예 없음** |
 | shared/feature 경계 | shared는 feature·Router·Query·DTO·permission을 모르고 ESLint가 강제한다 | AGENTS.md:90, 0009:60 | 커버됨 |
 
-요약(2026-09-06): 등록·수정·상세·메시지·상담·활동정보를 요청 입력 경계까지 구현하고 focused 검사와 실제 Chromium 흐름을 대조 중이다. 예시 데이터는 `VITE_REFERENCE_SCENARIOS=true`에서만 조회하며 서버 응답·인증 성공을 만들지 않는다. bulk 부분 성공·보기/정렬 기억값·권한 사실은 제품 또는 서버 계약을 기다리며, API 이후 결과는 이번 완료 범위 밖이다. 공용 판정은 두 consumer만이 아니라 전체 제품의 반복 증거로 한다. `[확인]`
+요약(2026-09-06): 등록·수정·상세·메시지·상담·활동정보의 입력 callback을 업무별 요청 함수로 연결했다. 요청 함수는 한글 도달 로그를 남기며 focused 검사와 실제 Chromium 흐름을 대조한다. 예시 데이터는 환경 분기 없이 Query에서 조회하며 서버 응답·인증 성공을 만들지 않는다. bulk 부분 성공·보기/정렬 기억값·권한 사실은 제품 또는 서버 계약을 기다리며, API 이후 결과는 이번 완료 범위 밖이다. 공용 판정은 두 consumer만이 아니라 전체 제품의 반복 증거로 한다. `[확인]`
 
 ## 6. 미확인
 

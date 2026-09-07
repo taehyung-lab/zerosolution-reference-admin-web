@@ -26,7 +26,7 @@
     "allTooltip": "View and manage active members.",
     "help": "About all members"
   },
-  "breadcrumb": "Members > Active members > {{title}}",
+  "path": {"members": "Members", "active": "Active members"},
   "search": "Search",
   "reset": "Reset",
   "filters": {
@@ -75,7 +75,6 @@
     "restrictions": "Restrictions"
   },
   "result": {
-    "total": "Search results: {{count}}",
     "pageSize": "View",
     "sort": "Sort",
     "paginationLabel": "Pagination",

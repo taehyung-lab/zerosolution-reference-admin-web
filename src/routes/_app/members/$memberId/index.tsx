@@ -1,18 +1,19 @@
-import { MessageDialog } from "@/features/messaging/MessageDialog";
-import { messagePolicyFixture } from "@/features/messaging/fixtures/message-policy";
-import { PageHeader } from "@/shared/ui/patterns/PageHeader";
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { useMemberDetail } from "@/features/members/detail/useMemberDetail";
+import { DetailStateBoundary } from "@/shared/ui/patterns/DetailStateBoundary";
+import { useMessageComposer } from "@/features/messaging/useMessageComposer";
+import {
+  memberMessageRecipients,
+  memberProfileContact,
+} from "@/features/members/model/member-message";
+import { requestMessageSend } from "@/features/messaging/message-request";
+import { requestMemberDetail } from "@/features/members/detail/member-detail-requests";
+import { MessageComposerDialog } from "@/features/messaging/MessageComposerDialog";
+import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
-import { env } from "@/env";
 import { MemberDetailScreen } from "@/features/members/detail/MemberDetailScreen";
-import {
-  findMemberFixture,
-  selectMemberActivityFixture,
-  memberCounselFixtures,
-} from "@/features/members/fixtures/members";
-import { DevelopmentNotice } from "@/app/shell/DevelopmentNotice";
-import { useMemberActionRequest } from "@/features/members/list/useMemberActionRequest";
+import { useMemberActivity } from "@/features/members/detail/activity/useMemberActivity";
+import { useMemberCounselRecords } from "@/features/members/counsel/useMemberCounselRecords";
 import type { MemberActivitySearch } from "@/features/members/detail/activity/MemberActivitySection";
 
 export const Route = createFileRoute("/_app/members/$memberId/")({
@@ -20,49 +21,44 @@ export const Route = createFileRoute("/_app/members/$memberId/")({
 });
 
 function MemberDetailRoute() {
-  const { t } = useTranslation("members");
+  const { t: shared } = useTranslation("shared");
   const { memberId } = Route.useParams();
   const navigate = Route.useNavigate();
-  const [ready, setReady] = useState(false);
   const [activityQuery, setActivityQuery] = useState<MemberActivitySearch>({
     tab: "ticket",
     keyword: "",
     page: 1,
     pageSize: 100,
   });
-  const actions = useMemberActionRequest({
-    findMember: findMemberFixture,
-    onBulkChange: () => setReady(true),
-  });
-  if (!env.VITE_REFERENCE_SCENARIOS)
-    return (
-      <>
-        <PageHeader title={t("detail.title")} />
-        <p>{t("detail.contractPending")}</p>
-      </>
-    );
-  const member = findMemberFixture(memberId);
-  if (member === undefined) return notFound({ throw: true });
-  const activity = selectMemberActivityFixture(memberId, activityQuery);
+  const query = useMemberDetail(memberId);
+  const member = query.data;
+  const activity = useMemberActivity(memberId, activityQuery);
+  const counsel = useMemberCounselRecords(memberId);
+  // 발송 주소는 상세가 이미 조회한 회원 사실에서 온다. 목록 셀의 마스킹 값을 되돌리지 않는다.
+  const actions = useMessageComposer((channel, ids: readonly string[]) =>
+    memberMessageRecipients(
+      member === undefined ? [] : [memberProfileContact(member)],
+      channel,
+      ids,
+    ),
+  );
+  if (member === undefined) return <DetailStateBoundary state={query.state} labels={{ error: shared('error.unexpected.body'), notFound: shared('error.notFound') }} retryLabel={shared('error.unexpected.retry')} onRetry={() => { void query.retry(); }}>{null}</DetailStateBoundary>;
   // TRANSPLANT_PENDING_MEMBER_DETAIL_CONTRACT: callbacks stop at validated request input; no fake persistence or authentication.
   return (
     <>
-      <DevelopmentNotice ready={ready} />
-      {actions.message === undefined ? null : (
-        <MessageDialog
-          {...actions.message}
-          policy={messagePolicyFixture(actions.message.channel)}
-          onClose={actions.closeMessage}
-          onConfirm={() => setReady(true)}
-        />
-      )}
+      <MessageComposerDialog
+        onConfirm={requestMessageSend}
+        request={actions.message}
+        onClose={actions.closeMessage}
+      />
       <MemberDetailScreen
+        onRequest={requestMemberDetail}
         key={memberId}
         member={member}
         activity={activity}
         activityQuery={activityQuery}
         onActivitySearch={setActivityQuery}
-        counsel={memberCounselFixtures}
+        counsel={counsel}
         history={[]}
         operatorName="REFERENCE"
         onEdit={() => {
@@ -71,10 +67,7 @@ function MemberDetailRoute() {
             params: { memberId },
           });
         }}
-        onMessage={(type) =>
-          actions.onActionRequest({ type, targetIds: [memberId] })
-        }
-        onRequest={() => setReady(true)}
+        onMessage={(type) => actions.openMessage(type, [memberId])}
       />
     </>
   );

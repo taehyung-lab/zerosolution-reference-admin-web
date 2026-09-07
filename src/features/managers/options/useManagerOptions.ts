@@ -1,3 +1,7 @@
+/**
+ * 운영자 유형·권한·기획사 옵션을 각각 조회하고 서버 레코드를 선택 UI 값/라벨로 변환한다.
+ * 실제 API에서도 필요한 feature 연결부다. 옵션 의미·선행 유형·locale별 캐시를 도메인 없는 공용 훅으로 숨기지 않는다.
+ */
 import { useLocale } from '@/shared/i18n/locale-context';
 import { useQuery } from '@tanstack/react-query';
 import type { ManagerPermissionScope } from '../api/manager-form-contract';

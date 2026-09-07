@@ -1,11 +1,11 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { TestLocaleProvider } from "@/test/locale";
+import { TestQueryLocaleProvider as TestLocaleProvider } from "@/test/query-locale";
 import { MemberAccessListScreen } from "./MemberAccessListScreen";
 import { WithdrawnMemberListScreen } from "../withdrawn/WithdrawnMemberListScreen";
 import type { MemberRecordSearch } from "../records/member-record-search";
 
-vi.mock("../records/member-record-data", () => ({
+vi.mock("../fixtures/record-pages", () => ({
   accessData: () => ({
     rows: [
       {
@@ -50,7 +50,7 @@ function choose(label: string, option: string) {
 }
 
 describe("member access and withdrawn list boundaries", () => {
-  it("preserves selection while editing a draft and clears it after committed view changes", () => {
+  it("preserves selection while editing a draft and clears it after committed view changes", async () => {
     const onDownload = vi.fn();
     const view = (search: MemberRecordSearch) => (
       <TestLocaleProvider>
@@ -63,7 +63,8 @@ describe("member access and withdrawn list boundaries", () => {
       </TestLocaleProvider>
     );
     const { rerender } = render(view({ periodType: "accessedAt" }));
-    const selected = within(screen.getByRole("table")).getAllByRole(
+    await screen.findByRole("table");
+    const selected = within(await screen.findByRole("table")).getAllByRole(
       "checkbox",
     )[1]!;
     fireEvent.click(selected);
@@ -83,7 +84,7 @@ describe("member access and withdrawn list boundaries", () => {
     ).not.toBeChecked();
   });
 
-  it("keeps a download selection alert mounted when search is reset", () => {
+  it("keeps a download selection alert mounted when search is reset", async () => {
     const view = (search: MemberRecordSearch) => (
       <TestLocaleProvider>
         <MemberAccessListScreen
@@ -95,6 +96,7 @@ describe("member access and withdrawn list boundaries", () => {
       </TestLocaleProvider>
     );
     const { rerender } = render(view({ periodType: "accessedAt" }));
+    await screen.findByRole("table");
     choose("다운로드 범위", "선택한 항목");
     fireEvent.click(screen.getByRole("button", { name: "다운로드" }));
     expect(screen.getByRole("dialog")).toBeInTheDocument();
@@ -109,7 +111,7 @@ describe("member access and withdrawn list boundaries", () => {
     expect(screen.getByRole("button", { name: "등록" })).toBeInTheDocument();
   });
 
-  it("keeps withdrawn row activation separate from checkbox and commits header sorting", () => {
+  it("keeps withdrawn row activation separate from checkbox and commits header sorting", async () => {
     const onActivate = vi.fn();
     const onSearchChange = vi.fn();
     render(
@@ -122,7 +124,7 @@ describe("member access and withdrawn list boundaries", () => {
         />
       </TestLocaleProvider>,
     );
-    const table = screen.getByRole("table");
+    const table = await screen.findByRole("table");
     fireEvent.click(within(table).getAllByRole("checkbox")[1]!);
     expect(onActivate).not.toHaveBeenCalled();
     fireEvent.click(within(table).getAllByRole("row")[1]!);

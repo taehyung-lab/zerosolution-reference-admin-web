@@ -32,6 +32,7 @@ import {
   findUnexpectedSeedTests,
   listSeedFiles,
   listTransplantManifestFiles,
+  SEED_BUNDLES,
   validateSeedBundles,
   validateTransplantManifest,
 } from './seed.mjs'
@@ -353,6 +354,7 @@ describe('contracts check CLI wiring', () => {
   const projectRoot = resolve(import.meta.dirname, '../..')
   const excludedDirectories = new Set([
     '.git',
+    '.ai-work',
     '.serena',
     'dist',
     'node_modules',
@@ -396,7 +398,7 @@ describe('contracts check CLI wiring', () => {
     expect(result.status).toBe(0)
     expect(result.stdout).toContain('CLAUDE.md')
     expect(result.stdout).toContain('Copilot')
-    expect(result.stdout).toContain('16개 4-part bundle')
+    expect(result.stdout).toContain(`${SEED_BUNDLES.length}개 4-part bundle`)
   })
 
   it('fails through the real CLI when the Claude import is invalid', () => {

@@ -16,7 +16,7 @@ Use `PeriodFilterField` or `KeywordFilterField` when the whole row matches. Use 
 
 The optional select slot (`FilterSelectSlot<TValue>`: `label`, `value`, `options`, `onValueChange`) is a controlled string surface only: accessible label, current value, options, and change callback. It does not interpret an enum or choose a default. Labels and options remain caller-owned.
 
-Preset values usually come from `standardPeriodPresetValues` and labels from `usePeriodPresetLabels()` ([shared-values.md](shared-values.md), [i18n.md](i18n.md)); the default preset stays with the caller.
+A caller declares the preset values it adopts — `usePeriodPresets(standardPeriodPresetValues)` for the standard eight, or a subset — and passes the returned `presets`/`customLabel` straight through ([i18n.md](i18n.md)). The argument at the call site is the opt-in; the default preset still stays with the caller. A subset needs nothing else: `usePeriodDraft` may infer a preset the subset does not render, and `PeriodField` then checks no radio, which is the same presentation `CUSTOM` already gets.
 
 ## State boundary
 

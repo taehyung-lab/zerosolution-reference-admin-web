@@ -45,7 +45,10 @@ const schemas = {
   }),
 };
 
-/** One manager action owns one transient form; only its schema's fields reach the callback. */
+/**
+ * 운영자 상세 액션 하나의 입력·검증·이탈 방지를 소유하는 폼이다.
+ * 실제 API에서도 입력 절차는 유지하며 해당 액션의 필드만 callback에 전달한다.
+ */
 export function ManagerActionForm({
   action,
   managerId,
@@ -84,7 +87,7 @@ export function ManagerActionForm({
           ?.focus();
     },
     onSubmit: ({ value }) => {
-      // Current-password verification/reuse and withdrawal verification belong to the server.
+      // 현재 비밀번호 확인·재사용 검사와 탈퇴 재인증의 성공 여부는 서버가 판정한다.
       switch (action) {
         case 'reject':
           onActionRequest({
@@ -128,7 +131,7 @@ export function ManagerActionForm({
       <Dialog
         open
         onOpenChange={(open) => {
-          if (!open) guard.close(onClose);
+          if (!open) guard.close(onClose, { when: false });
         }}
         title={t(`actions.${action}`)}
         description={t(`actions.${action}Description`)}
@@ -186,7 +189,7 @@ export function ManagerActionForm({
             <Button type="submit">
               {action === 'reject' ? t('actions.rejectConfirm') : shared('formSave.confirm')}
             </Button>
-            <Button type="button" onClick={() => guard.close(onClose)}>
+            <Button type="button" onClick={() => guard.close(onClose, { when: false })}>
               {shared('formAction.cancel')}
             </Button>
           </div>

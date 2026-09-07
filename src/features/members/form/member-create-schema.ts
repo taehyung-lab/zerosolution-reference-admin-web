@@ -1,4 +1,9 @@
+/**
+ * 회원 등록의 입력 규칙·빈 초기값·오류 포커스 순서를 정의한다.
+ * 실제 API에서도 필요한 UI 검증이다. 중복 회원 여부나 비밀번호의 서버 이력 검사는 이 스키마가 대신하지 않는다.
+ */
 import { z } from "zod";
+import { hasRepeatedOrSequentialAsciiTriplet } from "@/shared/lib/ascii-triplet";
 import { i18n } from "@/shared/i18n/i18n";
 import { formatDate } from "@/shared/lib/datetime";
 
@@ -6,20 +11,6 @@ const message = (field: string) => ({
   error: () => i18n.t(`members:form.errors.${field}`),
 });
 
-function hasConsecutiveCharacters(value: string) {
-  const characters = value.toLowerCase();
-  for (let index = 0; index < characters.length - 2; index += 1) {
-    const triplet = characters.slice(index, index + 3);
-    if (!/^[a-z]{3}$|^[0-9]{3}$/.test(triplet)) continue;
-    const first = triplet.charCodeAt(0);
-    const second = triplet.charCodeAt(1);
-    const third = triplet.charCodeAt(2);
-    if (first === second && second === third) return true;
-    if (second - first === third - second && Math.abs(second - first) === 1)
-      return true;
-  }
-  return false;
-}
 
 export const memberPasswordSchema = z
   .string()
@@ -32,7 +23,7 @@ export const memberPasswordSchema = z
       ).length >= 3,
     message("password"),
   )
-  .refine((value) => !hasConsecutiveCharacters(value), message("password"));
+  .refine((value) => !hasRepeatedOrSequentialAsciiTriplet(value), message("password"));
 
 export const memberCreateSchema = z.object({
   email: z

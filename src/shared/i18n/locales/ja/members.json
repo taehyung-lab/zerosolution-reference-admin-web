@@ -26,7 +26,7 @@
     "allTooltip": "アクティブ会員を照会・管理します。",
     "help": "全会員について"
   },
-  "breadcrumb": "会員 > アクティブ会員 > {{title}}",
+  "path": {"members": "会員", "active": "アクティブ会員"},
   "search": "検索",
   "reset": "初期化",
   "filters": {
@@ -75,7 +75,6 @@
     "restrictions": "活動制限"
   },
   "result": {
-    "total": "検索結果：{{count}}",
     "pageSize": "表示",
     "sort": "並び順",
     "paginationLabel": "ページ移動",

@@ -1,3 +1,8 @@
+/**
+ * 활동 탭·검색·페이지와 현재 행 선택, 선택삭제 확인을 표시하는 상세 내부 목록이다.
+ * 탭·검색·선택 상태는 API 이후에도 필요하며 활동 데이터 조회/삭제는 부모가 연결한 callback이 소유한다.
+ */
+import { useConfirmation } from "@/shared/lib/use-confirmation";
 import { useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -6,10 +11,10 @@ import {
   formatTimeInTimeZone,
 } from "@/shared/lib/datetime";
 import { usePageRowSelection } from "@/shared/lib/use-page-row-selection";
+import { ListResult, type ListResultData } from "@/shared/ui/patterns/ListResult";
 import {
   BulkActionDialogs,
   SelectionAlert,
-  useBulkActionDialogs,
   useSelectionGate,
 } from "@/shared/ui/patterns/BulkActionDialogs";
 import { Pagination } from "@/shared/ui/patterns/Pagination";
@@ -40,6 +45,10 @@ export interface MemberActivityRow {
   readonly bookingNumber: string;
   readonly seatNumber: string;
 }
+/** 상세 안의 페이지 목록이 소비하는 조회 사실이다. 빈 페이지와 조회 실패를 같은 것으로 만들지 않는다. */
+export interface MemberActivityData extends ListResultData<MemberActivityRow> {
+  readonly total: number;
+}
 export interface MemberActivityDelete {
   readonly tab: Exclude<MemberActivityTab, "entry">;
   readonly ids: readonly string[];
@@ -50,14 +59,12 @@ function dateTime(instant: string) {
 }
 
 export function MemberActivitySection({
-  rows,
-  total,
+  data,
   query,
   onSearch,
   onDelete,
 }: {
-  readonly rows: readonly MemberActivityRow[];
-  readonly total: number;
+  readonly data: MemberActivityData;
   readonly query: MemberActivitySearch;
   readonly onSearch: (input: MemberActivitySearch) => void;
   readonly onDelete: (input: MemberActivityDelete) => void;
@@ -68,13 +75,19 @@ export function MemberActivitySection({
   const search = query;
   const [draft, setDraft] = useState("");
   const selection = usePageRowSelection({
-    rows,
+    rows: data.rows,
     getId: (row) => row.id,
     resetKey: JSON.stringify(search),
   });
   const gate = useSelectionGate(selection.selectedIds.length);
-  const deletion = useBulkActionDialogs({ run: onDelete });
+  const deletion = useConfirmation({ run: onDelete });
   const commit = onSearch;
+  const emptyText =
+    search.keyword !== ""
+      ? t("activity.noResults")
+      : search.tab === "entry"
+        ? t("activity.entryEmpty")
+        : t("activity.empty");
   const selectTab = (tab: MemberActivityTab) => {
     setDraft("");
     commit({ tab, keyword: "", page: 1, pageSize: 100 });
@@ -118,8 +131,10 @@ export function MemberActivitySection({
               const value = memberActivityTabs[next];
               if (value === undefined) return;
               selectTab(value);
-              tabs.current
-                ?.querySelectorAll<HTMLButtonElement>('[role="tab"]')[next]?.focus();
+              const buttons = tabs.current?.querySelectorAll<HTMLButtonElement>(
+                '[role="tab"]',
+              );
+              buttons?.[next]?.focus();
             }}
           >
             {t(`activity.tabs.${tab}`)}
@@ -176,15 +191,24 @@ export function MemberActivitySection({
             {t("activity.deleteSelected")}
           </Button>
         ) : null}
-        {rows.length === 0 ? (
-          <p role="status">
-            {search.keyword !== ""
-              ? t("activity.noResults")
-              : search.tab === "entry"
-                ? t("activity.entryEmpty")
-                : t("activity.empty")}
-          </p>
-        ) : (
+        <ListResult
+          data={data}
+          copy={{
+            // 이 목록에는 검색 시작 게이트가 없어 notSearched에 도달하지 않는다.
+            notSearched: emptyText,
+            empty: emptyText,
+          }}
+          footer={
+            <Pagination
+              page={search.page}
+              totalPages={Math.max(1, Math.ceil(data.total / 100))}
+              onPageChange={(page) => commit({ ...search, page })}
+              ariaLabel={t("activity.pagination")}
+              previousLabel={t("activity.previous")}
+              nextLabel={t("activity.next")}
+            />
+          }
+        >
           <Table>
             <thead>
               <tr>
@@ -213,7 +237,7 @@ export function MemberActivitySection({
               </tr>
             </thead>
             <tbody>
-              {rows.map((row) => (
+              {data.rows.map((row) => (
                 <tr key={row.id}>
                   {search.tab !== "entry" ? (
                     <TableCell>
@@ -238,15 +262,7 @@ export function MemberActivitySection({
               ))}
             </tbody>
           </Table>
-        )}
-        <Pagination
-          page={search.page}
-          totalPages={Math.max(1, Math.ceil(total / 100))}
-          onPageChange={(page) => commit({ ...search, page })}
-          ariaLabel={t("activity.pagination")}
-          previousLabel={t("activity.previous")}
-          nextLabel={t("activity.next")}
-        />
+        </ListResult>
       </div>
     </div>
   );

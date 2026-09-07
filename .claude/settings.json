@@ -1,0 +1,27 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|bash|Edit|Write|MultiEdit|edit|create|apply_patch|exec_command|shell|powershell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR}/scripts/agents/cli.mjs\" hook PreToolUse",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR}/scripts/agents/cli.mjs\" hook Stop",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}

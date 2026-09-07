@@ -1,3 +1,7 @@
+/**
+ * 검증된 폼 값에서 허용된 필드만 선택하고 숫자/enum을 변환해 서버 DTO를 만든다.
+ * 실제 API에서도 필요한 요청 변환이다. 신규 계약에서 달라질 기획사 조건·빈값 표현은 이 경계에서 대조한다.
+ */
 import { managerFormTypes } from '../api/manager-form-contract';
 import type { ManagerCreateRequest, ManagerUpdateRequest } from '../api/manager-form-contract';
 import type { ManagerCreateValues, ManagerEditValues } from './manager-form-schema';

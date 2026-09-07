@@ -53,8 +53,9 @@ tab primitive는 controlled value·tab/tabpanel 접근성만 맡고, URL/local �
 권한 matrix는 `CheckboxTree(emptyMeansAll)`의 controlled leaf 대수를 채택하되 메뉴 계층, 행별 가능한 기능,
 권한 식별자와 payload는 접근권한 feature가 소유한다. `기능1~8`을 domain enum으로 만들지 않는다. `[확인]`
 
-회원 정책과 마케팅은 `SectionCard(collapsible)`·form adapter를 채택한다. 취소는
-`useUnsavedChangesGuard.leave()`를 쓰고, 반복 행은 kind D, 다국어는 editable table을 feature-local로
+회원 정책과 마케팅은 `SectionCard(collapsible)`·form adapter를 채택한다. dirty 취소 확인은
+독립 등록·수정 화면에만 적용하며, 단순히 설정 폼이나 편집 가능한 섹션이라는 이유로 붙이지 않는다
+([2026-09-07 취소 시나리오](../../../.agents/skills/feature-contract/references/form-workflow.md#cancel-and-tabs), 해당 설정 화면 구현 시 적용). 반복 행은 kind D, 다국어는 editable table을 feature-local로
 조립한다. `- 이하 생략 -`은 의미가 확인되기 전 paging이나 상한으로 해석하지 않는다. `[추론]`
 
 ## 5. 우리 공용 계약과의 대조
@@ -64,9 +65,11 @@ tab primitive는 controlled value·tab/tabpanel 접근성만 맡고, URL/local �
 | page/sub-tab | 다섯 shared 후보 중 `Tabs` | 후보 유지 — [primitives-and-tokens.md](../../../.agents/skills/shared-ui-contract/references/primitives-and-tokens.md):21 |
 | 화면별 권한 leaf | `CheckboxTree(emptyMeansAll)` 구현 | 채택 — [list-workflow.md](../../../.agents/skills/feature-contract/references/list-workflow.md):20 |
 | 접이식 설정 섹션 | `SectionCard(collapsible)` 구현 | 채택 — [form-workflow.md](../../../.agents/skills/feature-contract/references/form-workflow.md):19,28 |
-| 취소와 dirty 이탈 | `useUnsavedChangesGuard.leave()` 구현 | 채택 — form-workflow.md:19 |
+| 취소와 dirty 이탈 | 독립 등록·수정 화면의 dirty 취소에 한정; 설정 내부 local 편집은 자동 채택하지 않음 | 2026-09-07 시나리오 적용 대상 대조 필요 — [form-workflow](../../../.agents/skills/feature-contract/references/form-workflow.md#cancel-and-tabs) |
 | 반복 행·편집 표 | kind D, row schema·정책은 feature 소유 | 커버됨 — [table-composition.md](../../../.agents/skills/feature-contract/references/table-composition.md):14,27-30 |
 | 선택복사 | 안정 ID·검증·intent는 feature 소유 | 커버됨 — [bulk-actions.md](../../../.agents/skills/feature-contract/references/bulk-actions.md):3-9 |
+
+현재 운영자 consumer(2026-09-07): 등록·수정 dirty 취소 경고는 유지하고 `ManagerActionForm`의 local 취소 경고만 제외했다. `managers-form.smoke.spec.ts`는 clean 취소·dirty 취소 질문의 취소/확인·뒤로가기 문장 구분을, `ManagerDetailActions.test.tsx`는 거절 입력 취소의 무호출과 재입력 요청을 검증한다. 설정의 다른 편집 화면 구현 완료를 뜻하지 않는다.
 
 ## 6. 미확인
 
@@ -75,4 +78,3 @@ tab primitive는 controlled value·tab/tabpanel 접근성만 맡고, URL/local �
 3. 회원 정책 반복 사유의 최소·최대 개수와 다국어 표의 저장 단위·행 상한.
 4. 마케팅 인증 흐름과 조건부 필드의 정확한 request 계약.
 5. `- 이하 생략 -`이 행 상한·축약·paging 대체 중 무엇을 뜻하는지.
-

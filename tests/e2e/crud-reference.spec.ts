@@ -1,7 +1,5 @@
 import { expect, test } from '@playwright/test';
 
-const ready = '입력과 대상 확인이 끝났습니다. API는 호출하지 않았으며 데이터는 변경되지 않았습니다.';
-
 test('@reference appeal notification uses the saved result while unsaved processing is preserved', async ({ page }) => {
   const writes: string[] = [];
   page.on('request', (request) => { if (request.url().includes('/api/') && request.method() !== 'GET') writes.push(request.url()); });
@@ -33,10 +31,7 @@ test('@reference counsel edit cancellation preserves the new note, and reissue r
   const edit = page.getByRole('form', { name: '수정', exact: true });
   await edit.getByRole('textbox', { name: '상담내용 및 처리결과' }).fill('수정 초안');
   await edit.getByRole('button', { name: '취소', exact: true }).click();
-  await page.getByRole('dialog', { name: '알림', exact: true }).getByRole('button', { name: '취소', exact: true }).click();
-  await expect(edit.getByRole('textbox', { name: '상담내용 및 처리결과' })).toHaveValue('수정 초안');
-  await edit.getByRole('button', { name: '취소', exact: true }).click();
-  await page.getByRole('dialog', { name: '알림', exact: true }).getByRole('button', { name: '확인', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: '알림', exact: true })).toHaveCount(0);
   await expect(edit).toHaveCount(0);
   await expect(create.getByRole('textbox', { name: '상담내용 및 처리결과' })).toHaveValue('새 상담 초안');
   await page.getByRole('button', { name: '티켓재발권', exact: true }).click();
@@ -45,7 +40,7 @@ test('@reference counsel edit cancellation preserves the new note, and reissue r
   await print.getByRole('combobox', { name: '스마트프린터 선택' }).click();
   await page.getByRole('option', { name: '참고 프린터' }).click();
   await print.getByRole('button', { name: '테스트 발권' }).click();
-  await expect(page.getByText(ready)).toBeVisible();
+  await expect(print).toBeVisible();
   await print.getByRole('button', { name: '취소', exact: true }).last().click();
   await expect(create.getByRole('textbox', { name: '상담내용 및 처리결과' })).toHaveValue('새 상담 초안');
 });
@@ -90,7 +85,6 @@ test('@reference member list → detail → edit retains hidden restrictions and
   await expect(page.getByRole('checkbox', { name: '1:1문의' })).toHaveCount(0);
   await page.getByRole('button', { name: '저장', exact: true }).click();
   await page.getByRole('dialog').getByRole('button', { name: '확인', exact: true }).click();
-  await expect(page.getByText(ready)).toBeVisible();
   await page.getByRole('combobox', { name: '계정 상태' }).click();
   await page.getByRole('option', { name: '불량회원', exact: true }).click();
   await expect(page.getByRole('checkbox', { name: '1:1문의' })).toBeChecked();
@@ -99,14 +93,17 @@ test('@reference member list → detail → edit retains hidden restrictions and
 });
 
 test('@reference member detail activity deletion, empty search and section preservation', async ({ page }) => {
+  const requests: string[] = [];
+  page.on('console', (message) => { if (message.type() === 'log' && message.text().startsWith('[시나리오]')) requests.push(message.text()); });
   await page.goto('/members/example-flagged');
   await page.getByRole('button', { name: '선택삭제', exact: true }).click();
   await expect(page.getByRole('dialog')).toContainText('변경할 항목을 선택해주세요.');
   await page.getByRole('dialog').getByRole('button', { name: '확인' }).click();
+  expect(requests).toEqual([]);
   await page.getByRole('checkbox', { name: 'EXAMPLE-001 선택' }).check();
   await page.getByRole('button', { name: '선택삭제', exact: true }).click();
   await page.getByRole('dialog').getByRole('button', { name: '확인' }).click();
-  await expect(page.getByText(ready)).toBeVisible();
+  await expect.poll(() => requests).toEqual(['[시나리오] 회원 활동정보 선택삭제: 요청 입력 확인 → API 연결 대기']);
   await expect(page.getByRole('cell', { name: 'EXAMPLE-001', exact: true })).toBeVisible();
   await page.getByRole('tab', { name: '재관람', exact: true }).click();
   await expect(page.getByRole('checkbox', { name: 'EXAMPLE-001 선택' })).not.toBeChecked();
@@ -133,9 +130,10 @@ test('@reference dirty counsel and SMS ask once on browser back; local dismissal
   await expect(page.getByRole('textbox', { name: '받는 사람 1', exact: true })).toHaveValue('010-4000-5000');
   await page.getByRole('textbox', { name: '메시지 내용' }).fill('message draft');
   await page.keyboard.press('Escape');
-  const confirmation = page.getByRole('dialog').filter({ hasText: '입력을 취소하시겠습니까?' });
-  await confirmation.getByRole('button', { name: '취소', exact: true }).click();
-  await expect(page.getByRole('textbox', { name: '메시지 내용' })).toHaveValue('message draft');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.getByRole('textbox', { name: '상담내용 및 처리결과' })).toHaveValue('counsel draft');
+  await page.getByRole('button', { name: 'SMS', exact: true }).click();
+  await page.getByRole('textbox', { name: '메시지 내용' }).fill('message draft');
   await page.goBack();
   const navigation = page.getByRole('dialog').filter({ hasText: '화면을 이동할 경우' });
   await navigation.getByRole('button', { name: '취소', exact: true }).click();
@@ -155,7 +153,6 @@ test('@reference privacy and withdrawal stop at verification input, password mis
   await page.getByRole('dialog').getByRole('button', { name: '확인', exact: true }).click();
   await expect(page.getByRole('dialog')).toBeVisible();
   await page.getByRole('dialog').getByRole('button', { name: '취소', exact: true }).click();
-  await page.getByRole('dialog').filter({ hasText: '입력을 취소하시겠습니까?' }).getByRole('button', { name: '확인', exact: true }).click();
   await expect(page.getByText('gene***@example.test', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: '회원 탈퇴', exact: true }).click();
   await page.getByRole('textbox', { name: '탈퇴 사유' }).fill('짧음');
@@ -172,7 +169,7 @@ test('@reference manager states expose their own actions without changing the fi
   await expect(page.getByRole('button', { name: '비밀번호 변경', exact: true })).toBeDisabled();
   await page.getByRole('button', { name: '승인', exact: true }).click();
   await page.getByRole('dialog').getByRole('button', { name: '가입 승인하기', exact: true }).click();
-  await expect(page.getByText(ready)).toBeVisible();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(page.getByRole('button', { name: '승인', exact: true })).toBeVisible();
   await page.goto('/managers/example-rejected');
   await expect(page.getByRole('button', { name: '삭제', exact: true })).toBeVisible();
@@ -185,3 +182,20 @@ test('@reference manager states expose their own actions without changing the fi
   await page.getByRole('button', { name: '잠금해제', exact: true }).click();
   await expect(page.getByRole('dialog')).toBeVisible();
 });
+
+for (const dismissal of ['취소', '닫기', 'Escape', 'outside'] as const) {
+  test('@reference dirty SMS closes without cancellation warning: ' + dismissal, async ({ page }) => {
+    const requests: string[] = [];
+    page.on('console', (message) => { if (message.type() === 'log') requests.push(message.text()); });
+    await page.goto('/members/example-general');
+    await page.getByRole('button', { name: 'SMS', exact: true }).click();
+    const dialog = page.getByRole('dialog', { name: 'SMS 발송', exact: true });
+    await dialog.getByRole('textbox', { name: '메시지 내용' }).fill('닫기 검증 초안');
+    if (dismissal === 'Escape') await page.keyboard.press('Escape');
+    else if (dismissal === 'outside') await page.mouse.click(5, 5);
+    else await dialog.getByRole('button', { name: dismissal, exact: true }).click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expect(page).toHaveURL(/\/members\/example-general$/);
+    expect(requests).toEqual([]);
+  });
+}

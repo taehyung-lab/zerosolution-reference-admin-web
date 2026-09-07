@@ -1,3 +1,7 @@
+/**
+ * 휴면·탈퇴·접속·상담·소명의 서로 다른 행 정보를 표현하는 화면 모델이다.
+ * 실제 API의 응답을 표현하기 위한 형태이며 각 id가 회원 ID인지 기록 ID인지는 계약별로 대조해야 한다.
+ */
 import type { MemberProfile } from "./member-profile";
 
 export interface DormantMemberRow {

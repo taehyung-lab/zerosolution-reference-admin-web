@@ -1,20 +1,22 @@
-import { useState } from "react";
+/**
+ * 선택한 상담의 회원·예약 정보와 상담 기록 CRUD, 재발행 진입을 조립하는 팝업이다.
+ * 실제 API에서도 팝업/폼 역할은 유지한다. 조회·저장 응답을 임의로 만들지 않고 입력과 대상 ID를 callback에 전달한다.
+ */
+import { useCounselRecords } from "./useCounselRecords";
+import { maskEmail, maskPhone } from "@/shared/lib/mask-contact";
 import { useTranslation } from "react-i18next";
 import { Dialog } from "@/shared/ui/primitives/Dialog";
 import { Button } from "@/shared/ui/primitives/Button";
 import { ConfirmDialog } from "@/shared/ui/patterns/ConfirmDialog";
 import { DetailField } from "@/shared/ui/patterns/DetailField";
-import { useUnsavedChangesGuard } from "@/shared/ui/form/UnsavedChangesGuard";
-import { MemberCounselForm } from "../detail/counsel/MemberCounselForm";
+import { MemberCounselForm } from "@/features/members/counsel/MemberCounselForm";
 import {
   toCounselDraft,
   type MemberCounselInput,
   type MemberCounselRecord,
-  type MemberCounselValues,
-} from "../detail/counsel/member-counsel-schema";
+} from "@/features/members/counsel/member-counsel-schema";
 import type { CounselRow } from "../model/member-records";
 import { formatMemberInstant } from "../model/format-member-instant";
-import { maskMemberEmail, maskMemberPhone } from "../model/member-profile";
 
 export interface CounselDetail extends CounselRow {
   readonly records: readonly MemberCounselRecord[];
@@ -52,21 +54,20 @@ export function CounselDetailDialog({
 }) {
   const { t } = useTranslation("members");
   const { t: shared } = useTranslation("shared");
-  const [createDirty, setCreateDirty] = useState(false);
-  const [editDirty, setEditDirty] = useState(false);
-  const [editing, setEditing] = useState<string>();
-  const [deleting, setDeleting] = useState<string>();
-  const guard = useUnsavedChangesGuard({ when: createDirty || editDirty });
-  const [initialValues] = useState<MemberCounselValues>(() => ({
-    ...toCounselDraft({
-      receivedAt: openedAt,
-      answeredAt: openedAt,
-      operatorName,
-      inquiryType: "other",
-      content: "",
-    }),
-    inquiryType: "",
-  }));
+  const {
+    initialDraft,
+    editing,
+    setCreateDirty,
+    setEditDirty,
+    guard,
+    deletion,
+    edit,
+  } = useCounselRecords({
+    operatorName,
+    openedAt,
+    onDelete: (noteId) => onDelete({ counselId: detail.id, noteId }),
+  });
+
   return (
     <>
       <Dialog
@@ -74,14 +75,14 @@ export function CounselDetailDialog({
         title={t("secondary.counsel")}
         closeLabel={shared("formAction.cancel")}
         onOpenChange={(open) => {
-          if (!open) guard.close(onClose);
+          if (!open) guard.close(onClose, { when: false });
         }}
       >
         <h2>{t("secondary.fields.content")}</h2>
         <p>{detail.content}</p>
         <p>{formatMemberInstant(detail.receivedAt)}</p>
         <MemberCounselForm
-          initialValues={initialValues}
+          initialValues={initialDraft}
           label={t("counsel.create")}
           onSave={(input) => onCreate({ counselId: detail.id, input })}
           onDirtyChange={setCreateDirty}
@@ -98,11 +99,7 @@ export function CounselDetailDialog({
                   onSave={(input) =>
                     onUpdate({ counselId: detail.id, noteId: record.id, input })
                   }
-                  onCancel={() =>
-                    guard.close(() => setEditing(undefined), {
-                      when: editDirty,
-                    })
-                  }
+                  onCancel={() => edit()}
                 />
               ) : (
                 <>
@@ -121,16 +118,12 @@ export function CounselDetailDialog({
                     </DetailField>
                   </dl>
                   <p>{record.content}</p>
-                  <Button
-                    onClick={() =>
-                      guard.close(() => setEditing(record.id), {
-                        when: editDirty,
-                      })
-                    }
-                  >
+                  <Button onClick={() => edit(record.id)}>
                     {t("counsel.edit")}
                   </Button>
-                  <Button onClick={() => setDeleting(record.id)}>
+                  <Button
+                    onClick={() => deletion.requestConfirmation(record.id)}
+                  >
                     {t("counsel.delete")}
                   </Button>
                   {record.inquiryType.startsWith("reprint") ? (
@@ -145,11 +138,11 @@ export function CounselDetailDialog({
         <h2>{t("secondary.fields.member")}</h2>
         <dl>
           <DetailField label={t("columns.email")}>
-            {maskMemberEmail(detail.email)}
+            {maskEmail(detail.email)}
           </DetailField>
           <DetailField label={t("columns.name")}>{detail.name}</DetailField>
           <DetailField label={t("columns.phone")}>
-            {maskMemberPhone(detail.phone)}
+            {maskPhone(detail.phone)}
           </DetailField>
           <DetailField label={t("columns.accountStatus")}>
             {t(`accountStatus.${detail.accountStatus}`)}
@@ -168,20 +161,15 @@ export function CounselDetailDialog({
       </Dialog>
       {guard.dialog}
       <ConfirmDialog
-        open={deleting !== undefined}
+        open={deletion.state.kind === "confirm"}
         title={shared("alert.title")}
         description={t("counsel.confirmDelete")}
         confirmLabel={shared("formSave.confirm")}
         cancelLabel={shared("formSave.cancel")}
         onOpenChange={(open) => {
-          if (!open) setDeleting(undefined);
+          if (!open) deletion.close();
         }}
-        onConfirm={() => {
-          if (deleting) {
-            onDelete({ counselId: detail.id, noteId: deleting });
-            setDeleting(undefined);
-          }
-        }}
+        onConfirm={deletion.confirm}
       />
     </>
   );

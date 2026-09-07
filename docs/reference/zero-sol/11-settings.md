@@ -1,8 +1,8 @@
 # 11. 설정
 
-표 형식은 [README.md](README.md). Notion 열의 `(대기)`는 아래 **Notion 요점**과 `notion/` 원문으로 대체한다. 11.1 운영자는 현재 Managers 구현의 원본 화면이다.
+표 형식은 [README.md](README.md). Notion 열의 `(대기)`는 아래 **Notion 요점**과 `notion/` 원문으로 대체한다. 11.1 운영자는 현재 Managers 구현의 원본 화면이다. 제품 route `/managers`는 `ManagerListScreen`을 사용하며, `ManagerApiListScreen`은 별도의 리허설 API 예제다.
 
-2026-09-06 구현 대조: 아래 운영자 현재 코드는 `VITE_REFERENCE_SCENARIOS=true`의 **API 호출 직전 입력 경계**를 가리킨다. 기본값 false의 리허설 API 화면은 별도로 유지된다. 예시 옵션·행은 제품 서버 데이터가 아니며 실제 저장·발송·재인증 성공은 구현하지 않았다. 전체 인벤토리 브라우저 대조는 진행 중이다.
+2026-09-06 구현 대조: 아래 운영자 현재 코드는 제품 기본 경로의 **API 호출 직전 입력 경계**를 가리킨다. 기본값 false의 리허설 API 화면은 별도로 유지된다. 예시 옵션·행은 제품 서버 데이터가 아니며 실제 저장·발송·재인증 성공은 구현하지 않았다. 미연결 action은 업무별 요청 함수의 한글 로그까지 연결하며, 제품 상태를 받는 상세는 요청 callback도 필수다. 구현·검증 상태는 [설정 시나리오](../scenarios/settings-and-permissions.md)가 소유한다.
 
 ## 11.1 운영자 · 11.2 약관 · 11.3.2 접근권한 — 리스트
 
@@ -11,10 +11,10 @@
 | 11.1 | 검색 전 상태 | 검색전(`126:61627`)·검색후(`126:61392`)·Case(`126:61314`) 3 frame | (대기) | — | `ListResult.notSearched` (구현됨) |
 | 11.1 | 기간 | 기준 가입일·최근접속일 + preset(기본 전체) + range | (대기) | — | `PeriodField` + feature select (구현됨) |
 | 11.1 | 검색어 | 대상 아이디·이름·휴대폰번호·이메일 + chip("이름 : 김영영") | (대기) | — | `KeywordChipField` (구현됨) |
-| 11.1 | **option-source select** | 권한: 단일 select, 옵션 = 서버 권한명 목록(`{권한명}` 반복) | 목록은 사용 상태인 전체 권한 중 택1; 등록·수정만 선택 유형에 종속 | 실제 옵션 계약 | `ManagerListScreen` 독립 권한 select; 예시 옵션 사용 |
+| 11.1 | **option-source select** | 권한: 단일 select, 옵션 = 서버 권한명 목록(`{권한명}` 반복) | 목록은 사용 상태인 전체 권한 중 택1; 등록·수정만 선택 유형에 종속 | 실제 옵션 계약 | `ManagerDirectoryFilters` + `useManagerDirectoryFilterOptions`; 독립 옵션 Query의 loading/error/retry |
 | 11.1 | 다중선택 | 유형(전체·기획사·매표처), 가입경로(전체·WEB·APP), 계정 상태(전체·대기·거절·활성·비활성·잠금…) | (대기) | 리허설 `INACTIVE`와 거절·비활성·잠금 대응 | Managers filters |
-| 11.1 | toolbar | 보기·정렬(가입일·최근접속일·유형·소속·아이디·이름·휴대폰번호·이메일·권한·가입경로·계정 상태). 우측 `선택▾`+`변경` · `등록` | 변경 대상은 계정 상태 > 활성/비활성, 대기·거절·잠금은 제외 | 전부 변경 불가인 선택의 후속 UX | `ManagerListScreen` 11정렬·URL commit / `ManagerListActions` 선택 검증→확인→대상 callback / 등록 Link |
-| 11.1 | table | checkbox. 유형·소속·아이디·이름·휴대폰번호·이메일·권한·가입경로·계정 상태·가입일(정렬)·최근접속일 | 행 클릭→상세 | 실제 정렬·검색 응답 계약 | `ManagerListScreen` 11컬럼·`DataTable.meta.sort`·현재 페이지 선택. 리허설 `manager-columns`는 기존 8정렬 유지 |
+| 11.1 | toolbar | 보기·정렬(가입일·최근접속일·유형·소속·아이디·이름·휴대폰번호·이메일·권한·가입경로·계정 상태). 우측 `선택▾`+`변경` · `등록` | 변경 대상은 계정 상태 > 활성/비활성, 대기·거절·잠금은 제외 | 전부 변경 불가인 선택의 후속 UX | `useManagerDirectoryResult` 11정렬·URL commit / `ManagerListActions` 선택 검증→확인→대상 callback / 등록 Link |
+| 11.1 | table | checkbox. 유형·소속·아이디·이름·휴대폰번호·이메일·권한·가입경로·계정 상태·가입일(정렬)·최근접속일 | 행 클릭→상세 | 실제 정렬·검색 응답 계약 | `manager-directory-columns` + `ManagerDirectoryResult`; 11컬럼·`DataTable.meta.sort`·현재 페이지 선택. 리허설 `manager-columns`는 기존 8정렬 유지 |
 | 11.1 | 상세 상태 | 운영자 조회 **5 variant**: 대기(`126:61280`)·거절(`126:61243`)·활성(`126:61199`)·비활성(`216:24789`)·잠금(`216:24996`) | 아래 상태별 action 표 참조 | 서버 상태 enum 대응 | `ManagerDetailContent`가 별도 제품 상태를 받아 조립; 리허설 status로 추론하지 않음 |
 | 11.1 | alert | 개인정보 전체보기(`126:61153`)·회원 탈퇴(`126:61146`)·탈퇴 알림(`126:61138`)·계정잠금해제(`126:61132`)·가입거절 사유(`216:25221`) | 재인증 입력·잠금해제 비밀번호·거절 사유 | 재인증 성공 이후 공개/탈퇴 처리 | `ManagerActionForm` 입력 검증→callback. 인증 성공·최종 탈퇴 완료 alert는 만들지 않음 |
 | 11.2 약관 | 구조 | 리스트(검색전 없음)·Case·조회·등록·수정. 미판독 | (대기) | — | — |

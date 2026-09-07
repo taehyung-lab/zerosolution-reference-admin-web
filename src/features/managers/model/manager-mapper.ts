@@ -1,3 +1,7 @@
+/**
+ * 기존 API 운영자 목록 응답을 행 표시 모델로 변환하고 누락 필드의 표시값을 정한다.
+ * 실제 API에서도 필요한 응답 변환이며 서버 enum과 화면 라벨 대응은 계약 교체 때 함께 확인한다.
+ */
 import type { ManagerListItem } from './manager';
 
 const emptyValue = '-';

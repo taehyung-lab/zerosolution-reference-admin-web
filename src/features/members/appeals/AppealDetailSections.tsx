@@ -1,8 +1,13 @@
+/**
+ * 소명 상세의 회원 정보·첨부 신청 내용·저장된 처리 결과를 표시하는 section 컴포넌트다.
+ * 표시 책임은 API 이후에도 유지하며 조회·저장·발송은 수행하지 않는다.
+ */
+import { maskEmail, maskPhone } from "@/shared/lib/mask-contact";
 import { useTranslation } from "react-i18next";
 import { SectionCard } from "@/shared/ui/patterns/SectionCard";
 import { DetailField } from "@/shared/ui/patterns/DetailField";
 import { formatMemberInstant } from "../model/format-member-instant";
-import { maskMemberEmail, maskMemberPhone } from "../model/member-profile";
+
 import type { AppealRecord } from "./appeal-detail";
 
 export function AppealMemberSection({
@@ -34,11 +39,11 @@ export function AppealMemberSection({
           {t(`signup.${record.signupMethod}`)}
         </DetailField>
         <DetailField label={t("columns.email")}>
-          {maskMemberEmail(record.email)}
+          {maskEmail(record.email)}
         </DetailField>
         <DetailField label={t("columns.name")}>{record.name}</DetailField>
         <DetailField label={t("columns.phone")}>
-          {maskMemberPhone(record.phone)}
+          {maskPhone(record.phone)}
         </DetailField>
       </dl>
       <a href={memberHref} target="_blank" rel="noopener noreferrer">

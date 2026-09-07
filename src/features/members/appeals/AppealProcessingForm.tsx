@@ -1,3 +1,7 @@
+/**
+ * 소명 처리 상태·결과·사유 등의 입력과 조건부 검증을 관리한다.
+ * 프런트 입력 책임은 유지하지만 서버의 상태 전이/저장 성공은 onSave 이후 계약으로 확인해야 한다.
+ */
 import { revalidateLogic, useForm, useSelector } from "@tanstack/react-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
@@ -137,7 +141,7 @@ export function AppealProcessingForm({
           )}
         </FormField>
         <Button type="submit">{shared("formAction.save")}</Button>
-        <Button type="button" onClick={() => guard.close(() => form.reset())}>
+        <Button type="button" onClick={() => guard.close(() => form.reset(), { when: false })}>
           {shared("formAction.cancel")}
         </Button>
       </form>

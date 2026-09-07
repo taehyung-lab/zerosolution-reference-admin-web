@@ -174,10 +174,16 @@ Tabs는 인벤토리 7 surface/8 set과 APP PUSH 타겟 영역에서 반복된 �
 
 ## 입력 경계 적용 (2026-09-06)
 
-2026-09-05 사용자 결정: dirty 보호를 팝업·인라인에도 적용. 값은 form, local 닫기 callback은 각 guard가 소유하며 `close(discard, { when })`로 자기 범위만 취소한다. 상담·공연 섹션·SMS/이메일의 같은 입력 손실이 근거다.
+과거 결정(2026-09-05, local 취소 적용 범위는 아래 2026-09-07 결정으로 대체): dirty 보호를 팝업·인라인에도 적용했다. 값은 form, local 닫기 callback은 각 guard가 소유하며 `close(discard, { when })`로 자기 범위만 취소했다. 상담·공연 섹션·SMS/이메일의 같은 입력 손실이 당시 근거였다.
 상담+SMS 동시 dirty에서 Router 확인이 순차 2회 뜬 결함을 실측해 `UnsavedChangesProvider`가 dirty/pending 사실만 모으는 단일 route blocker를 소유하게 했다. `leave` API·standalone hook은 유지하며 목적지나 폼 값을 provider에 복제하지 않는다.
 `UnsavedChangesGuard.router.test.tsx`가 2consumer 확인 1회·취소 보존·pending 거부·local 범위·unmount cleanup·browser-history beforeunload를 검증한다. 실제 Chromium에서도 상담+SMS dirty→뒤로가기→확인 1회→목록/dialog 0을 재측정했다. 기존 Form+중첩 Dialog 검사는 `UnsavedChangesGuard.integration.test.tsx`다.
-회원 등록과 reference mode 운영자 등록·수정은 API 직전까지만 구현했다. 운영자는 `ManagerInputScreens`·`useManagerInputForm`이 기존 `ManagerForm`과 어댑터/guard/확인을 재사용하고 예시 옵션에서는 Query를 실행하지 않는다. 저장 성공을 만들거나 `useSaveForm`의 서버 오류·완료 lifecycle까지 이 소비 흐름에서 검증했다고 판정하지 않는다.
+회원 등록과 제품 운영자 등록·수정은 API 직전까지만 구현했다. 운영자는 `ManagerInputScreens`·`useManagerInputForm`이 기존 `ManagerForm`과 어댑터/guard/확인을 재사용하고, `useManagerDirectoryFormOptions`가 임시 옵션 공급을 Query로 조회해 필드별 loading/error/retry를 전달한다. 저장 성공을 만들거나 `useSaveForm`의 서버 오류·완료 lifecycle까지 이 소비 흐름에서 검증했다고 판정하지 않는다.
+
+## 취소 경고 적용 범위 변경 (2026-09-07)
+
+사용자 결정: dirty 취소 경고는 **독립 등록·수정 화면에만** 적용한다. 상세 안 인라인 편집이나 action dialog에 폼이 있다는 사실만으로 경고하지 않는다. 취소·닫기 적용 범위의 단일 정본은 [form-workflow.md](../../.agents/skills/feature-contract/references/form-workflow.md#cancel-and-tabs)다. 이번 결정은 취소 경고를 좁히며 LNB·뒤로가기의 이동 경고는 변경하지 않는다. pending 거부·저장 확인·검증·최종 요청/log 경계는 별개다.
+
+기존 `close(discard, { when: false })`를 해당 caller에 적용한다. scoped dirty 질문만 생략하므로 guard의 pending 거부와 provider의 route 보호를 보존하며 공용 훅에 제품 화면 이름을 추가하지 않는다. 현재 consumer 검증 상태는 [회원 시나리오](../reference/scenarios/member-list-and-detail.md)와 [설정 시나리오](../reference/scenarios/settings-and-permissions.md)가 소유한다.
 
 ## 미확인
 

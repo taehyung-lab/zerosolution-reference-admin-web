@@ -1,3 +1,7 @@
+/**
+ * 운영자 수정 mutation을 실행하고 목록·상세·수정 초기값 캐시의 결과 처리를 연결한다.
+ * 실제 API에서도 필요하며 어떤 캐시가 바뀌는지는 해당 업무 계약이 소유한다.
+ */
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { UiLocale } from '@/shared/i18n/locale';
 import { managerKeys } from '../api/keys';

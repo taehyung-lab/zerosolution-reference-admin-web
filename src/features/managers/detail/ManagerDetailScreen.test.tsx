@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -32,7 +32,7 @@ describe('ManagerDetailScreen', () => {
     } as never);
     renderScreen();
     expect(screen.getByRole('heading', { name: '운영자 조회' })).toBeInTheDocument();
-    expect(screen.getByText('설정 > 운영자 > 조회')).toBeInTheDocument();
+    expect(within(screen.getByRole('navigation')).getAllByRole('listitem').map((item) => item.textContent?.replace('›', ''))).toEqual(['설정', '운영자', '조회']);
   });
 
   it('maps update history types instead of exposing server codes', () => {

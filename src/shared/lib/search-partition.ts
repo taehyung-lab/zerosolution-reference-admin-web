@@ -20,7 +20,7 @@ export type FilterFieldKeys<TPartition> = {
 
 function keysOfKind<TSearch>(
   partition: SearchFieldPartition<TSearch>,
-  kind: SearchFieldKind,
+  kind: SearchFieldKind
 ): string[] {
   return Object.keys(partition)
     .filter((key) => partition[key as keyof TSearch] === kind)
@@ -30,11 +30,11 @@ function keysOfKind<TSearch>(
 /** Stable identity of the filter fields only; view changes must not rebuild a filter draft. */
 export function filterPartitionKey<TSearch extends object>(
   search: TSearch,
-  partition: SearchFieldPartition<TSearch>,
+  partition: SearchFieldPartition<TSearch>
 ): string {
   const values = search as Readonly<Record<string, unknown>>;
   return JSON.stringify(
-    keysOfKind(partition, 'filter').map((key) => [key, values[key] ?? null]),
+    keysOfKind(partition, 'filter').map((key) => [key, values[key] ?? null])
   );
 }
 
@@ -44,11 +44,10 @@ export function filterPartitionValues<
   const TPartition extends SearchFieldPartition<TSearch>,
 >(
   search: TSearch,
-  partition: TPartition,
+  partition: TPartition
 ): Pick<TSearch, FilterFieldKeys<TPartition> & keyof TSearch> {
   const values = search as Readonly<Record<string, unknown>>;
   return Object.fromEntries(
-    keysOfKind(partition, 'filter').map((key) => [key, values[key]]),
+    keysOfKind(partition, 'filter').map((key) => [key, values[key]])
   ) as Pick<TSearch, FilterFieldKeys<TPartition> & keyof TSearch>;
 }
-

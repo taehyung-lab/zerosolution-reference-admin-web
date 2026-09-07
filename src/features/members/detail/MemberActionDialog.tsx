@@ -1,3 +1,7 @@
+/**
+ * 비밀번호 변경·개인정보 조회 재인증·탈퇴 재인증에 필요한 입력과 확인을 처리한다.
+ * API 이후에도 폼은 유지하지만 인증 성공을 클라이언트 검증만으로 판단하거나 개인정보를 해제하지 않는다.
+ */
 import { revalidateLogic, useForm, useSelector } from "@tanstack/react-form";
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -73,7 +77,7 @@ function PasswordDialog({
         description={t("detailAction.passwordDescription")}
         closeLabel={t("detailAction.close")}
         onOpenChange={(open) => {
-          if (!open) guard.close(onClose);
+          if (!open) guard.close(onClose, { when: false });
         }}
       >
         <form
@@ -82,7 +86,7 @@ function PasswordDialog({
           className="space-y-4"
           onSubmit={(event) => {
             event.preventDefault();
-            // Form checks field validity before rerunning form-level validators; refresh a prior blur mismatch for Enter submission.
+            // Enter 제출 전에 이전 blur의 비밀번호 불일치 오류를 다시 검사해 정상 입력이 오래된 오류에 막히지 않게 한다.
             void form.validate("blur");
             void form.handleSubmit();
           }}
@@ -105,7 +109,7 @@ function PasswordDialog({
           />
           <div className="flex justify-end gap-2">
             <Button type="submit">{t("detailAction.confirm")}</Button>
-            <Button type="button" onClick={() => guard.close(onClose)}>
+            <Button type="button" onClick={() => guard.close(onClose, { when: false })}>
               {t("detailAction.cancel")}
             </Button>
           </div>
@@ -168,7 +172,7 @@ function VerificationDialog({
         }
         closeLabel={t("detailAction.close")}
         onOpenChange={(open) => {
-          if (!open) guard.close(onClose);
+          if (!open) guard.close(onClose, { when: false });
         }}
       >
         <form
@@ -199,7 +203,7 @@ function VerificationDialog({
           />
           <div className="flex justify-end gap-2">
             <Button type="submit">{t("detailAction.confirm")}</Button>
-            <Button type="button" onClick={() => guard.close(onClose)}>
+            <Button type="button" onClick={() => guard.close(onClose, { when: false })}>
               {t("detailAction.cancel")}
             </Button>
           </div>

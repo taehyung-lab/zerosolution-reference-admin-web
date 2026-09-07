@@ -1,3 +1,7 @@
+/**
+ * 회원 수정 필드 검증과 일반회원의 활동제한 제출값 정리를 담당한다.
+ * API 이후에도 화면 입력 변환은 필요하다. 서버가 초기화를 빈 배열/null/생략 중 무엇으로 받는지는 DTO 변환에서 확인한다.
+ */
 import { z } from "zod";
 import { i18n } from "@/shared/i18n/i18n";
 import { memberAccountStatuses, memberRestrictions } from "../model/account";
@@ -27,7 +31,7 @@ export const memberEditSchema = memberCreateSchema
 
 export type MemberEditValues = z.infer<typeof memberEditSchema>;
 
-// This is confirmed UI input, not a server DTO. The transport's clear-value encoding awaits its contract.
+// 확인된 화면 입력이지 서버 DTO는 아니다. 활동제한 초기화 값을 전송하는 표현은 서버 계약을 기다린다.
 export function toMemberEditInput(values: MemberEditValues): MemberEditValues {
   const parsed = memberEditSchema.parse(values);
   return {

@@ -1,36 +1,8 @@
-import {
-  managerAgencyOptionsQuery,
-  managerTypeOptionsQuery,
-} from '@/features/managers/api/queries';
-import { ManagerCreateScreen } from '@/features/managers/form/ManagerCreateScreen';
-import { noop } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
-import { env } from '@/env';
+import { requestManagerCreate } from '@/features/managers/form/manager-form-requests';
 import { ManagerCreateInputScreen } from '@/features/managers/form/ManagerInputScreens';
-import { managerOptionFixtures } from '@/features/managers/fixtures/managers';
-import { useState } from 'react';
-import { DevelopmentNotice } from '@/app/shell/DevelopmentNotice';
-
-export const Route = createFileRoute('/_app/managers/new')({
-  // Option data is warmed on entry (and on preload intent) so the form never opens the blocking
-  // overlay for select choices; a failed warm-up is left to the field's own inline state.
-  loader: ({ context: { locale, queryClient } }) => {
-    if (env.VITE_REFERENCE_SCENARIOS) return;
-    void queryClient.query(managerTypeOptionsQuery(locale)).catch(noop);
-    void queryClient.query(managerAgencyOptionsQuery(locale)).catch(noop);
-  },
-  component: ManagerCreateRoute,
-});
+export const Route = createFileRoute('/_app/managers/new')({ component: ManagerCreateRoute });
 function ManagerCreateRoute() {
-  const [ready, setReady] = useState(false);
-  // TRANSPLANT_PENDING_MANAGER_CREATE_INPUT: connect validated input when the product API exists.
-  if (env.VITE_REFERENCE_SCENARIOS)
-    return (<>
-      <DevelopmentNotice ready={ready} />
-      <ManagerCreateInputScreen
-        optionsForType={managerOptionFixtures}
-        onConfirm={() => setReady(true)}
-      />
-    </>);
-  return <ManagerCreateScreen />;
+  // TRANSPLANT_PENDING_MANAGER_CREATE_INPUT: 최종 검증 입력을 전달하며 실제 저장은 계약 확인 후 연결한다.
+  return <ManagerCreateInputScreen onConfirm={requestManagerCreate} />;
 }
