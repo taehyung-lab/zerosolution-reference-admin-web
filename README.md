@@ -72,11 +72,11 @@ src/shared/       도메인·서버 계약을 모르는 UI와 순수 공용 코�
 | 위치 | 내용 |
 | ---- | ---- |
 | [`AGENTS.md`](AGENTS.md) | 프로젝트 사실, 전역 경계, 스킬 라우팅, 완료 기준. 사람과 에이전트 모두 여기서 시작한다 |
-| `.agents/skills/{api-contract,feature-contract,shared-ui-contract}/` | 반복 구현 절차의 정본. 편집 범위가 정해진 뒤 필요한 reference만 읽는다 |
+| `.agents/skills/{folder-structure-contract,api-contract,feature-contract,shared-ui-contract}/` | 반복 구현 절차의 정본. 편집 범위가 정해진 뒤 필요한 reference만 읽는다 |
 | `docs/decisions/` | 결정 이유·대안·상태·재검토 조건을 보존하는 ADR |
 | [`docs/decisions/0009-shared-boundaries.md`](docs/decisions/0009-shared-boundaries.md) | 목록 공용화의 결정과 provisional 검증 상태. 구현법은 연결된 Skill reference가 소유한다 |
 | [`docs/decisions/0010-form-boundaries.md`](docs/decisions/0010-form-boundaries.md) | 등록·수정 공용화의 결정과 provisional 검증 상태. 0009는 목록·필터만 소유한다 |
-| [`docs/decisions/0011-detail-data-and-update-history-boundaries.md`](docs/decisions/0011-detail-data-and-update-history-boundaries.md) | 상세 조회 상태 판정, API 소비 계층(선언/실행 분리, feature api 훅 금지), 업데이트 이력 2층 계약 |
+| [`docs/decisions/0011-detail-data-and-update-history-boundaries.md`](docs/decisions/0011-detail-data-and-update-history-boundaries.md) | 상세 조회 상태 판정, API 소비 계층(API-only 실행과 workflow 후속 처리 분리), 업데이트 이력 2층 계약 |
 | [`docs/reference/`](docs/reference/) | Figma 등 비규범적 관찰 증거. 그 자체로 구현 계약이 되지 않는다 |
 | [`openapi/README.md`](openapi/README.md) | 현재 snapshot의 사용법·금지 사항·검증 명령. 채택 이유와 폐기 조건은 ADR 0001이 소유한다 |
 
@@ -88,4 +88,4 @@ src/shared/       도메인·서버 계약을 모르는 UI와 순수 공용 코�
 
 작업 전에 [`AGENTS.md`](AGENTS.md)를 읽는다. 확인되지 않은 제품 정책·서버 계약·권한·enum 의미는 추측하지 않고 미확인으로 보고한다.
 
-화면 작성 시 폴더 배치 기준은 [Screen composition — Placement and naming](.agents/skills/feature-contract/references/screen-composition.md#placement-and-naming)을 확인한다. 화면 진입점은 workflow 루트, 표시 컴포넌트는 `ui/`, 상태·조회 실행 훅은 `model/`, API 선언은 feature의 `api/`에 둔다.
+파일 생성·이동과 폴더 배치 기준은 [folder-structure-contract](.agents/skills/folder-structure-contract/SKILL.md)가 소유한다. 루트 AGENTS의 스킬 라우팅에서 진입하고 화면·API·공용 코드의 동작 계약은 각 기능 스킬을 따른다.

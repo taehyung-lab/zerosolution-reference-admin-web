@@ -45,11 +45,13 @@ preparation is missing. Use that ID with `prepare`; do not invent a second ID fo
 A script-only task needs numbered requirements, scope, references, contracts and unresolved as before.
 A workflow task also links each requirement to included surfaces, sources and contract decisions.
 Applicable SKILL files follow the actual paths in AGENTS §2; an API path also needs api-contract.
+For file creation, relocation or ownership changes, also declare/read folder-structure-contract.
+The path-only hook cannot distinguish a behavioral edit from a placement decision; review owns that distinction.
 Contract IDs must come from `bundle`, not component/hook names or invented labels:
 
 ```json
 {
-  "scope": ["src/features/performances/list/"],
+  "scope": ["src/features/performances/screens/list/"],
   "surfaces": [
     { "id": "performance-list", "decision": "include" },
     { "id": "performance-venue", "decision": "exclude", "reason": "Only result sorting changes; venue behavior is unchanged." }
@@ -117,7 +119,7 @@ in-scope implementation files and verification methods/results:
 {
   "requirements": [{
     "id": "R1", "status": "implemented", "evidence": "Observed both sort directions on repeated clicks.",
-    "files": ["src/features/performances/list/ui/PerformanceListResult.tsx"],
+    "files": ["src/features/performances/screens/list/ui/PerformanceListResult.tsx"],
     "verification": [{ "method": "Browser interaction", "result": "ascending → descending → ascending", "artifact": ".ai-work/task/browser-report.md" }]
   }],
   "contractReview": "Compared the adopted table contract with the caller's sort ownership.",

@@ -1,24 +1,41 @@
 // 리허설 API 소비자의 회귀 검증용 route다. 실제 /managers 제품 route는 product-route.test.tsx에서 별도로 검증한다.
-vi.mock('@/routes/_app/managers/index', async () => {
-  const { createFileRoute, defaultStringifySearch } = await import('@tanstack/react-router');
-  const { canonicalSearchGuard } = await import('@/app/router/canonical-search-guard');
-  const { managerSearchSchema, managerCanonicalSearchSchema } = await import('@/features/managers/list/model/search-schema');
-  const { managerTypeOptionsQuery } = await import('@/features/managers/api/queries');
-  const { ManagerApiListScreen } = await import('@/features/managers/list/ManagerApiListScreen');
-  const Route = createFileRoute('/_app/managers/')({
+vi.mock("@/routes/_app/managers/index", async () => {
+  const { createFileRoute, defaultStringifySearch } =
+    await import("@tanstack/react-router");
+  const { canonicalSearchGuard } =
+    await import("@/app/router/canonical-search-guard");
+  const { managerSearchSchema, managerCanonicalSearchSchema } =
+    await import("@/features/managers/screens/list/model/search-schema");
+  const { managerTypeOptionsQuery } =
+    await import("@/features/managers/api/queries");
+  const { ManagerApiListScreen } =
+    await import("@/features/managers/screens/list/ui/ManagerApiListScreen");
+  const Route = createFileRoute("/_app/managers/")({
     validateSearch: managerSearchSchema,
     beforeLoad: canonicalSearchGuard(managerCanonicalSearchSchema),
-    loader: ({ context: { locale, queryClient } }) => { void queryClient.query(managerTypeOptionsQuery(locale)).catch(() => undefined); },
+    loader: ({ context: { locale, queryClient } }) => {
+      void queryClient
+        .query(managerTypeOptionsQuery(locale))
+        .catch(() => undefined);
+    },
     component: ApiRoute,
   });
   function ApiRoute() {
     const search = managerCanonicalSearchSchema.parse(Route.useSearch());
     const navigate = Route.useNavigate();
-    return <ManagerApiListScreen search={search} onSearchChange={next => { void navigate({ href: "/managers" + defaultStringifySearch(next) }); }} />;
+    return (
+      <ManagerApiListScreen
+        search={search}
+        onSearchChange={(next) => {
+          void navigate({ href: "/managers" + defaultStringifySearch(next) });
+        }}
+      />
+    );
   }
   return { Route };
 });
 
+import { clearAccessToken, setAccessToken } from "@/api/http/credential";
 import { AppProviders, createQueryClient } from "@/app/providers/AppProviders";
 import { createAppRouter } from "@/app/router/router";
 import { RouterProvider, createMemoryHistory } from "@tanstack/react-router";
@@ -41,7 +58,6 @@ import {
   it,
   vi,
 } from "vitest";
-import { clearAccessToken, setAccessToken } from "@/api/http/credential";
 
 let managerListRequestCount = 0;
 let managerTypeRequestCount = 0;
@@ -67,7 +83,9 @@ const server = setupServer(
 
 beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
 // `/_app` 가드는 저장된 토큰을 요구한다. 이 절은 인증된 세션의 라우팅을 검증한다.
-beforeEach(() => { setAccessToken("route-test-token"); });
+beforeEach(() => {
+  setAccessToken("route-test-token");
+});
 afterEach(() => {
   managerListRequestCount = 0;
   managerTypeRequestCount = 0;
@@ -115,7 +133,9 @@ describe("manager route search canonicalization", () => {
     fireEvent.click(within(filterForm).getByRole("button", { name: "검색" }));
 
     expect(
-      await screen.findByText("데이터를 불러오는 중입니다. 잠시만 기다려 주세요."),
+      await screen.findByText(
+        "데이터를 불러오는 중입니다. 잠시만 기다려 주세요.",
+      ),
     ).toBeVisible();
     expect(screen.queryByText("검색결과 : 0")).not.toBeInTheDocument();
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
@@ -281,7 +301,9 @@ describe("manager route search canonicalization", () => {
         periodType: "CREATED_AT",
       }),
     );
-    expect(await screen.findByText("검색 결과가 없습니다.")).toBeInTheDocument();
+    expect(
+      await screen.findByText("검색 결과가 없습니다."),
+    ).toBeInTheDocument();
     expect(managerListRequestCount).toBe(1);
   });
 

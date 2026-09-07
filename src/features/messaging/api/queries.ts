@@ -1,10 +1,10 @@
 /** 발송 정책의 임시 응답을 Query로 실행하는 연결부다. 서버 계약 확인 후 queryFn만 교체한다. */
-import { queryOptions } from '@tanstack/react-query';
-import { ApiError } from '@/api/error';
-import { localizedQueryKey } from '@/api/query-key';
-import { inlineProgress } from '@/api/query-meta';
-import { messagePolicyFixture } from '../fixtures/message-policy';
-import type { MessagePolicy } from '../message-schema';
+import { ApiError } from "@/api/error";
+import { localizedQueryKey } from "@/api/query-key";
+import { inlineProgress } from "@/api/query-meta";
+import { queryOptions } from "@tanstack/react-query";
+import { messagePolicyFixture } from "../fixtures/message-policy";
+import type { MessagePolicy } from "../model/message";
 
 /**
  * 채널별 발신자 기본값과 사용 여부다. 작성창 안에서만 필요한 조회이므로 앱 진입 overlay를 열지 않는다.
@@ -13,17 +13,17 @@ import type { MessagePolicy } from '../message-schema';
  */
 export function messagePolicyQuery(
   locale: string,
-  channel: 'sms' | 'email' | undefined
+  channel: "sms" | "email" | undefined,
 ) {
   return queryOptions({
-    queryKey: [...localizedQueryKey(locale, 'messaging', 'policy'), channel],
+    queryKey: [...localizedQueryKey(locale, "messaging", "policy"), channel],
     enabled: channel !== undefined,
     queryFn: () =>
       Promise.resolve().then((): MessagePolicy => {
         if (channel === undefined)
           throw new ApiError({
-            kind: 'not-found',
-            message: '발송 채널이 없습니다.',
+            kind: "not-found",
+            message: "발송 채널이 없습니다.",
           });
         return messagePolicyFixture(channel);
       }),

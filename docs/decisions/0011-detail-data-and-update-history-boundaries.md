@@ -11,7 +11,7 @@
 상세 조회 공용화의 이유, 거부한 대안, 소유권, provisional 단계, 재검토 조건을 보존한다. 구현 절차는
 `.agents/skills/feature-contract/references/detail-workflow.md`(상세 화면), `.agents/skills/api-contract/references/query-cache.md`·`mutations.md`(선언과 실행의 분리),
 `.agents/skills/shared-ui-contract/references/page-and-detail-surfaces.md`(`UpdateHistory`)가 소유한다. 기계 불변식은 `src/api/required-query.test.tsx`,
-`eslint.config.js` 의 feature api 훅 금지 규칙과 `gates:negative` 대조군이 소유한다.
+`eslint.config.js` 의 API/workflow 의존 규칙과 `gates:negative` 대조군이 소유한다.
 
 이 결정은 "detail-workflow 가 feature 소유라고 썼다"는 문장이 아니라 코드에서 실측한 복제와 결함 입력을 근거로 기존 문장을
 바꿨다. 문서가 기준이 아니라는 원칙은 `AGENTS.md` §0(저장소 운영 모드)이 소유한다.
@@ -49,22 +49,24 @@
 
 ```text
 generated (HTTP 함수·DTO)
-  → features/{domain}/api/   queryOptions·mutationOptions 팩토리, keys, contract 타입 — 훅 없음
-  → 화면 폴더의 workflow 훅   useQuery/useMutation 실행, locale 주입, projection, cache consequence
+  → features/{domain}/api/   queryOptions·mutationOptions, keys, contract 타입, API-only 실행 훅
+  → 화면 폴더의 workflow 훅   URL·검색·폼·선택 정책, 업무 projection, cache consequence
   → 화면                      훅 결과와 JSX 만
 ```
 
 - `src/api/required-query.ts` 가 필수 단건 조회의 판정을 소유한다. 순수 함수 `resolveRequiredQueryOutcome(facts)` 가 `incident → not-found → usable data → pending → local error → settled-without-data` 우선순위로 `ready | pending | not-found | error | delegated` 를 돌려주고, 얇은 훅 `useDetailQuery(options)` 가 그것을 `{ data, state: ready|error|notFound, error, retry }` 로 투영한다. `pending`·`delegated` 는 content 없는 `ready` 다(전역 progress·incident boundary 가 자기 표면 소유).
 - `shared/ui/patterns/DetailStateBoundary` 는 `ready | error | notFound` 렌더 만 소유하고 API 변경이 없다. `DetailStateBoundary` 는 `ready | error | notFound` 렌더 이며 판정은 `useDetailQuery` 가 한다.
-- feature 훅은 화면 폴더 옆에 둔다: `detail/useManagerDetail`, `form/useManagerEditDetail`(= `useLocale()` + 팩토리 + `useDetailQuery`), `list/useManagerListData`(현행, 목록은 다른 상태 대수라 `useDetailQuery` 를 쓰지 않음), `form/useCreateManagerMutation`·`useUpdateManagerMutation`, `auth/login/useSignInMutation`.
+- API-only 조회는 `api/useManagerDetail`, `api/useManagerEditDetail`처럼 ID·locale를 연결한다. 화면 정책을 소유하는 목록 훅 `screens/list/model/useManagerListData`와 캐시 후속 처리가 있는 `screens/form/model/useCreateManagerMutation`·`useUpdateManagerMutation`은 workflow에 둔다. `auth/api/useSignInMutation`은 옵션 실행만 하며 session·navigation은 로그인 workflow가 소유한다.
 - **선언과 실행의 분리**: generated 함수는 `features/*/api` 와 `src/api` 만 import 할 수 있다(기존 lint). 따라서 `api/mutations.ts` 는 `mutationOptions`(서버 호출·`retry: false`) 선언만 두고, workflow 훅이 `useMutation({ ...선언, onSuccess })` 로 실행하며 `useQueryClient` 와 awaited invalidation 을 소유한다. `queryClient` 를 인자로 받는 팩토리는 만들지 않는다.
-- `features/*/api/**` 에서 `useQuery`·`useMutation`·`useQueryClient` 등 실행 훅 import 는 `no-restricted-imports` 가 막는다. 부정 대조군 `feature-api-imports-query-hook.ts`, 정상 대조군 `feature-api-query-options.ts` 가 `gates:negative` 에 있다.
+- `features/*/api/**`의 `useQuery`·`useMutation`은 허용한다. `useQueryClient`, 전역 진행 집계, Router/Form import는 lint가 막는다. API 훅의 화면 정책 혼입은 import 검사만으로 증명할 수 없으므로 소비자·callbacks를 리뷰한다. 정상 query/mutation 훅과 위반 cache-client/router 대조군은 `gates:negative`가 실행한다.
+
+**2026-09-07 재검토:** 공연장·운영자 옵션 및 ID 상세 조회까지 화면 model에 강제하면 재사용 API와 화면 상태가 다시 섞였다. 사용자의 전체 구조 재점검 요청과 실제 훅 책임을 근거로 기존의 모든 API 훅 금지를 API-only 실행 허용으로 수정했다. mutation 캐시 후속 처리의 workflow 소유는 유지한다. 폴더 배치 정본은 [folder-structure-contract](../../.agents/skills/folder-structure-contract/SKILL.md)다.
 - 화면 이름은 자원과 목적을 말한다(`useManagerDetail`, `useManagerEditDetail`). HTTP 동사 이름(`useGetManager`)은 쓰지 않는다.
 
 ### 업데이트 이력 — 2층
 
 - `UpdateHistory`(`shared/ui/patterns/UpdateHistory.tsx`, props `{ entries, labels: { date, change, manager }, emptyText }`) 는 3열 `Table` primitive, stable key, 사항 셀의 `<ul><li>`(줄마다 한 항목) 만 소유한다. `UpdateHistoryEntry { id, date, lines: readonly string[], manager }` 는 이미 localized·safe 한 문자열이다. `SectionCard` 감싸기·제목·빈 문구는 feature 가 쓴다. `ReactNode`·render callback·server DTO 는 받지 않는다. 정렬 계약이 없으므로 `DataTable` 이 아니다.
-- feature 순수 함수 `detail/manager-history.ts: toManagerHistoryEntries(logs, t)` 가 C/D 한 줄, U 는 `수정` + field 별 `필드: before > after`, 같은 값이면 필드명만, 비밀번호 등 비노출 field 는 값 없는 한 줄, 구조 미정 값은 공용 미지 문구, 미등록 field 는 중립 문구, 담당자 없음은 `-` 를 만든다. 원문 JSON·secret·서버 field 코드 비노출은 이 함수의 테스트가 보장한다. 훅이 아니다.
+- feature 순수 함수 `screens/detail/model/manager-history.ts: toManagerHistoryEntries(logs, t)` 가 C/D 한 줄, U 는 `수정` + field 별 `필드: before > after`, 같은 값이면 필드명만, 비밀번호 등 비노출 field 는 값 없는 한 줄, 구조 미정 값은 공용 미지 문구, 미등록 field 는 중립 문구, 담당자 없음은 `-` 를 만든다. 원문 JSON·secret·서버 field 코드 비노출은 이 함수의 테스트가 보장한다. 훅이 아니다.
 - 채택한 규칙: DTO↔렌더 입력 분리 경계, C/U/D 줄 규칙, `A > A` 방지, 원문 미노출·unsupported fallback. 제외한 구조: Accordion 결합, 컴포넌트 내부 i18n 기본값, 값 해석 옵션 bag, 도메인 formatter 훅, newline 단일 문자열.
 
 ### 상세 표면 — provisional
@@ -78,7 +80,7 @@ generated (HTTP 함수·DTO)
 | 단위 | 단계 | 근거·consumer |
 | --- | --- | --- |
 | `useDetailQuery` / `resolveRequiredQueryOutcome` | provisional shared(api) | 상세·수정 2 consumer 일치, 결함 입력 4종 table test |
-| feature 훅 배치·api 훅 금지 lint | 채택(기계 불변식) | 3 도메인 훅(managers 5, auth 1)이 규칙 아래 green |
+| feature 훅 배치·API/workflow 의존 lint | 수정 채택 | API-only 실행 허용, 캐시 클라이언트·Router/Form·화면 역참조 금지; 의미 판정은 소비자 리뷰 |
 | `UpdateHistory` | provisional shared | 인벤토리 5 화면 동일 3열, 코드 consumer 는 Managers 1 |
 | `toManagerHistoryEntries` 줄 조립 규칙 | feature-local | 두 번째 화면에서 같은 규칙이면 그때 `shared/lib` 승격 |
 | `PageHeader` / `SectionCard` / `DetailField` | provisional shared | 인벤토리 5 상세 화면 동일 구성, 코드 consumer 는 Managers 1 |
@@ -93,7 +95,7 @@ generated (HTTP 함수·DTO)
 
 ## 신규 프로젝트 채택 경계
 
-가져갈 것은 4칸 계층, `resolveRequiredQueryOutcome` 의 우선순위와 결함 입력 테스트, feature api 훅 금지 lint 와 대조군, `UpdateHistory` 의 좁은 계약, 선언/실행 분리 원칙이다. Manager field 라벨 맵·비노출 field 목록·리허설 DTO 이름·Manager family invalidation 은 제품 사실로 가져가지 않는다. 4-part bundle 은 `scripts/contracts/seed.mjs` 의 `detail-query`·`detail-state-boundary`·`update-history`·`page-header`·`section-card`·`detail-field` 가 선언한다.
+가져갈 것은 4칸 계층, `resolveRequiredQueryOutcome` 의 우선순위와 결함 입력 테스트, API/workflow 의존 lint 와 대조군, `UpdateHistory` 의 좁은 계약, 선언/실행 분리 원칙이다. Manager field 라벨 맵·비노출 field 목록·리허설 DTO 이름·Manager family invalidation 은 제품 사실로 가져가지 않는다. 4-part bundle 은 `scripts/contracts/seed.mjs` 의 `detail-query`·`detail-state-boundary`·`update-history`·`page-header`·`section-card`·`detail-field` 가 선언한다.
 
 ## 재검토 조건
 

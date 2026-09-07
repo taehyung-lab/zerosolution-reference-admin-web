@@ -105,7 +105,7 @@
         "docs/reference/scenarios/performance-and-content.md"
       ],
       "paths": [
-        "src/features/performances/list/",
+        "src/features/performances/screens/list/",
         "src/features/performances/api/",
         "src/features/performances/model/",
         "src/features/performances/fixtures/",

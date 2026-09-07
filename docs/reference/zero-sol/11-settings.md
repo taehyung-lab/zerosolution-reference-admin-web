@@ -86,4 +86,4 @@
 - [개인정보 전체보기](https://app.notion.com/3825169ef2f080d49f99d45c6707a2c0)·[대기 상태 연결](https://app.notion.com/3825169ef2f0802e8c10ee7a58ec64de): 현재 운영자 비밀번호 입력까지만. 성공을 가장해 마스킹을 해제하지 않는다.
 - [회원 탈퇴](https://app.notion.com/3825169ef2f080309ea2cd2e6f16f44f): 사유 5자 이상+현재 운영자 비밀번호→첫 검증 요청 입력. 성공 응답 뒤 최종 탈퇴 확인은 이 경계 이후다.
 - 등록 입력: 이름은 한글·영문·일문·중문·숫자 1–10자, 전화는 숫자·하이픈 1–20자, 이메일은 3–100자 및 형식 검증. 수정의 아이디는 읽기 전용이다. 예시 유형 값과 `agencyId` 리허설 조건은 제품 정책으로 확정하지 않는다.
-- 코드 진입: `features/managers/list/manager-list-search.ts`·`ManagerListScreen.tsx`, `form/ManagerInputScreens.tsx`, `detail/ManagerDetailScreen.tsx`·`ManagerActionForm.tsx`(모두 `src/` 아래). focused tests는 각 화면 옆에 있다. fixture 검색은 입력/URL 경계만 검증하며 서버 결과 필터링·정렬 응답을 모사하지 않는다.
+- 코드 진입 (`src/features/managers/` 기준): `screens/list/model/manager-list-search.ts`·`screens/list/ui/ManagerListScreen.tsx`, `screens/form/ui/ManagerInputScreens.tsx`, `screens/detail/ui/ManagerDetailScreen.tsx`·`screens/detail/ui/ManagerActionForm.tsx`. focused tests는 각 화면 옆에 있다. fixture 검색은 입력/URL 경계만 검증하며 서버 결과 필터링·정렬 응답을 모사하지 않는다.

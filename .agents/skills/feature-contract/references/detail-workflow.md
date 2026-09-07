@@ -4,7 +4,7 @@ Read this file for an ID-backed detail screen, detail state, sections, actions, 
 
 ## Detail ownership
 
-- The feature owns the ID query definition, DTO mapping, sections, copy, permissions, actions, and navigation. The `queryOptions` factory stays in `features/{domain}/api/` because route loaders warm the same cache entry; a workflow hook beside the screen (`detail/use{Domain}Detail`, `form/use{Domain}EditDetail`) injects the locale and runs it. Screens call the hook, never `useQuery` directly. `features/*/api/**` declares no hooks (lint, ADR 0011).
+- The feature owns the ID query definition, DTO mapping, sections, copy, permissions, actions, and navigation. The `queryOptions` factory stays in `features/{domain}/api/` because route loaders warm the same cache entry; a workflow hook beside the screen (`screens/detail/model/use{Domain}Detail`, `screens/form/model/use{Domain}EditDetail`) injects the locale and runs it. Screens call the hook, never `useQuery` directly. `features/*/api/**` declares no hooks (lint, ADR 0011).
 - Use an ID-based query key. A partial list row is not authoritative detail data.
 - Sections remain feature-local. Every collection inside the detail (history, child records, paged child lists) is classified by [table-composition.md](table-composition.md); a detail DTO array is kind A and a paged child list is kind C, not this file's ID query.
 - Product permission, missing-resource meaning, and post-action navigation come from confirmed contracts, not Figma or rehearsal data.

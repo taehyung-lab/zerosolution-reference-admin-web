@@ -37,11 +37,11 @@ template. New or incomplete evidence stays explicit; copy/style-only work uses t
 
 ## Boundaries
 
-- Before adding workflow files, check [folder placement](references/screen-composition.md#placement-and-naming); use the existing workflow as the owner, then separate `ui/` and `model/` where needed.
+- Before creating or moving files, read [folder-structure-contract](../folder-structure-contract/SKILL.md), the single owner of placement and import direction.
 
 - Route ownership and loader/preload rules are owned by [references/router.md](references/router.md).
-- Screen-internal responsibility decomposition and feature file placement, including existing screens, are owned by [references/screen-composition.md](references/screen-composition.md#feature-internal-decomposition).
-- `features/{domain}` owns `api/`, `model/`, `list/`, `detail/`, `form/`, use-case state, domain UI, schemas, and mapping. Form schema/defaults/request mapper live under `form/` unless shared by multiple views, then move only the stable model to `model/`.
+- Screen-internal responsibility decomposition, including existing screens, are owned by [references/screen-composition.md](references/screen-composition.md#feature-internal-decomposition).
+- `features/{domain}` owns domain workflows. Screens and domain mechanics separate presentation from execution/state; form schema/defaults/request mapper stay with the consuming workflow, while only genuinely shared pure values move to domain model.
 - There is no `pages` layer. Features do not import another feature's UI, model, or hooks; a route composes multiple screens. Cross-feature API leaf exceptions are limited to the cases defined by [api-contract](../api-contract/references/query-cache.md).
 - Components do not call generated operations or reconstruct query keys.
 - Hooks have one state or behavior owner. Do not bundle query, mutation, form, dialog, toast, navigation, and permission into a page controller hook.

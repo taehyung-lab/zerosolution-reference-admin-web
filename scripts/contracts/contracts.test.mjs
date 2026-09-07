@@ -558,10 +558,13 @@ describe('seed contract bundles', () => {
 })
 
 describe('transplant manifest and seed negative controls', () => {
+  it('carries the folder placement contract with the root instructions into a new project', () => {
+    expect(listTransplantManifestFiles()).toContain('.agents/skills/folder-structure-contract/SKILL.md')
+  })
   it('flags feature code, rehearsal output, and domain translations inside the seed', () => {
     expect(findForbiddenSeedFiles([
       'src/shared/ui/patterns/ListResult.tsx',
-      'src/features/managers/form/ManagerForm.tsx',
+      'src/features/managers/screens/form/ui/ManagerForm.tsx',
       'src/routes/_app/managers/index.tsx',
       'src/api/generated/index.ts',
       'src/shared/i18n/locales/ko/managers.json',
@@ -569,7 +572,7 @@ describe('transplant manifest and seed negative controls', () => {
       'src/shared/i18n/locales/en/app.json',
     ])).toEqual([
       'src/api/generated/index.ts',
-      'src/features/managers/form/ManagerForm.tsx',
+      'src/features/managers/screens/form/ui/ManagerForm.tsx',
       'src/routes/_app/managers/index.tsx',
       'src/shared/i18n/locales/ko/managers.json',
     ])

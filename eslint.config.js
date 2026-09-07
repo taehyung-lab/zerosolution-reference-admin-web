@@ -45,6 +45,36 @@ function crossFeatureZones() {
     }))
 }
 
+/** 도메인 내부 소유권은 실제 디렉터리에서 읽는다. 새 화면에도 같은 경계가 적용된다. */
+function featureInternalZones() {
+  const directories = (dir) => existsSync(dir)
+    ? readdirSync(dir, { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name)
+    : []
+  return directories('./src/features').flatMap((domain) => {
+    const root = `./src/features/${domain}`
+    const zones = ['api', 'model', 'lib', 'config', 'fixtures', 'mechanics'].map((owner) => ({
+      target: `${root}/${owner}`, from: `${root}/screens`,
+      message: '하위 소유자는 screens를 역참조하지 않는다. 공통 값 또는 mechanic의 소유권을 확인한다.',
+    }))
+    for (const owner of ['api', 'model', 'lib', 'config', 'fixtures']) zones.push({
+      target: `${root}/${owner}`, from: `${root}/mechanics`,
+      message: '도메인 계약과 fixture는 mechanic 실행·UI를 역참조하지 않는다.',
+    })
+    for (const screen of directories(`${root}/screens`)) zones.push({
+      target: `${root}/screens/${screen}`, from: `${root}/screens`, except: [`./${screen}`],
+      message: '화면끼리 내부를 import하지 않는다. 실제 공유 기능은 mechanics가 소유한다.',
+    })
+    const owners = ['screens', 'mechanics'].flatMap((kind) => directories(`${root}/${kind}`).map((name) => `${root}/${kind}/${name}`))
+    for (const owner of [root, ...owners]) {
+      for (const segment of ['model', 'lib', 'config']) for (const presentation of owners) zones.push({
+        target: `${owner}/${segment}`, from: `${presentation}/ui`,
+        message: 'model/lib/config는 feature UI를 역참조하지 않는다. 렌더 조립은 ui가 소유한다.',
+      })
+    }
+    return zones
+  })
+}
+
 const RESTRICTED = {
   paths: [
     {
@@ -147,20 +177,12 @@ const noUserFacingLiteral = {
   },
 }
 
-// feature api 폴더(src/features/<domain>/api)에서 금지하는 TanStack Query 실행 훅. queryOptions·mutationOptions·키 타입은 허용한다.
+// API 훅은 요청 실행만 소유한다. 캐시 후속 처리·전역 진행 집계는 workflow/app의 책임이다.
 const FEATURE_API_FORBIDDEN_HOOKS = [
-  'useQuery',
-  'useQueries',
-  'useSuspenseQuery',
-  'useSuspenseQueries',
-  'useInfiniteQuery',
-  'useSuspenseInfiniteQuery',
-  'useMutation',
-  'useMutationState',
   'useQueryClient',
+  'useMutationState',
   'useIsFetching',
   'useIsMutating',
-  'usePrefetchQuery',
 ]
 
 // 완화 대상은 레이어별 모듈 허용 범위뿐이다. paths 규칙은 어느 레이어에서도 유지한다.
@@ -267,7 +289,7 @@ export default tseslint.config(
       // deprecation 은 타입·테스트가 잡지 못하므로 lint 가 소유한다.
       '@typescript-eslint/no-deprecated': 'error',
       'no-restricted-imports': ['error', RESTRICTED],
-      'import-x/no-restricted-paths': ['error', { zones: [...LAYER_ZONES, ...crossFeatureZones()] }],
+      'import-x/no-restricted-paths': ['error', { zones: [...LAYER_ZONES, ...crossFeatureZones(), ...featureInternalZones()] }],
       'import-x/no-cycle': 'error',
       // 넓은 barrel import 제한
       'import-x/no-namespace': 'error',
@@ -283,8 +305,7 @@ export default tseslint.config(
     rules: { 'no-restricted-imports': ['error', relaxed(['api/generated'])] },
   },
   {
-    // features/*/api 는 계약(queryOptions·keys·request/response)만 선언한다. Query/Mutation 훅 실행과
-    // facts projection은 화면 옆 workflow 훅이 소유한다(ADR 0011). generated 완화는 그대로 유지한다.
+    // API-only 훅을 허용하되 URL·폼 상태와 캐시 후속 처리는 workflow가 소유한다.
     files: ['src/features/*/api/**/*.ts'],
     rules: {
       'no-restricted-imports': [
@@ -295,10 +316,10 @@ export default tseslint.config(
             {
               name: '@tanstack/react-query',
               importNames: FEATURE_API_FORBIDDEN_HOOKS,
-              message: 'features/*/api 는 queryOptions·keys·contract 만 선언한다. 훅은 화면 옆 workflow 훅에 둔다(ADR 0011).',
+              message: 'API는 캐시 후속 처리·전역 진행 집계를 소유하지 않는다. workflow/app에 둔다(ADR 0011).',
             },
           ],
-          patterns: relaxed(['api/generated']).patterns,
+          patterns: [...relaxed(['api/generated']).patterns, { group: ['@tanstack/react-router', '@tanstack/react-form'], message: 'API는 URL·폼 workflow를 소유하지 않는다.' }],
         },
       ],
     },
@@ -324,6 +345,22 @@ export default tseslint.config(
   },
 
   // --- 테스트 ---
+  {
+    files: ['src/features/**/lib/**/*.{ts,tsx}', 'src/features/**/config/**/*.{ts,tsx}'],
+    ignores: ['**/*.test.{ts,tsx}'],
+    rules: { 'no-restricted-imports': ['error', {
+      paths: RESTRICTED.paths,
+      patterns: [...RESTRICTED.patterns, { group: ['react', 'react/*', 'react-dom', 'react-dom/*', '@tanstack/react-*'], message: 'lib/config는 실행 훅을 소유하지 않는다. 상태·업무 전이는 model, 서버 실행은 api에 둔다.' }],
+    }] },
+  },
+  {
+    files: ['src/features/*/model/**/*.{ts,tsx}'],
+    ignores: ['**/*.test.{ts,tsx}'],
+    rules: { 'no-restricted-imports': ['error', {
+      paths: RESTRICTED.paths,
+      patterns: [...RESTRICTED.patterns, { group: ['react', 'react/*', 'react-dom', 'react-dom/*', '@tanstack/react-*'], message: 'domain model은 React와 실행 훅을 모르는 순수 값·규칙이다.' }],
+    }] },
+  },
   {
     files: ['src/**/*.test.{ts,tsx}', 'src/test/**/*.{ts,tsx}'],
     languageOptions: { globals: { ...globals.browser, ...globals.node } },

@@ -1,11 +1,11 @@
-import { requestMemberAccessDownload } from '@/features/members/access/member-access-requests';
-import { createFileRoute } from "@tanstack/react-router";
 import { canonicalSearchGuard } from "@/app/router/canonical-search-guard";
-import { MemberAccessListScreen } from "@/features/members/access/MemberAccessListScreen";
 import {
   accessSearchSchema,
   memberRecordSearchSchema,
-} from "@/features/members/records/member-record-search";
+} from "@/features/members/mechanics/record-list/model/member-record-search";
+import { requestMemberAccessDownload } from "@/features/members/screens/access/model/member-access-requests";
+import { MemberAccessListScreen } from "@/features/members/screens/access/ui/MemberAccessListScreen";
+import { createFileRoute } from "@tanstack/react-router";
 export const Route = createFileRoute("/_app/members/access")({
   // TODO(D3): this screen's own schema should validate the URL. Narrowing it makes `onSearchChange`
   // reject the wide value the shared record filter/result still produce, so those four record
