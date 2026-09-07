@@ -18,15 +18,17 @@ pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-실서버 없이 제품 CRUD 입력 흐름을 확인하려면 `VITE_REFERENCE_SCENARIOS=true pnpm dev`로 실행한다.
-회원·운영자 목록의 예시 행에서 상세·수정·연결 팝업으로 이동할 수 있다. 예시임을 화면에 표시하며,
-검증·확인 후에도 실제 저장·발송·인증 성공이나 캐시 변경을 만들지 않는다. 기본값은 `false`다.
+생성 API의 HTTP 응답을 테스트용으로 대체하려면 `pnpm dev:mock`을 사용한다. 지원 범위와 실서버 전환 기준은 [API mock](src/api/mocks/README.md)이 소유한다.
+
+`pnpm dev`에서 회원·운영자 제품 목록/상세는 Query를 통해 예시 응답을 조회한다. 별도 reference 환경 플래그는 사용하지 않는다. OpenAPI가 확인되면 feature queryFn과 요청/응답 매핑을 교체하며, 등록·수정은 최종 업무 함수의 로그까지 연결되어 있다.
+회원·운영자 목록의 예시 행에서 상세·수정·연결 팝업으로 이동할 수 있다.
+검증·확인 후에도 실제 저장·발송·인증 성공이나 캐시 변경을 만들지 않는다.
 
 화면·업무 코드는 실제 제품과 동일한 `features/{domain}` 소유권을 따른다. 회원의 휴면·탈퇴·상담·소명·접속은 각각
 `members/{dormant,withdrawn,counsel,appeals,access}`에 있으며, 예시 값은 각 feature의 `fixtures/`에 둔다.
-회원 목록은 업무별 Filters·Result·Actions와 상태 훅·columns를 Screen이 조립한다. 여러 업무의 검색·조회 대용·다운로드 입력은 `members/records/`, 활성목록 전용 구현은 `members/list/`가 소유한다. 소명 상세는 처리 폼·통보 액션·읽기 sections로 분리하고, 회원 메시지 상태/수신자 해석은 feature 훅에 두어 route는 독립 메시지 UI와의 연결만 맡는다.
+회원 목록은 업무별 Filters·Result·Actions와 상태 훅·columns를 Screen이 조립한다. 여러 업무의 검색·조회 실행·다운로드 입력은 `members/records/`, 활성목록 전용 구현은 `members/list/`가 소유한다. 소명 상세는 처리 폼·통보 액션·읽기 sections로 분리하고, 회원 메시지 상태/수신자 해석은 feature 훅에 두어 route는 독립 메시지 UI와의 연결만 맡는다.
 화면 타입은 `model/`, 데이터 읽기는 화면 옆 데이터 훅이 소유한다. 회원과 메시지 기능의 연결은 route에서 조립하고,
-앱 전체 개발 안내만 `app/shell/DevelopmentNotice`에 둔다. 제품 운영자 목록은 `ManagerListScreen`, 기존 계약 검증용
+제품 운영자 목록은 `ManagerListScreen`, 기존 계약 검증용
 API 소비 화면은 `ManagerApiListScreen`이다. 두 검색 계약의 통합은 신규 서버 계약에서 제품 필터·상태를 확정한 뒤 수행한다.
 
 ## 주요 명령
@@ -34,15 +36,18 @@ API 소비 화면은 `ManagerApiListScreen`이다. 두 검색 계약의 통합�
 | 명령 | 하는 일 |
 | ---- | ------- |
 | `pnpm dev` | 개발 서버 |
-| `pnpm verify` | **단일 검증 진입점.** api:check → contracts:check → typecheck → lint → test:unit → i18n:check → gates:negative → build → test:e2e:smoke |
+| `pnpm verify` | **단일 검증 진입점.** api:check → contracts:check → typecheck → lint → test:unit → i18n:check → gates:negative → build → test:e2e:verify |
 | `pnpm api:check` | snapshot 검증 + Orval 생성 + 생성물 typecheck |
 | `pnpm contracts:check` | 규범 문서와 저장소 설정의 기계적 정합성. verify 체인 투영, `pnpm` 명령·로컬 link 실존, 에이전트 문서 200줄 예산, 루트 포인터, 삭제 문서 이름·§번호·금지 추상화 근거 drift, 이관 sentinel, transport 포트 이음매 tripwire와 이름 붙은 요청 경로 상수의 계약 일치, seed 4-part 폐쇄·오염·부수 반출, 이관 manifest 실존. `--mode target`은 이관된 저장소용(코드 sentinel도 실패) |
 | `pnpm transplant:plan` · `transplant:stage` · `transplant:apply` · `transplant:verify` | 신규 저장소 이관 명령(`--target <repo>`). plan은 copy/merge/conditional/template/exclude 분류만, stage는 ADR 재번호·예시 치환을 적용한 사본과 `PENDING.md`, apply는 대상에 없는 파일만 복사(덮어쓰기 없음), verify는 대상에서 `contracts:check --mode target`→typecheck→lint→test:unit |
 | `pnpm api:pull` / `api:diff` | 원격 Swagger 수집·차이 분석. 네트워크가 필요하므로 `verify` 밖의 별도 작업이다 |
 | `pnpm build` / `preview` | 프로덕션 빌드 및 미리보기 |
+| `pnpm test:e2e:verify` | Chromium에서 smoke와 제품 시나리오의 요청 호출 경계(`@reference`) 검증 |
 | `pnpm test:e2e:smoke` | Chromium에서 Managers 첫 consumer의 draft → URL → API → table 흐름 검증 |
 
 전체 script는 `package.json`이 소유한다. CI(`.github/workflows/verify.yml`)는 `pnpm verify`와 같은 단계 집합을 static, unit 2개 shard, E2E의 네 runner로 병렬 실행하며, Chromium은 E2E runner만 설치한다.
+
+격리 worktree에서 검증할 때는 `PLAYWRIGHT_PORT=4184 pnpm verify`처럼 비어 있는 전용 포트를 지정한다. 로컬 Playwright는 같은 포트의 기존 서버를 재사용하므로, 기본 4173의 다른 작업 트리를 검사한 결과를 현재 diff의 증거로 쓰지 않는다. 포트·서버 실행 경로를 확인한 뒤 실패를 변경 전후에 귀속한다.
 
 `pnpm verify` 통과는 완성의 **필요조건이지 충분조건이 아니다.** 화면이 디자인과 같은지, 상호작용이 실제로 동작하는지는 검사하지 않는다. 판정 기준은 [`AGENTS.md`](AGENTS.md) §4에 있다.
 
@@ -82,3 +87,5 @@ src/shared/       도메인·서버 계약을 모르는 UI와 순수 공용 코�
 ## 기여
 
 작업 전에 [`AGENTS.md`](AGENTS.md)를 읽는다. 확인되지 않은 제품 정책·서버 계약·권한·enum 의미는 추측하지 않고 미확인으로 보고한다.
+
+화면 작성 시 폴더 배치 기준은 [Screen composition — Placement and naming](.agents/skills/feature-contract/references/screen-composition.md#placement-and-naming)을 확인한다. 화면 진입점은 workflow 루트, 표시 컴포넌트는 `ui/`, 상태·조회 실행 훅은 `model/`, API 선언은 feature의 `api/`에 둔다.

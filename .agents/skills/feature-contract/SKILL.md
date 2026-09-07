@@ -13,6 +13,12 @@ Select references by the surfaces actually present, not by the page type alone. 
 
 ## Read only what applies
 
+For screen/workflow work, use `node scripts/agents/cli.mjs context` to locate the target before selecting
+references. The inventory-owned context index connects evidence and related inner surfaces; `group`
+entries still require manual decomposition. Declare include/exclude decisions and requirement evidence
+through [prepare/review](../../../scripts/agents/README.md). A code path is a routing hint, not a screen
+template. New or incomplete evidence stays explicit; copy/style-only work uses the lighter maintenance path.
+
 - Before composing any screen, read that screen's section of the product inventory (`docs/reference/zero-sol/NN-*.md`: Figma composition, Notion policy sentences, open questions) and the judgment (`docs/reference/zero-sol-figma-analysis.md` §2/§5/§8). Also read every applicable card in `docs/reference/scenarios/` (its README lists them): a still frame cannot show which facts arrive without a request, what stays true when a connection drops, or what the server changes on its own, and designing without those is what forces a rewrite mid-build. Compose only what the inventory shows; record what it does not.
 - Adding a check, a block, a confirmation, a completion — or the sentence that announces one — means matching **both its trigger and how the product states it** against a ledger sentence or an explicit user decision. Where the ledger only says `필드 강조` or `선택 불가`, it is not a new error sentence. Leave what the ledger does not answer unbuilt and ask; mark only an explicitly allowed stand-in with `TRANSPLANT_PENDING_<ID>`. Passing `i18n:check` proves key parity, never that the product says this.
 - Route, params/search validation, guard, loader, preload, or navigation entry: read [references/router.md](references/router.md).
@@ -30,6 +36,8 @@ Select references by the surfaces actually present, not by the page type alone. 
 - Shared UI, shared state mechanic, or pure shared utility creation/promotion also requires [shared-ui-contract](../shared-ui-contract/SKILL.md).
 
 ## Boundaries
+
+- Before adding workflow files, check [folder placement](references/screen-composition.md#placement-and-naming); use the existing workflow as the owner, then separate `ui/` and `model/` where needed.
 
 - Route ownership and loader/preload rules are owned by [references/router.md](references/router.md).
 - Screen-internal responsibility decomposition and feature file placement, including existing screens, are owned by [references/screen-composition.md](references/screen-composition.md#feature-internal-decomposition).

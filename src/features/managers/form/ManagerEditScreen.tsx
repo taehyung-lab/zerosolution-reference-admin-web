@@ -1,3 +1,7 @@
+/**
+ * 수정용 상세 조회의 상태를 표시한 뒤 초기값을 폼에 넘기고 수정 mutation과 완료 이동을 연결한다.
+ * 실제 API에서도 필요한 흐름이다. 편집 중 서버 재조회가 입력 초안을 덮어쓰지 않도록 조회와 폼 수명을 구분한다.
+ */
 import { classifyFormError } from '@/api/form-error';
 import { useLocale } from '@/shared/i18n/locale-context';
 import { FormTextField } from '@/shared/ui/form/FormTextField';
@@ -24,11 +28,10 @@ export function ManagerEditScreen({ managerId }: { readonly managerId: string })
   const { t: sharedT } = useTranslation('shared');
   const detail = useManagerEditDetail(managerId);
 
-  // The header stays outside the state boundary so the title remains visible while the detail
-  // query is in an error state.
+  // 상세 조회가 실패해도 화면 제목은 남도록 헤더를 조회 상태 경계 밖에 둔다.
   return (
     <section>
-      <PageHeader breadcrumb={t('form.editBreadcrumb')} title={t('form.editTitle')} />
+      <PageHeader breadcrumbs={[t("path.settings"), t("path.managers"), t("path.detail"), t("path.edit")]} title={t('form.editTitle')} />
       <DetailStateBoundary
         state={detail.state}
         labels={{

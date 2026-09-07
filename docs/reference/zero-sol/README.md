@@ -7,6 +7,23 @@ Figma `ZEROsol (For Kakao)`(`Ogb6WpSpwCVhKggQ1NLRlQ`) 78 page와 Notion `DB: Wor
 [zero-sol-figma-analysis.md](../zero-sol-figma-analysis.md), 승격 절차는
 `.agents/skills/shared-ui-contract/references/promotion.md`, 단계는 `docs/decisions/0009-shared-boundaries.md`가 소유한다.
 
+## 작업 대상에서 근거 찾기
+
+[context.json](context.json)은 이 인벤토리의 **연결 정보**만 소유한다. 제품 정책은 아래 원장과
+시나리오에 그대로 둔다. `node scripts/agents/cli.mjs context`로 대상 목록을, 뒤에 ID를 붙여 해당
+인벤토리·시나리오·관련 내부 surface·기존 코드 경로를 찾는다. 실행·검사 계약은
+[scripts/agents/README.md](../../../scripts/agents/README.md)가 소유한다.
+
+현재 15개 인벤토리군을 연결하고 공연과 메시지의 일부 내부 surface를 별도로 이름 붙였다.
+`group`은 업무군 진입점이며 하위 화면 전체를 기계적으로 열거한 상태가 아니다. `surface`도
+관찰·시나리오 구현 완료를 뜻하지 않는다. 내정보·알림 등 시나리오 미확인과 대표 카드만 연결된
+부분은 `gap`에 적었다. KEYSCREEN의 별도 판독 범위는 아래 표에 유지하며 이 색인에 포함됐다고
+주장하지 않는다. 이관 때는 새 제품의 원장·경로로 연결을 다시 구성한다.
+
+새 화면을 실제 다룰 때 그 작업에 필요한 내부 surface를 좁혀 연결하고, 경로·제목·문서 절 변경 시
+같은 작업에서 색인을 갱신한다. `contracts:check`는 연결 실존·중복 ID·인벤토리 파일 누락을 검사하며,
+화면 분해의 완전성과 참조 내용의 적절성은 리뷰와 원문 대조가 소유한다.
+
 ## 왜 관찰과 판정을 분리하는가
 
 분석할 때마다 결론이 달라진 원인은 관찰을 매번 다시 하면서 판정이 함께 흔들린 것이다.

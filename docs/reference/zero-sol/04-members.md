@@ -2,7 +2,7 @@
 
 표 형식과 열 정의는 [README.md](README.md). Notion 열의 `(대기)`는 아래 **Notion 요점**과 `notion/` 원문으로 대체한다.
 
-이 화면군의 코드 소유와 구조 판정은 [판정 문서](../zero-sol-figma-analysis.md#구조-판정--회원-2026-09-06)가 소유한다. 이 원장은 관찰만 담는다.
+이 화면군의 코드 소유와 구조 판정은 [판정 문서](../zero-sol-figma-analysis.md#구조-판정--회원-2026-09-06)가 소유한다. 이 원장은 관찰과 코드 진입점만 담으며, 구현·검증 상태는 [회원 시나리오](../scenarios/member-list-and-detail.md)가 소유한다.
 
 ## 4.1.1 전체회원 (`129:14389` 검색전 / `129:14193` 검색후 / `129:14118` Case 정의)
 
@@ -10,15 +10,15 @@
 | --- | --- | --- | --- | --- | --- |
 | 4.1.1 | 페이지 헤더 | 제목 + breadcrumb(회원 > 활성회원 > 전체회원) + ⓘ tooltip "활성회원을 조회 및 관리합니다." | (대기) | tooltip 문구 출처 | `MemberListScreen`에서 `PageHeader` + `Tooltip` 적용 |
 | 4.1.1 | 검색 패널 | 헤더 "검색" + 우측 `+`/`−` disclosure. 검색전은 기간·검색어만 노출, 펼치면 가입방법·계정 상태·활동제한 추가 | (대기) | 접힘 기본값이 화면별로 고정인지 | `FilterPanel`(disclosure 있음) |
-| 4.1.1 | 기간 | 기준 select(가입일/최근접속일) + preset 라디오형 링크(전체·1년 전·6개월 전·3개월 전·1개월 전·7일 전·어제·오늘, 기본 전체 체크) + 하나의 range 입력(calendar 아이콘) | (대기) | 기준 목록이 화면별 어휘인지 | `PeriodField` + feature select |
-| 4.1.1 | 검색어 | 대상 select(이메일/이름/휴대폰번호) + 입력 + `⊕ 추가` + 추가된 조건 chip("이름 : 김영영", ⓧ 삭제) | (대기) | 다중 chip 상한, 같은 대상 중복 허용 | `KeywordChipField` + feature select |
+| 4.1.1 | 기간 | 기준 select(가입일/최근접속일) + preset 라디오형 링크(전체·1년 전·6개월 전·3개월 전·1개월 전·7일 전·어제·오늘, 기본 전체 체크) + 하나의 range 입력(calendar 아이콘) | (대기) | 기준 목록이 화면별 어휘인지 | `PeriodFilterField` + feature options |
+| 4.1.1 | 검색어 | 대상 select(이메일/이름/휴대폰번호) + 입력 + `⊕ 추가` + 추가된 조건 chip("이름 : 김영영", ⓧ 삭제) | (대기) | 다중 chip 상한, 같은 대상 중복 허용 | `KeywordFilterField` + feature options |
 | 4.1.1 | 다중선택 | 가입방법(전체·직접가입·카카오·네이버·애플·멜론 간편가입), 계정 상태(전체·일반회원·불량회원), 활동제한(전체·스페셜콘텐츠·1:1문의·입장제한설정). 각 그룹 "전체" 체크 + 개별 체크, 구분선 `|` | (대기) | 전체↔개별 동기화 규칙 | `CheckboxTree`(`emptyMeansAll`)가 전체/개별 대수를 소유 |
 | 4.1.1 | 검색 action | 패널 하단 중앙 `검색`(primary) + `초기화` | (대기) | 초기화가 기본값 복원인지 빈값인지 | `FilterPanel` actions |
 | 4.1.1 | 검색 전 상태 | 결과 영역에 "검색해주세요." 한 줄 + 우측 상단 `등록` 버튼만 노출. summary·toolbar·table·paging 없음 | (대기) | — | `ListResult.notSearched` |
 | 4.1.1 | summary | "검색결과 : 1,000" 단일 항목 | (대기) | — | `ResultSummary` |
 | 4.1.1 | 결과 toolbar 좌 | 보기 select(100·200·300·400·500·700·1000) + 정렬 select(가입일·최근접속일·가입방법·이메일·이름·휴대폰번호) | (대기) | 정렬 방향 UI 없음 — 컬럼 헤더 아이콘만 | `PageSizeControl`, `SortControl`(필드 select만; 방향은 `DataTable.meta.sort` 헤더 클릭) |
-| 4.1.1 | 결과 toolbar 우 | `선택▾` + `변경` (cascade: 계정 상태 > 일반회원 / 불량회원 > 활동제한 설정 checkbox 스페셜콘텐츠·1:1문의·입장제한설정) · `SMS` · `이메일` · `등록`(primary) | Notion: 선택 검증·변경 확인, 발송 정책 gate | 권한·정책 데이터 계약 | `MemberListActions`: 선택 검증·변경 확인 있음. SMS·이메일은 빈 dialog이며 본문·정책 gate 미구현 |
-| 4.1.1 | table | 헤더 전체선택 checkbox + 행 checkbox. 컬럼 등급·가입방법·이메일(마스킹)·이름·휴대폰번호(마스킹)·계정 상태·가입일(정렬 아이콘)·최근접속일. 하단 "- 이하 생략 -" 안내 행 | Notion: 행 클릭 시 회원 조회 | 마스킹 데이터 계약 | `useMemberListResult` + `DataTable`: 현재 페이지 선택 적용. 실제 route의 데이터 훅은 빈 결과만 반환 |
+| 4.1.1 | 결과 toolbar 우 | `선택▾` + `변경` (cascade: 계정 상태 > 일반회원 / 불량회원 > 활동제한 설정 checkbox 스페셜콘텐츠·1:1문의·입장제한설정) · `SMS` · `이메일` · `등록`(primary) | Notion: 선택 검증·변경 확인, 발송 정책 gate | 권한·정책 데이터 계약 | `MemberListActions` → route의 `MessageComposerDialog` → 메시지 폼·정책 gate |
+| 4.1.1 | table | 헤더 전체선택 checkbox + 행 checkbox. 컬럼 등급·가입방법·이메일(마스킹)·이름·휴대폰번호(마스킹)·계정 상태·가입일(정렬 아이콘)·최근접속일. 하단 "- 이하 생략 -" 안내 행 | Notion: 행 클릭 시 회원 조회 | 마스킹 데이터 계약 | `useMemberListData` → `useMemberListResult` + `DataTable`; fixture 조회 및 현재 페이지 선택 |
 | 4.1.1 | paging | ← Previous 1 2 3 … 67 68 Next → | (대기) | 페이지 그룹 크기 | `Pagination` |
 | 4.1.1 | 상단 바 | 통합검색 input · "로그아웃까지 남은시간 30:00 연장" · 프로필 · `현장발권` · 알림 벨 · 하단 언어 select(한국어) · copyright | (대기) | 세션 연장 정책 | app shell(미구현 항목 있음) |
 
@@ -38,17 +38,17 @@
 
 | 화면 | surface | Figma 관찰 | Notion 동작·정책 | 미확인 | 현재 코드 |
 | --- | --- | --- | --- | --- | --- |
-| 4.1.4 조회 | 페이지 헤더 action | 헤더 우측 `SMS` `이메일` (단건 대상) | (대기) | 권한 | `PageHeader.actions` slot 있음(미사용) |
+| 4.1.4 조회 | 페이지 헤더 action | 헤더 우측 `SMS` `이메일` (단건 대상) | (대기) | 권한 | `MemberDetailScreen`의 `PageHeader.actions` → 단건 메시지 |
 | 4.1.4 조회 | 섹션 | 접이식 섹션 4개(회원정보·활동정보·회원상담·업데이트 이력), 각 헤더 `^` | (대기) | 접힘 상태 기억 | `SectionCard`(`collapsible/open/onOpenChange/defaultOpen/keepMounted/errorCount`) |
 | 4.1.4 조회 | 상세 필드 | 2열 dl(계정 상태·이메일·비밀번호(`비밀번호 변경` 버튼)·이름·생년월일·휴대폰번호·가입일·가입방법). 하단 중앙 `개인정보 전체보기`(link) `수정`(primary), 우측 `탈퇴`(link) | (대기) | 마스킹 해제 권한·감사 | `DetailField` |
-| 4.1.4 조회 | 섹션 내 tab+검색+mini table | 활동정보: 1차 분석 tab(티켓인증·관람인증·채권함·입장기록; 세 번째 명칭은 아래 사용자 결정으로 대체) + 검색 input(placeholder "공연명, 예매번호, 좌석번호", ⓧ clear) + checkbox table + `선택삭제` + paging. 컬럼은 checkbox·인증일·공연명·회차·공연일시·예매번호·좌석번호. 빈 상태 문구 "인증 기록이 없습니다." / 검색 무결과 "일치하는 검색결과가 없습니다." | Notion의 티켓인증·관람인증·재관람·입장기록 채택(2026-09-05 사용자 결정) | tab별 컬럼 차이·삭제 권한 | 없음 |
-| 4.1.4 조회 | 인라인 폼 | 회원상담: 접수일(date)·담당자·문의유형*(select)·답변일·`상담내용 및 처리결과`(textarea)·`저장` — 상세 안에서 즉시 저장 | (대기) | 저장 후 이력 반영 | 없음 |
-| 4.1.4 조회 | 이력 table | 업데이트 이력: 업데이트일·사항(한 셀에 수정·삭제 등 여러 종류를 줄바꿈)·담당자. 담당자는 `이름 (계정)` 형식이며 회원가입 행은 빈칸 | (대기) | — | 없음 |
+| 4.1.4 조회 | 섹션 내 tab+검색+mini table | 활동정보: 1차 분석 tab(티켓인증·관람인증·채권함·입장기록; 세 번째 명칭은 아래 사용자 결정으로 대체) + 검색 input(placeholder "공연명, 예매번호, 좌석번호", ⓧ clear) + checkbox table + `선택삭제` + paging. 컬럼은 checkbox·인증일·공연명·회차·공연일시·예매번호·좌석번호. 빈 상태 문구 "인증 기록이 없습니다." / 검색 무결과 "일치하는 검색결과가 없습니다." | Notion의 티켓인증·관람인증·재관람·입장기록 채택(2026-09-05 사용자 결정) | tab별 컬럼 차이·삭제 권한 | `MemberActivitySection` |
+| 4.1.4 조회 | 인라인 폼 | 회원상담: 접수일(date)·담당자·문의유형*(select)·답변일·`상담내용 및 처리결과`(textarea)·`저장` — 상세 안에서 즉시 저장 | (대기) | 저장 후 이력 반영 | `MemberCounselSection` |
+| 4.1.4 조회 | 이력 table | 업데이트 이력: 업데이트일·사항(한 셀에 수정·삭제 등 여러 종류를 줄바꿈)·담당자. 담당자는 `이름 (계정)` 형식이며 회원가입 행은 빈칸 | (대기) | — | `UpdateHistory` |
 | 4.1.4 (`129:16662`) | 개인정보 전체보기 alert | 운영자 비밀번호 재입력 후 보호 조치 해제. `확인`·`취소` | (대기) | 성공 후 재조회/클라이언트 해제, 해제 범위, 감사 기록 | `ConfirmDialog`류 |
 | 4.1.4 (`129:16655`, `129:16647`) | 회원 탈퇴 alert | 탈퇴 사유(placeholder `5자 이상`)와 운영자 비밀번호 입력 후 `탈퇴하기`; 별도 알림은 즉시 탈퇴·복원 불가 확인 | (대기) | — | `ConfirmDialog`류 |
 | 4.1.4 (`129:16641`) | 비밀번호 변경 alert | 비밀번호·비밀번호 확인 입력, 제약 placeholder와 `확인`·`취소` | (대기) | 변경 완료 alert(`129:16633`) 카피 | `ConfirmDialog`류 |
-| 4.1.4 | 팝업 | SMS(`134:12825`)는 textarea, 이메일(`134:12930`)은 HTML editor. 티켓 발권(`150:14380`) 별도. 메시지 유형 옵션은 Figma 미커스터마이즈 placeholder라 Notion만 계약을 갖는다 | (대기) | 발송 대상 단건/다건 | 없음 |
-| 4.1.4 | 등록·수정 | 아래 상세·폼·팝업 판독 절 참조 | 아래 Notion 요점과 원문 참조 | — | 등록 `MemberCreateScreen`; 수정 `MemberEditScreen`은 초기값을 받는 폼 구현, 제품 route·조회 연결 미구현 |
+| 4.1.4 | 팝업 | SMS(`134:12825`)는 textarea, 이메일(`134:12930`)은 HTML editor. 티켓 발권(`150:14380`) 별도. 메시지 유형 옵션은 Figma 미커스터마이즈 placeholder라 Notion만 계약을 갖는다 | (대기) | 발송 대상 단건/다건 | `MessageComposerDialog`·`ReissueDialog`; 동작 상태는 시나리오 카드 참조 |
+| 4.1.4 | 등록·수정 | 아래 상세·폼·팝업 판독 절 참조 | 아래 Notion 요점과 원문 참조 | — | `MemberCreateScreen`·`MemberEditScreen`; `/members/$memberId/edit`에서 `useMemberDetail` 연결 |
 
 ## 4.2.1 휴면회원 (`129:17572` 검색전 / `129:17364` 검색후 / `129:17295` Case) · 4.2.2 탈퇴회원 (`129:18361` 검색전 / `129:18192` 검색후 / `129:18123` Case / `148:7774` 회원 조회) · 4.3 회원상담 (`129:9426` 리스트 / `129:9362` Case / `129:9239` 조회) · 4.4 불량회원 소명신청 · 4.5.1 회원접속
 
@@ -85,8 +85,8 @@
 | --- | --- | --- | --- | --- | --- |
 | 4.1.4 회원 등록 | 단일 섹션 폼 | 섹션 헤더 "회원정보"(접힘 없음). 1열 반폭: 이메일*·비밀번호*·이름*·생년월일*(date)·휴대폰번호*. placeholder가 제약 문구("3~100자 내외", "영문 대/소문자+숫자+특수문자 중 3종류 이상, 8~20자 내외"). 하단 중앙 `저장`·`취소` | Notion: 필수 미입력 → 필드 강조, 유효 → 저장 확인 alert → 저장 완료 alert | 서버 필드 오류 표시 위치 | `MemberCreateScreen`: 필드·검증·확인 callback·dirty 이탈 구현. 완료 응답·placeholder 대조는 미적용 |
 | 4.1.4 회원 수정 | 단일 섹션 폼 | 계정 상태*(select) + 활동제한 설정*(체크 그룹, 불량회원일 때) 2열, 이메일 **읽기 전용 텍스트**, 이름*·생년월일*·휴대폰번호* | Notion: "활동제한 설정 → 전체·스페셜콘텐츠·1:1문의 중 다중선택" | 계정 상태 변경 시 활동제한 노출 조건 | `ManagerEditScreen` 읽기 전용 ID와 같은 패턴 |
-| 4.1.4 SMS 발송·이메일 발송 | **dialog 안 폼** | 제목 바 + ✕. 섹션 헤더 3개(보내는 사람 / 받는 사람 / 내용). SMS는 textarea, 이메일은 HTML editor. Figma 메시지 유형 옵션은 미커스터마이즈 placeholder이고 `정보성·광고성` 계약은 Notion에만 있다. 하단 `보내기`·`취소` | Notion: 마케팅 정책 Case01~03으로 alert/팝업 분기 | 받는 사람 편집 가능 여부 | `Dialog` primitive + `SectionCard` 조합 없음 |
-| 4.4 소명신청 조회 | 상세 + 인라인 폼 | 헤더 action SMS·이메일. 섹션: 회원정보(읽기 dl + `회원정보 조회` link) · 소명신청 정보(읽기 + 첨부파일 link 3개) · **처리 결과(인라인 폼: 처리상태 select·소명결과* select·거절 사유* select→직접입력*·담당자 의견* textarea·`저장`·`취소`)** · 업데이트 이력 table. Case 정의: 입력 전 / 통보 이전 수정가능 / 통보 이후 **수정불가(읽기 전용)** 3 상태 | (notion/04 참조) | 통보 후 잠금 조건 | 상세 안 인라인 폼 패턴 없음 |
+| 4.1.4 SMS 발송·이메일 발송 | **dialog 안 폼** | 제목 바 + ✕. 섹션 헤더 3개(보내는 사람 / 받는 사람 / 내용). SMS는 textarea, 이메일은 HTML editor. Figma 메시지 유형 옵션은 미커스터마이즈 placeholder이고 `정보성·광고성` 계약은 Notion에만 있다. 하단 `보내기`·`취소` | Notion: 마케팅 정책 Case01~03으로 alert/팝업 분기 | 받는 사람 편집 가능 여부 | `MessageFormDialog`·`MessageRecipients`·`RichTextEditor` |
+| 4.4 소명신청 조회 | 상세 + 인라인 폼 | 헤더 action SMS·이메일. 섹션: 회원정보(읽기 dl + `회원정보 조회` link) · 소명신청 정보(읽기 + 첨부파일 link 3개) · **처리 결과(인라인 폼: 처리상태 select·소명결과* select·거절 사유* select→직접입력*·담당자 의견* textarea·`저장`·`취소`)** · 업데이트 이력 table. Case 정의: 입력 전 / 통보 이전 수정가능 / 통보 이후 **수정불가(읽기 전용)** 3 상태 | (notion/04 참조) | 통보 후 잠금 조건 | `AppealProcessingForm` |
 | 4.3 회원상담 조회 | 상세 | 레이어만(미판독). 4.1.4 회원 조회의 회원상담 섹션과 같은 필드 추정 | — | — | — |
 
 ## Notion 요점 (원문: [notion/04-members.md](notion/04-members.md))

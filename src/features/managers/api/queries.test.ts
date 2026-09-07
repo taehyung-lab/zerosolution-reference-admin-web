@@ -1,7 +1,7 @@
 import { getManagerTypes } from '@/api/generated/endpoints';
 import { QueryClient } from '@tanstack/react-query';
 import { describe, expect, it, vi } from 'vitest';
-import { managerSearchDefaults, type ManagerSearch } from '../list/search-schema';
+import { managerSearchDefaults, type ManagerSearch } from '../list/model/search-schema';
 import {
   managerListQuery,
   managerDetailQuery,

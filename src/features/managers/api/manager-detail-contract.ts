@@ -1,3 +1,7 @@
+/**
+ * 운영자 상세와 변경 이력의 생성 타입을 feature 내부 이름으로 노출한다.
+ * 새 OpenAPI 연결 때 이 경계와 응답 소비처를 함께 대조하며 현재 타입이 신규 제품 계약임을 뜻하지 않는다.
+ */
 import type {
   CnChangeLogDTOChange,
   CnChangeLogDTOInventory,

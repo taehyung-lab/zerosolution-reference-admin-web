@@ -6,7 +6,7 @@ import {
   within,
 } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { TestLocaleProvider } from "@/test/locale";
+import { TestQueryLocaleProvider as TestLocaleProvider } from "@/test/query-locale";
 import { MemberDownloadAction } from "./MemberDownloadAction";
 import { ReissueDialog } from "../counsel/ReissueDialog";
 import { AppealDetailScreen } from "../appeals/AppealDetailScreen";
@@ -127,20 +127,7 @@ describe("secondary member pre-request workflows", () => {
       target: { value: "기존 상담 수정 초안" },
     });
     fireEvent.click(within(edit).getByRole("button", { name: "취소" }));
-    fireEvent.click(
-      within(screen.getByRole("dialog", { name: "알림" })).getByRole("button", {
-        name: "취소",
-      }),
-    );
-    expect(within(edit).getByRole("textbox", { name: /상담내용/ })).toHaveValue(
-      "기존 상담 수정 초안",
-    );
-    fireEvent.click(within(edit).getByRole("button", { name: "취소" }));
-    fireEvent.click(
-      within(screen.getByRole("dialog", { name: "알림" })).getByRole("button", {
-        name: "확인",
-      }),
-    );
+    expect(screen.queryByRole("dialog", { name: "알림" })).toBeNull();
     await waitFor(() =>
       expect(
         screen.queryByRole("form", { name: "수정" }),
@@ -225,7 +212,7 @@ describe("secondary member pre-request workflows", () => {
     expect(screen.queryAllByRole("combobox", { hidden: true })).toHaveLength(0);
     expect(screen.queryAllByRole("textbox", { hidden: true })).toHaveLength(0);
   });
-  it("opens the counsel reissue boundary and preserves a dirty note on cancelled close", () => {
+  it("opens the counsel reissue boundary and closes a dirty note without a question", () => {
     const detail = counselDetailFixture("counsel-1");
     if (!detail) throw new Error("Missing counsel fixture");
     const onClose = vi.fn();
@@ -249,13 +236,8 @@ describe("secondary member pre-request workflows", () => {
     const content = screen.getByRole("textbox", { name: /상담내용/ });
     fireEvent.change(content, { target: { value: "Draft note" } });
     fireEvent.keyDown(document, { key: "Escape" });
-    fireEvent.click(
-      within(screen.getByRole("dialog", { name: "알림" })).getByRole("button", {
-        name: "취소",
-      }),
-    );
-    expect(content).toHaveValue("Draft note");
-    expect(onClose).not.toHaveBeenCalled();
+    expect(screen.queryByRole("dialog", { name: "알림" })).toBeNull();
+    expect(onClose).toHaveBeenCalledOnce();
   });
   it("renders all five list entry surfaces and commits pending keyword on search", () => {
     const onSearchChange = vi.fn();
@@ -388,6 +370,9 @@ describe("secondary member pre-request workflows", () => {
         <ReissueDialog
           printers={[{ ...printer, busy }]}
           preview={<p>Reference preview</p>}
+          isPending={false}
+          isError={false}
+          onRetry={vi.fn()}
           onClose={vi.fn()}
           onRequest={onRequest}
         />

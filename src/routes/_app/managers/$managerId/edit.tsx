@@ -1,49 +1,16 @@
-import { noop } from '@tanstack/react-query';
-import { createFileRoute, notFound } from '@tanstack/react-router';
-import {
-  managerAgencyOptionsQuery,
-  managerTypeOptionsQuery,
-} from '@/features/managers/api/queries';
-import { ManagerEditScreen } from '@/features/managers/form/ManagerEditScreen';
-import { env } from '@/env';
+import { requestManagerEdit } from '@/features/managers/form/manager-form-requests';
+import { createFileRoute } from '@tanstack/react-router';
+import { useTranslation } from 'react-i18next';
+import { DetailStateBoundary } from '@/shared/ui/patterns/DetailStateBoundary';
+import { useManagerDirectoryDetail } from '@/features/managers/detail/useManagerDirectoryDetail';
 import { ManagerEditInputScreen } from '@/features/managers/form/ManagerInputScreens';
-import {
-  findManagerFixture,
-  managerOptionFixtures,
-} from '@/features/managers/fixtures/managers';
 import { toManagerEditDefaults } from '@/features/managers/form/manager-form-defaults';
-import { useState } from 'react';
-import { DevelopmentNotice } from '@/app/shell/DevelopmentNotice';
-
-// 이 폴더에 route.tsx 가 없으므로 조회(index)와 형제 leaf 다. 공유 chrome 이 생길 때만 route.tsx 를 둔다(router.md).
-// 옵션 데이터만 진입 시 warm 한다. 수정 대상 조회는 primary data 라 화면이 blocking overlay 로 기다린다.
-export const Route = createFileRoute('/_app/managers/$managerId/edit')({
-  loader: ({ context: { locale, queryClient } }) => {
-    if (env.VITE_REFERENCE_SCENARIOS) return;
-    void queryClient.query(managerTypeOptionsQuery(locale)).catch(noop);
-    void queryClient.query(managerAgencyOptionsQuery(locale)).catch(noop);
-  },
-  component: ManagerEditRoute,
-});
+export const Route = createFileRoute('/_app/managers/$managerId/edit')({ component: ManagerEditRoute });
 function ManagerEditRoute() {
   const { managerId } = Route.useParams();
-  const [ready, setReady] = useState(false);
-  if (env.VITE_REFERENCE_SCENARIOS) {
-    const record = findManagerFixture(managerId);
-    if (!record) {
-      notFound({ throw: true });
-      return null;
-    }
-    // TRANSPLANT_PENDING_MANAGER_EDIT_INPUT: the callback is the product API connection point.
-    return (<>
-      <DevelopmentNotice ready={ready} />
-      <ManagerEditInputScreen
-        managerId={managerId}
-        defaults={toManagerEditDefaults(record.detail)}
-        optionsForType={managerOptionFixtures}
-        onConfirm={() => setReady(true)}
-      />
-    </>);
-  }
-  return <ManagerEditScreen managerId={managerId} />;
+  const { t } = useTranslation('managers');
+  const query = useManagerDirectoryDetail(managerId);
+  if (!query.data) return <DetailStateBoundary state={query.state} labels={{ error: t('detail.error'), notFound: t('detail.notFound') }} retryLabel={t('result.retry')} onRetry={() => { void query.retry(); }}>{null}</DetailStateBoundary>;
+  // TRANSPLANT_PENDING_MANAGER_EDIT_INPUT: 최종 입력 확인은 업무 요청 함수까지 전달하며 저장 성공은 만들지 않는다.
+  return <ManagerEditInputScreen key={managerId} onConfirm={requestManagerEdit} managerId={managerId} defaults={toManagerEditDefaults(query.data.detail)} />;
 }

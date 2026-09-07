@@ -1,9 +1,14 @@
+/**
+ * 소명 목록의 표시 필드·날짜/연락처 표시·선택 열과 가능한 정렬 이벤트를 정의한다.
+ * 실제 API에서도 컬럼 책임은 유지한다. 서버가 마스킹한 값을 반환하는지는 응답 계약에서 확인하고 원본 주소를 추정하지 않는다.
+ */
+import { selectionColumn } from "@/shared/ui/patterns/selection-column";
+import { maskEmail, maskPhone } from "@/shared/lib/mask-contact";
 import type { DataTableProps } from "@/shared/ui/patterns/DataTable";
 import type { TFunction } from "i18next";
 import type { PageRowSelection } from "@/shared/lib/use-page-row-selection";
-import { Checkbox } from "@/shared/ui/primitives/Checkbox";
 import { formatMemberInstant } from "../model/format-member-instant";
-import { maskMemberEmail, maskMemberPhone } from "../model/member-profile";
+
 import type { AppealRow } from "../model/member-records";
 import type { MemberRecordSearch } from "../records/member-record-search";
 
@@ -21,38 +26,23 @@ export function buildAppealColumns({
   ) => void;
 }): DataTableProps<AppealRow>["columns"] {
   return [
-    {
-      id: "selection",
-      header: () => (
-        <Checkbox
-          aria-label={t("result.selectPage")}
-          checked={selection.isAllChecked}
-          indeterminate={selection.isMixed}
-          onChange={(event) => selection.togglePage(event.target.checked)}
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          aria-label={t("result.selectRow", { name: row.original.email })}
-          checked={selection.isChecked(row.original)}
-          onChange={(event) =>
-            selection.toggleRow(row.original, event.target.checked)
-          }
-        />
-      ),
-    },
+    selectionColumn({
+      selection,
+      pageLabel: t("result.selectPage"),
+      rowLabel: (row) => t("result.selectRow", { name: row.email }),
+    }),
     {
       id: "email",
       accessorKey: "email",
       header: t("columns.email"),
-      cell: ({ row }) => maskMemberEmail(row.original.email),
+      cell: ({ row }) => maskEmail(row.original.email),
     },
     { id: "name", accessorKey: "name", header: t("columns.name") },
     {
       id: "phone",
       accessorKey: "phone",
       header: t("columns.phone"),
-      cell: ({ row }) => maskMemberPhone(row.original.phone),
+      cell: ({ row }) => maskPhone(row.original.phone),
     },
     {
       id: "accountStatus",

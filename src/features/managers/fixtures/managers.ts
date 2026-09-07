@@ -1,9 +1,14 @@
+/**
+ * 제품 운영자 목록·상세·수정 초기값·옵션을 연결하는 예시 데이터다.
+ * 실제 서버 상태나 권한 정책의 근거가 아니다. 조회 경계 전환 뒤 직접 소비를 제거하고 필요한 시나리오만 mock/테스트에 남긴다.
+ */
 import type { ManagerDetail } from "../api/manager-detail-contract";
 import type { ManagerAccountStatus } from "../detail/manager-detail-actions";
-import type { ManagerFormOptions } from "../form/useManagerFormOptions";
 import type { ManagerDirectoryRow } from "../model/manager";
 
-/** TRANSPLANT_PENDING_MANAGER_REFERENCE_INPUTS: read-only scenario examples, replaced by product data and wire mapping. */
+/**
+ * TRANSPLANT_PENDING_MANAGER_REFERENCE_INPUTS: 읽기 전용 시나리오 예시다. 실제 제품 데이터와 서버 변환이 연결되면 교체한다.
+ */
 const referenceStates = [
   "awaiting",
   "rejected",
@@ -59,29 +64,13 @@ export const managerRowFixtures: readonly ManagerDirectoryRow[] =
     updatedAt: detail.updatedAt ?? "",
   }));
 
+export const managerTypeFixtures = [
+  { value: "INTERNAL", label: "Example type" },
+  { value: "SITE", label: "Example site type" },
+] as const;
+
+/** 권한마다 어떤 유형에서 쓰이는지를 함께 둔다. 목록 필터는 전체를, 등록·수정은 선택 유형의 권한만 쓴다. */
 export const managerPermissionFixtures = [
   { value: "1", label: "Example permission", type: "INTERNAL" },
   { value: "2", label: "Example site permission", type: "SITE" },
 ] as const;
-
-export function managerOptionFixtures(type: string): ManagerFormOptions {
-  const ready = (items: readonly { value: string; label: string }[]) => ({
-    state: "ready" as const,
-    items,
-    retry: () => undefined,
-  });
-  return {
-    isAgency: false,
-    typeSelected: type !== "",
-    type: ready([
-      { value: "INTERNAL", label: "Example type" },
-      { value: "SITE", label: "Example site type" },
-    ]),
-    permission: ready(
-      managerPermissionFixtures.filter(
-        (permission) => permission.type === type,
-      ),
-    ),
-    agency: ready([]),
-  };
-}

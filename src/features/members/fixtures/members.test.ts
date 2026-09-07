@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   findMemberFixture,
-  selectMemberFixtures,
+  selectMemberProfilePage,
   selectMemberActivityFixture,
 } from "./members";
-import { resolveMemberSearch } from "../list/search-schema";
+import { resolveMemberSearch } from "../list/model/search-schema";
 
 describe("explicit member reference data", () => {
   it("isolates activity targets by member and tab and exposes the second page", () => {
@@ -32,33 +32,33 @@ describe("explicit member reference data", () => {
     expect(second.rows[0]?.id).not.toBe(first.rows[0]?.id);
   });
   it("filters the product variants before paging and preserves stable detail identity", () => {
-    const general = selectMemberFixtures(
+    const general = selectMemberProfilePage(
       resolveMemberSearch({ periodType: "joinedAt" }),
       "general",
     );
-    const flagged = selectMemberFixtures(
+    const flagged = selectMemberProfilePage(
       resolveMemberSearch({ periodType: "joinedAt" }),
       "flagged",
     );
     expect(general.total).toBe(1);
     expect(flagged.total).toBe(1);
-    expect(general.rows[0]?.key).not.toBe(flagged.rows[0]?.key);
+    expect(general.rows[0]?.id).not.toBe(flagged.rows[0]?.id);
     expect(
-      findMemberFixture(flagged.rows[0]!.key)?.values.restrictions,
+      findMemberFixture(flagged.rows[0]!.id)?.values.restrictions,
     ).toEqual(["inquiry"]);
   });
-  it("uses unmasked facts for keyword filters and rejects unknown member IDs", () => {
-    const data = selectMemberFixtures(
+  it("answers keyword filters with unmasked facts and rejects unknown member IDs", () => {
+    const data = selectMemberProfilePage(
       resolveMemberSearch({
         keywords: [{ field: "email", value: "flagged@example.test" }],
       }),
       "all",
     );
     expect(data.total).toBe(1);
-    expect(data.rows[0]?.email).toContain("*");
+    expect(data.rows[0]?.email).toBe("flagged@example.test");
     expect(findMemberFixture("unknown")).toBeUndefined();
     expect(
-      selectMemberFixtures(
+      selectMemberProfilePage(
         resolveMemberSearch({
           keywords: [{ field: "name", value: "no match" }],
         }),

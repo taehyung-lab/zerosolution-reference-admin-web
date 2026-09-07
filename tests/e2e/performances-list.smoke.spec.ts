@@ -1,0 +1,25 @@
+import { expect, test } from '@playwright/test';
+
+test('@smoke performance list follows Notion periods and reset without a fake API', async ({ page }) => {
+  await page.goto('/performances');
+  await expect(page.getByRole('heading', { name: '공연 목록', exact: true })).toBeVisible();
+  await expect(page.getByRole('row')).toHaveCount(3);
+  const criterion = page.getByRole('combobox', { name: '기간 기준' });
+  await criterion.click();
+  await expect(page.getByRole('option')).toHaveText(['공연일', '등록일', '최근업데이트일']);
+  await page.getByRole('option', { name: '등록일', exact: true }).click();
+  await page.getByRole('textbox', { name: '검색어', exact: true }).fill('공연');
+  await expect(page).toHaveURL(/\/performances$/);
+  await page.getByRole('form', { name: '검색 조건', exact: true }).getByRole('button', { name: '검색', exact: true }).click();
+  await expect(page).toHaveURL(/periodType=registeredAt/);
+  await expect(page).toHaveURL(/keywords=/);
+  await page.getByRole('button', { name: '초기화', exact: true }).click();
+  await expect(page).toHaveURL(/searched=false/);
+  await expect(page.getByText('검색 조건을 설정한 후 검색해 주세요.')).toBeVisible();
+  await expect(page.getByRole('textbox', { name: '검색어', exact: true })).toHaveValue('');
+  await page.reload();
+  await expect(page.getByText('검색 조건을 설정한 후 검색해 주세요.')).toBeVisible();
+  await page.getByRole('form', { name: '검색 조건', exact: true }).getByRole('button', { name: '검색', exact: true }).click();
+  await expect(page.getByRole('row')).toHaveCount(3);
+  await expect(page).toHaveURL(/\/performances$/);
+});

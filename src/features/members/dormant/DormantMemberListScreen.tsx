@@ -1,11 +1,17 @@
+import { dormantDataQuery } from "../api/list-queries";
+/**
+ * 휴면 목록의 필터·데이터·결과·업무 액션을 연결하는 화면 조립 컴포넌트다.
+ * 실제 API에서도 조립 책임은 유지한다. Query가 예시 응답과 로딩/실패를 전달하며 실제 API에서는 응답 공급 연결부를 교체한다.
+ */
 import { useTranslation } from "react-i18next";
 import { PageHeader } from "@/shared/ui/patterns/PageHeader";
 import { useMemberRecordFilter } from "../records/useMemberRecordFilter";
 import type { MemberRecordSearch } from "../records/member-record-search";
 import { DormantMemberListFilters } from "./DormantMemberListFilters";
-import { DormantMemberListResult } from "./DormantMemberListResult";
-import { DormantMemberListActions } from "./DormantMemberListActions";
-import { useDormantMemberListData } from "./useDormantMemberListData";
+import { MemberRecordResult } from "../records/MemberRecordResult";
+import { MemberMessageActions } from "../records/MemberMessageActions";
+import { Button } from "@/shared/ui/primitives/Button";
+import { useMemberRecordListData } from "../records/member-record-data";
 import { useDormantMemberListResult } from "./useDormantMemberListResult";
 export function DormantMemberListScreen({
   search,
@@ -25,25 +31,31 @@ export function DormantMemberListScreen({
 }) {
   const { t } = useTranslation("members");
   const filter = useMemberRecordFilter(search, onSearchChange, "joinedAt");
-  const data = useDormantMemberListData(search);
+  const data = useMemberRecordListData(search, dormantDataQuery, search.periodType !== undefined);
+  const searched = data.searched;
   const result = useDormantMemberListResult({ search, data, onSearchChange });
   return (
     <section>
       <PageHeader title={t("secondary.dormant")} />
       <DormantMemberListFilters filter={filter} />
-      <DormantMemberListResult
+      <MemberRecordResult
         search={search}
         data={data}
-        result={result}
+        columns={result.columns}
+        sortOptions={result.sorts}
         onSearchChange={onSearchChange}
         onActivate={onActivate}
-        actions={
-          <DormantMemberListActions
-            searched={data.searched}
-            selectedIds={result.selectedIds}
-            onRegister={onRegister}
-            onMessage={onMessage}
-          />
+        toolbarRight={
+          <>
+            <Button type="button" onClick={onRegister}>
+              {t("actions.register")}
+            </Button>
+            <MemberMessageActions
+              visible={searched}
+              selectedIds={result.selectedIds}
+              onMessage={onMessage}
+            />
+          </>
         }
       />
     </section>

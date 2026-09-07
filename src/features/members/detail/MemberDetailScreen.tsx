@@ -1,3 +1,8 @@
+/**
+ * 회원 정보·활동·상담·상세 액션을 조립하고 대상 회원과 입력을 상위 요청에 연결한다.
+ * API 연결 후에도 화면 조립은 유지한다. 상세 데이터의 로딩·실패·캐시와 원본 개인정보 조회는 별도 조회 workflow의 책임이다.
+ */
+import { maskEmail, maskPhone } from "@/shared/lib/mask-contact";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -13,24 +18,20 @@ import {
   type UpdateHistoryEntry,
 } from "@/shared/ui/patterns/UpdateHistory";
 import { Button } from "@/shared/ui/primitives/Button";
-import {
-  maskMemberEmail,
-  maskMemberPhone,
-  type MemberProfile,
-} from "../model/member-profile";
+import { type MemberProfile } from "../model/member-profile";
 import { MemberActionDialog } from "./MemberActionDialog";
 import type { MemberDetailActionRequest } from "./member-detail-actions";
 import {
   MemberActivitySection,
+  type MemberActivityData,
   type MemberActivityDelete,
-  type MemberActivityRow,
   type MemberActivitySearch,
 } from "./activity/MemberActivitySection";
-import { MemberCounselSection } from "./counsel/MemberCounselSection";
-import type {
-  MemberCounselInput,
-  MemberCounselRecord,
-} from "./counsel/member-counsel-schema";
+import {
+  MemberCounselSection,
+  type MemberCounselRecords,
+} from "@/features/members/counsel/MemberCounselSection";
+import type { MemberCounselInput } from "@/features/members/counsel/member-counsel-schema";
 
 export type MemberDetailRequest =
   | MemberDetailActionRequest
@@ -69,13 +70,10 @@ export function MemberDetailScreen({
   onRequest,
 }: {
   readonly member: MemberProfile;
-  readonly activity: {
-    readonly rows: readonly MemberActivityRow[];
-    readonly total: number;
-  };
+  readonly activity: MemberActivityData;
   readonly activityQuery: MemberActivitySearch;
   readonly onActivitySearch: (search: MemberActivitySearch) => void;
-  readonly counsel: readonly MemberCounselRecord[];
+  readonly counsel: MemberCounselRecords;
   readonly history: readonly UpdateHistoryEntry[];
   readonly operatorName: string;
   readonly onEdit: () => void;
@@ -111,7 +109,7 @@ export function MemberDetailScreen({
             </DetailField>
           ) : null}
           <DetailField label={t("form.email")}>
-            {maskMemberEmail(member.email)}
+            {maskEmail(member.email)}
           </DetailField>
           <DetailField label={t("form.password")}>
             <Button onClick={() => setAction("password")}>
@@ -123,7 +121,7 @@ export function MemberDetailScreen({
             {member.values.birthDate}
           </DetailField>
           <DetailField label={t("form.phone")}>
-            {maskMemberPhone(member.values.phone)}
+            {maskPhone(member.values.phone)}
           </DetailField>
           <DetailField label={t("columns.joinedAt")}>
             {formatDate(member.joinedAt)}{" "}
@@ -154,8 +152,7 @@ export function MemberDetailScreen({
       )}
       <SectionCard title={t("activity.title")} keepMounted>
         <MemberActivitySection
-          rows={activity.rows}
-          total={activity.total}
+          data={activity}
           query={activityQuery}
           onSearch={onActivitySearch}
           onDelete={(input) =>

@@ -1,0 +1,77 @@
+# Seed bundles and transplant inputs
+
+Owner: this file explains what a new project takes from this repository and in what order.
+`seed.mjs` owns the actual declarations and the closure calculation; ADRs own why each boundary was
+drawn. Several capability contracts (list, form, detail, transport) consume this procedure, so it does
+not belong to any one of them.
+
+## What a bundle is
+
+A new project does not copy this repository. It takes **adoption candidates**, and each candidate is
+declared as one bundle of four parts plus its ownership split:
+
+1. **code** — the public entry points.
+2. **skill** — the reference `file` + `heading` + a `marker` sentence inside that section.
+3. **ADR** — the `file` + `heading` + a `marker` line that records the decision and its stage.
+4. **tests** — the focused tests that pin the behaviour.
+
+`ownership.shared` and `ownership.feature` say what the contract owns and what stays with the product.
+A bundle missing any part is not an adoption candidate; it is code that happens to exist.
+
+## What the checker proves, and what it does not
+
+People choose the four roots and the ownership split. `contracts:check` then computes, from those roots
+only:
+
+- the local import closure of each code root and of each declared focused test;
+- that every declared file, heading and marker actually exists;
+- that no two bundles own the same code root;
+- that the materialized seed is closed — no file in it imports something outside it;
+- that no feature, route, generated or domain-translation file leaked into the seed.
+
+A focused test's explicit `vi.mock` is a real execution seam, so the mocked module's production
+dependencies are not walked. If a closure comes out wider than expected, narrow the entry point or cut
+the dependency — do not append files to a list.
+
+The checker proves declaration and closure. **It does not judge whether a value is right or whether a
+candidate should be adopted.** That stays with review.
+
+## Applying a bundle to a new product
+
+1. Split the new product's screens and logic by surface, and extract UI, state ownership, URL, API
+   payload/cache, permission, i18n, navigation and failure/recovery as requirements.
+2. Compare each requirement against the existing candidates and judge `그대로 채택 / 제품에 맞게 수정 /
+   제외 / feature-local 신규 구현`. Meaning, lifecycle, ownership and failure behaviour must match — a
+   shared name is not evidence.
+3. Assemble only the adopted minimum into the first representative vertical slice. When a Manager value
+   or a rehearsal contract is needed, do not widen the shared API; return it to the product feature.
+4. Verify each requirement against real screens and responses, then confirm, narrow or demote the
+   provisional candidates once a second real consumer exists.
+
+Leave `TRANSPLANT_PENDING_<ID>` wherever an adoption decision is still open. One remaining sentinel
+means bootstrap is not complete.
+
+## Transplant material that is not a candidate
+
+`TRANSPLANT_MANIFEST` in `seed.mjs` lists what travels without being an adoption candidate: whole
+skills, the ADRs a skill names, version-pin ADRs to compare against the target, the product inventory,
+gates, configuration, the test harness, the i18n runtime, and app shell copy to merge. Entries under
+`templates` are merged into the target, not copied over it.
+
+The agent context index under the product inventory travels as product-specific reference material,
+not a shared candidate. Rebuild its evidence/path connections from the target product before claiming
+handoff validation. `prepare` uses the bundle's declared section locations for reading; transplant still
+copies the complete declared documents and computes the same code/test closure.
+
+## Verification ownership
+
+`package.json` owns the actual verify stages and fail-fast order. `contracts:check` compares the CI
+stage set and README projection with that declaration, and checks local links, commands, runtime root
+pointers, document-length notices and transplant sentinels. Remote OpenAPI drift and real-server login
+belong to explicit network jobs; do not hide them in the local entry point.
+
+ESLint owns deprecated-library API rejection (`@typescript-eslint/no-deprecated`). When a reference
+names a replaced API, update that reference with the replacement. `local/no-prohibited-abstraction`
+only rejects exact prohibited names; it does not enforce the whole ban on speculative frameworks.
+Change its names together with the supporting skill/ADR statements. `gates:negative` owns the normal
+and negative fixtures that exercise these gates. Their success is evidence of those controls only.

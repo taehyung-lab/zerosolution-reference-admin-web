@@ -1,3 +1,7 @@
+/**
+ * 운영자 등록·수정의 생성 API 호출과 재시도 금지를 선언한다.
+ * 실제 API에서도 필요한 요청 경계다. 캐시 갱신은 실행 훅, 확인창·이동·문구는 호출 화면이 소유한다.
+ */
 import { mutationOptions } from '@tanstack/react-query';
 import { create7, update9 } from '@/api/generated/endpoints';
 import type { ManagerCreateRequest, ManagerUpdateRequest } from './manager-form-contract';

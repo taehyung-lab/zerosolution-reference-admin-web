@@ -1,10 +1,11 @@
 {
+  "path": {"settings": "Settings", "managers": "Managers", "detail": "Details", "create": "Add", "edit": "Edit"},
   "title": "Managers",
   "detailTitle": "Manager details",
   "detail": {
     "error": "Could not load manager information.",
     "notFound": "Manager not found.",
-    "breadcrumb": "Settings > Managers > Details",
+
     "section": "Manager information",
     "type": "Type",
     "id": "ID",
@@ -39,7 +40,7 @@
       "false": "No"
     }
   },
-  "breadcrumb": "Settings > Managers",
+
   "search": "Search",
   "reset": "Reset",
   "filters": {
@@ -114,8 +115,8 @@
   "form": {
     "createTitle": "Add manager",
     "editTitle": "Edit manager",
-    "createBreadcrumb": "Settings > Managers > Add",
-    "editBreadcrumb": "Settings > Managers > View > Edit",
+
+
     "section": "Manager information",
     "type": "Type",
     "permission": "Permission",

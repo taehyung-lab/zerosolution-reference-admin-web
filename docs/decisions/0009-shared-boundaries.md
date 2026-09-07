@@ -1,6 +1,6 @@
 # 0009. 목록·필터 공용화 경계와 레퍼런스 검증
 
-- 상태: 공용화 방향 승인됨 — Managers와 활성회원 목록 비교 완료, 단위별 단계는 아래 표
+- 상태: 공용화 방향 승인됨 — 단위별 단계는 아래 표. 이 문서는 목록·필터·결과 **기능 단위** 계약이며 특정 도메인의 구현 가이드가 아니다
 - 날짜: 2026-08-28
 - 근거 재확인: 2026-09-04 — Figma frame 보유 leaf page 59개·top-level frame 272개 + Notion Feature 72페이지 전체 인벤토리로 재판정
 - 적용 범위: 레퍼런스 프로젝트의 목록·필터·결과 mechanic
@@ -32,6 +32,12 @@ Figma에서 filter frame, 기간 선택, 검색 전·후 상태, toolbar, table,
 4. 예외를 흡수할 `mode`, resource config, callback override가 필요하지 않은가?
 
 ## 검토한 대안
+
+동일 feature의 동일 workflow는 작은 typed definition으로 실제 필드·컬럼 차이를 표현할 수 있다(활성회원의 별도 route + `MemberListScreen`). 이것은 도메인 전반의 config renderer 승격 근거가 아니다. 휴면·탈퇴·상담·소명·접속 목록은 기존 filter mechanic을 재사용하고, 반복되는 정렬/page 전이만 feature-local 순수 함수로 모은다. 서로 다른 결과 action과 selection 소유자는 각각 남긴다.
+
+공연목록은 진입 즉시 조회·단일 lookup·선택 없는 결과의 추가 reference consumer다. 기존 draft/period/keyword/FilterPanel/ListResult/DataTable을 채택하며 lookup 조립은 feature에 둔다. fixture 기반 요청 직전 검증은 실제 서버 consumer에 의한 shared 확정이나 신규 프로젝트 이관 검증을 대체하지 않는다.
+
+2026-09-06 사용자 공용화 요청과 dt-admin-web의 VenueSearchInput/PerformanceSearchDialog 대조로 `InlineSearchSelect`를 provisional primitive로 분리했다. 관찰된 단일 선택·삭제·재선택과 초기화 누락 위험만 공유하며 options/value/label/callback 외에 도메인·API·mode를 받지 않는다. 원격 조회·사용 가능한 공연장 정책은 feature, 공연 선택 모달의 회차·확인/취소는 공연 feature가 소유한다. 현재 코드 consumer는 공연목록 하나이므로 재사용 확정 단계가 아니다.
 
 ### 모든 것을 feature-local로 둔다
 
@@ -65,10 +71,34 @@ shared는 feature, Router, Query, endpoint, server DTO, permission을 알지 않
 | ------------------ | ------------------------------------------------------------------------------------- |
 | feature-local      | 도메인 의미나 workflow가 포함되거나 공통성이 아직 근거 없음                           |
 | provisional shared | 승인된 cross-screen 근거가 있고 현재 대표 consumer가 domain-free contract를 실제 사용 |
-| confirmed shared   | 두 번째 실제 consumer에서 semantics, lifecycle, failure behavior가 일치               |
+| confirmed shared   | 아래 기계 필요조건이 모두 참이고 사람이 독립 요구를 근거와 함께 판정했을 때          |
 | demoted            | 다른 consumer를 위해 분기나 도메인 지식이 필요해 계약을 좁히거나 feature-local로 복귀 |
 
 한 곳은 로컬, 두 곳은 비교, 세 번째 안정적 사용은 승격 검토 신호일 뿐 자동 규칙이 아니다. 접근성 불변식이나 승인된 cross-screen mechanic은 첫 consumer부터 provisional shared가 될 수 있다. 다음 consumer가 다르면 API를 넓히지 않고 좁히거나 demote한다.
+
+#### confirmed의 조건 — 기계가 증명하는 것과 사람이 책임지는 것
+
+**실서버 연결은 confirm의 조건이 아니다.** 이 저장소의 검증 경계는 API 호출 직전이므로 실서버 실패
+비교를 요구하면 어떤 계약도 confirmed가 될 수 없고, 그 정의는 이 단계표를 죽은 칸으로 만든다. 실 API로
+workflow를 실측하는 것은 `완료`, 신규 제품에서 채택까지 한 것은 `이관 검증됨`이며 둘 다 별도 단계다.
+
+기계가 증명하는 필요조건(하나라도 거짓이면 confirmed가 아니다):
+
+- 선언된 각 consumer 파일이 그 계약의 export를 실제로 **호출**한다. import만 있는 파일은 세지 않는다.
+- 모든 consumer가 같은 public API를 소비하고, 금지된 `mode`·resource config import가 없다.
+- 선언된 focused test가 실제로 실행되고 통과하며, 계약이 소유한 상태 전이와 실패를 덮는다.
+- 선언 이후 code·caller·test·근거 문서의 내용이 바뀌면 판정이 무효가 되고 재검토 대상이 된다.
+- 새 caller가 나타나면 `미평가 consumer`로 표시한다. 숫자가 늘었다고 자동으로 confirmed가 되지 않는다.
+
+사람이 판정하고 서명하는 것(기계가 대신할 수 없다):
+
+- **독립 요구인가.** 디렉터리 수나 호출 수가 아니라 별개의 제품 요구인지로 센다. 같은 업무의 route 3개나
+  같은 wrapper를 거치는 호출 2개는 하나다. 근거로 각 consumer의 인벤토리 절·frame 식별자 또는 날짜 있는
+  사용자 답을 링크하고, 그 요구에서 달라지는 입력·검색 gate·상태 소유자·행 의미를 비교해 적는다.
+- **callback 안에 예외 정책을 숨기지 않았는가.** 같은 props가 같은 의미인지는 타입이 보장하지 않는다.
+- 제거한 중복·결함과 검증하지 않은 경계.
+
+`서명`은 검토자와 검토 대상 revision을 기록하는 책임 표시이며 별도 승인 절차가 아니다.
 
 ### URL과 서버 어휘
 
@@ -87,7 +117,7 @@ Managers 리허설에서는 URL search와 요청에 리허설 서버 enum을 그
 | table/navigation | `DataTable`, `Pagination`, `PageSizeControl`, `SortControl`                                                                      | table/paging/control mechanics만 소유; URL·Query·options·sort behavior는 제외. `SortControl`은 정렬 필드 select만(2026-09-02 narrow: 방향 컨트롤은 Figma 전 화면에 없음). `DataTable`은 `meta.sort`(optional `direction: ascending \| descending` + `onSort`)로 헤더 버튼·`aria-sort`·glyph를 같은 값에서 렌더(2026-09-02 widen: 접근성 불변식, 인벤토리 12+ table 반복). `aria-sort`는 WAI-ARIA 1.2 기준 한 테이블에 활성 헤더 하나만 가지며, 비활성 정렬 가능 헤더는 버튼만 두고 `aria-sort`·glyph를 생략한다(2026-09-02 수정: ARIA 값 `none`을 direction으로 모델링하지 않음); 정렬 가능 컬럼·방향·전이는 feature |
 | state mechanic   | `useDraftCommit`, `usePeriodDraft`, `useKeywordDraft`                                                                            | **confirmed(2026-09-05)**: 두 목록이 같은 훅을 쓰고 전이가 일치. preserve/rebuild, preset/custom conversion, pending keyword 대수만 소유                                                                                                                                                                                                                                                                                                                                                                                                      |
 | row selection    | `usePageRowSelection`                                                                                                            | **confirmed(2026-09-05)**: Members에서 추출해 Managers 11.1이 채택. 현재 페이지의 선택 가능 행만, 커밋된 view가 바뀌면 해제, 같은 view refetch에는 잔존·선택 가능 ID만 유지. `getId`·`isSelectable`·`resetKey`는 caller가 주는 opaque 값이라 shared가 도메인을 배우지 않는다. 두 번째 consumer가 **배열 identity 의존에 의한 무한 렌더**를 드러내 내용 비교로 고쳤다 |
-| list query 투영  | `api/list-query.ts` (`useListQuery`)                                                                                             | provisional. `required-query.ts`의 형제 자리(AGENTS.md §3). 빈 페이지는 결과이고 오류가 아님, 진입 fetch만 blocking 표면을 염, incident surface가 가진 실패(session·permission)는 목록의 오류가 아님 — 셋만 소유. queryOptions·searched 판별·응답→rows/total·pageSize는 feature. code consumer가 Managers 하나뿐이라 두 번째 목록 계약이 붙을 때 confirm한다 |
+| list query 투영  | `api/list-query.ts` (`useListQuery`)                                                                                             | provisional. `required-query.ts`의 형제 자리([API 소비 경계](0011-detail-data-and-update-history-boundaries.md#api-호출-계층-조회목록mutation-공통)). 빈 페이지는 결과이고 오류가 아님, 진입 fetch만 blocking 표면을 염, incident surface가 가진 실패(session·permission)는 목록의 오류가 아님 — 셋만 소유. queryOptions·searched 판별·응답→rows/total·pageSize는 feature. **confirmed(2026-09-06)**: 운영자 목록·활성회원 목록·회원 기록·공연목록이 같은 `{options, searched, select}` 3개 인자를 확장 없이 소비한다(`useManagerDirectoryData`·`useMemberListData`·`useMemberRecordListData`·`usePerformanceListData`). 독립 요구는 호출 수가 아니라 넷이며, 활성회원 3 route와 기록 5 화면은 각각 하나로 센다. 소유한 세 semantics는 `list-query.test.tsx`가 빈 페이지·incident 실패 제외·진입 fetch만 blocking·**지연된 새 view 동안 이전 행 보존**으로 고정한다. 실서버 실패 비교는 이 저장소의 경계 밖이라 조건이 아니다 |
 | pure utility     | search compact/default resolve, datetime/format/option mapping                                                                   | 입력·출력이 domain-free인 순수 변환만 소유; schema·mapper·endpoint 조립은 제외. filter/view partition(`shared/lib/search-partition.ts`)은 2026-09-02 feature-local로 demote 했다가 **2026-09-05 confirmed 로 재승격**했다 — 두 번째 목록이 같은 결함을 실제로 보였다. Members 는 draft 를 resolved search 전체로 만들어, `filterKey` 가 view 를 빼도 submit 이 낡은 sort·pageSize 로 덮어썼다(정렬·보기 변경 후 재검색하면 되돌아감. 재현 테스트로 고정). mechanic 은 caller 가 선언한 partition 만 읽고 도메인을 모른다. URL codec 은 별개이며 feature 에 남는다                                                                                                                                                                                                                                                                                                      |
 | shared config    | `standardPageSizeOptions`, `standardPeriodPresetValues`                                                                          | 표준 목록 선택지·기간 preset 값의 provisional named preset만 소유; feature가 명시적으로 선택하고 default(목록 100·전체 / 등록 화면 200 / 통계 1개월 전)·예외를 소유                                                                                                                                                                                                                                                                                                          |
 | 선택 요구 action | 미선택 판정·미선택 alert·확인 alert 대수·`run(values)` 호출 시점 | **`일괄변경`은 공용 단위가 아니다(2026-09-05).** 같은 `변경` 이름과 Notion 반복 횟수는 같은 기능의 근거가 되지 못한다. Members는 `계정 상태 > 일반/불량` + 불량일 때 활동제한 cascade를 갖고, Managers는 `활성/비활성` 2개에 cascade가 없는 대신 **현재 상태가 대기·거절·잠금인 행은 변경 불가**라는 행 단위 정책과 그 병기 문구를 갖는다. 둘 다 원장이 확정한 차이다. (Members의 cascade 값 미완 오류는 **제품 근거가 미확정**이라 코드에 이관 sentinel로 표시돼 있다. 이 경계의 근거로 쓰지 않는다.) 후자는 전자에 대응물이 없어 공용 `일괄변경`으로 묶으면 `mode`나 예외 predicate로 들어온다(demotion 신호). 공용은 그 아래 두 mechanic뿐이다 — 선택 게이트(미선택 판정+alert, **일괄변경 전용이 아니라 `선택을 요구하는 모든 action`**의 규칙이라 SMS·이메일·다운로드도 같은 것을 쓴다)와 확인→`run` 대수. 옵션 집합·cascade 유무와 모양·값 미완 판정·행 단위 변경 가능 여부·문구·선택 ID·권한·호출 이후는 전부 feature다. `run(values)`와 caller가 주는 문구는 opaque 값이라 shared가 도메인을 배우지 않는다. |
@@ -95,13 +125,13 @@ Managers 리허설에서는 URL search와 요청에 리허설 서버 enum을 그
 
 `ListResult`는 `notSearched | loading | error | empty | ready` 다섯 상태를 판정하며 `ListResultData`는 renderer가 실제로 읽는 facts(rows·searched·isPending·isFetching·isError·trace·retry)만 요구한다(2026-09-02 narrow). total·totalPages는 feature 확장 타입이다. searched entry의 pending 첫 조회는 공용 `BlockingProgress`가 loading 표면을 덮고 area skeleton은 두지 않는다. observer가 없는 prefetch는 로딩·에러 표면에서 배제한다. feature는 상태, 검색 전/결과 없음 문구, retry 동작, 구조적 trace, footer와 ready content를 제공한다. shared pattern은 공용 error/retry 문구, live region과 `ErrorTrace` disclosure를 직접 소유하며 API를 import하거나 raw message를 받지 않는다. 이 다섯 상태는 모든 목록의 필수 단계가 아니며, `DataTable`은 caller의 `meta.sort`로 헤더 버튼·`aria-sort`·glyph를 렌더하고 `onSort`를 호출할 뿐 어떤 컬럼이 정렬 가능한지, 방향 전이, route policy를 소유하지 않는다.
 
-Managers는 제품이 확정한 명시적 검색 화면이다. URL은 검색 전 `{}`와 검색 후 `{ periodType, ...기본값이 아닌 view/filter }`의 discriminated union이며, `periodType`은 실제 서버 필터이자 판별자다. Query enablement와 `notSearched`는 이 한 사실에서 파생한다. 비어 있지 않은 손편집 URL에 `periodType`이 없으면 canonical guard가 기본 기간 기준을 채워 replace하고, `{}`는 그대로 둔다. 같은 조건 재검색은 같은 URL·Query key를 유지하므로 강제 refetch하지 않는다.
+명시적 검색 목록의 URL은 검색 전 `{}`와 검색 후 `{ 판별자, ...기본값이 아닌 view/filter }`의 discriminated union이다. 판별자는 화면이 고르는 **실제 서버 필터**여야 하며, Query enablement와 `notSearched`는 그 한 사실에서 파생한다 — 별도 `searched` 표식을 두지 않는다. 비어 있지 않은 손편집 URL에 판별자가 없으면 canonical guard가 기본값을 채워 replace하고 `{}`는 그대로 둔다. 어느 필드가 판별자인지는 화면마다 다르므로 feature가 소유한다. 검증한 사례는 [판정 기록](../reference/zero-sol-figma-analysis.md)에 있다.
 
-기간 range는 오류 메시지를 두지 않는다(2026-09-05 demote). Notion은 날짜 제약을 `오늘 이후의 날짜 선택 불가`처럼 항상 `선택 불가`로 쓰고 역전 오류 문구는 원장에 0건이다. 반대쪽 값이 `min/max`와 calendar bound가 되고, 그것으로 막지 못하는 직접 타이핑은 방금 편집한 bound를 남기고 낡은 bound를 지운다. 역전된 직접 URL은 날짜 pair만 제거해 `ALL` 기간 상태로 canonicalize하고 기간 기준·정렬처럼 독립적으로 유효한 검색값은 보존한다.
+기간 range는 오류 메시지를 두지 않는다(2026-09-05 demote). 반대쪽 값이 `min/max`와 calendar bound가 되고, 그것으로 막지 못하는 직접 타이핑은 방금 편집한 bound를 남기고 낡은 bound를 지운다. 역전된 직접 URL은 날짜 pair만 제거하고 기간 기준·정렬처럼 독립적으로 유효한 검색값은 보존한다. 이 demote의 제품 근거(원장에 역전 오류 문구 0건)는 판정 기록 §5가 소유한다.
 
 `AsyncFieldBoundary`는 feature가 결정한 초기 `loading | error | ready`와 retry callback만 받아 제품 공통 문구와 접근 가능한 상태를 렌더한다. Query, endpoint, option mapping, 선택 의미를 알지 않으며 cached data가 있으면 background refetch 실패 중에도 feature가 `ready`로 판정한다.
 
-Managers의 route schema, defaults, option query, endpoint, enum, params mapper, query key, result-state 결정, columns, summary 의미, page-size default·preset 선택, domain copy, permission, selection, bulk action value와 navigation은 feature-local이다. bulk·download의 product-generic 검증/copy 후보는 위 최소 surface만 shared가 맡고 리허설의 `manager-types`, `excludeInternal`, permission endpoint·누락 같은 사실을 제품 공통 계약으로 승격하지 않는다.
+위 소유권 표를 목록에 적용하면 route schema, defaults, option query, endpoint, enum, params mapper, query key, result-state 결정, columns, summary 의미, page-size default·preset 선택, domain copy, permission, selection, bulk action value와 navigation이 전부 feature-local이다. 특정 제품의 enum·옵션 endpoint·누락 같은 사실은 그 화면의 인벤토리가 소유하며 공통 계약으로 승격하지 않는다.
 
 ### 행 선택 소유권
 
@@ -113,19 +143,24 @@ Figma 원장의 field-level evidence는 현재 surface와 의도적 차이를 �
 판정한다. 코드 변경 후 최신 화면이 같은지 여부는 focused test와 실제 browser 대조가 각각 검사한
 범위로만 보고한다.
 
-## 두 번째 consumer 판정과 미확인
+## 단위별 단계와 소비자
 
-2026-09-05 활성회원 전체·일반·불량 3 route가 Managers 다음 실제 consumer가 됐다. 회원 계약이 없어 API·Query는 연결하지 않고 URL commit과 action intent 직전까지만 비교했으며, focused test와 browser가 실제로 검사한 범위만 단계에 반영한다.
+아래 수는 **각 판정 당시 비교한 독립 제품 요구의 수**이며 최신 import·호출 수가 아니다. 같은 업무의 여러 route나 wrapper 호출은 하나로 센다. 새 caller의 적용 상태는 코드와 시나리오 카드에서 확인하고, 의미·상태 전이·실패 계약을 다시 비교한 뒤 판정을 갱신한다. 사용처 증가만으로 기존 confirmed 판정이 새 caller에 확장되지는 않는다. 비교 근거는 [판정 기록](../reference/zero-sol-figma-analysis.md)이 소유한다.
 
-| 단위 | 단계 | 두 consumer 비교와 경계 |
-| --- | --- | --- |
-| `CheckboxTree(emptyMeansAll)` | **confirmed** | Managers와 회원 필터 모두 leaf-only 값·전체 선택=`[]`·caller enum 소유가 일치. domain mode 없이 같은 API를 소비한다 |
-| `DataTable` 기본·`meta.sort` | **confirmed** | 두 목록 모두 feature column·opaque `getRowId`·단일 active `aria-sort`를 사용하고 URL/sort policy는 feature에 남긴다 |
-| `Accordion`/filter/draft/period/keyword·page controls | **confirmed** | `FilterPanel`이 공용 `Accordion` disclosure를 조립하고 두 목록의 draft 보존, UTC range, URL commit, page reset이 일치한다. 회원의 중복 target 거부는 feature validation이라 shared API를 넓히지 않았다 |
-| `ListResult`·summary·toolbar | **provisional 유지** | 회원은 API가 없어 `notSearched`·`empty`·ready 조립만 비교했다. loading/error/retry failure lifecycle은 두 번째 real workflow에서 확인하지 못했다 |
-| 행 활성화 | **provisional shared** | 첫 code consumer. `DataTable.onRowActivate(row)`가 pointer·Enter·Space와 interactive child 제외만 소유하고 destination·permission은 feature callback에 남긴다 |
-| 일괄변경 alert 연쇄 | **provisional shared** | 첫 code consumer. 선택 유무 판정과 frozen opaque values·`run(values)`까지만 소유하며 ID·cascade·권한·호출 이후는 feature가 소유한다 |
-| Tooltip | **provisional source-owned primitive** | 첫 code consumer. trigger/content·focus/hover·Escape와 접근 가능한 연결만 소유하며 header copy는 feature에 남긴다 |
+| 단위 | 비교 당시 단계 | 비교 요구 수 | 경계와 근거 |
+| --- | --- | --- | --- |
+| `CheckboxTree(emptyMeansAll)` | **confirmed** | 2 | 양쪽이 leaf-only 값·전체 선택=`[]`·caller enum 소유로 일치. domain mode 없이 같은 API를 소비한다 |
+| `DataTable` 기본·`meta.sort` | **confirmed** | 2 | feature column·opaque `getRowId`·단일 active `aria-sort`. URL/sort policy는 feature |
+| `Accordion`/filter/draft/period/keyword·page controls | **confirmed** | 2 | `FilterPanel`이 공용 disclosure를 조립하고 draft 보존·UTC range·URL commit·page reset이 일치. 한쪽의 중복 target 거부는 feature validation이라 shared API를 넓히지 않았다 |
+| `useListQuery` | **confirmed(2026-09-06)** | 4 | 위 목록 계약 표 참조. 확장 없는 3인자 소비 + focused test |
+| `ListResult`·summary·toolbar | **provisional 유지** | 2 | `notSearched`·`empty`·ready 조립만 비교했다. loading/error/retry failure lifecycle을 두 번째 workflow에서 확인하지 못했다 |
+| 행 활성화 | **provisional shared** | 1 | `DataTable.onRowActivate(row)`가 pointer·Enter·Space와 interactive child 제외만 소유. destination·permission은 feature callback |
+| 일괄변경 alert 연쇄 | **provisional shared** | 1 | 선택 유무 판정과 frozen opaque values·`run(values)`까지만. ID·cascade·권한·호출 이후는 feature |
+| `selectionColumn` | **provisional shared(2026-09-06)** | 2 | 동일한 page/mixed/row 체크박스 렌더를 추출. 입력은 선택 controller·라벨·순수 선택 가능 판정이며 DTO·URL·권한을 모른다. 상태는 `usePageRowSelection`에 유지 |
+| `useConfirmation` | **provisional shared(2026-09-06)** | 3 | 값 보관→취소/확정만. opaque 값과 `run`만 알고 폼·성공·API를 모른다. 서버 이후 `useSaveForm`은 유지 |
+| `maskEmail`·`maskPhone` | **provisional shared(2026-09-06)** | 2 | 동일한 문자열 알고리즘 복제본 제거. 문자열만 받고 표시 문자열만 반환하며 공개 권한·API는 호출부 소유. 현재 규칙의 재사용이며 신규 제품 마스킹 정책 확정이 아니다 |
+| `hasRepeatedOrSequentialAsciiTriplet` | **provisional shared(2026-09-07)** | 2 | 회원·운영자 입력 검증의 동일 ASCII 3반복/3연속 판정만 추출. 길이·문자군·schema·카피는 feature에 남고 서버 이력이나 신규 제품 정책은 알지 않는다 |
+| Tooltip | **provisional source-owned primitive** | 1 | trigger/content·focus/hover·Escape와 접근 가능한 연결만. header copy는 feature |
 
 다음은 미확인이라 공용화하거나 구현하지 않는다.
 
@@ -153,28 +188,10 @@ range slider는 `129:32748`에서 출처가 확인됐지만 다른 발권 4 vari
 
 ### 인계 입력과 적용 순서
 
-새 프로젝트의 AI와 개발자는 새 제품의 요구사항·Figma·OpenAPI·정책과 함께 root `AGENTS.md`와 채택
-후보별 **4-part bundle**을 입력으로 사용한다. 한 bundle은 (1) public code 진입점, (2) 그 계약을
-규정하는 skill reference의 file + 절 + 문장 marker, (3) ADR 결정/stage의 file + 절 + 행 marker,
-(4) 동작을 고정하는 focused test로 구성되며 shared와 feature가 각각 소유하는 범위도 선언한다.
-문서나 코드 한 조각만 떼어 쓰지 않는다. 이 묶음은 제품 요구사항을 대신하는 완성품이 아니라,
-요구사항을 빠뜨리지 않고 경계를 다시 결정하기 위한 설계 기준이다.
-
-사람이 유지하는 것은 채택 후보, 네 root 위치, shared/feature 소유권뿐이다. 파일 반출 목록은 유지하지
-않는다. `scripts/contracts/seed.mjs`가 code root와 명시된 focused-test root 각각에서 local import
-closure를 계산하고, 네 부분의 실존·절 안 marker·중복 contract root·materialized seed의 closure를
-검사한다. 따라서 `src/shared` 전체 test를 포함하지 않으며 선언된 focused test와 그 실행 의존만
-따라간다. focused test의 명시적 `vi.mock`은 실제 실행 대체 seam이므로 그 target의 production
-dependency는 순회하지 않는다. closure가 예상보다 넓어지면 목록에 파일을 덧대지 말고 진입점을
-좁힐지 의존을 끊을지 사람이 결정한다.
-
-현재 manifest(선언된 bundle 목록과 수)는 `scripts/contracts/seed.mjs`가 소유한다. 실제로 확정한 계약만 선언하며
-통계·권한 matrix·알림처럼 미구현 화면 유형은 후보로 추측하지 않는다.
-
-1. 새 제품의 화면과 로직을 surface 단위로 나누고 UI, 상태 소유권, URL, API payload/cache, 권한, i18n, navigation, 실패·복구 흐름을 요구사항으로 추출한다.
-2. 각 요구사항을 기존 공용 후보와 비교해 의미, lifecycle, ownership, failure behavior가 같은지 확인하고 `그대로 채택 / 제품에 맞게 수정 / 제외 / feature-local 신규 구현`으로 판정한다.
-3. 채택된 최소 계약만 첫 대표 vertical slice에 명시적으로 조립한다. Manager 전용 값이나 리허설 계약이 필요해지면 공용 API를 넓히지 않고 제품 feature 또는 새 계약의 소유자로 돌린다.
-4. 코드·타입·테스트와 실제 화면·응답으로 요구사항별 결과를 검증하고, 두 번째 실제 consumer가 생기면 provisional 후보를 confirm, narrow 또는 demote한다.
+4-part bundle의 구성, 기계가 증명하는 범위, 새 제품에 적용하는 순서는 목록만의 규칙이 아니라 form·detail·transport
+계약도 함께 쓰는 절차이므로 [scripts/contracts/README.md](../../scripts/contracts/README.md)가 소유한다. 선언된
+bundle 목록과 closure 계산은 `scripts/contracts/seed.mjs`가 소유한다. 실제로 확정한 계약만 선언하며 통계·권한
+matrix·알림처럼 미구현 화면 유형은 후보로 추측하지 않는다.
 
 ### 채택 성공 조건
 
@@ -196,3 +213,13 @@ dependency는 순회하지 않는다. closure가 예상보다 넓어지면 목�
 - 판정 기록 §5의 미확인(보기/정렬 마지막 값 기억, gate 없는 화면의 초기화, 정렬 방향 UI, 중복 키워드 동일성, 운영자 bulk 정책)이 답을 얻을 때
 
 재검토 결과는 투표나 역할 의견이 아니라 현재 제품 계약, 실제 diff, 테스트와 브라우저 증거로 판정한다.
+
+## 목록 소비자 정리 (2026-09-07)
+
+회원·운영자·공연의 목록 파일 배치는 feature-contract의 screen-composition이 소유한다.
+`ResultTotal(searched, total)`은 기존 `ResultSummary`를 사용해 한 개 건수의 공용 문장·포맷과
+검색 전 부재/검색 후 0건 표시를 묶는다. 활성 회원, 제품/API 운영자, 공연, 회원 기록의
+동일한 표시 책임을 비교했다. 위치·툴바 노출·추가 loading gate·선택·조회 정책은 소비자에 남긴다.
+반환 모양이 같다는 이유로 결과 훅이나 검색 스키마 전체를 팩토리로 승격하지 않는다.
+기본값 결합은 기존 `resolveSearchDefaults`를 채택하고 제품별 enum/default/URL 확정 정책을 유지한다.
+실 API 실패 수명과 신규 프로젝트 이관이 검증된 계약으로 승격한 것은 아니다.

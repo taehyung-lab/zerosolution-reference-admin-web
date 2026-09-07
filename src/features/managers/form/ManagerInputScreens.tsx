@@ -1,3 +1,9 @@
+/**
+ * 운영자 등록/수정 입력을 필수 onConfirm으로 전달하는 API 미연결 화면 진입점이다.
+ * 실제 API 연결 시 폼 정책은 유지하고 기존 API 화면과 중복된 저장 진입점을 정리한다. 로그 도달을 저장 완료로 해석하지 않는다.
+ * 옵션은 이 화면이 제품 옵션 Query로 조회한다. 선택한 유형을 폼 store에서 읽어 종속 권한 조회 범위를 정한다.
+ */
+import { useSelector } from '@tanstack/react-form';
 import { useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/shared/ui/patterns/PageHeader';
@@ -13,15 +19,13 @@ import {
   type ManagerEditInput,
   type ManagerEditValues,
 } from './manager-form-schema';
-import type { ManagerFormOptions } from './useManagerFormOptions';
+import { useManagerDirectoryFormOptions } from './useManagerDirectoryFormOptions';
 import { useManagerInputForm } from './useManagerInputForm';
 
 export function ManagerCreateInputScreen({
   onConfirm,
-  optionsForType,
 }: {
   readonly onConfirm: (values: ManagerCreateValues) => void;
-  readonly optionsForType: (type: string) => ManagerFormOptions;
 }) {
   const { t } = useTranslation('managers');
   const navigate = useNavigate();
@@ -31,13 +35,15 @@ export function ManagerCreateInputScreen({
     fieldOrder: managerCreateFieldOrder,
     onConfirm,
   });
+  const selectedType = useSelector(save.form.store, (state) => state.values.type);
+  const options = useManagerDirectoryFormOptions(selectedType);
   return (
     <section>
-      <PageHeader breadcrumb={t('form.createBreadcrumb')} title={t('form.createTitle')} />
+      <PageHeader breadcrumbs={[t("path.settings"), t("path.managers"), t("path.create")]} title={t('form.createTitle')} />
       <ManagerForm
         save={save}
         identity={<ManagerCreateIdentityFields form={save.form} />}
-        optionsForType={optionsForType}
+        options={options}
         onCancel={() => {
           void navigate({ to: '/managers' });
         }}
@@ -49,12 +55,10 @@ export function ManagerCreateInputScreen({
 export function ManagerEditInputScreen({
   managerId,
   defaults,
-  optionsForType,
   onConfirm,
 }: {
   readonly managerId: string;
   readonly defaults: ManagerEditInput;
-  readonly optionsForType: (type: string) => ManagerFormOptions;
   readonly onConfirm: (request: { readonly managerId: string; readonly input: ManagerEditValues }) => void;
 }) {
   const { t } = useTranslation('managers');
@@ -65,13 +69,15 @@ export function ManagerEditInputScreen({
     fieldOrder: managerEditFieldOrder,
     onConfirm: (input) => onConfirm({ managerId, input }),
   });
+  const selectedType = useSelector(save.form.store, (state) => state.values.type);
+  const options = useManagerDirectoryFormOptions(selectedType);
   return (
     <section>
-      <PageHeader breadcrumb={t('form.editBreadcrumb')} title={t('form.editTitle')} />
+      <PageHeader breadcrumbs={[t("path.settings"), t("path.managers"), t("path.detail"), t("path.edit")]} title={t('form.editTitle')} />
       <ManagerForm
         save={save}
         identity={<FormTextField readOnly label={t('form.id')} value={managerId} />}
-        optionsForType={optionsForType}
+        options={options}
         onCancel={() => {
           void navigate({ to: '/managers/$managerId', params: { managerId } });
         }}

@@ -24,6 +24,7 @@ Read this file only for a "전체 | 개별" multi-select filter group, a nested 
 - `values` and `onValueChange` carry **leaf values only**. A branch is never a value; its checked state is derived (checked when any descendant is selected), and clicking it selects or clears every descendant.
 - The leading 전체 control is checked only when every leaf is selected; clicking it selects or clears all leaves.
 - `emptyMeansAll` maps "everything selected" to `[]`. Use it when the server treats an omitted filter as no restriction, so the canonical URL and request omit the array (list-workflow: omit empty arrays). Without it, `[]` means nothing selected.
+- With `emptyMeansAll`, clearing the entire group returns to unrestricted/all; it does not create a select-none state. To keep only one leaf, deselect the other leaves. Test the emitted values as well as the visible checks.
 - Labels are already translated strings; server enum meaning, option source, and the default stay with the feature. Async options render inside `AsyncFieldBoundary` with the feature-decided state.
 - A flat group renders inline (전체 | a b c) as the design shows; a nested group renders an indented list. Nesting depth is not limited.
 

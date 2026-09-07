@@ -1,3 +1,7 @@
+/**
+ * 회원 상세 액션의 구분·요청 입력과 액션별 프런트 검증 스키마를 정의한다.
+ * 화면 입력 계약이며 실제 비밀번호 확인·탈퇴·권한 판정은 서버 계약과 실행 결과를 따른다.
+ */
 import { z } from "zod";
 import { i18n } from "@/shared/i18n/i18n";
 import { memberPasswordSchema } from "../form/member-create-schema";

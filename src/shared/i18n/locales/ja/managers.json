@@ -1,10 +1,11 @@
 {
+  "path": {"settings": "設定", "managers": "運営者", "detail": "照会", "create": "登録", "edit": "修正"},
   "title": "運営者",
   "detailTitle": "運営者照会",
   "detail": {
     "error": "運営者情報を読み込めませんでした。",
     "notFound": "運営者が見つかりません。",
-    "breadcrumb": "設定 > 運営者 > 照会",
+
     "section": "運営者情報",
     "type": "種別",
     "id": "ID",
@@ -39,7 +40,7 @@
       "false": "いいえ"
     }
   },
-  "breadcrumb": "設定 > 運営者",
+
   "search": "検索",
   "reset": "リセット",
   "filters": {
@@ -114,8 +115,8 @@
   "form": {
     "createTitle": "運営者登録",
     "editTitle": "運営者修正",
-    "createBreadcrumb": "設定 > 運営者 > 登録",
-    "editBreadcrumb": "設定 > 運営者 > 照会 > 修正",
+
+
     "section": "運営者情報",
     "type": "種別",
     "permission": "権限",

@@ -1,18 +1,27 @@
+import { MessageFormDialog } from "./MessageFormDialog";
 import {
   fireEvent,
   render,
   screen,
   waitFor,
-  within,
 } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { ApiError } from "@/api/error";
 import { TestLocaleProvider } from "@/test/locale";
-import { SmsDialog } from "./SmsDialog";
-import { EmailDialog } from "./EmailDialog";
+import { TestQueryLocaleProvider } from "@/test/query-locale";
+import { MessageComposerDialog } from "./MessageComposerDialog";
+import { messagePolicyFixture } from "./fixtures/message-policy";
 
 vi.mock("@tanstack/react-router", () => ({
   useBlocker: () => ({ status: "idle" }),
 }));
+vi.mock(import("./fixtures/message-policy"), async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    messagePolicyFixture: vi.fn(actual.messagePolicyFixture),
+  };
+});
 const policy = {
   enabled: true,
   channelEnabled: true,
@@ -22,14 +31,14 @@ const policy = {
 const recipients = [{ address: "01012345678", name: "김회원" }];
 
 describe("message dialogs before API", () => {
-  it.each(["sms", "email"])(
+  it.each(["sms", "email"] as const)(
     "closes %s without discard after restoring sender",
     (channel) => {
       const onClose = vi.fn();
-      const Component = channel === "sms" ? SmsDialog : EmailDialog;
       render(
         <TestLocaleProvider>
-          <Component
+          <MessageFormDialog
+            channel={channel}
             policy={{
               ...policy,
               senderAddress:
@@ -62,7 +71,8 @@ describe("message dialogs before API", () => {
     const onClose = vi.fn();
     render(
       <TestLocaleProvider>
-        <SmsDialog
+        <MessageFormDialog
+          channel="sms"
           policy={{ ...policy, ...flags }}
           recipients={recipients}
           onClose={onClose}
@@ -83,7 +93,8 @@ describe("message dialogs before API", () => {
     const onConfirm = vi.fn();
     render(
       <TestLocaleProvider>
-        <SmsDialog
+        <MessageFormDialog
+          channel="sms"
           policy={policy}
           recipients={recipients}
           onClose={vi.fn()}
@@ -122,12 +133,13 @@ describe("message dialogs before API", () => {
     expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
   it.each(["취소", "닫기", "Escape"])(
-    "asks before dirty %s, keeps content on keep and closes on discard",
+    "closes dirty %s without an extra cancellation question",
     (label) => {
       const onClose = vi.fn();
       render(
         <TestLocaleProvider>
-          <SmsDialog
+          <MessageFormDialog
+            channel="sms"
             policy={policy}
             recipients={recipients}
             onClose={onClose}
@@ -143,13 +155,7 @@ describe("message dialogs before API", () => {
         else fireEvent.click(screen.getByRole("button", { name: label }));
       };
       dismiss();
-      let prompt = screen.getByRole("dialog", { name: "알림" });
-      fireEvent.click(within(prompt).getByRole("button", { name: "취소" }));
-      expect(screen.getByLabelText("메시지 내용*")).toHaveValue("작성 중");
-      expect(onClose).not.toHaveBeenCalled();
-      dismiss();
-      prompt = screen.getByRole("dialog", { name: "알림" });
-      fireEvent.click(within(prompt).getByRole("button", { name: "확인" }));
+      expect(screen.queryByRole("dialog", { name: "알림" })).toBeNull();
       expect(onClose).toHaveBeenCalledOnce();
     },
   );
@@ -157,7 +163,8 @@ describe("message dialogs before API", () => {
     const onConfirm = vi.fn();
     render(
       <TestLocaleProvider>
-        <EmailDialog
+        <MessageFormDialog
+          channel="email"
           policy={{ ...policy, senderAddress: "sender@example.com" }}
           recipients={[{ address: "member@example.com", name: "김회원" }]}
           onClose={vi.fn()}
@@ -192,5 +199,75 @@ describe("message dialogs before API", () => {
         body: "<p>Hello <strong>member</strong></p>",
       }),
     );
+  });
+  it.each(["sms", "email"] as const)(
+    "passes the %s channel with validated input through the composed request",
+    async (channel) => {
+      const onConfirm = vi.fn();
+      const address = channel === "sms" ? "01012345678" : "member@example.com";
+      render(
+        <TestQueryLocaleProvider>
+          <MessageComposerDialog
+            request={{ channel, recipients: [{ address, name: "김회원" }] }}
+            onClose={vi.fn()}
+            onConfirm={onConfirm}
+          />
+        </TestQueryLocaleProvider>,
+      );
+      expect(screen.getByRole("status")).toHaveTextContent(
+        "옵션을 불러오는 중입니다.",
+      );
+      fireEvent.click(await screen.findByRole("button", { name: "보내기" }));
+      await screen.findByText("내용을 입력해주세요.");
+      expect(onConfirm).not.toHaveBeenCalled();
+      const body = screen.getByRole("textbox", { name: "메시지 내용" });
+      if (channel === "sms")
+        fireEvent.change(body, { target: { value: "안내 본문" } });
+      else {
+        body.innerHTML = "<p>안내 본문</p>";
+        fireEvent.input(body);
+      }
+      fireEvent.click(screen.getByRole("button", { name: "보내기" }));
+      await waitFor(() =>
+        expect(onConfirm).toHaveBeenCalledExactlyOnceWith({
+          channel,
+          senderName: "REFERENCE",
+          senderAddress:
+            channel === "sms" ? "02-0000-0000" : "sender@example.test",
+          recipients: [
+            {
+              address: channel === "sms" ? "010-1234-5678" : address,
+              name: "김회원",
+            },
+          ],
+          messageType: "information",
+          body: channel === "sms" ? "안내 본문" : "<p>안내 본문</p>",
+        }),
+      );
+    },
+  );
+});
+
+describe("message policy supply", () => {
+  it("never opens the composer with an empty sender: it shows the failure with a retry, then the form", async () => {
+    const read = vi.mocked(messagePolicyFixture);
+    read.mockClear().mockImplementationOnce(() => {
+      throw new ApiError({ kind: "network", message: "test" });
+    });
+    render(
+      <TestQueryLocaleProvider>
+        <MessageComposerDialog
+          request={{ channel: "sms", recipients: [{ address: "01012345678" }] }}
+          onClose={vi.fn()}
+          onConfirm={vi.fn()}
+        />
+      </TestQueryLocaleProvider>,
+    );
+    expect(await screen.findByText("옵션을 불러오지 못했습니다.")).toBeVisible();
+    expect(screen.queryByLabelText("이름*")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "보내는 사람 다시 시도" }));
+    await waitFor(() => expect(read).toHaveBeenCalledTimes(2));
+    expect(await screen.findByLabelText("이름*")).toHaveValue("REFERENCE");
+    expect(screen.queryByText("옵션을 불러오지 못했습니다.")).toBeNull();
   });
 });

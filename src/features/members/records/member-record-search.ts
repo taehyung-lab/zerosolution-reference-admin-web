@@ -1,3 +1,7 @@
+/**
+ * 기록 목록별로 URL에서 허용할 검색 필드·정렬·페이지와 잘못된 값의 복구 규칙을 정의한다.
+ * 실제 API에서도 URL 검증은 필요하다. 이 화면용 이름을 서버 파라미터로 그대로 간주하지 않고 계약별로 변환한다.
+ */
 import { z } from "zod";
 import { compactSearchValues } from "@/shared/lib/compact-search-values";
 import { standardPageSizeOptions } from "@/shared/config/list";
@@ -41,10 +45,10 @@ export const memberRecordSearchSchema = z.object({
 });
 const common = memberRecordSearchSchema;
 export type MemberRecordSearch = z.output<typeof common>;
-function canonical(
-  search: MemberRecordSearch,
-  defaultPeriod: string,
-): MemberRecordSearch {
+function canonical<TSearch extends MemberRecordSearch>(
+  search: TSearch,
+  defaultPeriod: NoInfer<TSearch["periodType"]>,
+): Partial<TSearch> {
   const next = compactSearchValues(search);
   if (
     next.startDateTime &&

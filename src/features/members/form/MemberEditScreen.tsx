@@ -1,5 +1,10 @@
+/**
+ * 회원 수정 초안·조건부 활동제한·검증·이탈 방지와 대상 ID를 포함한 확인 입력을 관리한다.
+ * API 이후에도 필요하며 초기값 조회와 최종 저장은 외부 경계다. 숨긴 활동제한 초안 보존과 제출값 제외를 구분한다.
+ */
+import { useConfirmation } from "@/shared/lib/use-confirmation";
 import { revalidateLogic, useForm, useSelector } from "@tanstack/react-form";
-import { Activity, useState } from "react";
+import { Activity } from "react";
 import { useTranslation } from "react-i18next";
 import { formatDate } from "@/shared/lib/datetime";
 import { FormCancelButton } from "@/shared/ui/form/FormCancelButton";
@@ -46,12 +51,15 @@ export function MemberEditScreen({
 }) {
   const { t } = useTranslation("members");
   const { t: shared } = useTranslation("shared");
-  const [candidate, setCandidate] = useState<MemberEditValues>();
+  const confirmation = useConfirmation({
+    run: (input: MemberEditValues) => onConfirm({ memberId, input }),
+  });
   const form = useForm({
     defaultValues: initialValues,
     validationLogic: revalidateLogic(),
     validators: { onDynamic: memberEditSchema },
-    onSubmit: ({ value }) => setCandidate(toMemberEditInput(value)),
+    onSubmit: ({ value }) =>
+      confirmation.requestConfirmation(toMemberEditInput(value)),
     onSubmitInvalid: ({ formApi }) => {
       const first = fieldOrder.find(
         (name) => (formApi.getFieldMeta(name)?.errors.length ?? 0) > 0,
@@ -84,19 +92,15 @@ export function MemberEditScreen({
       <PageHeader title={t("edit.title")} />
       {guard.dialog}
       <ConfirmDialog
-        open={candidate !== undefined}
+        open={confirmation.state.kind === "confirm"}
         title={shared("alert.title")}
         description={shared("formSave.confirmDescription")}
         confirmLabel={shared("formSave.confirm")}
         cancelLabel={shared("formSave.cancel")}
         onOpenChange={(open) => {
-          if (!open) setCandidate(undefined);
+          if (!open) confirmation.close();
         }}
-        onConfirm={() => {
-          if (candidate === undefined) return;
-          setCandidate(undefined);
-          onConfirm({ memberId, input: candidate });
-        }}
+        onConfirm={confirmation.confirm}
       />
       <form
         noValidate

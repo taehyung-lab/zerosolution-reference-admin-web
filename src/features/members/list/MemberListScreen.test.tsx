@@ -1,8 +1,7 @@
 import { fireEvent, render as renderUi, screen } from "@testing-library/react";
 import type { ReactElement, ReactNode } from "react";
-import { I18nextProvider } from "react-i18next";
+import { TestQueryLocaleProvider } from "@/test/query-locale";
 import { describe, expect, it, vi } from "vitest";
-import { i18n } from "@/shared/i18n/i18n";
 import {
   AllMemberListScreen,
   FlaggedMemberListScreen,
@@ -10,7 +9,7 @@ import {
 } from "./MemberListScreen";
 
 function I18nWrapper({ children }: { readonly children: ReactNode }) {
-  return <I18nextProvider i18n={i18n}>{children}</I18nextProvider>;
+  return <TestQueryLocaleProvider>{children}</TestQueryLocaleProvider>;
 }
 
 const render = (ui: ReactElement) => renderUi(ui, { wrapper: I18nWrapper });

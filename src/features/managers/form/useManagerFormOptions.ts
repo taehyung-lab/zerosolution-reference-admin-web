@@ -1,17 +1,19 @@
-import type { AsyncFieldState } from '@/shared/ui/patterns/AsyncFieldBoundary';
+/**
+ * 폼이 필요한 옵션 조회들을 필드별 로딩·오류·재시도 상태와 유형 종속 정보로 조립한다.
+ * 실제 API에서도 유지할 폼 연결부이며 목록 조회 성공 여부와 옵션 조회 생명주기를 묶지 않는다.
+ */
 import type { ManagerPermissionScope } from '../api/manager-form-contract';
 import { managerFormTypes } from '../api/manager-form-contract';
+import {
+  noManagerSelectOptions,
+  toManagerSelectOptions,
+  type ManagerSelectOptions,
+} from '../options/manager-select-options';
 import {
   useManagerAgencyOptions,
   useManagerPermissionOptions,
   useManagerTypeOptions,
 } from '../options/useManagerOptions';
-
-export interface ManagerSelectOptions {
-  readonly state: AsyncFieldState;
-  readonly items: readonly { value: string; label: string }[];
-  readonly retry: () => void;
-}
 
 export interface ManagerFormOptions {
   readonly isAgency: boolean;
@@ -21,30 +23,10 @@ export interface ManagerFormOptions {
   readonly agency: ManagerSelectOptions;
 }
 
-const noOptions: ManagerSelectOptions = {
-  state: 'ready',
-  items: [],
-  retry: () => undefined,
-};
-
-function toSelectOptions(query: {
-  readonly data?: readonly { value: string; label: string }[];
-  readonly isError: boolean;
-  readonly refetch: () => unknown;
-}): ManagerSelectOptions {
-  return {
-    state: query.data !== undefined ? 'ready' : query.isError ? 'error' : 'loading',
-    items: query.data ?? [],
-    retry: () => void query.refetch(),
-  };
-}
-
 /**
- * The three option queries of a manager form, projected to what a select renders. Permissions
- * belong to a type ("[설정 > 접근권한] 중 사용 상태이고 선택한 유형에 속한 권한", Notion), so they
- * are not requested until a type is chosen; the agency select only exists for the AGENCY type.
- * Clearing the dependent values when the type changes is the form's policy, wired at the type
- * select by the screen.
+ * 유형·권한·기획사 조회를 폼 필드별 상태로 변환한다.
+ * Notion의 권한은 선택 유형에 종속되므로 유형 선택 전에는 조회하지 않는다.
+ * 기획사 필드는 AGENCY에서만 표시한다. 유형 변경 시 종속값 초기화는 화면의 선택 이벤트가 소유한다.
  */
 export function useManagerFormOptions(type: string): ManagerFormOptions {
   const typeSelected = type !== '';
@@ -56,8 +38,8 @@ export function useManagerFormOptions(type: string): ManagerFormOptions {
   return {
     isAgency: type === managerFormTypes.AGENCY,
     typeSelected,
-    type: toSelectOptions(types),
-    permission: typeSelected ? toSelectOptions(permissions) : noOptions,
-    agency: toSelectOptions(agencies),
+    type: toManagerSelectOptions(types),
+    permission: typeSelected ? toManagerSelectOptions(permissions) : noManagerSelectOptions,
+    agency: toManagerSelectOptions(agencies),
   };
 }

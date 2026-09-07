@@ -1,11 +1,16 @@
+import { appealDataQuery } from "../api/list-queries";
+/**
+ * 소명 목록의 필터·데이터·결과·업무 액션을 연결하는 화면 조립 컴포넌트다.
+ * 실제 API에서도 조립 책임은 유지한다. Query가 예시 응답과 로딩/실패를 전달하며 실제 API에서는 응답 공급 연결부를 교체한다.
+ */
 import { useTranslation } from "react-i18next";
 import { PageHeader } from "@/shared/ui/patterns/PageHeader";
-import { appealData } from "../records/member-record-data";
+import { useMemberRecordListData } from "../records/member-record-data";
 import type { MemberRecordSearch } from "../records/member-record-search";
 import { MemberAppealListFilters } from "./MemberAppealListFilters";
-import { MemberAppealListResult } from "./MemberAppealListResult";
+import { MemberRecordResult } from "../records/MemberRecordResult";
 import { useMemberAppealListResult } from "./useMemberAppealListResult";
-import { MemberAppealListActions } from "./MemberAppealListActions";
+import { MemberMessageActions } from "../records/MemberMessageActions";
 import { AppealBulkAction, type AppealBulkChange } from "./AppealBulkAction";
 export function MemberAppealListScreen({
   search,
@@ -26,7 +31,7 @@ export function MemberAppealListScreen({
   readonly onBulkChange: (request: AppealBulkChange) => void;
 }) {
   const { t } = useTranslation("members");
-  const data = appealData(search);
+  const data = useMemberRecordListData(search, appealDataQuery, true);
   const result = useMemberAppealListResult({ data, search, onSearchChange });
   return (
     <section>
@@ -35,19 +40,21 @@ export function MemberAppealListScreen({
         search={search}
         onSearchChange={onSearchChange}
       />
-      <MemberAppealListResult
+      <MemberRecordResult
         data={data}
-        result={result}
+        columns={result.columns}
+        sortOptions={result.sorts}
         search={search}
         onSearchChange={onSearchChange}
         onActivate={onActivate}
         toolbarRight={
-          <MemberAppealListActions
+          <MemberMessageActions
+            visible
             selectedIds={result.selectedIds}
             onMessage={onMessage}
           />
         }
-        bulkAction={
+        beforeResult={
           <AppealBulkAction ids={result.selectedIds} onChange={onBulkChange} />
         }
       />

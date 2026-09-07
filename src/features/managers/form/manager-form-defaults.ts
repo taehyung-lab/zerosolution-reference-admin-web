@@ -1,3 +1,7 @@
+/**
+ * 등록의 빈 초기값과 수정 API 응답을 폼용 문자열 값으로 바꾸는 변환을 정의한다.
+ * 실제 API에서도 필요하며 Query 응답 전체를 폼 상태에 복제하지 않는다.
+ */
 import type { ManagerEditDetail } from '../api/manager-form-contract';
 import type { ManagerCreateInput, ManagerEditInput } from './manager-form-schema';
 

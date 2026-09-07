@@ -1,11 +1,8 @@
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { AlertDialog } from './AlertDialog';
-import { ConfirmDialog } from './ConfirmDialog';
-
-type BulkDialogState<TValues> =
-  | { readonly kind: 'closed' }
-  | { readonly kind: 'confirm'; readonly values: TValues };
+import type { useConfirmation } from "@/shared/lib/use-confirmation";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { AlertDialog } from "./AlertDialog";
+import { ConfirmDialog } from "./ConfirmDialog";
 
 export function useSelectionGate(selectedCount: number) {
   const [message, setMessage] = useState<string>();
@@ -35,57 +32,38 @@ export function SelectionAlert({
 }: {
   readonly controller: ReturnType<typeof useSelectionGate>;
 }) {
-  const { t } = useTranslation('shared');
+  const { t } = useTranslation("shared");
   return (
     <AlertDialog
       open={controller.message !== undefined}
       onOpenChange={(open) => {
         if (!open) controller.close();
       }}
-      title={t('alert.title')}
+      title={t("alert.title")}
       description={controller.message}
-      acknowledgeLabel={t('bulkAction.acknowledge')}
+      acknowledgeLabel={t("bulkAction.acknowledge")}
     />
   );
-}
-
-export function useBulkActionDialogs<TValues>({
-  run,
-}: {
-  readonly run: (values: TValues) => void;
-}) {
-  const [state, setState] = useState<BulkDialogState<TValues>>({ kind: 'closed' });
-
-  return {
-    state,
-    requestConfirmation: (values: TValues) => setState({ kind: 'confirm', values }),
-    close: () => setState({ kind: 'closed' }),
-    confirm: () => {
-      if (state.kind !== 'confirm') return;
-      run(state.values);
-      setState({ kind: 'closed' });
-    },
-  };
 }
 
 export function BulkActionDialogs<TValues>({
   controller,
   confirmDescription,
 }: {
-  readonly controller: ReturnType<typeof useBulkActionDialogs<TValues>>;
+  readonly controller: ReturnType<typeof useConfirmation<TValues>>;
   readonly confirmDescription: string;
 }) {
-  const { t } = useTranslation('shared');
+  const { t } = useTranslation("shared");
   return (
     <ConfirmDialog
-      open={controller.state.kind === 'confirm'}
+      open={controller.state.kind === "confirm"}
       onOpenChange={(open) => {
         if (!open) controller.close();
       }}
-      title={t('alert.title')}
+      title={t("alert.title")}
       description={confirmDescription}
-      confirmLabel={t('bulkAction.acknowledge')}
-      cancelLabel={t('bulkAction.cancel')}
+      confirmLabel={t("bulkAction.acknowledge")}
+      cancelLabel={t("bulkAction.cancel")}
       onConfirm={controller.confirm}
     />
   );

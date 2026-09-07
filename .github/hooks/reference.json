@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [{ "type": "command", "bash": "node \"$(git rev-parse --show-toplevel)/scripts/agents/cli.mjs\" hook preToolUse", "timeoutSec": 15 }],
+    "agentStop": [{ "type": "command", "bash": "node \"$(git rev-parse --show-toplevel)/scripts/agents/cli.mjs\" hook agentStop", "timeoutSec": 15 }]
+  }
+}

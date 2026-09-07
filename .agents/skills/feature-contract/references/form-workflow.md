@@ -21,8 +21,9 @@ Read this file for create/edit form ownership, validation, conditional sections,
 A consuming form keeps its fields, schema, defaults, validation copy, conditional clearing, option sources, mapper, destination, and whether save uses the confirm/acknowledge pair. It adopts `SectionCard`, adapters, and `useUnsavedChangesGuard.leave()` through the contracts above; missing issue text does not justify a second cancel dialog, inline-form hook, or form controller.
 
 For an explicitly scoped pre-request scenario with no save implementation, compose `useForm`, the
-existing adapters/guard and `ConfirmDialog` directly, as `MemberCreateScreen` does. Confirmation passes
-validated input to the feature callback; it does not reset dirty state, acknowledge success or navigate.
+existing adapters/guard, `useConfirmation` and `ConfirmDialog`, as `MemberCreateScreen` does. Confirmation passes
+validated input to the required feature callback; it does not reset dirty state, acknowledge success or navigate.
+The explicit request handler and its observation rules are owned by [mutation-actions.md](mutation-actions.md#api-연결-전-시나리오-요청).
 Do not resolve a fake mutation, leave a promise pending forever, or add a rehearsal mode to `useSaveForm`.
 Revisit shared validation composition when another real caller demonstrates the same lifecycle.
 
@@ -47,15 +48,23 @@ Server field errors: `useSaveForm` writes `fieldMeta.errorMap.onServer` for the 
 
 ## Cancel and tabs
 
-2026-09-05 user decision: dirty input protection also applies to dialog and inline forms. Compose
-`useUnsavedChangesGuard` with the form's dirty fact, render its dialog once, use `leave` for Router
-navigation and `close(discard)` for local dismiss/edit cancellation. The app mounts one `UnsavedChangesProvider`
-inside Router: concurrent inline and popup forms register dirty/pending facts, not values, and share one
-route confirmation. Without the provider the hook remains standalone. `close(discard, { when })` scopes
-a local cancellation to the affected form when the caller aggregates multiple dirty facts. Keep the form mounted while asking;
-canceling the question preserves its values. Route every dialog close affordance through that same callback.
+**2026-09-07 user decision:** the dirty **cancel/dismiss**
+question applies only to dedicated create/edit screens. A dirty form alone is not an eligibility rule.
+On create/edit screens, clean cancellation leaves directly; dirty cancellation asks once, keeping input
+when declined and running the original cancel action when confirmed. Inline editing inside a detail and
+action dialogs (counsel, appeal processing, SMS/email, password/account actions) run their existing
+cancel/close action without an additional dirty question. A local action named create/edit does not make
+its enclosing detail or dialog a dedicated create/edit screen. All supported dialog dismiss affordances
+(cancel, ×, Escape, outside dismissal) follow the same caller-owned close policy; pending restrictions remain.
 
-Two confirmed sentences guard a leave: the cancel button's "취소할 경우 입력된 정보는 모두 삭제됩니다. 입력을 취소하시겠습니까?" (Notion, 20+ screens) and, for navigation the user did not start from the form (LNB, back), "화면을 이동할 경우 입력된 정보는 모두 삭제됩니다. 화면으로 이동하시겠습니까?" (Figma `1.1.3.1.2`). Both appear only while the form is dirty (decided 2026-09-02, ADR 0010). Both run through the same Router blocker: the cancel button calls `guard.leave(navigate)` and `useUnsavedChangesGuard` picks the sentence by entry path. Add no second cancel dialog and never disable the guard to get past it — a clean form leaves without asking.
+This decision supersedes the 2026-09-05 expansion for cancel/dismiss. LNB/back navigation protection is
+not changed by this cancel-only decision. One `UnsavedChangesProvider` aggregates dirty/pending facts,
+not values. Existing inline/action-dialog consumers use `close(discard, { when: false })` to omit the
+local dirty question while preserving `refuseSilently` and their route registration. Dedicated page
+cancellation keeps `leave(navigate)`. Preserve input while an eligible question is open. Current consumer
+verification belongs to the corresponding scenario card; do not remove route protection to bypass a local question.
+
+Two confirmed sentences exist: eligible create/edit cancellation uses "취소할 경우 입력된 정보는 모두 삭제됩니다. 입력을 취소하시겠습니까?" (Notion, 20+ screens); navigation outside the form (LNB, back) uses "화면을 이동할 경우 입력된 정보는 모두 삭제됩니다. 화면으로 이동하시겠습니까?" (Figma `1.1.3.1.2`). Neither asks for clean input. Current page cancellation calls `guard.leave(navigate)` through the Router blocker, which selects the sentence by entry path. Keep the sentences distinct and do not add a second cancel dialog. Eligibility follows the 2026-09-07 scenario above, not the mere presence of `useForm`.
 
 Tabs inside a form (translation tabs, sub-tabs of a settings section) are presentation state of the nearest component, not URL state, unless the product confirms deep links. A failed field on an inactive tab must be revealed the same way a collapsed section is; that is a single-active algebra and not `useFormSections`.
 

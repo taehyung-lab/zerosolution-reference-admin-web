@@ -1,3 +1,7 @@
+/**
+ * 페이지 크기와 정렬 항목을 선택해 확정 검색 조건을 바꾸는 UI다.
+ * 실제 API에서도 유지한다. 데이터를 직접 자르거나 정렬하지 않고 변경된 조건의 재조회는 데이터 흐름에 맡긴다.
+ */
 import { useTranslation } from "react-i18next";
 import { standardPageSizeOptions } from "@/shared/config/list";
 import { PageSizeControl } from "@/shared/ui/patterns/PageSizeControl";

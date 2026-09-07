@@ -1,0 +1,345 @@
+{
+  "judgment": [
+    {
+      "file": "docs/reference/zero-sol-figma-analysis.md",
+      "heading": "2. surface별 판정"
+    },
+    {
+      "file": "docs/reference/zero-sol-figma-analysis.md",
+      "heading": "5. 미확인 — 답이 구현을 바꾸는 질문"
+    },
+    {
+      "file": "docs/reference/zero-sol-figma-analysis.md",
+      "heading": "8. 상세·폼·팝업 판정 (2026-09-02 ①′~②′, Claude·Codex 독립 초안 + 교차 리뷰)"
+    }
+  ],
+  "surfaces": [
+    {
+      "id": "common",
+      "title": "공통 shell·LNB·alert·세션",
+      "coverage": "group",
+      "inventory": "docs/reference/zero-sol/01-common.md",
+      "scenarios": [
+        "docs/reference/scenarios/session-lifetime.md"
+      ],
+      "paths": [
+        "src/app/shell/"
+      ],
+      "references": [
+        ".agents/skills/feature-contract/references/screen-composition.md"
+      ],
+      "related": [],
+      "gap": "세션 외 공통 alert/incident 전체 workflow는 인벤토리와 개별 소비 시나리오를 추가 대조한다."
+    },
+    {
+      "id": "auth",
+      "title": "로그인·찾기·가입·결과조회",
+      "coverage": "group",
+      "inventory": "docs/reference/zero-sol/02-auth.md",
+      "scenarios": [
+        "docs/reference/scenarios/auth-workflow.md"
+      ],
+      "paths": [
+        "src/features/auth/",
+        "src/routes/login.tsx"
+      ],
+      "references": [],
+      "related": []
+    },
+    {
+      "id": "dashboard",
+      "title": "대시보드 집계·이동",
+      "coverage": "group",
+      "inventory": "docs/reference/zero-sol/03-dashboard.md",
+      "scenarios": [
+        "docs/reference/scenarios/aggregation-and-search.md"
+      ],
+      "paths": [],
+      "references": [
+        ".agents/skills/feature-contract/references/specialized-screens.md"
+      ],
+      "related": [],
+      "gap": "집계 mechanic 카드이며 대시보드 tile별 이동과 기간 정책은 미확인이다."
+    },
+    {
+      "id": "members",
+      "title": "회원 목록·상세·폼·상담·소명·접속",
+      "coverage": "group",
+      "inventory": "docs/reference/zero-sol/04-members.md",
+      "scenarios": [
+        "docs/reference/scenarios/member-list-and-detail.md",
+        "docs/reference/scenarios/member-secondary-lists.md"
+      ],
+      "paths": [
+        "src/features/members/",
+        "src/routes/_app/members/"
+      ],
+      "references": [],
+      "related": [
+        "member-messaging"
+      ]
+    },
+    {
+      "id": "member-messaging",
+      "title": "회원 SMS·이메일 팝업",
+      "coverage": "surface",
+      "inventory": "docs/reference/zero-sol/04-members.md",
+      "scenarios": [
+        "docs/reference/scenarios/member-list-and-detail.md"
+      ],
+      "paths": [
+        "src/features/messaging/"
+      ],
+      "references": [
+        ".agents/skills/feature-contract/references/form-workflow.md",
+        ".agents/skills/feature-contract/references/mutation-actions.md"
+      ],
+      "related": []
+    },
+    {
+      "id": "performance-list",
+      "title": "5.2 공연 목록",
+      "coverage": "surface",
+      "inventory": "docs/reference/zero-sol/05-performances.md",
+      "scenarios": [
+        "docs/reference/scenarios/performance-and-content.md"
+      ],
+      "paths": [
+        "src/features/performances/list/",
+        "src/features/performances/api/",
+        "src/features/performances/model/",
+        "src/features/performances/fixtures/",
+        "src/routes/_app/performances.tsx"
+      ],
+      "references": [
+        "docs/reference/zero-sol/notion/05-performances.md",
+        ".agents/skills/feature-contract/references/list-workflow.md",
+        ".agents/skills/feature-contract/references/table-composition.md"
+      ],
+      "related": [
+        "performance-venue"
+      ]
+    },
+    {
+      "id": "performance-venue",
+      "title": "5.2 공연 목록 내부 공연장 선택",
+      "coverage": "surface",
+      "inventory": "docs/reference/zero-sol/05-performances.md",
+      "scenarios": [
+        "docs/reference/scenarios/performance-and-content.md"
+      ],
+      "paths": [],
+      "references": [
+        "docs/reference/zero-sol/notion/05-performances.md",
+        ".agents/skills/shared-ui-contract/references/combobox.md"
+      ],
+      "related": []
+    },
+    {
+      "id": "performance-edit",
+      "title": "5.2 공연 조회·수정의 입장안내 섹션",
+      "coverage": "surface",
+      "inventory": "docs/reference/zero-sol/05-performances.md",
+      "scenarios": [
+        "docs/reference/scenarios/performance-and-content.md"
+      ],
+      "paths": [
+        "src/features/performances/api/",
+        "src/features/performances/model/",
+        "src/features/performances/fixtures/"
+      ],
+      "references": [
+        "docs/reference/zero-sol/notion/05-performances.md",
+        ".agents/skills/feature-contract/references/detail-workflow.md",
+        ".agents/skills/feature-contract/references/form-workflow.md",
+        ".agents/skills/feature-contract/references/table-composition.md",
+        ".agents/skills/feature-contract/references/file-workflow.md",
+        ".agents/skills/feature-contract/references/mutation-actions.md"
+      ],
+      "related": [
+        "performance-language"
+      ],
+      "gap": "공연 상세·수정 코드 경로는 미구현이다. 신규 경로는 checkpoint evidenceGaps로 연결하고 제품 정책 미확인은 unresolved로 분리한다."
+    },
+    {
+      "id": "performance-language",
+      "title": "5.2 기본정보 내부 언어 탭",
+      "coverage": "surface",
+      "inventory": "docs/reference/zero-sol/05-performances.md",
+      "scenarios": [
+        "docs/reference/scenarios/performance-and-content.md"
+      ],
+      "paths": [],
+      "references": [
+        ".agents/skills/feature-contract/references/form-workflow.md"
+      ],
+      "related": []
+    },
+    {
+      "id": "performance-content",
+      "title": "5.1 콘텐츠 목록·조회·수정",
+      "coverage": "group",
+      "inventory": "docs/reference/zero-sol/05-performances.md",
+      "scenarios": [
+        "docs/reference/scenarios/performance-and-content.md"
+      ],
+      "paths": [],
+      "references": [
+        "docs/reference/zero-sol/notion/05-performances.md",
+        ".agents/skills/feature-contract/references/list-workflow.md",
+        ".agents/skills/feature-contract/references/detail-workflow.md",
+        ".agents/skills/feature-contract/references/table-composition.md"
+      ],
+      "related": [
+        "content-preview"
+      ],
+      "gap": "콘텐츠 코드 경로와 등록전/등록후 의미는 미확인이다. 공연 목록의 정책으로 대체하지 않는다."
+    },
+    {
+      "id": "content-preview",
+      "title": "5.1 콘텐츠 미리보기 팝업",
+      "coverage": "surface",
+      "inventory": "docs/reference/zero-sol/05-performances.md",
+      "scenarios": [
+        "docs/reference/scenarios/performance-and-content.md"
+      ],
+      "paths": [],
+      "references": [
+        ".agents/skills/feature-contract/references/detail-workflow.md"
+      ],
+      "related": []
+    },
+    {
+      "id": "ticketing",
+      "title": "발권 등록·목록·상세·프린터",
+      "coverage": "group",
+      "inventory": "docs/reference/zero-sol/06-ticketing.md",
+      "scenarios": [
+        "docs/reference/scenarios/ticketing-lists-and-detail.md",
+        "docs/reference/scenarios/ticketing-realtime.md"
+      ],
+      "paths": [],
+      "references": [
+        ".agents/skills/feature-contract/references/list-workflow.md",
+        ".agents/skills/feature-contract/references/table-composition.md"
+      ],
+      "related": []
+    },
+    {
+      "id": "exhibition",
+      "title": "전시 배너·APP Splash",
+      "coverage": "group",
+      "inventory": "docs/reference/zero-sol/07-exhibition.md",
+      "scenarios": [
+        "docs/reference/scenarios/exhibition-promotion-community.md"
+      ],
+      "paths": [],
+      "references": [],
+      "related": []
+    },
+    {
+      "id": "promotion",
+      "title": "프로모션 APP PUSH",
+      "coverage": "group",
+      "inventory": "docs/reference/zero-sol/08-promotion.md",
+      "scenarios": [
+        "docs/reference/scenarios/exhibition-promotion-community.md"
+      ],
+      "paths": [],
+      "references": [],
+      "related": []
+    },
+    {
+      "id": "community",
+      "title": "게시판·게시물·작성자 검색 팝업",
+      "coverage": "group",
+      "inventory": "docs/reference/zero-sol/09-community.md",
+      "scenarios": [
+        "docs/reference/scenarios/exhibition-promotion-community.md"
+      ],
+      "paths": [],
+      "references": [
+        ".agents/skills/feature-contract/references/table-composition.md"
+      ],
+      "related": []
+    },
+    {
+      "id": "statistics",
+      "title": "통계 집계·회차·전치 표",
+      "coverage": "group",
+      "inventory": "docs/reference/zero-sol/10-statistics.md",
+      "scenarios": [
+        "docs/reference/scenarios/aggregation-and-search.md"
+      ],
+      "paths": [],
+      "references": [
+        ".agents/skills/feature-contract/references/specialized-screens.md",
+        ".agents/skills/feature-contract/references/table-composition.md"
+      ],
+      "related": []
+    },
+    {
+      "id": "settings",
+      "title": "운영자·약관·정책·권한·로그",
+      "coverage": "group",
+      "inventory": "docs/reference/zero-sol/11-settings.md",
+      "scenarios": [
+        "docs/reference/scenarios/settings-and-permissions.md"
+      ],
+      "paths": [
+        "src/features/managers/",
+        "src/routes/_app/managers/"
+      ],
+      "references": [],
+      "related": []
+    },
+    {
+      "id": "search",
+      "title": "통합검색의 독립 결과 영역",
+      "coverage": "group",
+      "inventory": "docs/reference/zero-sol/12-search.md",
+      "scenarios": [
+        "docs/reference/scenarios/aggregation-and-search.md"
+      ],
+      "paths": [],
+      "references": [],
+      "related": []
+    },
+    {
+      "id": "profile",
+      "title": "내정보 조회·수정",
+      "coverage": "group",
+      "inventory": "docs/reference/zero-sol/13-profile.md",
+      "scenarios": [],
+      "paths": [],
+      "references": [],
+      "related": [],
+      "gap": "인벤토리는 조회·수정 frame 존재만 기록한다. 실제 필드·전이·별도 시나리오는 원문 확인 후 보강해야 한다."
+    },
+    {
+      "id": "onsite",
+      "title": "현장발권 예매검색·신규예매·출입조회",
+      "coverage": "group",
+      "inventory": "docs/reference/zero-sol/14-onsite.md",
+      "scenarios": [
+        "docs/reference/scenarios/ticketing-lists-and-detail.md",
+        "docs/reference/scenarios/ticketing-realtime.md"
+      ],
+      "paths": [],
+      "references": [],
+      "related": [],
+      "gap": "연결 카드는 발권 공통 mechanic이다. 현장발권 고유 shell·배포·출입 결과 정책은 인벤토리의 미확인을 별도 대조한다."
+    },
+    {
+      "id": "notifications",
+      "title": "개별 알림·알림 목록 패널",
+      "coverage": "group",
+      "inventory": "docs/reference/zero-sol/15-notification.md",
+      "scenarios": [],
+      "paths": [],
+      "references": [],
+      "related": [],
+      "gap": "toast/panel 구성만 기록돼 있다. 수명·읽음·닫기·복구 시나리오는 원문 확인 후 보강해야 한다."
+    }
+  ]
+}

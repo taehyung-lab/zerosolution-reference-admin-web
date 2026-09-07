@@ -1,12 +1,11 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { waitFor, fireEvent, render, screen, within } from "@testing-library/react";
 import { expect, it, vi } from "vitest";
-import { TestLocaleProvider } from "@/test/locale";
+import { TestQueryLocaleProvider as TestLocaleProvider } from "@/test/query-locale";
 import { MemberAppealListScreen } from "./MemberAppealListScreen";
 import type { MemberRecordSearch } from "../records/member-record-search";
 
-vi.mock("@/env", () => ({ env: { VITE_REFERENCE_SCENARIOS: true } }));
 
-it("keeps selection during filter drafts, clears it on committed search, and keeps the action alert mounted through empty results", () => {
+it("keeps selection during filter drafts, clears it on committed search, and keeps the action alert mounted through empty results", async () => {
   const onMessage = vi.fn();
   const view = (search: MemberRecordSearch) => (
     <TestLocaleProvider>
@@ -21,7 +20,7 @@ it("keeps selection during filter drafts, clears it on committed search, and kee
   );
   const { rerender } = render(view({}));
   fireEvent.click(
-    screen.getByRole("checkbox", { name: "현재 페이지 전체 선택" }),
+    await screen.findByRole("checkbox", { name: "현재 페이지 전체 선택" }),
   );
   fireEvent.change(screen.getByRole("textbox", { name: "검색어" }), {
     target: { value: "uncommitted" },
@@ -36,6 +35,6 @@ it("keeps selection during filter drafts, clears it on committed search, and kee
   fireEvent.click(
     within(screen.getByRole("dialog")).getByRole("button", { name: "확인" }),
   );
-  expect(screen.queryByRole("table")).not.toBeInTheDocument();
+  await waitFor(() => expect(screen.queryByRole("table")).not.toBeInTheDocument());
   expect(onMessage).toHaveBeenCalledTimes(1);
 });

@@ -106,7 +106,7 @@ describe('manager detail input boundaries', () => {
     expect(screen.getByRole('dialog', { name: '잠금해제' })).toBeInTheDocument();
   });
 
-  it('protects rejection input on cancel and sends only the reason', async () => {
+  it('dismisses dirty rejection without a warning and sends only the new reason', async () => {
     const onActionRequest = setup('awaiting');
     fireEvent.click(screen.getByRole('button', { name: '거절' }));
     fireEvent.change(screen.getByLabelText('승인거절 사유*'), {
@@ -117,9 +117,12 @@ describe('manager detail input boundaries', () => {
         name: '취소',
       })[1]!,
     );
-    const question = screen.getByRole('dialog', { name: '알림' });
-    fireEvent.click(within(question).getByRole('button', { name: '취소' }));
-    expect(screen.getByLabelText('승인거절 사유*')).toHaveValue('Review needed');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(onActionRequest).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: '거절' }));
+    fireEvent.change(screen.getByLabelText('승인거절 사유*'), {
+      target: { value: 'Review needed' },
+    });
     fireEvent.click(screen.getByRole('button', { name: '가입 거절하기' }));
     await vi.waitFor(() =>
       expect(onActionRequest).toHaveBeenCalledExactlyOnceWith({

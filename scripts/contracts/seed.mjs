@@ -11,11 +11,36 @@ const location = (file, heading, marker) => ({ file, heading, marker })
  */
 export const SEED_BUNDLES = [
   {
+    id: 'ascii-triplet',
+    code: ['src/shared/lib/ascii-triplet.ts'],
+    skills: [location('.agents/skills/shared-ui-contract/references/shared-values.md', 'Pure utilities (`shared/lib`)', '`hasRepeatedOrSequentialAsciiTriplet')],
+    adrs: [location('docs/decisions/0009-shared-boundaries.md', '단위별 단계와 소비자', '`hasRepeatedOrSequentialAsciiTriplet')],
+    tests: ['src/shared/lib/ascii-triplet.test.ts'],
+    ownership: { shared: 'Detects case-insensitive repeated or sequential ASCII letter/digit triplets.', feature: 'Owns password length, character classes, schema, copy, and server checks.' },
+  },
+  {
+    id: 'confirmation',
+    code: ['src/shared/lib/use-confirmation.ts', 'src/shared/ui/patterns/BulkActionDialogs.tsx'],
+    skills: [location('.agents/skills/shared-ui-contract/references/shared-values.md', 'State mechanics (`shared/lib`)', '`useConfirmation')],
+    adrs: [location('docs/decisions/0009-shared-boundaries.md', '단위별 단계와 소비자', '`useConfirmation')],
+    tests: ['src/shared/ui/patterns/BulkActionDialogs.test.tsx'],
+    ownership: { shared: 'Holds opaque confirmation values, invokes run after confirm, and renders selection rejection/confirmation surfaces; no form or API knowledge.', feature: 'Owns validation, copy, selection, callbacks, and all success/failure behavior.' },
+  },
+  {
+    id: 'contact-masking',
+    code: ['src/shared/lib/mask-contact.ts'],
+    skills: [location('.agents/skills/shared-ui-contract/references/shared-values.md', 'Pure utilities (`shared/lib`)', '`maskEmail')],
+    adrs: [location('docs/decisions/0009-shared-boundaries.md', '단위별 단계와 소비자', '`maskEmail')],
+    tests: ['src/shared/lib/mask-contact.test.ts'],
+    ownership: { shared: 'Applies the currently shared string-only contact masking algorithm.', feature: 'Owns raw data, permission, disclosure, and adoption of product masking rules.' },
+  },
+  {
     id: 'list-result',
     code: [
       'src/shared/ui/patterns/ListResult.tsx',
       'src/shared/ui/patterns/ResultToolbar.tsx',
       'src/shared/ui/patterns/ResultSummary.tsx',
+      'src/shared/ui/patterns/ResultTotal.tsx',
     ],
     skills: [location(
       '.agents/skills/feature-contract/references/list-workflow.md',
@@ -30,6 +55,7 @@ export const SEED_BUNDLES = [
     tests: [
       'src/shared/ui/patterns/list-patterns.test.tsx',
       'src/shared/ui/patterns/ListResult.test-d.ts',
+      'src/shared/ui/patterns/ResultTotal.test.tsx',
     ],
     ownership: {
       shared: 'Receives plain list facts, resolves the five-state result, and owns shared error, retry, live region, and trace presentation.',
@@ -213,6 +239,71 @@ export const SEED_BUNDLES = [
     },
   },
   {
+    id: 'search-partition',
+    code: ['src/shared/lib/search-partition.ts'],
+    skills: [location(
+      '.agents/skills/shared-ui-contract/references/shared-values.md',
+      'Pure utilities (`shared/lib`)',
+      'filterPartitionKey',
+    )],
+    adrs: [location(
+      'docs/decisions/0009-shared-boundaries.md',
+      '현재 provisional 계약',
+      'filter/view partition',
+    )],
+    tests: ['src/shared/lib/search-partition.test.ts'],
+    ownership: {
+      shared: 'Owns the filter-versus-view split of a committed search: the draft identity key and the filter-only values, read from a partition the caller declares.',
+      feature: 'Owns which field is a filter and which is a view, the search shape itself, and the submit and URL transition.',
+    },
+  },
+  {
+    id: 'list-query',
+    code: ['src/api/list-query.ts'],
+    skills: [location(
+      '.agents/skills/api-contract/references/query-cache.md',
+      '서버 연결 전후의 책임',
+      '`useListQuery`',
+    )],
+    adrs: [location(
+      'docs/decisions/0009-shared-boundaries.md',
+      '현재 provisional 계약',
+      '`api/list-query.ts` (`useListQuery`)',
+    )],
+    tests: ['src/api/list-query.test.tsx'],
+    ownership: {
+      shared: 'API owns the three list-only facts: an empty page is a result, only the entry fetch may open the blocking surface, an incident failure is not the list error, and the committed rows stay while the next view loads.',
+      feature: 'Owns the queryOptions, what counts as searched, and the response-to-rows/total projection.',
+    },
+  },
+  {
+    id: 'list-config',
+    // The standard-preset assembly hook is an i18n entrypoint a renderer never imports, so the
+    // import closure cannot reach it from `filter-surface`. Declaring it here keeps it exportable.
+    code: [
+      'src/shared/config/list.ts',
+      'src/shared/i18n/use-period-presets.ts',
+    ],
+    skills: [location(
+      '.agents/skills/shared-ui-contract/references/shared-values.md',
+      'Config (`shared/config/list.ts`)',
+      'standardPageSizeOptions',
+    )],
+    adrs: [location(
+      'docs/decisions/0009-shared-boundaries.md',
+      '현재 provisional 계약',
+      '`standardPageSizeOptions`, `standardPeriodPresetValues`',
+    )],
+    tests: [
+      'src/shared/config/list.test.ts',
+      'src/shared/i18n/use-period-presets.test.tsx',
+    ],
+    ownership: {
+      shared: 'Owns the observed standard page-size choices and period preset values as named presets, declares no default, and projects the standard period values onto their shared translations.',
+      feature: 'Opts in explicitly — calling the standard hook is that opt-in — and owns its own default and every exception.',
+    },
+  },
+  {
     id: 'keyword-draft',
     code: ['src/shared/lib/use-keyword-draft.ts'],
     skills: [location(
@@ -296,19 +387,38 @@ export const SEED_BUNDLES = [
     },
   },
   {
+    id: 'inline-search-select',
+    code: ['src/shared/ui/primitives/InlineSearchSelect.tsx'],
+    skills: [location(
+      '.agents/skills/shared-ui-contract/references/combobox.md',
+      'Inline single selection',
+      '`InlineSearchSelect` is the provisional',
+    )],
+    adrs: [location(
+      'docs/decisions/0009-shared-boundaries.md',
+      '검토한 대안',
+      '`InlineSearchSelect`를 provisional primitive로 분리했다',
+    )],
+    tests: ['src/shared/ui/primitives/InlineSearchSelect.test.tsx'],
+    ownership: {
+      shared: 'Owns local option matching, single selection, search clearing and the remove-before-reselect input state.',
+      feature: 'Owns options and selected labels, remote loading/failure, product eligibility, filter/form commit and reset.',
+    },
+  },
+  {
     id: 'data-table',
-    code: ['src/shared/ui/patterns/DataTable.tsx'],
+    code: ['src/shared/ui/patterns/DataTable.tsx', 'src/shared/ui/patterns/selection-column.tsx'],
     skills: [location(
       '.agents/skills/shared-ui-contract/references/data-table.md',
       'Public contract',
       '`meta.sort`',
-    )],
+    ), location('.agents/skills/shared-ui-contract/references/data-table.md', 'Selection column', '`selectionColumn')],
     adrs: [location(
       'docs/decisions/0009-shared-boundaries.md',
       '현재 provisional 계약',
       '`DataTable`, `Pagination`, `PageSizeControl`, `SortControl`',
     )],
-    tests: ['src/shared/ui/patterns/DataTable.test.tsx'],
+    tests: ['src/shared/ui/patterns/DataTable.test.tsx', 'src/shared/ui/patterns/selection-column.test.tsx'],
     ownership: {
       shared: 'Owns native table semantics, stable row identity, and the controlled sort header (button, aria-sort, glyph) from meta.sort.',
       feature: 'Owns which columns sort, direction transitions, server sort keys, URL, Query, selection, and empty/error copy.',
@@ -633,6 +743,7 @@ export const TRANSPLANT_MANIFEST = {
   gates: [
     'eslint.config.js',
     'scripts/gates',
+    'scripts/agents',
     'tests/gates',
     'scripts/verify-negative-controls.mjs',
     'scripts/verify-negative-controls.test.mjs',
@@ -667,7 +778,7 @@ export const TRANSPLANT_MANIFEST = {
     'src/shared/i18n/locales/en/app.json',
     'src/shared/i18n/locales/ja/app.json',
   ],
-  templates: ['package.json'],
+  templates: ['package.json', '.codex/hooks.json', '.claude/settings.json', '.github/hooks/reference.json'],
 }
 
 function expandManifestEntry(entry) {

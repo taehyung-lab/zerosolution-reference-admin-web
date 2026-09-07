@@ -13,8 +13,10 @@ Read this file only for the Dialog primitive, Confirm, Alert, modal focus, or pe
 `Dialog` records the focused element before its initial autofocus and restores it on close when that
 element is still connected. This fixes the external-opener → BODY loss reproduced by `dialogs.test.tsx`.
 If navigation removes the opener, the destination owns focus. This is focus restoration, not a domain
-action policy. Dirty close protection remains in the form's guard; Dialog only reports a close request.
-The app's `UnsavedChangesProvider` owns one route confirmation for concurrent dirty forms. Local
-popup cancellation remains scoped to that popup; no form value or pending destination is copied into it.
+action policy. Dialog only reports a close request; the feature owns whether that request needs confirmation.
+The 2026-09-07 cancellation scenario excludes detail-inline/action-dialog forms from dirty close questions;
+eligibility and consumer wiring are owned by [form-workflow.md](../../feature-contract/references/form-workflow.md#cancel-and-tabs).
+The app's `UnsavedChangesProvider` currently owns one route confirmation for concurrent dirty forms;
+cancel-only scope changes do not remove route protection. No form value or pending destination is copied into it.
 
 Do not create an imperative global confirm service, a hook returning hidden JSX, router-typed props, CRUD copy, or mutation/error handling inside shared Dialog. Test title/description, initial focus, restoration, Escape/outside policy, pending, and the action actually changed.

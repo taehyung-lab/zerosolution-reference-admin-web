@@ -39,6 +39,8 @@ Select only the surfaces the current list uses. A surface nested inside a cell, 
 
 For a confirmed explicit-search list, model committed search as `{}` before search and the declared discriminator plus non-default values after search. Do not add a duplicate `searched` marker or a shared helper that derives it; the discriminator differs per screen. A list without a search gate passes `searched: true` so the policy is visible in code. A feature-owned resolver applies UI/request defaults without injecting them into the URL. Committed search inside a dialog (kind E in [table-composition.md](table-composition.md)) is owned by the dialog host, not the URL; the same shared mechanics apply because none of them read the Router.
 
+If confirmed policy requires immediate entry loading but reset to an idle result (performance list), empty filters cannot distinguish those states. That feature may use a single sparse URL discriminator (`searched: false` only after reset, removed on submit). Query enablement and result presentation derive from that same value; do not duplicate it in local state or send it as a server parameter.
+
 ```text
 route search -> field validation -> canonical sparse search
                                       -> resolved defaults
@@ -80,3 +82,19 @@ Do not expose a Table instance or add `useListTable`, `usePagedTable`, `Resource
 ## Verification
 
 Cover the transitions changed: canonical URL recovery/history, draft rebuild, Query enablement and key/params identity, result-state reachability, page reset, accessible names, stable row IDs, and paging recovery. Browser evidence names the exact screen, state, viewport, visible fields/columns, interaction, and intentional differences.
+
+## Repeated result and search shapes
+
+Result hooks expose present controls as `pageSize: { value, options, onValueChange }`,
+`sort: { value, options, onValueChange }`, and `pagination: { page, totalPages, onPageChange }`.
+Columns and selection remain feature-owned; absent selection/actions need no dummy fields.
+Use `ResultTotal` for a single result count instead of returning identical summaryGroups from each hook.
+Do not build a factory around schema, navigation or header-sort transitions: member, manager and
+performance consumers have different direction defaults and reset/search policies.
+
+Resolve canonical values through `resolveSearchDefaults(search, featureDefaults)`; the defaults object
+must declare every route-search key with `satisfies Readonly<Record<keyof RouteSearch, unknown>> & Partial<RouteSearch>`.
+The schema still owns validation and sparse URL serialization. Explicit `undefined` means preserve
+absence, not a forgotten default. Period criterion, default range, keyword fields and sort direction
+are product decisions, not universal values. In particular, a period preset does not choose `periodType`.
+Use the same resolved values for UI and requests, and keep filter-only values out of committed view state.

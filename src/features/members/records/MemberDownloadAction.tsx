@@ -1,3 +1,7 @@
+/**
+ * 다운로드 사유와 비밀번호 등 화면에서 요구하는 입력을 검증해 검색 범위와 함께 전달한다.
+ * 이 폼은 실제 API에서도 필요하지만 비밀번호의 진위·파일 생성·다운로드 성공은 서버 연결 이후에 판정한다.
+ */
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/shared/ui/primitives/Button";

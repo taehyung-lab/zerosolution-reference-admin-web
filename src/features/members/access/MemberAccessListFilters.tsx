@@ -1,8 +1,15 @@
+/**
+ * 접속 목록에서 허용하는 기간·검색 필드와 개별 필터를 공용 입력 컴포넌트에 연결한다.
+ * 실제 API에서도 입력 UI는 필요하며 행 필터링이나 서버 조회는 수행하지 않는다.
+ */
 import { useTranslation } from "react-i18next";
 import { FilterPanel } from "@/shared/ui/patterns/FilterPanel";
 import { FilterField } from "@/shared/ui/patterns/FilterField";
 import { CheckboxTree } from "@/shared/ui/primitives/CheckboxTree";
-import { MemberRecordFilterFields } from "../records/MemberRecordFilterFields";
+import {
+  MemberAccountStatusFilter,
+  MemberRecordFilterFields,
+} from "../records/MemberRecordFilterFields";
 import type { useMemberRecordFilter } from "../records/useMemberRecordFilter";
 import type { MemberRecordSearch } from "../records/member-record-search";
 
@@ -33,26 +40,10 @@ export function MemberAccessListFilters({
           { value: "phone", label: t("columns.phone") },
         ]}
       />
-      <FilterField label={t("filters.accountStatus")}>
-        {({ labelId }) => (
-          <CheckboxTree
-            ariaLabelledby={labelId}
-            selectAllLabel={t("filters.all")}
-            nodes={["general", "flagged"].map((value) => ({
-              value,
-              label: t(`accountStatus.${value}`),
-            }))}
-            values={filter.draft.accountStatuses ?? []}
-            emptyMeansAll
-            onValueChange={(accountStatuses) =>
-              filter.patchDraft({
-                accountStatuses:
-                  accountStatuses as MemberRecordSearch["accountStatuses"],
-              })
-            }
-          />
-        )}
-      </FilterField>
+      <MemberAccountStatusFilter
+        values={filter.draft.accountStatuses}
+        onChange={(accountStatuses) => filter.patchDraft({ accountStatuses })}
+      />
       <FilterField label={t("secondary.fields.accessPath")}>
         {({ labelId }) => (
           <CheckboxTree

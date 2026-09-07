@@ -1,4 +1,5 @@
 {
+  "pageHeader": { "breadcrumb": "Breadcrumb" },
   "error": {
     "kind": {
       "network": "Check your network connection and try again.",

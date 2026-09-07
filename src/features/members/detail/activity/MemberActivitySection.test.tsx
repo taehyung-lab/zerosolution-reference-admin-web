@@ -7,6 +7,28 @@ import {
   type MemberActivitySearch,
 } from "./MemberActivitySection";
 
+const readyRows = [
+  {
+    id: "activity-1",
+    occurredAt: "2026-09-01",
+    performanceName: "공연",
+    session: "1",
+    performanceAt: "2026-09-01",
+    bookingNumber: "B001",
+    seatNumber: "A1",
+  },
+];
+const readyData = {
+  rows: readyRows,
+  total: 201,
+  searched: true,
+  isPending: false,
+  isFetching: false,
+  isError: false,
+  trace: undefined,
+  retry: () => Promise.resolve(),
+};
+
 function setup() {
   const onSearch = vi.fn();
   const onDelete = vi.fn();
@@ -25,18 +47,7 @@ function setup() {
           onSearch(next);
         }}
         onDelete={onDelete}
-        total={201}
-        rows={[
-          {
-            id: "activity-1",
-            occurredAt: "2026-09-01",
-            performanceName: "공연",
-            session: "1",
-            performanceAt: "2026-09-01",
-            bookingNumber: "B001",
-            seatNumber: "A1",
-          },
-        ]}
+        data={readyData}
       />
     );
   }
@@ -135,5 +146,44 @@ describe("member activity request boundary", () => {
     });
     fireEvent.click(screen.getByRole("tab", { name: "재관람" }));
     expect(screen.getByRole("button", { name: "선택삭제" })).toBeVisible();
+  });
+});
+
+describe("member activity load state", () => {
+  const view = (data: typeof readyData) => (
+    <TestLocaleProvider>
+      <MemberActivitySection
+        query={{ tab: "ticket", keyword: "", page: 1, pageSize: 100 }}
+        onSearch={vi.fn()}
+        onDelete={vi.fn()}
+        data={data}
+      />
+    </TestLocaleProvider>
+  );
+
+  it("does not claim an empty history while the page is still loading", () => {
+    render(view({ ...readyData, rows: [], total: 0, isPending: true }));
+    expect(screen.queryByText("인증 기록이 없습니다.")).toBeNull();
+    expect(screen.queryByRole("table")).toBeNull();
+    expect(screen.getByText("데이터를 불러오는 중입니다. 잠시만 기다려 주세요.")).toBeVisible();
+  });
+
+  it("shows the failure with a retry instead of an empty history, then renders the recovered rows", () => {
+    const retry = vi.fn(() => Promise.resolve());
+    const { rerender } = render(
+      view({ ...readyData, rows: [], total: 0, isError: true, retry }),
+    );
+    expect(screen.queryByText("인증 기록이 없습니다.")).toBeNull();
+    const alert = screen.getByRole("alert");
+    fireEvent.click(within(alert).getByRole("button", { name: "다시 시도" }));
+    expect(retry).toHaveBeenCalledOnce();
+    rerender(view(readyData));
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(screen.getByRole("checkbox", { name: "B001 선택" })).toBeVisible();
+  });
+
+  it("still says the history is empty when the query succeeded with no rows", () => {
+    render(view({ ...readyData, rows: [], total: 0 }));
+    expect(screen.getByText("인증 기록이 없습니다.")).toBeVisible();
   });
 });

@@ -12,7 +12,9 @@ import { useTranslation } from 'react-i18next';
 import type { ManagerCreateInput, ManagerEditInput } from './manager-form-schema';
 import { useManagerFormOptions, type ManagerFormOptions } from './useManagerFormOptions';
 
-/** The save lifecycle a screen declares with `useSaveForm`; this component only consumes it. */
+/**
+ * 화면이 선언한 저장 생명주기를 폼 UI에 전달하는 타입이다. 이 타입 자체가 API 저장을 실행하지 않는다.
+ */
 export type ManagerSaveForm<TValues, TOutput> = Pick<
   ReturnType<typeof useSaveForm<TValues, TOutput, 'info'>>,
   'sections' | 'stage' | 'guard' | 'dialogs'
@@ -27,38 +29,33 @@ export type ManagerSaveForm<TValues, TOutput> = Pick<
 };
 
 /**
- * The manager form that both the create and the edit screen render. It owns everything the two
- * screens share: option sources, the type policy ("유형 변경시 권한은 초기화됨", Notion),
- * the common fields in Figma reading order, and
- * the section/action shell. A screen declares `useSaveForm` (schema, defaults, mutation,
- * destination) and passes only what differs: the `identity` slot before the name
- * (create: ID and password pair, edit: read-only ID) and where cancel goes.
- *
- * Generic with the edit input as the lower bound because `FormApi<ManagerCreateInput>` is not
- * assignable to `FormApi<ManagerEditInput>` (TanStack's form types are not covariant in their
- * values), while both inputs contain exactly these seven fields. The `DeepValue` casts below are
- * the price of that generic: TypeScript cannot reduce `DeepValue<TValues, 'permissionId'>` to
- * `string` for an unresolved `TValues`, though the bound guarantees it.
+ * 운영자 등록/수정이 공유하는 입력 필드·옵션·유형 변경 시 종속값 초기화와 저장/취소 UI다.
+ * 실제 API에서도 폼은 유지하며 schema·초기값·mutation·완료 이동은 화면이 선언한다.
+ * 옵션은 화면이 소유한 조회 결과를 받고, 넘기지 않으면 리허설 API 옵션 Query를 실행한다.
+ * 제품 화면은 useManagerDirectoryFormOptions를, 리허설 화면은 내부 Query 경로를 쓴다.
+ * 등록만 아이디·비밀번호 입력을 identity slot에 넣고 수정은 읽기 전용 아이디를 넣는다.
+ * FormApi는 값 타입에 공변적이지 않아 공통 수정 필드를 하한으로 제네릭을 사용한다.
+ * DeepValue의 필드 타입을 미확정 제네릭에서 좁힐 수 없어 종속값 초기화 위치에 타입 단언이 남는다.
  */
 export function ManagerForm<TValues extends ManagerEditInput, TOutput>({
   save,
   identity,
   onCancel,
-  optionsForType,
+  options,
 }: {
   readonly save: ManagerSaveForm<TValues, TOutput>;
   readonly identity: ReactNode;
   readonly onCancel: () => void;
-  readonly optionsForType?: (type: string) => ManagerFormOptions;
+  readonly options?: ManagerFormOptions;
 }) {
   const { form } = save;
   const type = useSelector(form.store, (state) => state.values.type);
-  return optionsForType ? (
+  return options ? (
     <ManagerFormContent
       save={save}
       identity={identity}
       onCancel={onCancel}
-      options={optionsForType(type)}
+      options={options}
     />
   ) : (
     <ManagerFormWithQueries save={save} identity={identity} onCancel={onCancel} type={type} />
@@ -188,7 +185,9 @@ function ManagerFormContent<TValues extends ManagerEditInput, TOutput>({
   );
 }
 
-/** The create-only identity fields: ID plus the password pair. Edit shows the ID as read-only text instead. */
+/**
+ * 등록에만 필요한 아이디·비밀번호·비밀번호 확인 입력이다. 수정 화면은 아이디를 읽기 전용으로 표시한다.
+ */
 export function ManagerCreateIdentityFields({
   form,
 }: {

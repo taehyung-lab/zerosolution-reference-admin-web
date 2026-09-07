@@ -4,22 +4,22 @@ import {
   useQuery,
   type QueryKey,
   type UseQueryOptions,
-} from '@tanstack/react-query'
-import { useState } from 'react'
-import type { ApiError } from './error'
-import { isFeatureError } from './error-outcome'
-import { blockingProgress, contentProgress } from './query-meta'
+} from '@tanstack/react-query';
+import { useState } from 'react';
+import type { ApiError } from './error';
+import { isFeatureError } from './error-outcome';
+import { blockingProgress, contentProgress } from './query-meta';
 
 /** The facts a paged list exposes; nothing else decides its result state. */
 export interface ListQueryResult<TRow> {
-  readonly rows: readonly TRow[]
-  readonly total: number
-  readonly searched: boolean
-  readonly isPending: boolean
-  readonly isFetching: boolean
-  readonly isError: boolean
-  readonly trace: ApiError | undefined
-  readonly retry: () => Promise<unknown>
+  readonly rows: readonly TRow[];
+  readonly total: number;
+  readonly searched: boolean;
+  readonly isPending: boolean;
+  readonly isFetching: boolean;
+  readonly isError: boolean;
+  readonly trace: ApiError | undefined;
+  readonly retry: () => Promise<unknown>;
 }
 
 /**
@@ -34,28 +34,34 @@ export interface ListQueryResult<TRow> {
  * The caller keeps its contract: `options`, what counts as searched, and how the response
  * becomes rows and a total.
  */
-export function useListQuery<TResponse, TRow, TKey extends QueryKey = QueryKey>({
+export function useListQuery<
+  TResponse,
+  TRow,
+  TKey extends QueryKey = QueryKey,
+>({
   options,
   searched,
   select,
 }: {
-  readonly options: UseQueryOptions<TResponse, Error, TResponse, TKey>
-  readonly searched: boolean
+  readonly options: UseQueryOptions<TResponse, Error, TResponse, TKey>;
+  readonly searched: boolean;
   readonly select: (data: TResponse) => {
-    readonly rows: readonly TRow[]
-    readonly total: number
-  }
+    readonly rows: readonly TRow[];
+    readonly total: number;
+  };
 }): ListQueryResult<TRow> {
-  const [entryQueryHash] = useState(() => (searched ? hashKey(options.queryKey) : undefined))
-  const entryFetch = entryQueryHash === hashKey(options.queryKey)
+  const [entryQueryHash] = useState(() =>
+    searched ? hashKey(options.queryKey) : undefined
+  );
+  const entryFetch = entryQueryHash === hashKey(options.queryKey);
   const query = useQuery({
     ...options,
     enabled: searched,
     placeholderData: keepPreviousData,
     ...(entryFetch ? blockingProgress : contentProgress),
-  })
-  const page = query.data === undefined ? undefined : select(query.data)
-  const error = isFeatureError(query.error) ? query.error : undefined
+  });
+  const page = query.data === undefined ? undefined : select(query.data);
+  const error = isFeatureError(query.error) ? query.error : undefined;
 
   return {
     rows: page?.rows ?? [],
@@ -66,5 +72,5 @@ export function useListQuery<TResponse, TRow, TKey extends QueryKey = QueryKey>(
     isError: query.isError && error !== undefined,
     trace: error,
     retry: query.refetch,
-  }
+  };
 }

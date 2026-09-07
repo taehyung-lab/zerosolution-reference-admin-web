@@ -26,7 +26,7 @@
     "allTooltip": "활성회원을 조회 및 관리합니다.",
     "help": "전체회원 안내"
   },
-  "breadcrumb": "회원 > 활성회원 > {{title}}",
+  "path": {"members": "회원", "active": "활성회원"},
   "search": "검색",
   "reset": "초기화",
   "filters": {
@@ -75,7 +75,6 @@
     "restrictions": "활동제한"
   },
   "result": {
-    "total": "검색결과 : {{count}}",
     "pageSize": "보기",
     "sort": "정렬",
     "paginationLabel": "페이지 이동",

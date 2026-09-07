@@ -1,12 +1,17 @@
-import { ManagerListActions } from './ManagerListActions';
+/**
+ * 기존 OpenAPI 계약으로 동작하는 운영자 목록의 필터·조회·결과·액션을 조립한다.
+ * 제품용 ManagerListScreen과 검색/행 모델이 다르며 리허설 API 회귀 테스트의 소비자로 유지한다. 제품 route는 ManagerListScreen 한 경로를 사용한다.
+ */
+import { requestManagerBulkChange } from './model/manager-list-requests';
+import { ManagerListActions } from './ui/ManagerListActions';
 import { PageHeader } from '@/shared/ui/patterns/PageHeader';
 import { useTranslation } from 'react-i18next';
-import { ManagerListFilters } from './ManagerListFilters';
-import { ManagerListResult } from './ManagerListResult';
-import { resolveManagerSearch, type ManagerRouteSearch } from './search-schema';
-import { useManagerListData } from './useManagerListData';
-import { useManagerListFilter } from './useManagerListFilter';
-import { useManagerListResult } from './useManagerListResult';
+import { ManagerListFilters } from './ui/ManagerListFilters';
+import { ManagerListResult } from './ui/ManagerListResult';
+import { resolveManagerSearch, type ManagerRouteSearch } from './model/search-schema';
+import { useManagerListData } from './model/useManagerListData';
+import { useManagerListFilter } from './model/useManagerListFilter';
+import { useManagerListResult } from './model/useManagerListResult';
 
 export function ManagerApiListScreen({
   search,
@@ -25,16 +30,9 @@ export function ManagerApiListScreen({
     onSearchChange,
   });
 
-  /**
-   * The request boundary. See `MemberListScreen` for the shape a real mutation takes here.
-   * TRANSPLANT_PENDING_MANAGER_LIST_ACTIONS: the assembled request stops here until the
-   * manager bulk contract exists.
-   */
-  const onActionRequest = () => undefined;
-
   return (
     <section>
-      <PageHeader breadcrumb={t('breadcrumb')} title={t('title')} />
+      <PageHeader breadcrumbs={[t("path.settings"), t("path.managers")]} title={t('title')} />
       <ManagerListFilters filter={filter} />
       <ManagerListResult
         data={data}
@@ -44,7 +42,7 @@ export function ManagerApiListScreen({
             searched={data.searched}
             selectedIds={result.selectedIds}
             rows={data.rows}
-            onActionRequest={onActionRequest}
+            onActionRequest={requestManagerBulkChange}
           />
         }
       />

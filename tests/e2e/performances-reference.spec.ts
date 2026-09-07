@@ -1,0 +1,34 @@
+import { expect, test } from '@playwright/test';
+
+test('@reference performance venue remains a single draft until search', async ({ page }) => {
+  const requests: string[] = [];
+  page.on('console', (message) => { if (message.type() === 'log' && message.text().startsWith('[시나리오]')) requests.push(message.text()); });
+  await page.goto('/performances');
+  const table = page.getByRole('table');
+  await expect(table.getByRole('row')).toHaveCount(3);
+  await expect(table.getByRole('checkbox')).toHaveCount(0);
+  await expect(table.getByRole('row').nth(1).getByRole('cell').first()).toHaveText('2');
+  const lookup = page.getByRole('textbox', { name: '공연장 검색' });
+  await lookup.fill('Reference');
+  await page.getByRole('button', { name: 'Reference Hall A', exact: true }).click();
+  await expect(lookup).toBeDisabled();
+  await expect(table.getByRole('row')).toHaveCount(3);
+  await expect(page).toHaveURL(/\/performances$/);
+  await page.getByRole('button', { name: '공연장 선택 해제' }).click();
+  await lookup.fill('Reference');
+  await page.getByRole('button', { name: 'Reference Hall B', exact: true }).click();
+  await page.getByRole('form', { name: '검색 조건', exact: true }).getByRole('button', { name: '검색', exact: true }).click();
+  await expect(page).toHaveURL(/venueId=reference-venue-b/);
+  await expect(table.getByRole('row')).toHaveCount(2);
+  await expect(table.getByRole('cell', { name: 'Reference Performance 2', exact: true })).toBeVisible();
+  await table.getByRole('row').nth(1).press('Enter');
+  await expect.poll(() => requests).toEqual(['[시나리오] 공연 상세 이동: 대상 확인 → 상세 화면 연결 대기']);
+  await expect(page).toHaveURL(/\/performances\?/);
+  await page.getByRole('button', { name: '초기화', exact: true }).click();
+  await expect(table).toHaveCount(0);
+  await expect(lookup).toBeEnabled();
+  await lookup.fill('Reference');
+  await page.getByRole('button', { name: '초기화', exact: true }).click();
+  await expect(lookup).toHaveValue('');
+  await expect(page.getByRole('button', { name: 'Reference Hall A', exact: true })).toHaveCount(0);
+});

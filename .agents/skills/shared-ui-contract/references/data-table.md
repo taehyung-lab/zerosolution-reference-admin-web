@@ -2,6 +2,12 @@
 
 Read this file only for the shared `DataTable` public contract, rendering, headers, rows, stable identity, or table accessibility. Whether a given collection should consume `DataTable` at all is decided by [feature-contract table-composition](../../feature-contract/references/table-composition.md).
 
+## Selection column
+
+`selectionColumn({ selection, pageLabel, rowLabel, isSelectable? })` builds only the header/row checkboxes.
+It consumes `PageRowSelection`; labels and eligibility come from the feature. It adds no state or DataTable prop.
+Member and manager columns share this rendering; columns and sort/URL policy remain with their callers.
+
 ## Public contract
 
 - Input: `rows`, TanStack `ColumnDef` columns, and a stable `getRowId`. A column may declare `meta.sort` (`direction?: 'ascending' | 'descending'`, `onSort: () => void`) to make its header a controlled sort trigger. Nothing else is accepted.

@@ -1,3 +1,7 @@
+/**
+ * 운영자 등록 mutation을 실행하고 성공 뒤 영향받는 목록 캐시를 갱신한다.
+ * 실제 API에서도 필요한 서버 상태 workflow다. 폼 값·확인창·성공 이동은 화면이 소유한다.
+ */
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { UiLocale } from '@/shared/i18n/locale';
 import { managerKeys } from '../api/keys';

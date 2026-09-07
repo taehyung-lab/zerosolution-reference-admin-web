@@ -2,12 +2,16 @@ import { defineConfig } from '@playwright/test'
 
 const port = process.env.PLAYWRIGHT_PORT ?? '4173'
 const baseURL = `http://127.0.0.1:${port}`
-const webServerCommand = process.env.CI
+const apiMock = process.env.PLAYWRIGHT_API_MOCK === 'true'
+const webServerCommand = apiMock
+  ? `pnpm dev:mock --host 127.0.0.1 --port ${port} --strictPort`
+  : process.env.CI
   ? `pnpm build && pnpm preview --host 127.0.0.1 --port ${port} --strictPort`
   : `pnpm dev --host 127.0.0.1 --port ${port} --strictPort`
 
 export default defineConfig({
   testDir: './tests/e2e',
+  ...(apiMock ? { testMatch: 'api-mock.spec.ts' } : { testIgnore: 'api-mock.spec.ts' }),
   fullyParallel: false,
   workers: process.env.CI ? 1 : undefined,
   retries: process.env.CI ? 1 : 0,
@@ -36,6 +40,6 @@ export default defineConfig({
   webServer: {
     command: webServerCommand,
     url: baseURL,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: !process.env.CI && !apiMock,
   },
 })

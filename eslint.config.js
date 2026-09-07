@@ -174,6 +174,7 @@ export default tseslint.config(
     ignores: [
       'dist/**',
       'node_modules/**',
+      '.ai-work/**', // 임시 세션과 격리 작업 트리는 현재 제품의 검사 대상이 아니다.
       '.openapi-prepared/**',
       'src/api/generated/**', // 생성물은 편집·검사 대상이 아니다
       'src/routeTree.gen.ts',

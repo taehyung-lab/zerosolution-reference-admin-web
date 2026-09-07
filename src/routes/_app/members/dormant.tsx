@@ -1,5 +1,7 @@
-import { messagePolicyFixture } from "@/features/messaging/fixtures/message-policy";
-import { useDormantMemberMessage } from "@/features/members/dormant/useDormantMemberMessage";
+import { useMessageComposer } from "@/features/messaging/useMessageComposer";
+import { dormantDataQuery } from "@/features/members/api/list-queries";
+import { useMemberRecordRecipients } from "@/features/members/records/useMemberRecordRecipients";
+import { requestMessageSend } from "@/features/messaging/message-request";
 import { createFileRoute } from "@tanstack/react-router";
 import { canonicalSearchGuard } from "@/app/router/canonical-search-guard";
 import { DormantMemberListScreen } from "@/features/members/dormant/DormantMemberListScreen";
@@ -7,9 +9,13 @@ import {
   dormantSearchSchema,
   memberRecordSearchSchema,
 } from "@/features/members/records/member-record-search";
-import { MessageDialog } from "@/features/messaging/MessageDialog";
+import { MessageComposerDialog } from "@/features/messaging/MessageComposerDialog";
 
 export const Route = createFileRoute("/_app/members/dormant")({
+  // TODO(D3): this screen's own schema should validate the URL. Narrowing it makes `onSearchChange`
+  // reject the wide value the shared record filter/result still produce, so those four record
+  // surfaces have to become generic in the search type first. Until then the guard, not the type,
+  // is what keeps a foreign field out of this screen.
   validateSearch: memberRecordSearchSchema,
   beforeLoad: canonicalSearchGuard(dormantSearchSchema),
   component: DormantRoute,
@@ -17,7 +23,9 @@ export const Route = createFileRoute("/_app/members/dormant")({
 function DormantRoute() {
   const navigate = Route.useNavigate();
   const search = Route.useSearch();
-  const { message, openMessage, closeMessage } = useDormantMemberMessage();
+  const { message, openMessage, closeMessage } = useMessageComposer(
+    useMemberRecordRecipients(search, dormantDataQuery),
+  );
   // TRANSPLANT_PENDING_DORMANT_MESSAGE_CONTRACT: selected reference recipients stop at validated messaging input.
   return (
     <>
@@ -34,15 +42,11 @@ function DormantRoute() {
         }}
         onMessage={openMessage}
       />
-      {message ? (
-        <MessageDialog
-          channel={message.channel}
-          policy={messagePolicyFixture(message.channel)}
-          recipients={message.recipients}
-          onClose={closeMessage}
-          onConfirm={() => undefined}
-        />
-      ) : null}
+      <MessageComposerDialog
+        onConfirm={requestMessageSend}
+        request={message}
+        onClose={closeMessage}
+      />
     </>
   );
 }

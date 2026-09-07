@@ -1,3 +1,8 @@
+/**
+ * 운영자 상세 조회 상태와 내용 표시를 분리한 화면이다.
+ * ManagerDetailContent는 제품 상태/액션 callback 유무에 따라 표시가 달라진다. 실제 API 연결 시 상태 매핑과 액션 연결을 대조해 이중 의미를 정리해야 한다.
+ */
+import { maskEmail, maskPhone } from "@/shared/lib/mask-contact";
 import { formatDate } from '@/shared/lib/datetime';
 import { DetailField } from '@/shared/ui/patterns/DetailField';
 import { DetailStateBoundary } from '@/shared/ui/patterns/DetailStateBoundary';
@@ -17,7 +22,7 @@ import { managerStatusMeta } from '../model/status';
 import { toManagerHistoryEntries } from './manager-history';
 import { useManagerDetail } from './useManagerDetail';
 import { ManagerActionForm } from './ManagerActionForm';
-import { maskManagerEmail, maskManagerPhone } from './manager-contact-display';
+
 import type { ManagerAccountStatus, ManagerDetailActionRequest } from './manager-detail-actions';
 
 export function ManagerDetailScreen({ managerId }: { readonly managerId: string }) {
@@ -27,7 +32,7 @@ export function ManagerDetailScreen({ managerId }: { readonly managerId: string 
 
   return (
     <section>
-      <PageHeader breadcrumb={t('detail.breadcrumb')} title={t('detailTitle')} />
+      <PageHeader breadcrumbs={[t("path.settings"), t("path.managers"), t("path.detail")]} title={t('detailTitle')} />
       <DetailStateBoundary
         state={detail.state}
         labels={{
@@ -52,9 +57,10 @@ export function ManagerDetailContent({
 }: {
   readonly manager: ManagerDetail;
   readonly managerId: string;
-  readonly accountStatus?: ManagerAccountStatus;
-  readonly onActionRequest?: (request: ManagerDetailActionRequest) => void;
-}) {
+} & (
+  | { readonly accountStatus: ManagerAccountStatus; readonly onActionRequest: (request: ManagerDetailActionRequest) => void }
+  | { readonly accountStatus?: undefined; readonly onActionRequest?: never }
+)) {
   const { t } = useTranslation('managers');
   const { t: shared } = useTranslation('shared');
   const [action, setAction] = useState<ManagerDetailActionRequest['type']>();
@@ -80,8 +86,8 @@ export function ManagerDetailContent({
             </DetailField>
           ) : null}
           <DetailField label={t('detail.name')}>{manager.name ?? empty}</DetailField>
-          <DetailField label={t('detail.phone')}>{manager.phone ? (accountStatus ? maskManagerPhone(manager.phone) : manager.phone) : empty}</DetailField>
-          <DetailField label={t('detail.email')}>{manager.email ? (accountStatus ? maskManagerEmail(manager.email) : manager.email) : empty}</DetailField>
+          <DetailField label={t('detail.phone')}>{manager.phone ? (accountStatus ? maskPhone(manager.phone) : manager.phone) : empty}</DetailField>
+          <DetailField label={t('detail.email')}>{manager.email ? (accountStatus ? maskEmail(manager.email) : manager.email) : empty}</DetailField>
           <DetailField label={t('detail.organization')}>
             {manager.organization ?? manager.agency?.name ?? empty}
           </DetailField>
@@ -160,7 +166,7 @@ export function ManagerDetailContent({
           </Link>
         </div>
       ) : null}
-      {confirmAction ? (
+      {onActionRequest !== undefined && confirmAction ? (
         <ConfirmDialog
           open
           title={shared('alert.title')}
@@ -173,18 +179,18 @@ export function ManagerDetailContent({
             if (!open) setAction(undefined);
           }}
           onConfirm={() => {
-            onActionRequest?.({ type: confirmAction, managerId });
+            onActionRequest({ type: confirmAction, managerId });
             setAction(undefined);
           }}
         />
       ) : null}
-      {action !== undefined && confirmAction === undefined ? (
+      {onActionRequest !== undefined && action !== undefined && confirmAction === undefined ? (
         <ManagerActionForm
           key={action}
           action={action as 'reject' | 'password' | 'unlock' | 'reveal' | 'verifyWithdrawal'}
           managerId={managerId}
           onClose={() => setAction(undefined)}
-          onActionRequest={(request) => onActionRequest?.(request)}
+          onActionRequest={onActionRequest}
         />
       ) : null}
     </>
