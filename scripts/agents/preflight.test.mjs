@@ -64,7 +64,7 @@ describe('repository preflight', () => {
   })
   it('requires applicable skill and screen evidence before feature editing', () => {
     const { root, checkpoint } = setup()
-    checkpoint.scope = ['src/features/members/list/']
+    checkpoint.scope = ['src/features/members/screens/list/']
     writeFileSync(join(root, '.ai-work/checkpoint.json'), JSON.stringify(checkpoint))
     expect(() => prepare(root, 'one', '.ai-work/checkpoint.json', fingerprint)).toThrow(/feature-contract/)
   })
@@ -74,7 +74,7 @@ describe('repository preflight', () => {
     writeFileSync(join(root, '.agents/skills/feature-contract/SKILL.md'), 'Feature contract.')
     const feature = {
       ...checkpoint,
-      scope: ['src/features/members/list/'],
+      scope: ['src/features/members/screens/list/'],
       references: ['AGENTS.md', '.agents/skills/feature-contract/SKILL.md'],
     }
     // A default build can no longer silently skip product evidence.
@@ -83,7 +83,7 @@ describe('repository preflight', () => {
     feature.work = { kind: 'infrastructure', reason: 'Change API type plumbing without changing screen workflow.' }
     writeFileSync(join(root, '.ai-work/checkpoint.json'), JSON.stringify(feature))
     expect(() => prepare(root, 'one', '.ai-work/checkpoint.json', fingerprint)).not.toThrow()
-    expect(checkEdit(root, 'one', ['src/features/members/list/screen.tsx'])).toBeNull()
+    expect(checkEdit(root, 'one', ['src/features/members/screens/list/ui/screen.tsx'])).toBeNull()
 
     writeFileSync(join(root, '.ai-work/checkpoint.json'), JSON.stringify({ ...feature, stage: 'settled' }))
     expect(() => prepare(root, 'two', '.ai-work/checkpoint.json', fingerprint)).not.toThrow()

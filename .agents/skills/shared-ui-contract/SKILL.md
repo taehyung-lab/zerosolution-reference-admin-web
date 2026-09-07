@@ -38,6 +38,8 @@ Share stable behavior, not a guessed resource framework. Source-owned UI remains
 - React Compiler, TanStack Table v9 subscriptions, rerenders, memoization, effects, or lazy loading: read [references/react-performance.md](references/react-performance.md).
 - A feature workflow also requires [feature-contract](../feature-contract/SKILL.md); server state requires [api-contract](../api-contract/SKILL.md).
 
+File creation, relocation and feature-local reuse placement follow [folder-structure-contract](../folder-structure-contract/SKILL.md). This skill owns whether a contract is domain-free enough to promote.
+
 ## UI layers
 
 1. `shared/ui/primitives`: source-owned Radix primitive plus Tailwind tokens and accessibility behavior.

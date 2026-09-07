@@ -3,7 +3,7 @@
  * 실제 서버 상태나 권한 정책의 근거가 아니다. 조회 경계 전환 뒤 직접 소비를 제거하고 필요한 시나리오만 mock/테스트에 남긴다.
  */
 import type { ManagerDetail } from "../api/manager-detail-contract";
-import type { ManagerAccountStatus } from "../detail/manager-detail-actions";
+import type { ManagerAccountStatus } from "../model/account-status";
 import type { ManagerDirectoryRow } from "../model/manager";
 
 /**

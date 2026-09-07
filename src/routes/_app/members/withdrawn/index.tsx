@@ -1,10 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { canonicalSearchGuard } from "@/app/router/canonical-search-guard";
-import { WithdrawnMemberListScreen } from "@/features/members/withdrawn/WithdrawnMemberListScreen";
 import {
-  withdrawnSearchSchema,
   memberRecordSearchSchema,
-} from "@/features/members/records/member-record-search";
+  withdrawnSearchSchema,
+} from "@/features/members/mechanics/record-list/model/member-record-search";
+import { WithdrawnMemberListScreen } from "@/features/members/screens/withdrawn/ui/WithdrawnMemberListScreen";
+import { createFileRoute } from "@tanstack/react-router";
 export const Route = createFileRoute("/_app/members/withdrawn/")({
   validateSearch: memberRecordSearchSchema,
   beforeLoad: canonicalSearchGuard(withdrawnSearchSchema),

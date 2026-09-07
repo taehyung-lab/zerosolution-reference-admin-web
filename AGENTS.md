@@ -53,6 +53,7 @@
 | `src/app/providers/**`, auth/session/transport boundary              | `api-contract` + `feature-contract`                          |
 | `src/app/shell/**`, config/permission/navigation/notification 조립   | `feature-contract` + 필요한 경우 `shared-ui-contract`        |
 | `src/app/error-boundary/**`, incident/session/error presentation     | `shared-ui-contract` + 분류·transport 변경 시 `api-contract` |
+| 소스 파일 생성·이동, 폴더 배치·도메인 내부 공용화·import 경계 변경 | `folder-structure-contract` + 해당 기능 contract |
 | `src/routes/**`, `src/features/**`, 화면/list/detail/form/hooks/dialog | `feature-contract`                                           |
 | `src/shared/ui/**`, field/select/dialog/status, 공용 승격·성능       | `shared-ui-contract`                                         |
 | `src/shared/lib/**`, 공용 상태 mechanic·순수 유틸 승격               | `shared-ui-contract` + 소비 흐름의 contract                  |
@@ -74,13 +75,13 @@ shared   api
 
 - `app/`: provider, router, shell, app-level boundary와 metadata
 - `routes/`: 입력 검증, entry guard, loader, screen 조립
-- `features/{domain}/`: 도메인 API 조합, model, 화면, workflow
+- `features/{domain}/`: `screens`, `mechanics`, `api`, `model`, `fixtures` 역할로 분리한다. 세부 배치와 의존 방향은 [folder-structure-contract](.agents/skills/folder-structure-contract/SKILL.md)가 소유한다.
 - `api/`: transport, 정규화 오류, Query 결과를 도메인 없는 facts로 바꾸는 공용 판정, 교체 가능한 OpenAPI 생성물
 - `shared/`: 도메인·서버 계약을 모르는 UI와 순수 공용 코드
 
 공용 이탈 보호에는 단일 Router 의존 예외가 있다. 범위와 제거 조건은 [form 계약](.agents/skills/shared-ui-contract/references/form-fields.md#form-action-and-save-surfaces)이 소유한다.
 
-API 선언은 feature API, 실행·상태 투영·캐시 후속 처리는 workflow, 렌더는 화면이 소유한다. 호출 계층과 강제 방식은 [API 소비 경계](docs/decisions/0011-detail-data-and-update-history-boundaries.md#api-호출-계층-조회목록mutation-공통)를 따른다.
+API 선언·API-only 실행은 feature API, 업무 상태·캐시 후속 처리는 workflow, 렌더는 화면이 소유한다. 호출 계층과 강제 방식은 [API 소비 경계](docs/decisions/0011-detail-data-and-update-history-boundaries.md#api-호출-계층-조회목록mutation-공통)를 따른다.
 
 별도 `pages` 레이어를 만들지 않는다. feature 간 import와 예외는 `feature-contract`와 `api-contract`가 소유한다. `shared`는 feature, route, server DTO를 알 수 없다.
 

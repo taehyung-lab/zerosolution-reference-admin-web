@@ -1,16 +1,16 @@
-import { useMessageComposer } from "@/features/messaging/useMessageComposer";
-import { appealDataQuery } from "@/features/members/api/list-queries";
-import { useMemberRecordRecipients } from "@/features/members/records/useMemberRecordRecipients";
-import { requestMessageSend } from "@/features/messaging/message-request";
-import { requestAppealBulkChange } from "@/features/members/appeals/appeal-requests";
-import { createFileRoute } from "@tanstack/react-router";
 import { canonicalSearchGuard } from "@/app/router/canonical-search-guard";
-import { MemberAppealListScreen } from "@/features/members/appeals/MemberAppealListScreen";
+import { appealDataQuery } from "@/features/members/api/list-queries";
 import {
   appealSearchSchema,
   memberRecordSearchSchema,
-} from "@/features/members/records/member-record-search";
-import { MessageComposerDialog } from "@/features/messaging/MessageComposerDialog";
+} from "@/features/members/mechanics/record-list/model/member-record-search";
+import { useMemberRecordRecipients } from "@/features/members/mechanics/record-list/model/useMemberRecordRecipients";
+import { requestAppealBulkChange } from "@/features/members/screens/appeals/model/appeal-requests";
+import { MemberAppealListScreen } from "@/features/members/screens/appeals/ui/MemberAppealListScreen";
+import { requestMessageSend } from "@/features/messaging/screens/compose/model/message-request";
+import { useMessageComposer } from "@/features/messaging/screens/compose/model/useMessageComposer";
+import { MessageComposerDialog } from "@/features/messaging/screens/compose/ui/MessageComposerDialog";
+import { createFileRoute } from "@tanstack/react-router";
 export const Route = createFileRoute("/_app/members/appeals/")({
   validateSearch: memberRecordSearchSchema,
   beforeLoad: canonicalSearchGuard(appealSearchSchema),

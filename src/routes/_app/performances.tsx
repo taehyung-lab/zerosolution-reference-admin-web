@@ -1,10 +1,10 @@
-import { requestPerformanceDetail } from '@/features/performances/list/model/performance-requests';
-import { canonicalSearchGuard } from '@/app/router/canonical-search-guard';
-import { PerformanceListScreen } from '@/features/performances/list/PerformanceListScreen';
-import { performanceSearchSchema } from '@/features/performances/list/model/search-schema';
-import { createFileRoute } from '@tanstack/react-router';
+import { canonicalSearchGuard } from "@/app/router/canonical-search-guard";
+import { requestPerformanceDetail } from "@/features/performances/screens/list/model/performance-requests";
+import { performanceSearchSchema } from "@/features/performances/screens/list/model/search-schema";
+import { PerformanceListScreen } from "@/features/performances/screens/list/ui/PerformanceListScreen";
+import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute('/_app/performances')({
+export const Route = createFileRoute("/_app/performances")({
   validateSearch: performanceSearchSchema,
   beforeLoad: canonicalSearchGuard(performanceSearchSchema),
   component: PerformanceRoute,

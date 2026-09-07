@@ -1,5 +1,5 @@
-import { requestMemberCreate } from '@/features/members/form/member-form-requests';
-import { MemberCreateScreen } from "@/features/members/form/MemberCreateScreen";
+import { requestMemberCreate } from "@/features/members/screens/form/model/member-form-requests";
+import { MemberCreateScreen } from "@/features/members/screens/form/ui/MemberCreateScreen";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_app/members/new")({

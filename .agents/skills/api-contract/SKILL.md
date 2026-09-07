@@ -22,7 +22,8 @@ Treat the committed OpenAPI snapshot as the declared server contract and keep ge
 - Only `features/*/api/**` and `src/api/**` import `src/api/generated/**`; `eslint.config.js` enforces this.
 - Routes, screens, and components never import Axios or generated operations.
 - `src/api/http/**` owns the Axios instance, authentication, locale header, cancellation, and transport-error normalization.
-- Feature API modules own query options, mutation options, keys, and cache consequences.
+- Feature API modules own query/mutation options, keys and API-only execution hooks. Workflow hooks own URL/form/selection decisions and post-mutation cache consequences (ADR 0011).
+- File creation, relocation and API input type placement follow [folder-structure-contract](../folder-structure-contract/SKILL.md).
 - Generated files are never edited or committed.
 
 If runtime behavior contradicts the snapshot, stop and report the endpoint, request/response evidence, and blocked work. Do not hide divergence with casts, optional fields, fallback values, or silent response reshaping. A temporary adapter requires explicit approval, an ADR, tests, and a removal condition.

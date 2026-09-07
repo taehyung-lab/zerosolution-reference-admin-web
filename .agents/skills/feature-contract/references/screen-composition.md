@@ -30,39 +30,10 @@ Apply the same ownership test to every sibling workflow, not only the first repr
 
 ## Placement and naming
 
-For a workflow whose components, query execution and state rules already need separate owners, use:
-
-```text
-features/{domain}/
-  api/                     # queryOptions, mutationOptions, keys, server contracts; no hooks
-  model/                   # domain values/mappers reused across workflows
-  list/
-    DomainListScreen.tsx    # composition entry; screen integration tests stay here
-    ui/                    # Filters, Result, Actions, columns and their rendering tests
-    model/                 # data/filter/result/action hooks, search schema, policies, requests
-  detail/                  # organize by its actual sections; not the list template
-  form/
-```
-
-This is workflow-first placement, inspired by FSD segments; it does not introduce FSD layers or a
-`pages` directory. `api/` declares calls; `list/model/use…Data` executes them and projects the result.
-A result hook may assemble feature-owned column builders from `ui/`; folder names alone are not
-an enforced one-way dependency graph. Keep option/state contracts in `model/`, not exported from a
-Filters component merely for a hook to import. Domain `model/` and workflow `list/model/` have different scopes.
-
-Use `ui/` and `model/` for the member, manager and performance list consumers. Do not create empty
-segments for a small workflow. Co-locate tests with their owner and update routes, imports, test mocks,
-seed paths and linked references when moving files. A sibling workflow must not reach into `list/model/`
-for genuinely shared domain logic; move that logic to its nearest feature owner when changing it.
-
-Before authoring a screen, check its current folder and this placement section along with its context
-inventory. Unmigrated detail/form/record workflows are not proof that the list convention was abandoned.
-
-Place a screen's implementation in its business/workflow directory. Names and paths identify the consumer scope: a single workflow's `list/` is not a catch-all for helpers used by sibling workflows. Put genuinely reused feature code in a purpose-named sibling directory at their nearest common owner, and leave single-consumer code with its consumer. A `common/` dumping ground or a `shared` promotion does not resolve unclear ownership; domain code remains feature-owned.
-
-Use product responsibility names for production screens and hooks. Example data belongs in explicit `fixtures/`; a reference/demo label does not justify moving domain workflows into `app/`. New directories or abstractions must reduce actual ownership ambiguity, not anticipate hypothetical consumers.
-
-When comparing an existing screen with this contract, distinguish implemented ownership from pending decomposition. Tests passing or a representative screen adopting the pattern does not establish adoption by its siblings.
+파일 생성·이동과 배치 판단은 [folder-structure-contract](../../folder-structure-contract/SKILL.md)가 소유한다.
+화면은 `screens/{workflow}`, 도메인 내부 재사용 기능은 `mechanics/{capability}` 아래 필요한 목적별 segment를 둔다.
+이 문서는 화면 내부 책임 분해만 소유한다. 표시 조립 훅은 ui, 실행·상태·업무 정책은 model에 둔다.
+타입만 공유하더라도 화면이나 UI를 역참조하지 않고 실제 공통 값의 소유 위치를 바로잡는다.
 
 ## 기존 화면을 확장할 때의 대조
 

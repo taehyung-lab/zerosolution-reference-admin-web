@@ -9,20 +9,20 @@ import {
   getList8,
   getManagerTypes,
   getPermissions,
-} from '@/api/generated/endpoints';
+} from "@/api/generated/endpoints";
 import type {
   CnJsonPagingResultPagingDataMrManagerDTOInventory,
   GetList8Params,
   GetPermissionsType,
   MrManagerDTODetail,
   MrManagerDTOEditDetail,
-} from '@/api/generated/models';
-import type { UiLocale } from '@/shared/i18n/locale';
-import { nonEmptyArray } from '@/shared/lib/search';
-import { blockingProgress, inlineProgress } from '@/api/query-meta';
-import { queryOptions } from '@tanstack/react-query';
-import type { ManagerSearch } from '../list/model/search-schema';
-import { managerKeys } from './keys';
+} from "@/api/generated/models";
+import { blockingProgress, inlineProgress } from "@/api/query-meta";
+import type { UiLocale } from "@/shared/i18n/locale";
+import { nonEmptyArray } from "@/shared/lib/search";
+import { queryOptions } from "@tanstack/react-query";
+import { managerKeys } from "./keys";
+import type { ManagerSearch } from "./manager-search";
 
 /** 확정 화면 검색값을 기존 API 필드명과 빈 배열 생략 규칙으로 변환한다. 실제 API에서도 필요한 요청 mapper다. */
 export function toManagerListParams(search: ManagerSearch): GetList8Params {
@@ -53,8 +53,9 @@ export function managerListQuery(locale: UiLocale, search: ManagerSearch) {
   const params = toManagerListParams(search);
   return queryOptions({
     queryKey: managerKeys.list(locale, params),
-    queryFn: async (): Promise<CnJsonPagingResultPagingDataMrManagerDTOInventory> =>
-      getList8(params),
+    queryFn:
+      async (): Promise<CnJsonPagingResultPagingDataMrManagerDTOInventory> =>
+        getList8(params),
   });
 }
 /** 표시용 상세를 조회한다. 수정용 원본 조회와 캐시를 구분한다. */

@@ -1,6 +1,6 @@
 # 로그인 workflow 시나리오 — 1차 인증 · 2차 인증 · 비밀번호 변경 · 세션 성립
 
-`session-lifetime.md`가 **성립한 세션이 언제 끝나는가**를 다룬다면, 이 카드는 그 앞 구간, 즉 **세션이 어떻게 성립하는가**를 다룬다. 현재 저장소에는 1차 인증만 있고 2차 인증·비밀번호 변경 단계는 미구현이다(`src/features/auth/login/LoginScreen.tsx:36-40`). 이 카드는 그 작업의 설계 입력이며 구현 코드는 쓰지 않는다.
+`session-lifetime.md`가 **성립한 세션이 언제 끝나는가**를 다룬다면, 이 카드는 그 앞 구간, 즉 **세션이 어떻게 성립하는가**를 다룬다. 현재 저장소에는 1차 인증만 있고 2차 인증·비밀번호 변경 단계는 미구현이다(`src/features/auth/screens/login/ui/LoginScreen.tsx:36-40`). 이 카드는 그 작업의 설계 입력이며 구현 코드는 쓰지 않는다.
 
 증거 출처: 저장소 안은 `파일:줄`, 스냅샷은 `openapi/admin.snapshot.json:줄`로 표기한다. 저장소 밖 근거는 2026-09-04에 비교 가능한 운영 어드민의 커밋 메시지와 코드를 읽어 확정한 **런타임 실패·정정 사실**만 "외부 관측"으로 쓰고, 그 제품의 설계·파일 구조·구현 선택은 증거에서 제외한다. `[확인]`은 파일:줄이나 스키마 원문으로 확인한 것, `[추론]`은 그 사실에서 끌어낸 판단이다.
 
@@ -133,16 +133,16 @@ AGENTS.md §3 상태 소유권 표의 어느 칸도 이것을 받지 못한다.
 | `accessToken` 없는 sign-in 200을 정상 흐름으로 다루기 | `src/features/auth/model/session.ts:12-14`가 예외를 던진다. 계약은 그 경우를 정상으로 선언(`openapi/admin.snapshot.json:6909`) | 수정 필요 |
 | 성립 전 challenge 상태의 소유자 칸 | `AGENTS.md` §3 상태 소유권 표에 해당 칸 없음(4.2) | 아예 없음 |
 | 인증코드 카운트다운 표시 | `src/`(생성물 제외)에 countdown/남은시간 심볼 0건 | 아예 없음 |
-| 비밀번호 변경 요구 화면 | `src/features/auth/login/LoginScreen.tsx:36-40`이 자리표시자 오류만 낸다 | 아예 없음 |
+| 비밀번호 변경 요구 화면 | `src/features/auth/screens/login/ui/LoginScreen.tsx:36-40`이 자리표시자 오류만 낸다 | 아예 없음 |
 | 미루기 상태를 저장할 클라이언트 칸 | 없고, **만들지 않는다**. 소유자는 서버 `extend`(`openapi/admin.snapshot.json:14558`) | 아예 없음(제외 판정) |
 | 로그아웃 실패 시 로컬 자격증명 정리 | `src/app/providers/AuthProvider.tsx:48-51` — throw하면 정리에 도달하지 못함. 계약 원문은 정리를 요구(`:6887`) | 수정 필요 |
 | 종결 시 로그인 요구 1회 억제 | `src/app/error-boundary/IncidentBoundary.tsx:23,30-31`, `src/api/http/credential.ts:19-25` | 커버됨 |
 | 자격증명 존재 기반 진입 가드 + 원래 목적지 보존 | `src/routes/_app.tsx:11-15`, `src/routes/login.tsx:10-12`, `auth-session.md:20` | 커버됨 |
 | 탭 간 자격증명 동기화 | `src/api/http/incident.ts:86-97` | 커버됨 |
 | roles/permission의 단일 소유자 | `src/app/config/navigation.ts:2` — 메뉴/권한 계약 미확인, 로컬 자리표시자 카탈로그 | 아예 없음 |
-| 계정 잠금(5회) 안내 분기 | `src/features/auth/login/LoginScreen.tsx:81-84`가 `unauthorized`·`business`를 한 문구로 접는다. 잠금 코드가 계약에 선언되지 않음 | 아예 없음 |
+| 계정 잠금(5회) 안내 분기 | `src/features/auth/screens/login/ui/LoginScreen.tsx:81-84`가 `unauthorized`·`business`를 한 문구로 접는다. 잠금 코드가 계약에 선언되지 않음 | 아예 없음 |
 | 30분 초과·잠금 alert의 dialog primitive | `.agents/skills/shared-ui-contract/references/dialogs.md:9`(`AlertDialog`) | 커버됨 |
-| 로그인 실패를 화면 안에 렌더 | `src/features/auth/login/LoginScreen.tsx:56-87` | 커버됨 |
+| 로그인 실패를 화면 안에 렌더 | `src/features/auth/screens/login/ui/LoginScreen.tsx:56-87` | 커버됨 |
 | 2차 인증 화면의 route·surface 조립, 코드 입력 폼·검증 | `.agents/skills/feature-contract/references/router.md` §Thin route, `docs/reference/zero-sol/02-auth.md:7` | feature 소유 |
 | 성립 후 착지 화면 결정("가장 좌측 메뉴") | 메뉴 권한 계약이 없어 판정 불가(`src/app/config/navigation.ts:2`, `notion/02-auth.md:13`) | 아예 없음 |
 | 인증코드 유효시간 값 | `notion/02-auth.md:12`(5분) vs `openapi/admin.snapshot.json:7169`(6분) | 수정 필요 |

@@ -1,20 +1,20 @@
-import { useMemberDetail } from "@/features/members/detail/useMemberDetail";
-import { DetailStateBoundary } from "@/shared/ui/patterns/DetailStateBoundary";
-import { useMessageComposer } from "@/features/messaging/useMessageComposer";
+import { useMemberActivity } from "@/features/members/api/useMemberActivity";
+import { useMemberCounselRecords } from "@/features/members/api/useMemberCounselRecords";
 import {
   memberMessageRecipients,
   memberProfileContact,
 } from "@/features/members/model/member-message";
-import { requestMessageSend } from "@/features/messaging/message-request";
-import { requestMemberDetail } from "@/features/members/detail/member-detail-requests";
-import { MessageComposerDialog } from "@/features/messaging/MessageComposerDialog";
+import { requestMemberDetail } from "@/features/members/screens/detail/model/member-detail-requests";
+import { useMemberDetail } from "@/features/members/api/useMemberDetail";
+import { MemberDetailScreen } from "@/features/members/screens/detail/ui/MemberDetailScreen";
+import { requestMessageSend } from "@/features/messaging/screens/compose/model/message-request";
+import { useMessageComposer } from "@/features/messaging/screens/compose/model/useMessageComposer";
+import { MessageComposerDialog } from "@/features/messaging/screens/compose/ui/MessageComposerDialog";
+import { DetailStateBoundary } from "@/shared/ui/patterns/DetailStateBoundary";
 import { createFileRoute } from "@tanstack/react-router";
-import { useTranslation } from "react-i18next";
 import { useState } from "react";
-import { MemberDetailScreen } from "@/features/members/detail/MemberDetailScreen";
-import { useMemberActivity } from "@/features/members/detail/activity/useMemberActivity";
-import { useMemberCounselRecords } from "@/features/members/counsel/useMemberCounselRecords";
-import type { MemberActivitySearch } from "@/features/members/detail/activity/MemberActivitySection";
+import { useTranslation } from "react-i18next";
+import type { MemberActivitySearch } from "../../../../features/members/model/member-activity";
 
 export const Route = createFileRoute("/_app/members/$memberId/")({
   component: MemberDetailRoute,
@@ -42,7 +42,22 @@ function MemberDetailRoute() {
       ids,
     ),
   );
-  if (member === undefined) return <DetailStateBoundary state={query.state} labels={{ error: shared('error.unexpected.body'), notFound: shared('error.notFound') }} retryLabel={shared('error.unexpected.retry')} onRetry={() => { void query.retry(); }}>{null}</DetailStateBoundary>;
+  if (member === undefined)
+    return (
+      <DetailStateBoundary
+        state={query.state}
+        labels={{
+          error: shared("error.unexpected.body"),
+          notFound: shared("error.notFound"),
+        }}
+        retryLabel={shared("error.unexpected.retry")}
+        onRetry={() => {
+          void query.retry();
+        }}
+      >
+        {null}
+      </DetailStateBoundary>
+    );
   // TRANSPLANT_PENDING_MEMBER_DETAIL_CONTRACT: callbacks stop at validated request input; no fake persistence or authentication.
   return (
     <>

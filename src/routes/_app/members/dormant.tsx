@@ -1,15 +1,15 @@
-import { useMessageComposer } from "@/features/messaging/useMessageComposer";
-import { dormantDataQuery } from "@/features/members/api/list-queries";
-import { useMemberRecordRecipients } from "@/features/members/records/useMemberRecordRecipients";
-import { requestMessageSend } from "@/features/messaging/message-request";
-import { createFileRoute } from "@tanstack/react-router";
 import { canonicalSearchGuard } from "@/app/router/canonical-search-guard";
-import { DormantMemberListScreen } from "@/features/members/dormant/DormantMemberListScreen";
+import { dormantDataQuery } from "@/features/members/api/list-queries";
 import {
   dormantSearchSchema,
   memberRecordSearchSchema,
-} from "@/features/members/records/member-record-search";
-import { MessageComposerDialog } from "@/features/messaging/MessageComposerDialog";
+} from "@/features/members/mechanics/record-list/model/member-record-search";
+import { useMemberRecordRecipients } from "@/features/members/mechanics/record-list/model/useMemberRecordRecipients";
+import { DormantMemberListScreen } from "@/features/members/screens/dormant/ui/DormantMemberListScreen";
+import { requestMessageSend } from "@/features/messaging/screens/compose/model/message-request";
+import { useMessageComposer } from "@/features/messaging/screens/compose/model/useMessageComposer";
+import { MessageComposerDialog } from "@/features/messaging/screens/compose/ui/MessageComposerDialog";
+import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_app/members/dormant")({
   // TODO(D3): this screen's own schema should validate the URL. Narrowing it makes `onSearchChange`

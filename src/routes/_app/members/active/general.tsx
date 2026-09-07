@@ -1,15 +1,15 @@
-import { useMessageComposer } from "@/features/messaging/useMessageComposer";
-import { useMemberListRecipients } from "@/features/members/list/model/useMemberListRecipients";
 import { canonicalSearchGuard } from "@/app/router/canonical-search-guard";
-import { requestMemberBulkChange } from "@/features/members/list/model/member-list-requests";
-import { GeneralMemberListScreen } from "@/features/members/list/MemberListScreen";
+import { requestMemberBulkChange } from "@/features/members/screens/list/model/member-list-requests";
 import {
   generalMemberCanonicalSearchSchema,
   memberSearchSchema,
   type MemberRouteSearch,
-} from "@/features/members/list/model/search-schema";
-import { requestMessageSend } from "@/features/messaging/message-request";
-import { MessageComposerDialog } from "@/features/messaging/MessageComposerDialog";
+} from "@/features/members/screens/list/model/search-schema";
+import { useMemberListRecipients } from "@/features/members/screens/list/model/useMemberListRecipients";
+import { GeneralMemberListScreen } from "@/features/members/screens/list/ui/MemberListScreen";
+import { requestMessageSend } from "@/features/messaging/screens/compose/model/message-request";
+import { useMessageComposer } from "@/features/messaging/screens/compose/model/useMessageComposer";
+import { MessageComposerDialog } from "@/features/messaging/screens/compose/ui/MessageComposerDialog";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_app/members/active/general")({
@@ -21,7 +21,9 @@ export const Route = createFileRoute("/_app/members/active/general")({
 function GeneralMemberListRoute() {
   const search = generalMemberCanonicalSearchSchema.parse(Route.useSearch());
   const navigate = Route.useNavigate();
-  const actions = useMessageComposer(useMemberListRecipients(search, "general"));
+  const actions = useMessageComposer(
+    useMemberListRecipients(search, "general"),
+  );
   return (
     <>
       <MessageComposerDialog

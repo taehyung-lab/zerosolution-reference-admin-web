@@ -20,12 +20,12 @@ function fixture() {
   write(inventory, '# Performance\nCommon policy.\n## List\nNo selection column.\n## Edit\nSection-owned save.\n')
   write(scenario, '# Scenario\nEntry loads; reset clears.\n')
   write('docs/reference/zero-sol/context.json', JSON.stringify({ judgment: [], surfaces: [
-    { id: 'performance-list', title: 'Performance list', inventory: { file: inventory, heading: 'List' }, scenarios: [scenario], references: [], paths: ['src/features/performances/list/'], related: ['performance-venue'], coverage: 'surface' },
+    { id: 'performance-list', title: 'Performance list', inventory: { file: inventory, heading: 'List' }, scenarios: [scenario], references: [], paths: ['src/features/performances/screens/list/'], related: ['performance-venue'], coverage: 'surface' },
     { id: 'performance-venue', title: 'Venue picker', inventory: { file: inventory, heading: 'List' }, scenarios: [scenario], references: [], paths: [], related: [], coverage: 'surface' },
     { id: 'performance-edit', title: 'Performance edit', inventory: { file: inventory, heading: 'Edit' }, scenarios: [scenario], references: [], paths: ['src/features/performances/form/'], related: [], coverage: 'surface' },
   ] }))
   const checkpoint = {
-    scope: ['src/features/performances/list/'],
+    scope: ['src/features/performances/screens/list/'],
     requirements: [{ id: 'R1', text: 'Implement list.', surfaces: ['performance-list'], sources: [{ file: inventory, heading: 'List' }], contracts: [], contractReason: 'No new shared behavior in this test.' }],
     references: ['AGENTS.md', '.agents/skills/feature-contract/SKILL.md'], contracts: [], unresolved: [],
     surfaces: [{ id: 'performance-list', decision: 'include' }, { id: 'performance-venue', decision: 'exclude', reason: 'Result-only change.' }],
@@ -69,7 +69,7 @@ it('requires explicit evidence gaps for unknown workflows and forbids them as a 
   checkpoint.stage = 'settled'
   expect(() => run()).toThrow(/settled/)
   delete checkpoint.stage
-  checkpoint.scope = ['src/features/performances/list/']
+  checkpoint.scope = ['src/features/performances/screens/list/']
   checkpoint.evidenceGaps[0].paths = checkpoint.scope
   expect(() => run()).toThrow(/performance-list|surface/)
 })
@@ -86,8 +86,8 @@ it('requires concrete implementation paths and verification results for complete
   run()
   const report = { requirements: [{ id: 'R1', status: 'implemented', evidence: 'Looks good.' }], contractReview: 'Checked.', complexityReview: 'Checked.', assumptions: [], limitations: [] }
   expect(() => recordReview(root, 'one', report, () => ({}))).toThrow(/files|verification/)
-  write('src/features/performances/list/Screen.tsx', 'export const Screen = 1')
-  report.requirements[0].files = ['src/features/performances/list/Screen.tsx']
+  write('src/features/performances/screens/list/ui/Screen.tsx', 'export const Screen = 1')
+  report.requirements[0].files = ['src/features/performances/screens/list/ui/Screen.tsx']
   report.requirements[0].verification = [{ method: 'Focused scenario test', result: 'passed' }]
   expect(() => recordReview(root, 'one', report, () => ({}))).not.toThrow()
   report.requirements[0].files = ['src/features/elsewhere/Screen.tsx']
@@ -122,7 +122,7 @@ it('protects surrounding text and newly uncovered actual edit paths', () => {
   const { root, write, inventory, run } = fixture()
   run()
   write(inventory, readFileSync(join(root, inventory), 'utf8') + '\nNew global policy.\n')
-  expect(checkEdit(root, 'one', ['src/features/performances/list/Screen.tsx'])).toMatch(/changed/)
+  expect(checkEdit(root, 'one', ['src/features/performances/screens/list/ui/Screen.tsx'])).toMatch(/changed/)
 })
 it('rejects index drift with normal and negative controls', () => {
   const { root, write } = fixture()
@@ -168,7 +168,7 @@ it('rechecks actual targets even when a broad preparation scope overlaps a valid
   const { root, checkpoint, run } = fixture()
   checkpoint.scope = ['src/features/']
   run()
-  expect(checkEdit(root, 'one', ['src/features/performances/list/Screen.tsx'])).toBeNull()
+  expect(checkEdit(root, 'one', ['src/features/performances/screens/list/ui/Screen.tsx'])).toBeNull()
   expect(checkEdit(root, 'one', ['src/features/performances/form/Edit.tsx'])).toMatch(/performance-edit/)
 })
 it('does not force an implementation artifact for an honestly unimplemented requirement', () => {
@@ -182,18 +182,18 @@ it('tracks index edits as stale references', () => {
   run()
   const indexPath = 'docs/reference/zero-sol/context.json'
   write(indexPath, readFileSync(join(root, indexPath), 'utf8') + '\n')
-  expect(checkEdit(root, 'one', ['src/features/performances/list/Screen.tsx'])).toMatch(/changed/)
+  expect(checkEdit(root, 'one', ['src/features/performances/screens/list/ui/Screen.tsx'])).toMatch(/changed/)
 })
 
 it('rejects directories as implementation files or verification artifacts', () => {
   const { root, checkpoint, run, write } = fixture()
   checkpoint.scope = ['src/features/performances/']
   run()
-  write('src/features/performances/list/Screen.tsx', 'export const value = 1')
-  const report = { requirements: [{ id: 'R1', status: 'implemented', evidence: 'Observed.', files: ['src/features/performances/list'], verification: [{ method: 'Scenario test', result: 'passed' }] }], contractReview: 'Reviewed.', complexityReview: 'Reviewed.', assumptions: [], limitations: [] }
+  write('src/features/performances/screens/list/ui/Screen.tsx', 'export const value = 1')
+  const report = { requirements: [{ id: 'R1', status: 'implemented', evidence: 'Observed.', files: ['src/features/performances/screens/list'], verification: [{ method: 'Scenario test', result: 'passed' }] }], contractReview: 'Reviewed.', complexityReview: 'Reviewed.', assumptions: [], limitations: [] }
   expect(() => recordReview(root, 'one', report, () => ({}))).toThrow(/files/)
-  report.requirements[0].files = ['src/features/performances/list/Screen.tsx']
-  report.requirements[0].verification[0].artifact = 'src/features/performances/list'
+  report.requirements[0].files = ['src/features/performances/screens/list/ui/Screen.tsx']
+  report.requirements[0].verification[0].artifact = 'src/features/performances/screens/list'
   expect(() => recordReview(root, 'one', report, () => ({}))).toThrow(/artifact|verification/)
 })
 

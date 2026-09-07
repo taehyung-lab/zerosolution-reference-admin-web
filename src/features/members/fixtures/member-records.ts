@@ -3,16 +3,16 @@
  * 필터·정렬 함수는 mock에서 서버 처리를 대신할 수 있지만, 서버 페이지 API를 사용하는 제품 코드의 공용 조회 로직으로 승격하지 않는다.
  */
 import { i18n } from "@/shared/i18n/i18n";
-import type { MemberRecordSearch } from "../records/member-record-search";
-import type { CounselDetail } from "../counsel/CounselDetailDialog";
-import type { AppealRecord } from "../appeals/AppealDetailScreen";
+import type { AppealRecord } from "../model/appeal-record";
+import type { CounselDetail } from "../model/counsel-detail";
+import type { MemberRecordSearch } from "../model/member-record-search";
 
 import type {
-  DormantMemberRow,
-  WithdrawnMemberRow,
-  MemberAccessRow,
-  CounselRow,
   AppealRow,
+  CounselRow,
+  DormantMemberRow,
+  MemberAccessRow,
+  WithdrawnMemberRow,
 } from "../model/member-records";
 // TRANSPLANT_PENDING_SECONDARY_REFERENCE_DATA: 읽기 전용 예시다. 확인된 회원 API 데이터와 문의 유형 출처로 교체해야 한다.
 /** 여러 업무 화면을 재현할 읽기 전용 행을 만든다. 101건 예시는 페이지 이동을 확인하기 위한 개수다. */
