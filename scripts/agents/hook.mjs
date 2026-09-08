@@ -80,7 +80,17 @@ function inspection(command) {
     return args.length === 4 && ['prepare', 'review'].includes(args[1]) &&
       /^[\w-]+$/.test(args[2]) && /^\.ai-work\/[\w./-]+\.json$/.test(args[3])
   }
-  return executable === 'git' && ['status', 'diff', 'log', 'show', 'ls-files', 'rev-parse'].includes(args[0])
+  if (executable !== 'git') return false
+  // Directory selection changes where inspection runs, not which operation it performs.
+  // Other global options (especially config/aliases) still require preparation.
+  let index = 0
+  while (args[index]?.startsWith('-C')) {
+    if (args[index] === '-C') {
+      if (args[index + 1] === undefined) return false
+      index += 2
+    } else index += 1
+  }
+  return ['status', 'diff', 'log', 'show', 'ls-files', 'rev-parse'].includes(args[index])
 }
 
 export function hookDecision(root, payload, eventOverride) {

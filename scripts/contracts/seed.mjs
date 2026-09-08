@@ -36,6 +36,11 @@ export const SEED_BUNDLES = [
   },
   {
     id: 'list-result',
+    examples: [{
+      files: ['src/features/performances/screens/list/ui/PerformanceListResult.tsx'],
+      useWhen: 'Compare a feature composing result facts, empty/not-searched copy, pagination and table slots.',
+      doNotCopy: 'Performance toolbar visibility, columns, translated messages or navigation. This is a composition example, not evidence of real-server recovery.',
+    }],
     code: [
       'src/shared/ui/patterns/ListResult.tsx',
       'src/shared/ui/patterns/ResultToolbar.tsx',
@@ -140,6 +145,14 @@ export const SEED_BUNDLES = [
   },
   {
     id: 'form-sections-and-adapters',
+    examples: [{
+      files: [
+        'src/features/managers/screens/form/ui/ManagerCreateScreen.tsx',
+        'src/features/managers/screens/form/ui/ManagerForm.tsx',
+      ],
+      useWhen: 'Compare feature-owned schema, mutation and error mapping passed to useSaveForm, then form fields, dialogs and cancellation bound to that same save lifecycle.',
+      doNotCopy: 'Rehearsal Manager fields, defaults, dependent options, request DTOs, route destinations or the optional internal options Query. Recheck the target product save policy.',
+    }],
     code: [
       'src/shared/ui/form/useFormSections.ts',
       'src/shared/ui/form/FormField.tsx',
@@ -415,6 +428,15 @@ export const SEED_BUNDLES = [
   },
   {
     id: 'data-table',
+    examples: [{
+      files: [
+        'src/features/performances/screens/list/ui/PerformanceListResult.tsx',
+        'src/features/performances/screens/list/ui/performance-columns.tsx',
+        'src/features/performances/screens/list/ui/usePerformanceListResult.ts',
+      ],
+      useWhen: 'Trace stable row IDs and controlled meta.sort from feature columns through a URL transition callback to DataTable rendering.',
+      doNotCopy: 'Performance fields, sort keys, direction defaults, row numbers or destinations. This example has no selection column or bulk workflow.',
+    }],
     code: ['src/shared/ui/patterns/DataTable.tsx', 'src/shared/ui/patterns/selection-column.tsx'],
     skills: [location(
       '.agents/skills/shared-ui-contract/references/data-table.md',
@@ -666,6 +688,23 @@ export function validateSeedBundles(bundles = SEED_BUNDLES) {
     }
     failures.push(...locationFailures(id, 'skill', bundle?.skills))
     failures.push(...locationFailures(id, 'ADR', bundle?.adrs))
+    if (bundle?.examples !== undefined) {
+      if (!Array.isArray(bundle.examples)) {
+        failures.push(`seed bundle ${id}: examples must be an array`)
+      } else for (const example of bundle.examples) {
+        if (!Array.isArray(example?.files) || example.files.length === 0) {
+          failures.push(`seed bundle ${id}: example files are required`)
+        } else for (const file of example.files) {
+          if (typeof file !== 'string' || !existsSync(resolve(file)) || !statSync(resolve(file)).isFile()) {
+            failures.push(`seed bundle ${id}: example file is missing: ${file}`)
+          }
+        }
+        if (typeof example?.useWhen !== 'string' || !example.useWhen.trim() ||
+            typeof example?.doNotCopy !== 'string' || !example.doNotCopy.trim()) {
+          failures.push(`seed bundle ${id}: example useWhen and doNotCopy are required`)
+        }
+      }
+    }
     if (!bundle?.ownership?.shared?.trim() || !bundle?.ownership?.feature?.trim()) {
       failures.push(`seed bundle ${id}: shared/feature 소유권 문장이 없다`)
     }

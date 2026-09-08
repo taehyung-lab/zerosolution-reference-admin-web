@@ -203,6 +203,41 @@ describe('repository preflight', () => {
       expect(verdict(command).hookSpecificOutput?.permissionDecision, command).toBe('deny')
     }
   })
+  it('admits Git inspection with directory options without granting write accountability', () => {
+    const { root } = setup()
+    prepare(root, 'one', '.ai-work/checkpoint.json', fingerprint)
+    for (const session of ['unprepared', 'one']) {
+      const event = { session_id: session, hook_event_name: 'PreToolUse', tool_name: 'Bash' }
+      for (const command of [
+        'git -C ../dt-admin-web status --short',
+        'rtk git -C ../dt-admin-web diff --stat',
+        "rtk proxy git -C '../a project' -C nested log -1",
+        'git -C../dt-admin-web show HEAD:AGENTS.md',
+      ]) {
+        expect(hookDecision(root, { ...event, tool_input: { command } }), command).toEqual({})
+      }
+    }
+    writeFileSync(join(root, 'scripts/example.mjs'), 'export const value = 10\n')
+    expect(checkStop(root, 'one', fingerprint)).toBeNull()
+  })
+  it('keeps Git writes, execution options and incomplete directory arguments behind preparation', () => {
+    const { root } = setup()
+    const event = { session_id: 'unprepared', hook_event_name: 'PreToolUse', tool_name: 'Bash' }
+    for (const command of [
+      'git -C ../dt-admin-web reset --hard',
+      'git -C ../dt-admin-web diff --output=out.patch',
+      'git -C ../dt-admin-web diff --ext-diff',
+      'git -C ../dt-admin-web show --textconv HEAD:file',
+      'git -C ../dt-admin-web -c alias.inspect=status inspect',
+      'git -c core.pager=sh -C ../dt-admin-web log',
+      'git -C',
+      'git -C status',
+      'git -C ../dt-admin-web status && python3 change.py',
+      'rtk proxy python3 -c "print(1)"',
+    ]) {
+      expect(hookDecision(root, { ...event, tool_input: { command } }).hookSpecificOutput?.permissionDecision, command).toBe('deny')
+    }
+  })
   it('admits orchestration RPC without preparation and still gates the calls that touch the checkout', () => {
     const { root } = setup()
     const event = { session_id: 'unprepared', hook_event_name: 'PreToolUse', tool_name: 'Bash' }
