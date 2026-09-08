@@ -17,7 +17,8 @@ node scripts/agents/cli.mjs bundle data-table
 ```
 
 These are read-only, available before prepare. `bundle` lists the valid IDs; an ID returns its code,
-reference sections, ADRs, focused tests and ownership split from the existing seed declaration. `docs/reference/zero-sol/context.json` is owned by the
+reference sections, ADRs, focused tests, ownership split and any scoped consumption examples from the
+existing seed declaration ([example semantics](../contracts/README.md#consumption-examples)). `docs/reference/zero-sol/context.json` is owned by the
 inventory and contains pointers, not copied policies. It connects targets to inventory/scenario
 locations, related inner surfaces, applicable references and existing code paths. Paths are discovery
 hints, never code ownership or a folder template. Feature API/model files can serve several surfaces;
@@ -44,8 +45,7 @@ it or silently switch tools. Transplant projects follow their own source and bro
 For new screens, workflow changes or API/shared boundary changes, publish the target and excluded
 screens, routes and inner surfaces, state owners, applicable contracts with adopt/modify/exclude,
 scenario cards, consumed bundles, unresolved questions/sentinels, edit scope and states to verify.
-This checkpoint is disclosure, not an extra approval. Copy/style-only work states numbered requirements,
-scope and focused validation briefly; it needs no workflow checklist or permanent plan.
+Disclosure, approval and copy/style-only scope follow AGENTS' start gate. The fields below implement it.
 
 Keep the task checkpoint under `.ai-work/`. The native hook supplies the runtime session ID when
 preparation is missing. Use that ID with `prepare`; do not invent a second ID for an active runtime.
@@ -111,8 +111,7 @@ The output reports selection count and delivered reference bytes (excluding cove
 a newly requested section in the same file is still delivered. Whole-file hashes detect changes outside
 the selected section too. Selected seed code and focused tests still need inspection.
 
-Publish the implementation checkpoint to the user; preparation is not another approval. If scope,
-requirements or references change, prepare again. A reference also in scope may be edited by this task;
+If scope, requirements or references change, prepare again. A reference also in scope may be edited by this task;
 other reference changes require re-preparation. Exact files or directory paths with a trailing `/` are
 supported. Avoid repository-wide scope. Local baselines survive re-preparation.
 
@@ -163,8 +162,12 @@ Native Edit/Write/apply_patch calls check target scope before execution. General
 but their write targets are not inferred from shell text. Each adapter's `matcher` must list every tool name the
 handler answers (`preflight.test.mjs` fails when one drifts); a name the matcher omits is never intercepted.
 
-Read-only inspection stays available without preparation: `read`, `cat`, `ls`, `rg`, `grep`, `wc`, `pwd`, the listed
-`git` subcommands, `find` limited to read-only predicates, and `sed -n <range>p`. The writing forms of the same
+Read-only inspection stays available without preparation: `read`, `cat`, `ls`, `rg`, `grep`, `wc`, `pwd`,
+Git `status`/`diff`/`log`/`show`/`ls-files`/`rev-parse` (including leading `-C <path>` or `-C<path>`),
+`find` limited to read-only predicates, and `sed -n <range>p`. `rtk` and `rtk proxy` wrappers are recognized.
+Git config/alias options, external diff/text conversion and output-to-file options remain gated.
+General Python/Node programs cannot be classified as read-only from their executable name.
+The writing forms of the same
 commands (`find -exec`/`-delete`/`-fprint`, `sed -i`/`-f`/`w`) require preparation. Literal quoted arguments
 are decoded before command/option checks, so `rg 'a|b' file` is inspection while a real pipe,
 redirection, separator or substitution requires preparation. Unsupported shell escapes/expansions are
