@@ -33,7 +33,7 @@ it("환경 플래그 없이 제품 검색을 Query로 실행하고 초기화는 
   fireEvent.click(within(form).getByRole("button", { name: "검색" }));
   expect(await screen.findByText("검색결과 : 105")).toBeVisible();
   expect(router.state.location.search).toMatchObject({
-    periodType: "joinedAt",
+    searched: true,
   });
   fireEvent.click(within(form).getByRole("button", { name: "초기화" }));
   await waitFor(() =>

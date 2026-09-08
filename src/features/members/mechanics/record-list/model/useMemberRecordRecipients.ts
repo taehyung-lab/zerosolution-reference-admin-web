@@ -17,6 +17,7 @@ import {
   type MemberMessageTarget,
 } from "../../../model/member-message";
 import type { MemberRecordSearch } from "../../../model/member-record-search";
+import type { ResolvedMemberRecordSearch } from "./member-record-search";
 
 type ContactPage = { readonly rows: readonly MemberContact[] };
 
@@ -24,7 +25,7 @@ export function useMemberRecordRecipients<
   TPage extends ContactPage,
   TKey extends QueryKey,
 >(
-  search: MemberRecordSearch,
+  search: ResolvedMemberRecordSearch,
   query: (
     locale: string,
     search: MemberRecordSearch,

@@ -4,11 +4,14 @@ import { act, renderHook } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { describe, expect, it } from "vitest";
 import { dormantDataQuery } from "../../../api/list-queries";
-import type { MemberRecordSearch } from "../../../model/member-record-search";
+import {
+  dormantSearchContract,
+  resolveMemberRecordSearch,
+} from "./member-record-search";
 import type { DormantMemberRow } from "../../../model/member-records";
 import { useMemberRecordRecipients } from "./useMemberRecordRecipients";
 
-const search: MemberRecordSearch = { periodType: "joinedAt" };
+const search = resolveMemberRecordSearch({}, dormantSearchContract);
 const row = (phone: string, email: string): DormantMemberRow => ({
   id: "dormant-1",
   name: "휴면회원",

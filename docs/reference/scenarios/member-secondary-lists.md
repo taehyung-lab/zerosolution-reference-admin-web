@@ -18,6 +18,10 @@
 
 ## 2. 상태와 전이
 
+2026-09-07 사용자 결정·현재 구현: 휴면·탈퇴·접속은 빈 URL에서 대기하며 검색 버튼은 `searched=true`와 기본값 아닌 조건을 남긴다. 유효한 소유 조건이 있는 직접 접근도 조회한다. 상담·소명은 빈 URL 진입·초기화 모두 즉시 조회하며 표식을 제거한다. 기본값 해석 전 검색 의도를 판정하고, 해석된 같은 값으로 필터·결과·Query·수신자 캐시를 연결한다. 탈퇴의 기간 생략은 경로와 무관하게 `joinedAt`이고 정렬은 `withdrawnAt`이다. 상세 규칙은 [list-workflow](../../../.agents/skills/feature-contract/references/list-workflow.md#state-and-url-lifecycle)가 소유한다.
+
+Chromium `search-contract.spec.ts`에서 다섯 화면의 기본값 검색, 보기·정렬 후 재검색, 초기화 2회, 뒤로/앞으로, 잘못된 URL 복구와 표식 변경을 실측했다(2026-09-07). 명시 검색 3종은 새로고침 복원도 확인했다. 예시 Query 응답으로 검증한 시나리오 구현이며 실 API 완료·신규 제품 이관 검증은 아니다.
+
 | 상태 | 소유자 |
 | --- | --- |
 | 커밋된 검색·정렬·page·보기 | route search |
@@ -63,7 +67,7 @@ ID만 가지며 검색 조건·page·정렬 변경 때 지운다([bulk-actions.m
 | --- | --- | --- |
 | 목록별 action·선택 수명 | 화면/feature adapter가 소유 | 커버됨 — `bulk-actions.md:3-9` |
 | 다운로드 선택/전체 | 범위·선행조건·request mapping은 feature 소유 | 커버됨 — [file-workflow.md](../../../.agents/skills/feature-contract/references/file-workflow.md):3-13 |
-| 다중선택 필터 | `CheckboxTree(emptyMeansAll)` 구현 | 채택 — [list-workflow.md](../../../.agents/skills/feature-contract/references/list-workflow.md):20 |
+| 다중선택 필터 | `CheckboxTree(emptyMeansAll)` 구현 | 채택 — [list-workflow.md](../../../.agents/skills/feature-contract/references/list-workflow.md#multi-select-group) |
 | 소명 인라인 폼·접이식 섹션 | form adapter와 `SectionCard(collapsible)` 구현 | 채택 — form-workflow.md:19,28 |
 | 회원접속 header 도움말 | 다섯 shared 후보 중 `Tooltip` | 후보 유지 — [primitives-and-tokens.md](../../../.agents/skills/shared-ui-contract/references/primitives-and-tokens.md):22 |
 | 행 클릭 조회 | 접근성 있는 행 활성화는 다섯 shared 후보 중 하나 | 후보 유지 — [primitives-and-tokens.md](../../../.agents/skills/shared-ui-contract/references/primitives-and-tokens.md):23 |
@@ -74,4 +78,5 @@ ID만 가지며 검색 조건·page·정렬 변경 때 지운다([bulk-actions.m
 1. 탈퇴회원 checkbox의 용도와 전용 조회 `148:7774`의 필드·action 차이.
 2. 소명 결과를 통보 후 잠그는 권위 상태와 통보 호출에 필요한 입력.
 3. 다운로드 형식, 선택/전체 request 모양과 권한 식별자.
-4. 회원상담·소명 목록이 검색 전 frame 없이 진입 즉시 조회하는지.
+
+2026-09-07 기간 계약 확장: 확정 검색은 양끝을 요구하며 한쪽 결손·불량·역전은 양쪽을 제거한다. 입력 중 draft는 한쪽을 보존한다. 공통 실행 규칙은 [list-search-contract](../../../.agents/skills/feature-contract/references/list-search-contract.md#기간-입력과-확정-경계), 전체 목록의 직접 입력·mock 비교 회귀는 `src/test/workflows/closed-search.test.ts`가 소유한다.

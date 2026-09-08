@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
-import { resolve } from 'node:path'
-import { readReference, referenceOf } from './document-context.mjs'
+import { dirname, relative, resolve } from 'node:path'
+import { readReference, referenceOf, selectedDocuments } from './document-context.mjs'
 
 export const SURFACE_INDEX = 'docs/reference/zero-sol/context.json'
 const text = (value) => typeof value === 'string' && value.trim().length > 0
@@ -100,4 +100,36 @@ export function describeContext(root, id) {
     const target = index.surfaces.find((item) => item.id === related)
     return { id: related, title: target?.title, instruction: 'Explicitly include or exclude with a reason.' }
   }), note: 'Paths route evidence; they never assign code ownership or prescribe new product architecture. Feature API/model modules can serve several surfaces. Group entries require manual decomposition of their inner surfaces. Read linked facts; this is not a product specification.' }, null, 2) + '\n'
+}
+
+/** Diagnostics only: reachable support documents need not be direct surface inventory entries. */
+export function contextReport(root) {
+  const index = readSurfaceIndex(root)
+  const direct = new Set(index.judgment.map(ref => referenceOf(ref).file))
+  const surfaces = index.surfaces.map(surface => {
+    const refs = [...index.judgment, surface.inventory, ...surface.scenarios, ...surface.references]
+    refs.forEach(ref => direct.add(referenceOf(ref).file))
+    const documents = selectedDocuments(root, refs)
+    return {id:surface.id, bytes:documents.reduce((sum,doc)=>sum+Buffer.byteLength(doc.selected),0), selections:documents.map(doc=>({file:doc.file, heading:doc.heading ?? null, bytes:Buffer.byteLength(doc.selected)}))}
+  })
+  const reachable=new Set(direct)
+  const pending=[...direct]
+  while(pending.length) {
+    const file=pending.pop()
+    if(!existsSync(resolve(root,file))) continue
+    const content=readFileSync(resolve(root,file),'utf8')
+    for(const match of content.matchAll(/\]\(([^\s)#]+\.md)(?:#[^)]*)?\)/g)) {
+      if(/^[a-z]+:/i.test(match[1])) continue
+      const target=relative(root,resolve(root,dirname(file),match[1])).replaceAll('\\','/')
+      if(!safePath(target)||reachable.has(target)) continue
+      reachable.add(target)
+      pending.push(target)
+    }
+  }
+  const notion=resolve(root,'docs/reference/zero-sol/notion')
+  const supporting=existsSync(notion)?readdirSync(notion,{recursive:true,withFileTypes:true}).filter(entry=>entry.isFile()&&entry.name.endsWith('.md')).map(entry=>{
+    const file=relative(root,resolve(entry.parentPath,entry.name)).replaceAll('\\','/')
+    return {file,route:direct.has(file)?'direct':reachable.has(file)?'linked':'unlinked',bytes:Buffer.byteLength(readFileSync(resolve(root,file)))}
+  }):[]
+  return {note:'Surface evidence only; prepare also includes required instructions, checkpoint and bundle references. Linked means Markdown reachability, not semantic coverage. Unlinked support is a review notice, not a failure.',surfaces,supporting}
 }

@@ -1,3 +1,4 @@
+import { resolveManagerSearch } from "./search-schema";
 import { TestLocaleProvider } from "@/test/locale";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderHook, waitFor } from "@testing-library/react";
@@ -32,9 +33,12 @@ describe("useManagerListData", () => {
   beforeEach(() => getList8.mockClear());
 
   it("does not fetch before the searched discriminator is present", async () => {
-    const { result } = renderHook(() => useManagerListData({}), {
-      wrapper: createWrapper(),
-    });
+    const { result } = renderHook(
+      () => useManagerListData(resolveManagerSearch({}), false),
+      {
+        wrapper: createWrapper(),
+      },
+    );
 
     expect(result.current).toMatchObject({
       rows: [],
@@ -49,7 +53,7 @@ describe("useManagerListData", () => {
 
   it("fetches an applied search with the same resolved contract", async () => {
     const { result } = renderHook(
-      () => useManagerListData({ periodType: "CREATED_AT" }),
+      () => useManagerListData(resolveManagerSearch({}), true),
       {
         wrapper: createWrapper(),
       },

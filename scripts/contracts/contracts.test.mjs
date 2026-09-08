@@ -286,6 +286,11 @@ describe('local markdown links', () => {
 })
 
 describe('agent-facing document line budget', () => {
+  it('notices dense documents under the line budget without failing the contract', () => {
+    const files = createDocuments({'dense.md': '# Dense\n' + '가'.repeat(12000), 'small.md':'# Small\n'})
+    expect(documentBudgetNotices(files)).toEqual([expect.stringContaining('dense.md')])
+    expect(documentBudgetNotices(files)[0]).toContain('bytes')
+  })
   it('says nothing when every document stays at the recommended length', () => {
     const files = createDocuments({
       'AGENTS.md': 'x\n'.repeat(DOCUMENT_LINE_BUDGET),

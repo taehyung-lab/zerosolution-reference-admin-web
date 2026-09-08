@@ -2,7 +2,6 @@ import { canonicalSearchGuard } from "@/app/router/canonical-search-guard";
 import { requestMemberBulkChange } from "@/features/members/screens/list/model/member-list-requests";
 import {
   generalMemberCanonicalSearchSchema,
-  memberSearchSchema,
   type MemberRouteSearch,
 } from "@/features/members/screens/list/model/search-schema";
 import { useMemberListRecipients } from "@/features/members/screens/list/model/useMemberListRecipients";
@@ -13,7 +12,7 @@ import { MessageComposerDialog } from "@/features/messaging/screens/compose/ui/M
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_app/members/active/general")({
-  validateSearch: memberSearchSchema,
+  validateSearch: generalMemberCanonicalSearchSchema,
   beforeLoad: canonicalSearchGuard(generalMemberCanonicalSearchSchema),
   component: GeneralMemberListRoute,
 });
@@ -39,7 +38,9 @@ function GeneralMemberListRoute() {
         }}
         search={search}
         onSearchChange={(next: MemberRouteSearch) => {
-          void navigate({ search: () => next });
+          void navigate({
+            search: () => generalMemberCanonicalSearchSchema.parse(next),
+          });
         }}
         onMemberActivate={(memberId) => {
           void navigate({ to: "/members/$memberId", params: { memberId } });

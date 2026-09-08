@@ -1,6 +1,8 @@
 # List workflow
 
-Read this file for list filters, canonical URL search, Query gating, result state, table, sorting, pagination, or row selection. Detail and bulk actions have separate references; a collection hosted outside a list result is classified in [table-composition.md](table-composition.md), which applies this file to kind C child lists.
+Use the applicable sections for list filters, canonical URL search, Query gating, result state, table, sorting, pagination, or row selection. Detail and bulk actions have separate references; a collection hosted outside a list result is classified in [table-composition.md](table-composition.md), which applies this file to kind C child lists.
+
+For search field declarations, defaults, period input, or variants, read the applicable sections of [list-search-contract.md](list-search-contract.md).
 
 ## Confirm the feature contract
 
@@ -16,16 +18,55 @@ Feature-internal decomposition and file placement follow [screen-composition.md]
 
 Select only the surfaces the current list uses. A surface nested inside a cell, toolbar, or dialog is selected the same way through its own reference.
 
-| Surface            | Shared mechanic                                                                                | Feature owns                                                                                                                                                                                                                                                                                                                                                                           | Read next only when changing it                                                                                                                               |
-| ------------------ | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Filter frame       | `FilterPanel`, `FilterField`, `PeriodFilterField`, `KeywordFilterField`                        | fields, rules, submit/reset, Query gate, criterion/target enums and labels                                                                                                                                                                                                                                                                                                             | [filter-fields.md](../../shared-ui-contract/references/filter-fields.md); lower control references only when changing them                                    |
-| Multi-select group | `CheckboxTree` (flat or nested nodes, leaf values, `emptyMeansAll`)                            | enum values, labels, option source, default, whether empty means all                                                                                                                                                                                                                                                                                                                   | [checkbox-group.md](../../shared-ui-contract/references/checkbox-group.md)                                                                                    |
-| Draft commit       | `useDraftCommit`                                                                               | identity (which fields are filter vs view), draft factory, navigation, page reset                                                                                                                                                                                                                                                                                                      | [shared-values.md](../../shared-ui-contract/references/shared-values.md) for the algebra, [router.md](router.md) for the URL transition                       |
-| Result state       | `ListResult` + `ListResultData<TRow>`                                                          | plain result facts, two domain messages                                                                                                                                                                                                                                                                                                                                                | this file                                                                                                                                                     |
-| Toolbar/summary    | `ResultToolbar`, `ResultSummary`                                                               | metrics, controls, actions, permission                                                                                                                                                                                                                                                                                                                                                 | this file                                                                                                                                                     |
-| Table              | `DataTable` or feature-local `Table` primitives                                                | rows, columns, stable ID, sort mapping, actions                                                                                                                                                                                                                                                                                                                                        | [table-composition.md](table-composition.md) for the fit decision; [data-table.md](../../shared-ui-contract/references/data-table.md) for the shared contract |
-| Pagination         | `Pagination`, `PageSizeControl`                                                                | page math, URL transition, defaults, recovery                                                                                                                                                                                                                                                                                                                                          | this file                                                                                                                                                     |
-| Sorting            | `SortControl` (field select only), `DataTable` `meta.sort` (header button, `aria-sort`, glyph) | one typed source for the exposed sort set that derives select options, URL enum, and each `meta.sort`; server enum, direction policy, URL transition. The sort-state mapping gives `direction` to exactly the active sort key and leaves every other sortable header undefined (one `aria-sort` per table). Select/header set equality and single active `aria-sort` are feature tests | this file; [data-table.md](../../shared-ui-contract/references/data-table.md)                                                                                 |
+| Surface | Shared mechanic |
+| --- | --- |
+| Filter frame | `FilterPanel`, `FilterField`, `PeriodFilterField`, `KeywordFilterField` |
+| Multi-select group | `CheckboxTree` |
+| Draft commit | `useDraftCommit` |
+| Result state | `ListResult` + `ListResultData<TRow>` |
+| Toolbar/summary | `ResultToolbar`, `ResultSummary` |
+| Table | `DataTable` or feature-local `Table` primitives |
+| Pagination | `Pagination`, `PageSizeControl` |
+| Sorting | `SortControl`, `DataTable` `meta.sort` |
+
+### Filter frame
+
+The feature owns fields, rules, submit/reset, Query gate, criterion/target enums and labels.
+Read [filter-fields.md](../../shared-ui-contract/references/filter-fields.md); read lower control references only when changing them.
+
+### Multi-select group
+
+`CheckboxTree` supports flat or nested nodes, leaf values, and `emptyMeansAll`.
+The feature owns enum values, labels, option source, default, and whether empty means all.
+Read [checkbox-group.md](../../shared-ui-contract/references/checkbox-group.md).
+
+### Draft commit
+
+The feature owns identity (which fields are filter vs view), draft factory, navigation, and page reset.
+Read [shared-values.md](../../shared-ui-contract/references/shared-values.md) for the algebra and [router.md](router.md) for the URL transition.
+
+### Result state and toolbar
+
+For `ListResult`, the feature owns plain result facts and two domain messages; see [Result ownership](#result-ownership).
+For `ResultToolbar` and `ResultSummary`, the feature owns metrics, controls, actions, and permission.
+
+### Table
+
+The feature owns rows, columns, stable ID, sort mapping, and actions.
+Read [table-composition.md](table-composition.md) for the fit decision and [data-table.md](../../shared-ui-contract/references/data-table.md) for the shared contract.
+
+### Pagination
+
+The feature owns page math, URL transition, defaults, and recovery.
+See [State and URL lifecycle](#state-and-url-lifecycle) and [Result ownership](#result-ownership).
+
+### Sorting
+
+`SortControl` is the field select only. `DataTable` `meta.sort` owns the header button, `aria-sort`, and glyph.
+The feature owns one typed source for the exposed sort set that derives select options, URL enum, and each `meta.sort`; server enum, direction policy, and URL transition.
+The sort-state mapping gives `direction` to exactly the active sort key and leaves every other sortable header undefined (one `aria-sort` per table).
+Select/header set equality and single active `aria-sort` are feature tests.
+See [State and URL lifecycle](#state-and-url-lifecycle) and [data-table.md](../../shared-ui-contract/references/data-table.md).
 
 ## State and URL lifecycle
 
@@ -37,7 +78,7 @@ Select only the surfaces the current list uses. A surface nested inside a cell, 
 | row selection                                          | list screen or feature-local table adapter |
 | transient interaction                                  | nearest feature component                  |
 
-For a confirmed explicit-search list, model committed search as `{}` before search and the declared discriminator plus non-default values after search. Do not add a duplicate `searched` marker or a shared helper that derives it; the discriminator differs per screen. A list without a search gate passes `searched: true` so the policy is visible in code. A feature-owned resolver applies UI/request defaults without injecting them into the URL. Committed search inside a dialog (kind E in [table-composition.md](table-composition.md)) is owned by the dialog host, not the URL; the same shared mechanics apply because none of them read the Router.
+The feature owns entry/reset policy. Explicit-search member/manager lists (including the rehearsal consumer) keep `{}` idle and commit `searched: true` plus non-default conditions on submit. Canonicalization validates only that screen's owned fields, normalizes date ranges, and detects valid conditions before omitting defaults. A valid condition (including page/sort) starts a direct-link search even without the marker. Only literal `true` is a marker; `false` or invalid marker values are removed, never a veto over valid conditions. Invalid-only or hidden-only input returns to `{}`. Removing the sole marker returns to idle. Immediate member lists ignore the marker and pass `searched: true` to Query even for `{}`. The marker is URL metadata, excluded from field defaults/partition, request input and query keys. Committed search inside a dialog (kind E in [table-composition.md](table-composition.md)) stays with its host, not the URL.
 
 If confirmed policy requires immediate entry loading but reset to an idle result (performance list), empty filters cannot distinguish those states. That feature may use a single sparse URL discriminator (`searched: false` only after reset, removed on submit). Query enablement and result presentation derive from that same value; do not duplicate it in local state or send it as a server parameter.
 
@@ -49,9 +90,10 @@ local draft --Apply/Enter/declared debounce--> one route-search update
 ```
 
 - Invalid optional fields recover without erasing unrelated valid fields. Canonical redirects use history `replace`.
-- Use the configured Router serializer. Multi-values are arrays; omit empty arrays. Do not invent CSV, JSON strings, `all`, or applied markers.
+- Use the configured Router serializer. Multi-values are arrays; omit empty arrays. Do not invent CSV, JSON strings, or `all` sentinel values.
 - Apply changes committed values and resets `page` in the same navigation. Sort and page-size changes use the declared reset policy.
 - Back/forward restores committed URL state. Draft state is preserved only while its caller-defined committed identity is equal.
+- Draft identity for a workflow with an idle state includes searched/idle as well as resolved filter values. Default search and idle have identical resolved defaults but must rebuild drafts on history transitions. View-only changes still preserve drafts.
 - Shared draft hooks own mechanics only; the feature owns field meaning, defaults, navigation, Query gating, and request mapping.
 - Period calendar dates use `displayTimeZone()` for both display and local-day interpretation. Convert that
   day to a `REQUEST_TIMEZONE` UTC instant only at the request boundary; do not derive timezone from locale.
@@ -91,10 +133,3 @@ Columns and selection remain feature-owned; absent selection/actions need no dum
 Use `ResultTotal` for a single result count instead of returning identical summaryGroups from each hook.
 Do not build a factory around schema, navigation or header-sort transitions: member, manager and
 performance consumers have different direction defaults and reset/search policies.
-
-Resolve canonical values through `resolveSearchDefaults(search, featureDefaults)`; the defaults object
-must declare every route-search key with `satisfies Readonly<Record<keyof RouteSearch, unknown>> & Partial<RouteSearch>`.
-The schema still owns validation and sparse URL serialization. Explicit `undefined` means preserve
-absence, not a forgotten default. Period criterion, default range, keyword fields and sort direction
-are product decisions, not universal values. In particular, a period preset does not choose `periodType`.
-Use the same resolved values for UI and requests, and keep filter-only values out of committed view state.

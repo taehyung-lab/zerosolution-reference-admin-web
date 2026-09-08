@@ -67,8 +67,14 @@ copies the complete declared documents and computes the same code/test closure.
 
 `package.json` owns the actual verify stages and fail-fast order. `contracts:check` compares the CI
 stage set and README projection with that declaration, and checks local links, commands, runtime root
-pointers, document-length notices and transplant sentinels. Remote OpenAPI drift and real-server login
+pointers, document-size notices and transplant sentinels. Remote OpenAPI drift and real-server login
 belong to explicit network jobs; do not hide them in the local entry point.
+
+Document notices cover nested `docs/` and `.agents/` Markdown too, including Notion ledgers.
+`contracts.mjs` owns the advisory thresholds: 200 lines and 24 KiB (a triage baseline near the
+previous expensive list reference, not a semantic quality limit). Dense short files need review too.
+Exceeding either threshold emits a notice, never a failure. Compare task delivery and required
+evidence before splitting; `context-report` distinguishes direct, linked and unlinked support.
 
 ESLint owns deprecated-library API rejection (`@typescript-eslint/no-deprecated`). When a reference
 names a replaced API, update that reference with the replacement. `local/no-prohibited-abstraction`

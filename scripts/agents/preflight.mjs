@@ -89,7 +89,18 @@ export function prepare(root, session, checkpointFile, snapshot = outputSnapshot
     const bundle = SEED_BUNDLES.find((candidate) => candidate.id === id)
     return [...bundle.skills, ...bundle.adrs]
   })
-  const documents = selectedDocuments(root, [...references, ...context.references, ...bundleRefs])
+  const inputs = [...references, ...context.references, ...bundleRefs]
+  const documents = selectedDocuments(root, inputs)
+  const fullOverrides = documents.filter(document => document.heading === undefined && inputs.some(ref => referenceOf(ref).file === document.file && referenceOf(ref).heading !== undefined)).map(document => {
+    const sources = []
+    if (references.some(ref => referenceOf(ref).file === document.file && referenceOf(ref).heading === undefined)) sources.push('checkpoint.references')
+    if (context.references.some(ref => referenceOf(ref).file === document.file && referenceOf(ref).heading === undefined)) sources.push('surface context or requirement.sources')
+    for (const {id} of contracts) {
+      const bundle=SEED_BUNDLES.find(bundle=>bundle.id===id)
+      if ([...bundle.skills,...bundle.adrs].some(ref=>referenceOf(ref).file===document.file && referenceOf(ref).heading===undefined)) sources.push(`bundle:${id}`)
+    }
+    return `Full-file selection overrides headings: ${document.file} (${sources.join(', ')})`
+  })
   const previous = load(root, session)
   const rendered = Object.fromEntries(documents.map((document) => [document.key, hash(document.selected)]))
   const hashes = Object.fromEntries(documents.map((document) => [document.file, hash(document.content)]))
@@ -106,7 +117,7 @@ export function prepare(root, session, checkpointFile, snapshot = outputSnapshot
       : `\n--- ${label} ---\n${document.selected}`
   }).join('')
   const surfaceNotes = context.included.map((surface) => `${surface.id} [${surface.coverage}]${surface.gap ? ` — gap: ${surface.gap}` : ''}`).join('\n')
-  return delivered + (surfaceNotes ? `\nSurface coverage (not completion):\n${surfaceNotes}\n` : '') +
+  return delivered + (fullOverrides.length ? `\n${fullOverrides.join('\n')}\n` : '') + (surfaceNotes ? `\nSurface coverage (not completion):\n${surfaceNotes}\n` : '') +
     `\nContext: ${documents.length} selections, ${Buffer.byteLength(delivered)} bytes delivered. Whole-file hashes protect surrounding text too.\n` +
     'Context delivered, not semantically approved. Inspect bundle code/tests and linked rules that affect the decision, publish the checkpoint, and review actual changes before completion.\n'
 }
@@ -145,11 +156,18 @@ function changedPaths(baseline, current) {
   return [...new Set([...Object.keys(baseline), ...Object.keys(current)])].filter((path) => baseline[path] !== current[path])
 }
 
+function reconcileOutput(root, session, state, current) {
+  const changed = changedPaths(state.baseline, current)
+  const outside = changed.filter(path => !within(path, state.checkpoint.scope))
+  if (outside.length) return `Changes outside this session's scope: ${outside.join(', ')}. Snapshot comparison cannot identify the author. Do not absorb external changes into scope or reset the baseline; use one writing session or an isolated checkout. See scripts/agents/README.md.`
+  return checkEdit(root, session, changed)
+}
+
 export function recordReview(root, session, report, snapshot = outputSnapshot) {
   const state = load(root, session)
   if (!state) throw new Error('Run prepare before review')
   const current = snapshot(root)
-  const failure = state.wrote ? checkEdit(root, session, changedPaths(state.baseline, current)) : null
+  const failure = state.wrote ? reconcileOutput(root, session, state, current) : null
   if (failure) throw new Error(failure)
   const expected = state.checkpoint.requirements.map(({ id }) => id).sort()
   const actual = report.requirements?.map(({ id }) => id).sort()
@@ -174,7 +192,7 @@ export function checkStop(root, session, snapshot = outputSnapshot) {
   const current = snapshot(root)
   const changed = changedPaths(state.baseline, current)
   if (!changed.length) return null
-  const stale = checkEdit(root, session, changed)
+  const stale = reconcileOutput(root, session, state, current)
   if (stale) return stale
   if (state.review?.fingerprint === hash(JSON.stringify(current))) return null
   return `Review current diff against requirements, evidence, shared ownership and complexity; fix unsupported assumptions. Run node scripts/agents/cli.mjs review ${session} .ai-work/<task>/review.json. Record blocked items honestly; do not claim completion from this check alone.`

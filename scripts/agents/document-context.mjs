@@ -27,9 +27,9 @@ function headingsOf(lines) {
 
 // Include the introduction and ancestor lead-ins. A selected section keeps all of its children;
 // linked sibling rules still need an explicit reference when they affect the current decision.
-export function sectionText(content, heading) {
-  if (heading === undefined) return content
+function sectionRanges(content, heading) {
   const lines = content.split('\n')
+  if (heading === undefined) return [[0, lines.length]]
   const headings = headingsOf(lines)
   const matches = headings.filter((item) => item.title === heading)
   if (matches.length !== 1) throw new Error(`Reference heading must exist exactly once: ${heading}`)
@@ -46,7 +46,12 @@ export function sectionText(content, heading) {
     ranges.push([item.index, next])
   }
   ranges.push([start.index, end])
-  return ranges.map(([from, to]) => lines.slice(from, to).join('\n')).filter(Boolean).join('\n\n')
+  return ranges
+}
+
+export function sectionText(content, heading) {
+  const lines = content.split('\n')
+  return sectionRanges(content, heading).map(([from, to]) => lines.slice(from, to).join('\n')).filter(Boolean).join('\n\n')
 }
 
 export function readReference(root, value) {
@@ -66,5 +71,23 @@ export function selectedDocuments(root, references) {
     if (reference.heading !== undefined && fullFiles.has(reference.file)) continue
     selected.set(document.key, document)
   }
-  return [...selected.values()]
+  const documents = [...selected.values()]
+  const files = [...new Set(documents.map(doc => doc.file))]
+  return files.flatMap(file => {
+    const covered = new Set()
+    const candidates = documents.filter(doc => doc.file === file).map(doc => ({
+      ...doc, ranges: sectionRanges(doc.content, doc.heading),
+    }))
+    // Cover parents before children, independently of which input requested them first.
+    candidates.sort((a, b) => a.ranges.at(-1)[0] - b.ranges.at(-1)[0])
+    return candidates.flatMap(doc => {
+      const lines = doc.content.split('\n')
+      const selectedLines = []
+      for (const [from, to] of doc.ranges) for (let index = from; index < to; index++) {
+        if (!covered.has(index)) selectedLines.push(lines[index])
+        covered.add(index)
+      }
+      return doc.heading === undefined || selectedLines.some(line => line.trim()) ? [{ ...doc, selected: selectedLines.join('\n') }] : []
+    })
+  })
 }

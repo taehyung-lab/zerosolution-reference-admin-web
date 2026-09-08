@@ -2,7 +2,7 @@
 
 - 상태: 승인됨 — 구현 및 단위 검증 완료, 실제 서버 계약 대기
 - 날짜: 2026-08-27
-- 개정: 2026-09-02
+- 개정: 2026-09-07
 - 결정자: 제품 소유자 (사용자)
 
 ## 맥락
@@ -34,6 +34,11 @@
 7. API `timezone` 파라미터 전달 여부와 의미는 신규 서버 계약이 확정된 feature가 소유한다.
    transport가 `REQUEST_TIMEZONE`이나 브라우저 zone을 자동 주입하지 않는다.
 
+8. 현재 목록의 확정 검색 기간은 양끝이 필요한 닫힌 범위다(2026-09-07 사용자 결정).
+   양끝 미지정은 무기간이며 한쪽 결손·불량·역전은 양쪽을 제거한다. 동일 시점은 허용하고
+   ISO 문자열 철자가 아니라 실제 시점으로 비교한다. 입력 중 draft는 한쪽을 유지할 수 있다.
+   실행 경계는 [list-search-contract](../../.agents/skills/feature-contract/references/list-search-contract.md#기간-입력과-확정-경계)가 소유한다.
+
 ## 변환 예시
 
 브라우저 timezone이 `Asia/Seoul`이면 다음 두 방향이 서로 같은 달력 기준을 사용한다.
@@ -53,6 +58,7 @@ endDateTime request:     2026-08-28T14:59:59.999Z
 | --- | --- |
 | request UTC 상수, 브라우저 zone 확인, 안전한 표시, day-boundary 변환 | `src/shared/lib/datetime.ts` |
 | 기간 preset/custom draft와 UTC range 조립 | `src/shared/lib/use-period-draft.ts` |
+| 확정 closed instant pair 정규화 | `src/shared/lib/search.ts`의 `normalizeClosedInstantRange` |
 | 표시 셀과 기간 필터 조립 | 각 feature |
 | API `timezone` 파라미터 전달 | 신규 서버 계약이 확인된 feature |
 
@@ -61,7 +67,10 @@ endDateTime request:     2026-08-28T14:59:59.999Z
 - 빈 날짜 row 렌더가 예외 없이 빈 셀을 만든다.
 - 같은 UTC instant가 `Asia/Seoul`과 `UTC`에서 서로 다른 날짜로 표시된다.
 - 서울과 DST zone의 local-day 시작·끝이 올바른 UTC instant로 변환되고 표시 날짜로 왕복한다.
-- Chromium에서 `/managers?periodType=CREATED_AT`의 날짜 열과 root error 부재를 확인한다.
+- Chromium에서 `/managers?searched=true`의 날짜 열과 root error 부재를 확인한다.
+
+- `closed-search.test.ts`는 전체 목록의 한쪽 결손·불량·역전·동일 시점·소수점 정밀도와 mock 실제 필터링을 검증한다.
+- `use-period-draft.test.tsx`는 두 단계 입력, 전체 해제, 서울·뉴욕 DST의 TODAY preset 변환을 검증한다.
 
 ## 재검토 조건
 

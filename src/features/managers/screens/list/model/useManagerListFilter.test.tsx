@@ -3,7 +3,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { useState, type ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
-import { type ManagerRouteSearch } from "./search-schema";
+import {
+  resolveManagerSearch,
+  managerCanonicalSearchSchema,
+  type ManagerRouteSearch,
+} from "./search-schema";
 import { useManagerListFilter } from "./useManagerListFilter";
 
 const { getManagerTypes } = vi.hoisted(() => ({
@@ -26,7 +30,12 @@ function Providers({ children }: { readonly children: ReactNode }) {
 describe("useManagerListFilter", () => {
   it("provides every Manager-owned static option set to the filter UI", () => {
     const { result } = renderHook(
-      () => useManagerListFilter({ search: {}, onSearchChange: vi.fn() }),
+      () =>
+        useManagerListFilter({
+          search: resolveManagerSearch({}),
+          searched: false,
+          onSearchChange: vi.fn(),
+        }),
       { wrapper: Providers },
     );
 
@@ -35,10 +44,15 @@ describe("useManagerListFilter", () => {
     ).toEqual(["ID", "NAME", "PHONE", "ORGANIZATION", "PERMISSION"]);
   });
 
-  it("records only periodType when submitting default filters", () => {
+  it("records only searched when submitting default filters", () => {
     const onSearchChange = vi.fn();
     const { result } = renderHook(
-      () => useManagerListFilter({ search: {}, onSearchChange }),
+      () =>
+        useManagerListFilter({
+          search: resolveManagerSearch({}),
+          searched: false,
+          onSearchChange,
+        }),
       {
         wrapper: Providers,
       },
@@ -47,7 +61,7 @@ describe("useManagerListFilter", () => {
     act(() => result.current.submit({ preventDefault: vi.fn() } as never));
 
     expect(onSearchChange).toHaveBeenCalledWith({
-      periodType: "CREATED_AT",
+      searched: true,
     });
   });
 
@@ -56,7 +70,8 @@ describe("useManagerListFilter", () => {
     const { result } = renderHook(
       () =>
         useManagerListFilter({
-          search: { periodType: "CREATED_AT", page: 3 },
+          search: resolveManagerSearch({ page: 3 }),
+          searched: true,
           onSearchChange,
         }),
       { wrapper: Providers },
@@ -76,7 +91,12 @@ describe("useManagerListFilter", () => {
     const onSearchChange = vi.fn();
     const { result, rerender } = renderHook(
       ({ search }: { search: ManagerRouteSearch }) =>
-        useManagerListFilter({ search, onSearchChange }),
+        useManagerListFilter({
+          search: resolveManagerSearch(search),
+          searched:
+            managerCanonicalSearchSchema.parse(search).searched === true,
+          onSearchChange,
+        }),
       {
         wrapper: Providers,
         initialProps: { search: { periodType: "CREATED_AT" } },
@@ -104,7 +124,12 @@ describe("useManagerListFilter", () => {
   it("clears the draft and navigates to an empty search even when the URL is already empty", () => {
     const onSearchChange = vi.fn();
     const { result } = renderHook(
-      () => useManagerListFilter({ search: {}, onSearchChange }),
+      () =>
+        useManagerListFilter({
+          search: resolveManagerSearch({}),
+          searched: false,
+          onSearchChange,
+        }),
       {
         wrapper: Providers,
       },
@@ -133,7 +158,12 @@ describe("useManagerListFilter", () => {
     const onSearchChange = vi.fn();
     const { result, rerender } = renderHook(
       ({ search }: { search: ManagerRouteSearch }) =>
-        useManagerListFilter({ search, onSearchChange }),
+        useManagerListFilter({
+          search: resolveManagerSearch(search),
+          searched:
+            managerCanonicalSearchSchema.parse(search).searched === true,
+          onSearchChange,
+        }),
       {
         wrapper: Providers,
         initialProps: { search: { periodType: "CREATED_AT" } },
@@ -154,7 +184,12 @@ describe("useManagerListFilter", () => {
   it("keeps resolved option data visible when a background retry fails", async () => {
     getManagerTypes.mockResolvedValueOnce([{ id: "AGENCY", name: "기획사" }]);
     const { result } = renderHook(
-      () => useManagerListFilter({ search: {}, onSearchChange: vi.fn() }),
+      () =>
+        useManagerListFilter({
+          search: resolveManagerSearch({}),
+          searched: false,
+          onSearchChange: vi.fn(),
+        }),
       { wrapper: Providers },
     );
     await waitFor(() => expect(result.current.typeOptions.state).toBe("ready"));
@@ -170,3 +205,25 @@ describe("useManagerListFilter", () => {
     ]);
   });
 });
+
+it.each([{ from: "2026-09-01" }, { to: "2026-09-01" }])(
+  "clears incomplete rehearsal dates on an unchanged searched URL: %j",
+  (range) => {
+    const onSearchChange = vi.fn();
+    const { result } = renderHook(
+      () =>
+        useManagerListFilter({
+          search: resolveManagerSearch({ searched: true }),
+          searched: true,
+          onSearchChange,
+        }),
+      { wrapper: Providers },
+    );
+    act(() => result.current.setRange(range));
+    expect(result.current.range).toEqual(range);
+    act(() => result.current.submit({ preventDefault: vi.fn() } as never));
+    expect(onSearchChange).toHaveBeenCalledWith({ searched: true });
+    expect(result.current.range).toEqual({});
+    expect(result.current.preset).toBe("ALL");
+  },
+);

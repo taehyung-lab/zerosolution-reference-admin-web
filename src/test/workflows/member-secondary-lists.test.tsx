@@ -2,6 +2,10 @@ import { TestQueryLocaleProvider as TestLocaleProvider } from "@/test/query-loca
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { MemberRecordSearch } from "../../features/members/model/member-record-search";
+import {
+  accessSearchSchema,
+  withdrawnSearchSchema,
+} from "../../features/members/mechanics/record-list/model/member-record-search";
 import { WithdrawnMemberListScreen } from "../../features/members/screens/withdrawn/ui/WithdrawnMemberListScreen";
 import { MemberAccessListScreen } from "../../features/members/screens/access/ui/MemberAccessListScreen";
 
@@ -50,12 +54,48 @@ function choose(label: string, option: string) {
 }
 
 describe("member access and withdrawn list boundaries", () => {
+  it("commits a default-only search, restores it, and returns to idle on repeated reset", async () => {
+    const onSearchChange = vi.fn();
+    const view = (input: unknown) => (
+      <TestLocaleProvider>
+        <MemberAccessListScreen
+          search={accessSearchSchema.parse(input)}
+          onSearchChange={onSearchChange}
+          onRegister={vi.fn()}
+          onDownload={vi.fn()}
+        />
+      </TestLocaleProvider>
+    );
+    const { rerender } = render(view({ page: "wrong" }));
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "검색" }));
+    expect(onSearchChange).toHaveBeenLastCalledWith({ searched: true });
+    rerender(view(onSearchChange.mock.lastCall![0]));
+    await screen.findByRole("table");
+    fireEvent.change(screen.getByRole("textbox", { name: "검색어" }), {
+      target: { value: "pending before history back" },
+    });
+    rerender(view({}));
+    expect(screen.getByRole("textbox", { name: "검색어" })).toHaveValue("");
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+    rerender(view({ searched: true }));
+    await screen.findByRole("table");
+    fireEvent.click(screen.getByRole("button", { name: "초기화" }));
+    expect(onSearchChange).toHaveBeenLastCalledWith({});
+    rerender(view({}));
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "초기화" }));
+    expect(onSearchChange).toHaveBeenLastCalledWith({});
+    rerender(view({ page: 1, searched: false }));
+    await screen.findByRole("table");
+  });
+
   it("preserves selection while editing a draft and clears it after committed view changes", async () => {
     const onDownload = vi.fn();
     const view = (search: MemberRecordSearch) => (
       <TestLocaleProvider>
         <MemberAccessListScreen
-          search={search}
+          search={accessSearchSchema.parse(search)}
           onSearchChange={vi.fn()}
           onRegister={vi.fn()}
           onDownload={onDownload}
@@ -88,7 +128,7 @@ describe("member access and withdrawn list boundaries", () => {
     const view = (search: MemberRecordSearch) => (
       <TestLocaleProvider>
         <MemberAccessListScreen
-          search={search}
+          search={accessSearchSchema.parse(search)}
           onSearchChange={vi.fn()}
           onRegister={vi.fn()}
           onDownload={vi.fn()}
@@ -117,7 +157,10 @@ describe("member access and withdrawn list boundaries", () => {
     render(
       <TestLocaleProvider>
         <WithdrawnMemberListScreen
-          search={{ periodType: "joinedAt", page: 2 }}
+          search={withdrawnSearchSchema.parse({
+            periodType: "joinedAt",
+            page: 2,
+          })}
           onSearchChange={onSearchChange}
           onRegister={vi.fn()}
           onActivate={onActivate}
@@ -131,8 +174,7 @@ describe("member access and withdrawn list boundaries", () => {
     expect(onActivate).toHaveBeenCalledExactlyOnceWith("withdrawn-1");
     fireEvent.click(within(table).getByRole("button", { name: "이메일" }));
     expect(onSearchChange).toHaveBeenCalledExactlyOnceWith({
-      periodType: "joinedAt",
-      page: undefined,
+      searched: true,
       sortType: "email",
       sortDirection: "asc",
     });

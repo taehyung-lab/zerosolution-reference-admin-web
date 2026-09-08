@@ -1,4 +1,14 @@
-import { resolveSearchDefaults } from "@/shared/lib/search";
+import { defineSearchFields } from "@/shared/lib/search-fields";
+import {
+  optionalInstant,
+  optionalPositiveInteger,
+  recoverArrayItems,
+} from "@/shared/lib/search-codecs";
+import {
+  normalizeClosedInstantRange,
+  omitSearchDefaults,
+  resolveSearchDefaults,
+} from "@/shared/lib/search";
 import {
   memberKeywordTypes,
   memberPageSizes,
@@ -12,7 +22,6 @@ import {
  * API 연결 후에도 유지할 화면 계약이며 요청 DTO 변환과 캐시 키는 확정된 서버 계약에 맞춰 연결한다.
  */
 import { compactSearchValues } from "@/shared/lib/compact-search-values";
-import type { SearchFieldPartition } from "@/shared/lib/search-partition";
 import { z } from "zod";
 import {
   memberAccountStatuses,
@@ -25,126 +34,135 @@ export {
   memberSignupMethods,
 } from "../../../model/account";
 
-const sparseArray = <T extends z.ZodType>(item: T) =>
-  z
-    .array(z.unknown())
-    .transform((values) =>
-      values.flatMap((value) => {
-        const parsed = item.safeParse(value);
-        return parsed.success ? [parsed.data] : [];
+const memberCommonFields = {
+  periodType: {
+    schema: z.enum(memberPeriodTypes).optional().catch(undefined),
+    defaultValue: "joinedAt",
+    kind: "filter",
+  },
+  startDateTime: {
+    schema: optionalInstant,
+    defaultValue: undefined,
+    kind: "filter",
+  },
+  endDateTime: {
+    schema: optionalInstant,
+    defaultValue: undefined,
+    kind: "filter",
+  },
+  keywords: {
+    schema: recoverArrayItems(
+      z.object({
+        field: z.enum(memberKeywordTypes),
+        value: z.string().trim().min(1),
       }),
-    )
-    .optional()
-    .catch(undefined);
+    ),
+    defaultValue: [],
+    kind: "filter",
+  },
+  signupMethods: {
+    schema: recoverArrayItems(z.enum(memberSignupMethods)),
+    defaultValue: [],
+    kind: "filter",
+  },
+  sortType: {
+    schema: z.enum(memberSortTypes).optional().catch(undefined),
+    defaultValue: "joinedAt",
+    kind: "view",
+  },
+  sortDirection: {
+    schema: z.enum(memberSortDirections).optional().catch(undefined),
+    defaultValue: "desc",
+    kind: "view",
+  },
+  page: { schema: optionalPositiveInteger, defaultValue: 1, kind: "view" },
+  pageSize: {
+    schema: z.coerce
+      .number()
+      .pipe(z.union(memberPageSizes.map((value) => z.literal(value))))
+      .optional()
+      .catch(undefined),
+    defaultValue: 100,
+    kind: "view",
+  },
+} as const;
+export const memberSearchFields = {
+  ...memberCommonFields,
+  accountStatuses: {
+    schema: recoverArrayItems(z.enum(memberAccountStatuses)),
+    defaultValue: [],
+    kind: "filter",
+  },
+  restrictions: {
+    schema: recoverArrayItems(z.enum(memberRestrictions)),
+    defaultValue: [],
+    kind: "filter",
+  },
+} as const;
+export const memberSearchContract = defineSearchFields(memberSearchFields);
+export const memberSearchDefaults = memberSearchContract.defaults;
+export const memberSearchPartition = memberSearchContract.partition;
 
-export const memberSearchSchema = z.object({
-  periodType: z.enum(memberPeriodTypes).optional().catch(undefined),
-  startDateTime: z.iso.datetime().optional().catch(undefined),
-  endDateTime: z.iso.datetime().optional().catch(undefined),
-  keywords: sparseArray(
-    z.object({
-      field: z.enum(memberKeywordTypes),
-      value: z.string().trim().min(1),
-    }),
-  ),
-  signupMethods: sparseArray(z.enum(memberSignupMethods)),
-  accountStatuses: sparseArray(z.enum(memberAccountStatuses)),
-  restrictions: sparseArray(z.enum(memberRestrictions)),
-  sortType: z.enum(memberSortTypes).optional().catch(undefined),
-  sortDirection: z.enum(memberSortDirections).optional().catch(undefined),
-  page: z.coerce.number().int().min(1).optional().catch(undefined),
-  pageSize: z.coerce
-    .number()
-    .pipe(z.union(memberPageSizes.map((value) => z.literal(value))))
-    .optional()
-    .catch(undefined),
-});
+export const memberSearchSchema = memberSearchContract.schema;
 
 type MemberSearchFields = z.output<typeof memberSearchSchema>;
-export type MemberRouteSearch = Partial<MemberSearchFields>;
+export type MemberRouteSearch = Partial<MemberSearchFields> & {
+  readonly searched?: true;
+};
 
-export const memberCanonicalSearchSchema = memberSearchSchema.transform(
-  (search): MemberRouteSearch => {
-    let valid = search;
-    if (
-      valid.startDateTime !== undefined &&
-      valid.endDateTime !== undefined &&
-      Date.parse(valid.startDateTime) > Date.parse(valid.endDateTime)
-    ) {
-      valid = { ...valid, startDateTime: undefined, endDateTime: undefined };
-    }
-    const sparse = compactSearchValues(valid);
-    if (Object.keys(sparse).length === 0) return {};
-    return { ...sparse, periodType: sparse.periodType ?? "joinedAt" };
-  },
-);
+export const generalMemberSearchContract =
+  defineSearchFields(memberCommonFields);
+export const flaggedMemberSearchContract = defineSearchFields({
+  ...memberCommonFields,
+  restrictions: memberSearchFields.restrictions,
+});
+export const memberSearchContracts = {
+  all: memberSearchContract,
+  general: generalMemberSearchContract,
+  flagged: flaggedMemberSearchContract,
+};
+export type MemberListVariant = keyof typeof memberSearchContracts;
 
+function canonicalMemberSearch({
+  searched,
+  ...fields
+}: MemberRouteSearch): MemberRouteSearch {
+  const valid = compactSearchValues(normalizeClosedInstantRange(fields));
+  if (searched !== true && Object.keys(valid).length === 0) return {};
+  return { ...omitSearchDefaults(valid, memberSearchDefaults), searched: true };
+}
+const searchIntent = { searched: z.literal(true).optional().catch(undefined) };
+export const memberCanonicalSearchSchema = memberSearchSchema
+  .extend(searchIntent)
+  .transform(canonicalMemberSearch);
 export const allMemberCanonicalSearchSchema = memberCanonicalSearchSchema;
 export const generalMemberCanonicalSearchSchema =
-  memberCanonicalSearchSchema.transform((search) =>
-    compactSearchValues({
-      ...search,
-      accountStatuses: undefined,
-      restrictions: undefined,
-    }),
-  );
+  generalMemberSearchContract.schema
+    .extend(searchIntent)
+    .transform(canonicalMemberSearch);
 export const flaggedMemberCanonicalSearchSchema =
-  memberCanonicalSearchSchema.transform((search) =>
-    compactSearchValues({ ...search, accountStatuses: undefined }),
+  flaggedMemberSearchContract.schema
+    .extend(searchIntent)
+    .transform(canonicalMemberSearch);
+export const memberCanonicalSearchSchemas = {
+  all: allMemberCanonicalSearchSchema,
+  general: generalMemberCanonicalSearchSchema,
+  flagged: flaggedMemberCanonicalSearchSchema,
+};
+
+export function resolveMemberSearch(
+  search: MemberRouteSearch,
+  variant: MemberListVariant = "all",
+): MemberSearch {
+  const contract = memberSearchContracts[variant];
+  const resolved = resolveSearchDefaults(
+    contract.schema.parse(search),
+    contract.defaults,
   );
-
-/**
- * 필터만 초안에 보관하고 정렬·페이지 크기는 확정 URL에서 읽는다.
- * 다음 필터 검색이 이미 확정한 보기 조건을 되돌리지 않게 하는 구분이다.
- */
-export const memberSearchPartition = {
-  periodType: "filter",
-  startDateTime: "filter",
-  endDateTime: "filter",
-  keywords: "filter",
-  signupMethods: "filter",
-  accountStatuses: "filter",
-  restrictions: "filter",
-  sortType: "view",
-  sortDirection: "view",
-  page: "view",
-  pageSize: "view",
-} as const satisfies SearchFieldPartition<MemberRouteSearch>;
-
-export const memberSearchDefaults = {
-  periodType: "joinedAt",
-  startDateTime: undefined as string | undefined,
-  endDateTime: undefined as string | undefined,
-  keywords: [],
-  signupMethods: [],
-  accountStatuses: [],
-  restrictions: [],
-  sortType: "joinedAt",
-  sortDirection: "desc",
-  page: 1,
-  pageSize: 100,
-} as const satisfies Readonly<Record<keyof MemberRouteSearch, unknown>> &
-  Partial<MemberRouteSearch>;
-
-export function resolveMemberSearch(search: MemberRouteSearch): MemberSearch {
-  return resolveSearchDefaults(search, memberSearchDefaults);
+  // Variant-hidden conditions stay empty in the domain request model, never in the variant URL schema.
+  return { ...memberSearchDefaults, ...resolved };
 }
 
 export function toMemberRouteSearch(search: MemberSearch): MemberRouteSearch {
-  return {
-    periodType: search.periodType,
-    ...compactSearchValues({
-      startDateTime: search.startDateTime,
-      endDateTime: search.endDateTime,
-      keywords: [...search.keywords],
-      signupMethods: [...search.signupMethods],
-      accountStatuses: [...search.accountStatuses],
-      restrictions: [...search.restrictions],
-      sortType: search.sortType === "joinedAt" ? undefined : search.sortType,
-      sortDirection:
-        search.sortDirection === "desc" ? undefined : search.sortDirection,
-      page: search.page === 1 ? undefined : search.page,
-      pageSize: search.pageSize === 100 ? undefined : search.pageSize,
-    }),
-  };
+  return memberCanonicalSearchSchema.parse({ ...search, searched: true });
 }

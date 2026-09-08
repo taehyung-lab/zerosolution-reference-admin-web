@@ -1,5 +1,7 @@
 # 15. 알림
 
+정책 문장과 출처는 [Notion 동작·정책 원장](notion/15-notification.md)에 있다. 아래 구성 관찰과 함께 대조하며, 연결만으로 정책 충돌이나 시나리오가 해소된 것은 아니다.
+
 표 형식은 [README.md](README.md). Notion 열은 병합 전까지 `(대기)`.
 
 | 화면 | surface | Figma 관찰 | Notion 동작·정책 | 미확인 | 현재 코드 |

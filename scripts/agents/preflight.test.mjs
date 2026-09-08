@@ -164,6 +164,7 @@ describe('repository preflight', () => {
     git(['add', 'outside.txt'])
     git(['-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', 'commit', '-m', 'shell change'])
     expect(checkStop(root, 'one')).toMatch(/scope/)
+    expect(checkStop(root, 'one')).toMatch(/cannot identify the author/)
   })
   it('lets a session that only inspected finish while another session edits the tree', () => {
     const { root } = setup()
@@ -186,7 +187,7 @@ describe('repository preflight', () => {
     for (const command of [
       'wc -c AGENTS.md',
       'grep -rn value scripts',
-      'find scripts -type f -name *.mjs',
+      "find scripts -type f -name '*.mjs'",
       "sed -n 1,40p AGENTS.md",
     ]) {
       expect(verdict(command), command).toEqual({})
@@ -201,6 +202,42 @@ describe('repository preflight', () => {
     ]) {
       expect(verdict(command).hookSpecificOutput?.permissionDecision, command).toBe('deny')
     }
+  })
+  it('admits orchestration RPC without preparation and still gates the calls that touch the checkout', () => {
+    const { root } = setup()
+    const event = { session_id: 'unprepared', hook_event_name: 'PreToolUse', tool_name: 'Bash' }
+    const verdict = (command) => hookDecision(root, { ...event, tool_input: { command } })
+    for (const command of [
+      'orca orchestration send --type worker_done --subject done --body "read-only review complete"',
+      'orca orchestration check --wait --types worker_done --timeout-ms 60000 --json',
+      'orca orchestration reply --id msg_1 --body answer --json',
+      'orca orchestration ask --question "which value" --options yes,no --json',
+      'orca-ide orchestration task-list --json',
+      'orca-dev orchestration worker-read --dispatch ctx_1 --limit 5 --json',
+    ]) {
+      expect(verdict(command), command).toEqual({})
+    }
+    for (const command of [
+      // `--setup run` executes project scripts, so launching a worker stays a declared change.
+      'orca orchestration worker-start --task task_1 --worktree current --agent codex --json',
+      'orca orchestration dispatch --task task_1 --to term_1 --inject --json',
+      'orca orchestration reset --all --json',
+      'orca terminal send --terminal term_1 --text edit --enter --json',
+      'orca worktree create --name x --agent codex --json',
+      // Chaining and substitution stay refused even on an admitted prefix.
+      'orca orchestration send --subject x --body y | sh',
+      'orca orchestration check --json && python3 change.py',
+    ]) {
+      expect(verdict(command).hookSpecificOutput?.permissionDecision, command).toBe('deny')
+    }
+  })
+  it('does not make a coordinator accountable for the tree just by sending orchestration mail', () => {
+    const { root } = setup()
+    prepare(root, 'one', '.ai-work/checkpoint.json', fingerprint)
+    const event = { session_id: 'one', hook_event_name: 'PreToolUse', tool_name: 'Bash' }
+    expect(hookDecision(root, { ...event, tool_input: { command: 'orca orchestration check --json' } })).toEqual({})
+    writeFileSync(join(root, 'scripts/example.mjs'), 'export const value = 10\n')
+    expect(checkStop(root, 'one', fingerprint)).toBeNull()
   })
   it('routes every tool name the handler answers through each adapter matcher', () => {
     const handled = ['Bash', 'bash', 'exec_command', 'shell', 'powershell', 'Edit', 'Write', 'MultiEdit', 'edit', 'create', 'apply_patch']

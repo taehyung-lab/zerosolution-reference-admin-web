@@ -1,7 +1,10 @@
 import { PageHeader } from "@/shared/ui/patterns/PageHeader";
 import { useTranslation } from "react-i18next";
 import type { PerformanceVenue } from "../../../model/performance";
-import type { PerformanceRouteSearch } from "../model/search-schema";
+import {
+  resolvePerformanceSearch,
+  type PerformanceRouteSearch,
+} from "../model/search-schema";
 import { usePerformanceListData } from "../model/usePerformanceListData";
 import { usePerformanceListFilter } from "../model/usePerformanceListFilter";
 import { usePerformanceVenues } from "../../../api/usePerformanceVenues";
@@ -27,9 +30,11 @@ export function PerformanceListScreen({
 }) {
   const { t } = useTranslation("performances");
   const venueQuery = usePerformanceVenues(venues === undefined);
-  const filter = usePerformanceListFilter(search, onSearchChange);
-  const data = usePerformanceListData(search);
-  const result = usePerformanceListResult(search, data, onSearchChange);
+  const resolved = resolvePerformanceSearch(search);
+  const searched = search.searched !== false;
+  const filter = usePerformanceListFilter(resolved, onSearchChange, searched);
+  const data = usePerformanceListData(resolved, searched);
+  const result = usePerformanceListResult(resolved, data, onSearchChange);
 
   return (
     <section>

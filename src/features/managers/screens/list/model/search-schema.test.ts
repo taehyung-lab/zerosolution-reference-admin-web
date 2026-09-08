@@ -35,7 +35,7 @@ describe("managerSearchSchema", () => {
         endDateTime: "2026-08-31T23:59:59.999Z",
         periodType: "CREATED_AT",
       }),
-    ).toEqual({ periodType: "CREATED_AT" });
+    ).toEqual({ searched: true });
   });
 
   it("preserves an ordered committed period when ISO precision differs", () => {
@@ -51,6 +51,7 @@ describe("managerSearchSchema", () => {
       endDateTime: "2026-08-31T00:00:00.100Z",
       periodType: "UPDATED_AT",
       page: 2,
+      searched: true,
     });
   });
 
@@ -99,7 +100,7 @@ describe("managerSearchSchema", () => {
     const resolved = resolveManagerSearch({});
 
     expect(toManagerRouteSearch(resolved)).toEqual({
-      periodType: "CREATED_AT",
+      searched: true,
     });
     expect(toManagerRouteSearch({ ...resolved, page: 2 })).toMatchObject({
       page: 2,
@@ -114,7 +115,7 @@ describe("managerSearchSchema", () => {
     );
 
     expect(canonical).toEqual({
-      search: { periodType: "CREATED_AT", statuses: ["ACTIVE"] },
+      search: { searched: true, statuses: ["ACTIVE"] },
       changed: true,
     });
     expect(
@@ -172,7 +173,7 @@ describe("managerSearchSchema sort vocabulary", () => {
         periodType: "CREATED_AT",
         sortType: "AGENCY",
       }),
-    ).toEqual({ periodType: "CREATED_AT" });
+    ).toEqual({ searched: true });
   });
 
   it("keeps every exposed sort key", () => {

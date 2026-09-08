@@ -2,6 +2,8 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 
 export const DOCUMENT_LINE_BUDGET = 200
+// A diagnostic threshold, not a failure: roughly the current expensive workflow reference.
+export const DOCUMENT_BYTE_BUDGET = 24 * 1024
 
 /** 문서가 `pnpm <cmd>` 로 부를 수 있는 내장 명령. script 가 아니어도 실재한다. */
 const PNPM_BUILTINS = new Set([
@@ -272,12 +274,14 @@ function countDocumentLines(document) {
  * 권고이지 실패가 아니다. 길이를 맞추려고 내용을 눌러 담으면 판단이 표 칸 안으로 숨는다.
  * 넘긴 문서는 줄 수를 줄일 게 아니라 중복·소유자·분할을 먼저 보게 한다.
  */
-export function documentBudgetNotices(files, budget = DOCUMENT_LINE_BUDGET) {
+export function documentBudgetNotices(files, budget = DOCUMENT_LINE_BUDGET, byteBudget = DOCUMENT_BYTE_BUDGET) {
   const notices = []
   for (const file of files) {
-    const lineCount = countDocumentLines(readFileSync(resolve(file), 'utf8'))
-    if (lineCount <= budget) continue
-    notices.push(`${file} 가 ${lineCount}줄이다(권고 ${budget}). 줄이기 전에 보라 — 중복이 있는지, 이 파일이 소유자가 맞는지, 나눌 수 있는지.`)
+    const content = readFileSync(resolve(file), 'utf8')
+    const lineCount = countDocumentLines(content)
+    const bytes = Buffer.byteLength(content)
+    if (lineCount <= budget && bytes <= byteBudget) continue
+    notices.push(`${file} 가 ${lineCount}줄, ${bytes} bytes다(권고 ${budget}줄 / ${byteBudget} bytes). 줄이기 전에 보라 — 중복이 있는지, 이 파일이 소유자가 맞는지, 나눌 수 있는지.`)
   }
   return notices
 }

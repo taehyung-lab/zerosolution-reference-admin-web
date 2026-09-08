@@ -16,7 +16,7 @@ Route files mirror the URL. A single leaf stays a flat file (`managers/new.tsx`)
 
 Use a feature-owned Zod 4 schema directly as TanStack Router's Standard Schema validator; do not add `@tanstack/zod-adapter` while its peer contract is Zod 3. Invalid optional search fields recover to declared defaults with schema fallback, while missing resource params/not-found remain explicit failures. A loader that reads search declares `loaderDeps` from validated search.
 
-Committed filter, sort, page, page size, and shareable tab state live in route search. List-specific sparse/resolved search, draft commit, canonicalization, and page-reset rules are owned by [list-workflow.md](list-workflow.md); this file owns only their Router integration.
+Committed filter, sort, page, page size, and shareable tab state live in route search. List lifecycle, draft commit and page-reset rules are owned by [list-workflow.md](list-workflow.md); field declarations and sparse/resolved defaults by [list-search-contract.md](list-search-contract.md). This file owns only their Router integration.
 
 ## Loader and preload
 

@@ -5,7 +5,7 @@
  */
 import { PageHeader } from "@/shared/ui/patterns/PageHeader";
 import { useTranslation } from "react-i18next";
-import type { ManagerListSearch } from "../../../model/manager-list-search";
+import { managerListSearchSchema, resolveManagerListSearch, type ManagerListRouteSearch } from "../model/manager-list-search";
 import { useManagerDirectoryData } from "../model/useManagerDirectoryData";
 import { useManagerDirectoryFilter } from "../model/useManagerDirectoryFilter";
 import type { ManagerListActionRequest } from "../model/useManagerListActions";
@@ -19,14 +19,16 @@ export function ManagerListScreen({
   onSearchChange,
   onActionRequest,
 }: {
-  readonly search: ManagerListSearch;
-  readonly onSearchChange: (search: ManagerListSearch) => void;
+  readonly search: ManagerListRouteSearch;
+  readonly onSearchChange: (search: ManagerListRouteSearch) => void;
   readonly onActionRequest: (request: ManagerListActionRequest) => void;
 }) {
   const { t } = useTranslation("managers");
-  const filter = useManagerDirectoryFilter({ search, onSearchChange });
-  const data = useManagerDirectoryData(search);
-  const result = useManagerDirectoryResult({ search, data, onSearchChange });
+  const canonical = managerListSearchSchema.parse(search);
+  const resolved = resolveManagerListSearch(canonical);
+  const filter = useManagerDirectoryFilter({ search: resolved, searched: canonical.searched === true, onSearchChange });
+  const data = useManagerDirectoryData(resolved, canonical.searched === true);
+  const result = useManagerDirectoryResult({ search: resolved, data, onSearchChange });
 
   return (
     <section>

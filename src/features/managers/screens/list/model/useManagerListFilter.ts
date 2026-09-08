@@ -1,3 +1,8 @@
+import {
+  managerPeriodTypes,
+  managerRegistrationRouteTypes,
+  managerStatuses,
+} from "../../../api/manager-list-contract";
 /**
  * 기존 API 운영자 목록의 필터 초안·기간·검색어와 URL 검색 확정을 연결한다.
  * 실제 API에서도 필요한 입력 workflow다. 서버 enum에 의존하는 기본값은 계약 교체 때 재검토한다.
@@ -16,7 +21,7 @@ import { useManagerTypeOptions } from "../../../api/useManagerOptions";
 import { changeManagerView } from "./manager-list-policy";
 import {
   managerSearchPartition,
-  resolveManagerSearch,
+  managerKeywordTypes,
   toManagerRouteSearch,
   type ManagerRouteSearch,
 } from "./search-schema";
@@ -24,44 +29,50 @@ import {
 type KeywordItem = ManagerSearch["keywords"][number];
 type KeywordField = KeywordItem["keywordType"];
 
-function committedFilterKey(search: ManagerRouteSearch): string {
-  return filterPartitionKey(search, managerSearchPartition);
+function committedFilterKey(value: {
+  search: ManagerSearch;
+  searched: boolean;
+}): string {
+  return JSON.stringify([
+    value.searched,
+    filterPartitionKey(value.search, managerSearchPartition),
+  ]);
 }
 
 export function useManagerListFilter({
   search,
+  searched,
   onSearchChange,
 }: {
-  readonly search: ManagerRouteSearch;
+  readonly search: ManagerSearch;
+  readonly searched: boolean;
   readonly onSearchChange: (next: ManagerRouteSearch) => void;
 }) {
   const { t } = useTranslation("managers");
   const managerTypeOptions = useManagerTypeOptions();
-  const committedKey = committedFilterKey(search);
+  const committedKey = committedFilterKey({ search, searched });
   // 초안에는 필터만 보관한다. 확정된 정렬·페이지 상태를 다음 필터 입력이 덮어쓰지 않게 한다.
   const { draft, patchDraft, resetDraft } = useDraftCommit({
-    committed: search,
+    committed: { search, searched },
     keyOf: committedFilterKey,
     createDraft: (value) =>
-      filterPartitionValues(
-        resolveManagerSearch(value),
-        managerSearchPartition,
-      ),
+      filterPartitionValues(value.search, managerSearchPartition),
   });
   const keyword = useKeywordDraft<KeywordField>({
-    committedItems: resolveManagerSearch(search).keywords.map((item) => ({
+    committedItems: search.keywords.map((item) => ({
       field: item.keywordType,
       value: item.keyword,
     })),
-    initialField: "ID",
+    initialField: managerKeywordTypes[0],
     resetKey: committedKey,
   });
   const period = usePeriodDraft({
-    committed: resolveManagerSearch(search),
+    committed: search,
     resetKey: committedKey,
   });
   const submit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
+    period.reset();
     const keywords = keyword.itemsIncludingPending().map((item) => ({
       keywordType: item.field,
       keyword: item.value,
@@ -71,7 +82,7 @@ export function useManagerListFilter({
         // 보기 조건은 확정 URL에서 읽고 초안은 필터 필드만 덮어쓴다.
         changeManagerView(
           {
-            ...resolveManagerSearch(search),
+            ...search,
             ...draft,
             ...period.utcRange,
             keywords,
@@ -88,13 +99,17 @@ export function useManagerListFilter({
     keyword.reset();
     onSearchChange({});
   };
-  const keywordOptions = [
-    { value: "ID", label: t("filterOptions.id") },
-    { value: "NAME", label: t("filterOptions.name") },
-    { value: "PHONE", label: t("filterOptions.phone") },
-    { value: "ORGANIZATION", label: t("filterOptions.organization") },
-    { value: "PERMISSION", label: t("filterOptions.permission") },
-  ] as const;
+  const keywordLabels = {
+    ID: t("filterOptions.id"),
+    NAME: t("filterOptions.name"),
+    PHONE: t("filterOptions.phone"),
+    ORGANIZATION: t("filterOptions.organization"),
+    PERMISSION: t("filterOptions.permission"),
+  };
+  const keywordOptions = managerKeywordTypes.map((value) => ({
+    value,
+    label: keywordLabels[value],
+  }));
 
   return {
     draft,
@@ -125,19 +140,28 @@ export function useManagerListFilter({
       keywordOptions.find((option) => option.value === field)?.label ?? field,
     options: {
       periodType: [
-        { value: "CREATED_AT", label: t("filterOptions.createdAt") },
-        { value: "UPDATED_AT", label: t("filterOptions.lastAccessAt") },
-      ] as const,
+        {
+          value: managerPeriodTypes.CREATED_AT,
+          label: t("filterOptions.createdAt"),
+        },
+        {
+          value: managerPeriodTypes.UPDATED_AT,
+          label: t("filterOptions.lastAccessAt"),
+        },
+      ],
       keywordType: keywordOptions,
       registrationRoute: [
-        { value: "ADMIN", label: t("filterOptions.web") },
-        { value: "APP", label: "APP" },
+        {
+          value: managerRegistrationRouteTypes.ADMIN,
+          label: t("filterOptions.web"),
+        },
+        { value: managerRegistrationRouteTypes.APP, label: "APP" },
       ],
       status: [
-        { value: "AWAITING", label: t("status.awaiting") },
-        { value: "INACTIVE", label: t("status.inactive") },
-        { value: "ACTIVE", label: t("status.active") },
-        { value: "LOCKED", label: t("status.locked") },
+        { value: managerStatuses.AWAITING, label: t("status.awaiting") },
+        { value: managerStatuses.INACTIVE, label: t("status.inactive") },
+        { value: managerStatuses.ACTIVE, label: t("status.active") },
+        { value: managerStatuses.LOCKED, label: t("status.locked") },
       ],
     },
   };

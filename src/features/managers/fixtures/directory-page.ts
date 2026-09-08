@@ -7,8 +7,10 @@ export function readManagerDirectoryPage(search: ManagerListSearch) {
     const instant =
       search.periodType === "lastAccessAt" ? row.lastAccessAt : row.createdAt;
     return (
-      (!search.startDateTime || instant >= search.startDateTime) &&
-      (!search.endDateTime || instant <= search.endDateTime) &&
+      (!search.startDateTime ||
+        Date.parse(instant) >= Date.parse(search.startDateTime)) &&
+      (!search.endDateTime ||
+        Date.parse(instant) <= Date.parse(search.endDateTime)) &&
       (!search.types?.length ||
         search.types.includes(record.detail.type?.id ?? "")) &&
       (!search.permission ||

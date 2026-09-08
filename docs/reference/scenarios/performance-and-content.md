@@ -19,6 +19,8 @@
 
 공연목록은 2026-09-06 사용자 확인으로 진입 즉시 조회한다. 기간 기준은 Notion의 공연일·등록일·최근업데이트일이다. 공연장은 한 개만 draft로 선택하고 삭제 후 재선택한다. 검색 시 URL에 commit하고 page를 초기화한다. 초기화는 Notion대로 조건을 비우고 검색 전 상태로 돌아간다(`searched: false`, 다시 검색하면 제거). 콘텐츠의 진입 정책은 이 답으로 확정하지 않는다.
 
+2026-09-07 검색 계약 확장: 공연도 공용 closed-range 정규화와 sparse URL → 화면 1회 기본값 해소를 채택한다. `searched: false`는 초기화 상태만 나타내며 실제 검색 입력·Query 키에는 넣지 않는다. 한쪽 날짜 입력은 draft에서 허용하고 제출·직접 URL에서는 양쪽을 제거한다. 실행 규칙은 [list-search-contract](../../../.agents/skills/feature-contract/references/list-search-contract.md#기간-입력과-확정-경계)가 소유한다.
+
 `PerformanceListScreen`은 이 전이를 reference query source와 검증하며 실 API·공연장 원격 조회·공연 상세는 미구현이다. fixture 결과는 제품 데이터나 서버 계약의 증거가 아니다.
 
 | 상태 | 소유자 |
@@ -65,7 +67,7 @@ values·dirty·per-row error를 한 폼이 소유하고, caller가 row schema·�
 | 요구 | 현재 계약 | 판정 |
 | --- | --- | --- |
 | 기간 입력 | `PeriodField` 구현, preset/default는 caller 소유 | 채택 — [filter-fields.md](../../../.agents/skills/shared-ui-contract/references/filter-fields.md):11,19 |
-| 다중선택 필터 | `CheckboxTree(emptyMeansAll)` 구현 | 채택 — [list-workflow.md](../../../.agents/skills/feature-contract/references/list-workflow.md):20 |
+| 다중선택 필터 | `CheckboxTree(emptyMeansAll)` 구현 | 채택 — [list-workflow.md](../../../.agents/skills/feature-contract/references/list-workflow.md#multi-select-group) |
 | 섹션 disclosure | `SectionCard(collapsible)` 구현 | 채택 — form-workflow.md:19,28 |
 | 취소와 dirty 이탈 | 독립 등록·수정 화면에만 dirty 취소 확인; 상세 inline/dialog local 닫기는 제외 | 2026-09-07 시나리오 채택 — [form-workflow](../../../.agents/skills/feature-contract/references/form-workflow.md#cancel-and-tabs). 해당 공연 편집 surface의 실제 조립·검증은 미완료 |
 | 반복 행·파일 workflow | kind D와 file boundary가 feature 소유 | 커버됨 — table-composition.md:14, file-workflow.md:3-13 |

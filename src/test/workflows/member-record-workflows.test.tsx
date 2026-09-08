@@ -261,7 +261,7 @@ describe("secondary member pre-request workflows", () => {
     fireEvent.click(screen.getByRole("button", { name: "검색" }));
     expect(onSearchChange).toHaveBeenCalledWith(
       expect.objectContaining({
-        periodType: "joinedAt",
+        searched: true,
         keywords: [{ field: "email", value: "reference" }],
       }),
     );
@@ -301,7 +301,7 @@ describe("secondary member pre-request workflows", () => {
         keywords: [{ field: "phone", value: "123" }],
         sortType: "lastAccessedAt",
       }),
-    ).toEqual({ sortType: "lastAccessedAt", periodType: "withdrawnAt" });
+    ).toEqual({ sortType: "lastAccessedAt", searched: true });
     expect(
       accessSearchSchema.parse({
         signupMethods: ["direct"],
@@ -311,7 +311,7 @@ describe("secondary member pre-request workflows", () => {
     ).toEqual({
       sortType: "grade",
       accountStatuses: ["general"],
-      periodType: "accessedAt",
+      searched: true,
     });
     expect(
       counselSearchSchema.parse({
@@ -321,7 +321,6 @@ describe("secondary member pre-request workflows", () => {
     ).toEqual({
       statuses: ["reviewing"],
       sortType: "content",
-      periodType: "receivedAt",
     });
   });
   it("download validates selected rows and sends only committed filters for all results", () => {

@@ -1,3 +1,4 @@
+import type { ResolvedMemberRecordSearch } from "../../../mechanics/record-list/model/member-record-search";
 /**
  * 휴면 목록의 표시 필드·날짜/연락처 표시·선택 열과 가능한 정렬 이벤트를 정의한다.
  * 실제 API에서도 컬럼 책임은 유지한다. 서버가 마스킹한 값을 반환하는지는 응답 계약에서 확인하고 원본 주소를 추정하지 않는다.
@@ -9,7 +10,6 @@ import { selectionColumn } from "@/shared/ui/patterns/selection-column";
 import type { TFunction } from "i18next";
 import { formatMemberInstant } from "../../../lib/format-member-instant";
 
-import type { MemberRecordSearch } from "../../../model/member-record-search";
 import type { DormantMemberRow } from "../../../model/member-records";
 export function dormantMemberColumns({
   t,
@@ -19,7 +19,7 @@ export function dormantMemberColumns({
 }: {
   t: TFunction<"members">;
   selection: PageRowSelection<DormantMemberRow>;
-  search: MemberRecordSearch;
+  search: ResolvedMemberRecordSearch;
   onSort: (sortType: string) => void;
 }) {
   const columns: DataTableProps<DormantMemberRow>["columns"] = [
@@ -36,7 +36,7 @@ export function dormantMemberColumns({
       meta: {
         sort: {
           direction:
-            (search.sortType ?? "joinedAt") === "signupMethod"
+            search.sortType === "signupMethod"
               ? search.sortDirection === "asc"
                 ? "ascending"
                 : "descending"
@@ -53,7 +53,7 @@ export function dormantMemberColumns({
       meta: {
         sort: {
           direction:
-            (search.sortType ?? "joinedAt") === "email"
+            search.sortType === "email"
               ? search.sortDirection === "asc"
                 ? "ascending"
                 : "descending"
@@ -69,7 +69,7 @@ export function dormantMemberColumns({
       meta: {
         sort: {
           direction:
-            (search.sortType ?? "joinedAt") === "name"
+            search.sortType === "name"
               ? search.sortDirection === "asc"
                 ? "ascending"
                 : "descending"
@@ -86,7 +86,7 @@ export function dormantMemberColumns({
       meta: {
         sort: {
           direction:
-            (search.sortType ?? "joinedAt") === "phone"
+            search.sortType === "phone"
               ? search.sortDirection === "asc"
                 ? "ascending"
                 : "descending"
@@ -109,7 +109,7 @@ export function dormantMemberColumns({
       meta: {
         sort: {
           direction:
-            (search.sortType ?? "joinedAt") === "joinedAt"
+            search.sortType === "joinedAt"
               ? search.sortDirection === "asc"
                 ? "ascending"
                 : "descending"
@@ -126,7 +126,7 @@ export function dormantMemberColumns({
       meta: {
         sort: {
           direction:
-            (search.sortType ?? "joinedAt") === "lastAccessedAt"
+            search.sortType === "lastAccessedAt"
               ? search.sortDirection === "asc"
                 ? "ascending"
                 : "descending"
@@ -143,7 +143,7 @@ export function dormantMemberColumns({
       meta: {
         sort: {
           direction:
-            (search.sortType ?? "joinedAt") === "dormantAt"
+            search.sortType === "dormantAt"
               ? search.sortDirection === "asc"
                 ? "ascending"
                 : "descending"

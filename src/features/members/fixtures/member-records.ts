@@ -95,9 +95,11 @@ export function matchesMemberRecordSearch(
         .includes(keyword.value.toLowerCase()),
     ) &&
     (!search.startDateTime ||
-      (values[search.periodType ?? ""] ?? "") >= search.startDateTime) &&
+      Date.parse(values[search.periodType ?? ""] ?? "") >=
+        Date.parse(search.startDateTime)) &&
     (!search.endDateTime ||
-      (values[search.periodType ?? ""] ?? "") <= search.endDateTime) &&
+      Date.parse(values[search.periodType ?? ""] ?? "") <=
+        Date.parse(search.endDateTime)) &&
     (!search.signupMethods?.length ||
       search.signupMethods.includes(values.signupMethod as "direct")) &&
     (!search.accountStatuses?.length ||

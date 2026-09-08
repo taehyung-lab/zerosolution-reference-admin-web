@@ -3,19 +3,18 @@ import { useListQuery } from "@/api/list-query";
 import { useLocale } from "@/shared/i18n/locale-context";
 import { toTotalPages } from "@/shared/lib/search";
 import { managerDirectoryQuery } from "../../../api/directory-queries";
-import { type ManagerListSearch } from "../../../model/manager-list-search";
-import { managerListPageSize } from "./manager-list-search";
+import { type ResolvedManagerListSearch } from "./manager-list-search";
 // TRANSPLANT_PENDING_MANAGER_DIRECTORY_QUERY: 제품 OpenAPI 확정 후 queryFn과 응답 매핑을 교체한다.
-export function useManagerDirectoryData(search: ManagerListSearch) {
+export function useManagerDirectoryData(search: ResolvedManagerListSearch, searched: boolean) {
   const { locale } = useLocale();
   const data = useListQuery({
     options: managerDirectoryQuery(locale, search),
-    searched: search.periodType !== undefined,
+    searched,
     select: (page) => page,
   });
   return {
     ...data,
-    totalPages: toTotalPages(data.total, managerListPageSize(search)),
-    page: search.page ?? 1,
+    totalPages: toTotalPages(data.total, search.pageSize),
+    page: search.page,
   };
 }

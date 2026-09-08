@@ -7,14 +7,14 @@ import { maskEmail, maskPhone } from "@/shared/lib/mask-contact";
 import { formatMemberInstant } from "../../../lib/format-member-instant";
 import type { MemberProfile } from "../../../model/member-profile";
 import type { MemberListRow } from "./member-row";
-import type { MemberRouteSearch } from "./search-schema";
+import { memberCanonicalSearchSchemas, type MemberListVariant, type MemberRouteSearch } from "./search-schema";
 
 /**
- * 확인된 명시 검색 목록이라 기간 기준이 URL에 확정된 뒤에만 조회한다.
+ * 검색 의도 또는 해당 목록의 유효한 URL 조건이 있을 때 조회한다.
  * Query 활성화와 결과 상태가 같은 사실을 읽도록 판정은 여기 한 곳만 둔다.
  */
-export function memberListSearched(routeSearch: MemberRouteSearch): boolean {
-  return routeSearch.periodType !== undefined;
+export function memberListSearched(routeSearch: MemberRouteSearch, variant: MemberListVariant = "all"): boolean {
+  return memberCanonicalSearchSchemas[variant].parse(routeSearch).searched === true;
 }
 
 /**

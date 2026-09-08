@@ -5,51 +5,62 @@
 import {
   filterPartitionKey,
   filterPartitionValues,
+  type FilterFieldKeys,
 } from "@/shared/lib/search-partition";
 import { useDraftCommit } from "@/shared/lib/use-draft-commit";
 import { useKeywordDraft } from "@/shared/lib/use-keyword-draft";
 import { usePeriodDraft } from "@/shared/lib/use-period-draft";
 import { type SubmitEvent } from "react";
-import { type MemberSearch } from "../../../model/member-search";
+import {
+  memberKeywordTypes,
+  type MemberSearch,
+} from "../../../model/member-search";
 import {
   memberSearchPartition,
-  resolveMemberSearch,
   toMemberRouteSearch,
   type MemberRouteSearch,
 } from "./search-schema";
 
-const filterKey = (search: MemberRouteSearch) =>
-  filterPartitionKey(search, memberSearchPartition);
+type MemberFilter = Pick<
+  MemberSearch,
+  FilterFieldKeys<typeof memberSearchPartition>
+>;
 
 export function useMemberListFilter({
   search,
+  searched,
   onSearchChange,
 }: {
-  readonly search: MemberRouteSearch;
+  readonly search: MemberSearch;
+  readonly searched: boolean;
   readonly onSearchChange: (next: MemberRouteSearch) => void;
 }) {
-  const resetKey = filterKey(search);
+  const partition = memberSearchPartition;
+  const filterKey = (value: MemberSearch) =>
+    filterPartitionKey(value, partition);
+  const resetKey = JSON.stringify([searched, filterKey(search)]);
   const { draft, patchDraft, resetDraft } = useDraftCommit({
-    committed: search,
-    keyOf: filterKey,
+    committed: { search, searched },
+    keyOf: (value) => JSON.stringify([value.searched, filterKey(value.search)]),
     // 초안에는 필터만 보관한다. 확정된 정렬·페이지 상태를 다음 필터 입력이 덮어쓰지 않게 한다.
-    createDraft: (value) =>
-      filterPartitionValues(resolveMemberSearch(value), memberSearchPartition),
+    createDraft: ({ search: value }): MemberFilter =>
+      filterPartitionValues(value, partition),
   });
   const period = usePeriodDraft({
-    committed: resolveMemberSearch(search),
+    committed: search,
     resetKey,
   });
   const keyword = useKeywordDraft({
-    committedItems: resolveMemberSearch(search).keywords,
-    initialField: "email" as const,
+    committedItems: search.keywords,
+    initialField: memberKeywordTypes[0],
     resetKey,
   });
 
   const submit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
+    period.reset();
     const next: MemberSearch = {
-      ...resolveMemberSearch(search),
+      ...search,
       ...draft,
       ...period.utcRange,
       keywords: keyword.itemsIncludingPending(),

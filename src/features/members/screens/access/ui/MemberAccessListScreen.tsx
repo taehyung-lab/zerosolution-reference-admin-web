@@ -1,3 +1,9 @@
+import {
+  accessSearchContract,
+  accessSearchSchema,
+  resolveMemberRecordSearch,
+  type MemberRecordRouteSearch,
+} from "../../../mechanics/record-list/model/member-record-search";
 import { accessDataQuery } from "../../../api/list-queries";
 /**
  * 접속 목록의 필터·데이터·결과·업무 액션을 연결하는 화면 조립 컴포넌트다.
@@ -14,24 +20,32 @@ import { MemberAccessListActions } from "./MemberAccessListActions";
 import { MemberAccessListFilters } from "./MemberAccessListFilters";
 import { useMemberAccessListResult } from "./useMemberAccessListResult";
 export function MemberAccessListScreen({
-  search,
-  onSearchChange,
+  search: routeSearch,
+  onSearchChange: changeSearch,
   onRegister,
   onDownload,
 }: {
-  readonly search: MemberRecordSearch;
+  readonly search: MemberRecordRouteSearch;
   readonly onSearchChange: (next: MemberRecordSearch) => void;
 
   readonly onRegister: () => void;
 
   readonly onDownload: (request: MemberDownloadRequest) => void;
 }) {
+  const onSearchChange = (next: MemberRecordRouteSearch) =>
+    changeSearch(accessSearchSchema.parse(next));
   const { t } = useTranslation("members");
-  const filter = useMemberRecordFilter(search, onSearchChange, "accessedAt");
+  const search = resolveMemberRecordSearch(routeSearch, accessSearchContract);
+  const filter = useMemberRecordFilter(
+    search,
+    onSearchChange,
+    accessSearchContract,
+    routeSearch.searched === true,
+  );
   const data = useMemberRecordListData(
     search,
     accessDataQuery,
-    search.periodType !== undefined,
+    routeSearch.searched === true,
   );
   const searched = data.searched;
   const result = useMemberAccessListResult({ search, data, onSearchChange });

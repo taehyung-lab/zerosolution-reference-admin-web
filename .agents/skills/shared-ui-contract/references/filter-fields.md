@@ -16,11 +16,11 @@ Use `PeriodFilterField` or `KeywordFilterField` when the whole row matches. Use 
 
 The optional select slot (`FilterSelectSlot<TValue>`: `label`, `value`, `options`, `onValueChange`) is a controlled string surface only: accessible label, current value, options, and change callback. It does not interpret an enum or choose a default. Labels and options remain caller-owned.
 
-A caller declares the preset values it adopts — `usePeriodPresets(standardPeriodPresetValues)` for the standard eight, or a subset — and passes the returned `presets`/`customLabel` straight through ([i18n.md](i18n.md)). The argument at the call site is the opt-in; the default preset still stays with the caller. A subset needs nothing else: `usePeriodDraft` may infer a preset the subset does not render, and `PeriodField` then checks no radio, which is the same presentation `CUSTOM` already gets.
+A caller declares the preset values it adopts — `usePeriodPresets(standardPeriodPresetValues)` for the standard eight, or a subset — and passes the returned `presets`/`customLabel` straight through ([i18n.md](i18n.md)). The argument at the call site is the opt-in. The caller chooses the committed default range; `usePeriodDraft` derives its preset (empty range → ALL), without a duplicate default-preset state. A subset needs nothing else: `usePeriodDraft` may infer a preset the subset does not render, and `PeriodField` then checks no radio, which is the same presentation `CUSTOM` already gets.
 
 ## State boundary
 
-`usePeriodDraft` and `useKeywordDraft` may own domain-free draft transitions. The feature still owns route search, Query gating, request mapping, API payloads, timezone conversion, validation policy, and when a draft commits.
+`usePeriodDraft` and `useKeywordDraft` may own domain-free draft transitions. The feature still owns route search, Query gating, request mapping, API payloads, validation policy, and when a draft commits. The period mechanic converts browser-zone calendar days to UTC. Partial date drafts remain editable; closed-range consumers validate both bounds on submit/URL entry and reset the period draft on submit even when canonical URL identity is unchanged.
 
 Do not add a schema/config renderer, resource filter framework, URL adapter, Query wrapper, or API-aware option loader to these patterns. Similar appearance is not enough when state transitions or failure behavior differ.
 

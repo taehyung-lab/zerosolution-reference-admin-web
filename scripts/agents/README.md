@@ -11,6 +11,7 @@ For a screen/workflow task, first read AGENTS and the applicable skill, then dis
 ```sh
 node scripts/agents/cli.mjs context
 node scripts/agents/cli.mjs context performance-list
+node scripts/agents/cli.mjs context-report
 node scripts/agents/cli.mjs bundle
 node scripts/agents/cli.mjs bundle data-table
 ```
@@ -22,6 +23,12 @@ locations, related inner surfaces, applicable references and existing code paths
 hints, never code ownership or a folder template. Feature API/model files can serve several surfaces;
 index those consumers rather than forcing an unrelated screen requirement just to satisfy a path match. Unimplemented paths are left empty. New product paths need explicit
 `evidenceGaps` until their own inventory is indexed; replace this product's index on transplant.
+
+`context-report` shows per-surface selected bytes and full-file/heading choices, plus direct, linked or
+unlinked Notion support documents recursively. It does not deliver the root/skill/bundle/checkpoint
+inputs that `prepare` adds; use actual prepare output for task comparisons. Link reachability is a
+discovery check, not proof that the linked policy answers the task. Cross-screen comparison remains
+supporting evidence, not a mandatory input for every surface.
 
 A `group` entry routes a whole inventory family: decompose its actual sections/dialogs yourself.
 A `surface` entry is narrower. Neither label certifies complete observation. `gap` states missing
@@ -98,7 +105,9 @@ include their children, document introduction and ancestor lead-ins. They do not
 sibling rules: read linked sections when they affect ownership, exceptions or failure behavior. All
 heading/marker references are checked even when another selection includes the whole file.
 
-The output reports selection count and delivered bytes. Re-preparing suppresses unchanged selections;
+Overlapping parent/child sections and ancestor lead-ins are delivered once per file. A full-file
+request still wins; prepare identifies the checkpoint, surface or bundle input that caused it.
+The output reports selection count and delivered reference bytes (excluding coverage/diagnostic notes). Re-preparing suppresses unchanged selections;
 a newly requested section in the same file is still delivered. Whole-file hashes detect changes outside
 the selected section too. Selected seed code and focused tests still need inspection.
 
@@ -156,15 +165,32 @@ handler answers (`preflight.test.mjs` fails when one drifts); a name the matcher
 
 Read-only inspection stays available without preparation: `read`, `cat`, `ls`, `rg`, `grep`, `wc`, `pwd`, the listed
 `git` subcommands, `find` limited to read-only predicates, and `sed -n <range>p`. The writing forms of the same
-commands (`find -exec`/`-delete`/`-fprint`, `sed -i`/`-f`/`w`) are refused, as is any command carrying a pipe,
-redirection, separator or substitution. Writes under `.ai-work/` remain available for preparation.
+commands (`find -exec`/`-delete`/`-fprint`, `sed -i`/`-f`/`w`) require preparation. Literal quoted arguments
+are decoded before command/option checks, so `rg 'a|b' file` is inspection while a real pipe,
+redirection, separator or substitution requires preparation. Unsupported shell escapes/expansions are
+conservatively gated; quote glob patterns such as `find scripts -name '*.mjs'`. This is a limited argv
+recognizer, not a shell parser. Writes under `.ai-work/` remain available for preparation.
+
+Orchestration RPC is also available without preparation: `orca orchestration` messaging (`send`, `check`,
+`reply`, `ask`, `inbox`), run/task bookkeeping (`run-create`, `run-show`, `run-list`, `task-create`,
+`task-update`, `task-list`), read-only worker inspection (`dispatch-show`, `worker-show`, `worker-read`,
+`worker-list`, `status`) and gates. These reach the runtime, never the checkout, and accountability composes
+per session: a message that makes another agent edit files is still gated on that agent's own session. Blocking
+them only strands a finished worker that cannot report `worker_done` or read coordinator mail, and it made a
+coordinator accountable for the whole tree for merely sending mail. `worker-start` and `dispatch` stay gated
+because `--setup run` executes project scripts; every `orca terminal`, `orca worktree` and `orchestration reset`
+call stays gated because it acts on the checkout. Quote message bodies and keep active shell expansion
+or operators out of the command. A literal metacharacter inside single quotes is ordinary message data.
 
 Accountability is per session, not per path, because shell text never reveals a write target. A session becomes
 accountable the first time the hook grants it a write capability — a native edit inside scope, or any general shell
 call. Review/stop then reconciles actual file changes against the preparation snapshot, even after a commit, and
-rejects out-of-scope or unresolved paths. A session that only ran recognized inspection commands produced no tracked
-change, so a concurrent session's edits neither block its stop nor invalidate its review; report those changes as
-external instead. Shared-tree parallel writing is still not supported: run writing work in one session or an
+rejects out-of-scope or unresolved paths. A session that only ran recognized inspection commands received no
+write capability, so a concurrent session's edits do not block its stop. Mention observed external changes
+in the report's limitations; this is not a gate-exclusion field. Writing sessions compare the entire
+tree to their original baseline and cannot identify which session authored a change. Re-preparation
+preserves that baseline; an external label cannot waive stale references or out-of-scope edits.
+Shared-tree parallel writing is still not supported: run writing work in one session or an
 isolated worktree. Unsupported MCP/custom write
 tools and interactive shell continuations are not a complete interception boundary. Review and Git/CI remain
 necessary; do not describe this as a sandbox.
@@ -172,7 +198,7 @@ No transcript, prompt, secret or global agent configuration is read or modified 
 Normal and negative controls live in `preflight.test.mjs`; runtime input fixtures prove adapter decisions,
 not installation/trust or every native tool path. Report native runtime measurements separately.
 Freeze source while a same-tree preparation rehearsal runs. Even a source-read-only worker becomes
-accountable after a general shell command (including orchestration messages or copying a log). Later
+accountable after a general shell command (such as copying a log; recognized inspection/RPC is exempt). Later
 coordinator edits can then block its Stop. Use a frozen checkout; do not broaden the worker scope or
 reset its baseline to conceal another session’s edits.
 

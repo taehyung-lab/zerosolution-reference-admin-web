@@ -11,6 +11,7 @@ import {
 } from "../config/member-list-definition";
 import {
   resolveMemberSearch,
+  memberCanonicalSearchSchemas,
   type MemberRouteSearch,
 } from "../model/search-schema";
 import { useMemberListData } from "../model/useMemberListData";
@@ -53,10 +54,16 @@ function MemberListScreen({
   onActionRequest,
 }: MemberListScreenProps & { readonly definition: MemberListDefinition }) {
   const { t } = useTranslation("members");
-  const filter = useMemberListFilter({ search, onSearchChange });
-  const data = useMemberListData(search, definition.identity);
+  const canonical = memberCanonicalSearchSchemas[definition.identity].parse(search);
+  const resolved = resolveMemberSearch(canonical, definition.identity);
+  const filter = useMemberListFilter({
+    search: resolved,
+    searched: canonical.searched === true,
+    onSearchChange,
+  });
+  const data = useMemberListData(resolved, definition.identity, canonical.searched === true);
   const result = useMemberListResult({
-    search: resolveMemberSearch(search),
+    search: resolved,
     data,
     definition,
     onSearchChange,

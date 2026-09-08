@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { requestManagerBulkChange } from "../model/manager-list-requests";
 import {
   resolveManagerSearch,
+  managerCanonicalSearchSchema,
   type ManagerRouteSearch,
 } from "../model/search-schema";
 import { useManagerListData } from "../model/useManagerListData";
@@ -24,9 +25,15 @@ export function ManagerApiListScreen({
   readonly onSearchChange: (next: ManagerRouteSearch) => void;
 }) {
   const { t } = useTranslation("managers");
-  const filter = useManagerListFilter({ search, onSearchChange });
-  const data = useManagerListData(search);
-  const resolvedSearch = resolveManagerSearch(search);
+  const canonical = managerCanonicalSearchSchema.parse(search);
+  const resolvedSearch = resolveManagerSearch(canonical);
+  const searched = canonical.searched === true;
+  const filter = useManagerListFilter({
+    search: resolvedSearch,
+    searched,
+    onSearchChange,
+  });
+  const data = useManagerListData(resolvedSearch, searched);
   const result = useManagerListResult({
     search: resolvedSearch,
     data,

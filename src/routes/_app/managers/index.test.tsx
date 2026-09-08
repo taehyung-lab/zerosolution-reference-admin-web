@@ -4,14 +4,14 @@ vi.mock("@/routes/_app/managers/index", async () => {
     await import("@tanstack/react-router");
   const { canonicalSearchGuard } =
     await import("@/app/router/canonical-search-guard");
-  const { managerSearchSchema, managerCanonicalSearchSchema } =
+  const { managerCanonicalSearchSchema } =
     await import("@/features/managers/screens/list/model/search-schema");
   const { managerTypeOptionsQuery } =
     await import("@/features/managers/api/queries");
   const { ManagerApiListScreen } =
     await import("@/features/managers/screens/list/ui/ManagerApiListScreen");
   const Route = createFileRoute("/_app/managers/")({
-    validateSearch: managerSearchSchema,
+    validateSearch: managerCanonicalSearchSchema,
     beforeLoad: canonicalSearchGuard(managerCanonicalSearchSchema),
     loader: ({ context: { locale, queryClient } }) => {
       void queryClient
@@ -235,7 +235,7 @@ describe("manager route search canonicalization", () => {
     expect(managerTypeRequestCount).toBe(1);
   });
 
-  it("writes only periodType and does not refetch an identical search", async () => {
+  it("writes only searched and does not refetch an identical search", async () => {
     const queryClient = createQueryClient();
     const router = createAppRouter({
       queryClient,
@@ -252,7 +252,7 @@ describe("manager route search canonicalization", () => {
 
     await waitFor(() =>
       expect(router.state.location.search).toEqual({
-        periodType: "CREATED_AT",
+        searched: true,
       }),
     );
     await waitFor(() => expect(managerListRequestCount).toBe(1));
@@ -260,15 +260,15 @@ describe("manager route search canonicalization", () => {
     await waitFor(() => expect(managerListRequestCount).toBe(1));
   });
 
-  it("canonicalizes a hand-edited filter by adding periodType exactly once", async () => {
+  it("canonicalizes a hand-edited filter by adding searched exactly once", async () => {
     const statuses = encodeURIComponent(JSON.stringify(["ACTIVE"]));
     const location = await loadAt(`/managers?statuses=${statuses}`);
 
     expect(location.search).toEqual({
-      periodType: "CREATED_AT",
+      searched: true,
       statuses: ["ACTIVE"],
     });
-    expect(location.href).toContain("periodType=CREATED_AT");
+    expect(location.href).toContain("searched=true");
   });
 
   it("restores the pre-search and searched variants through history", async () => {
@@ -285,7 +285,7 @@ describe("manager route search canonicalization", () => {
     fireEvent.click(within(filterForm).getByRole("button", { name: "검색" }));
     await waitFor(() =>
       expect(router.state.location.search).toEqual({
-        periodType: "CREATED_AT",
+        searched: true,
       }),
     );
 
@@ -298,7 +298,7 @@ describe("manager route search canonicalization", () => {
     history.forward();
     await waitFor(() =>
       expect(router.state.location.search).toEqual({
-        periodType: "CREATED_AT",
+        searched: true,
       }),
     );
     expect(
@@ -321,7 +321,7 @@ describe("manager route search canonicalization", () => {
       "/managers?periodType=CREATED_AT&sortType=AGENCY",
     );
 
-    expect(location.search).toEqual({ periodType: "CREATED_AT" });
+    expect(location.search).toEqual({ searched: true });
     expect(location.href).not.toContain("AGENCY");
   });
 
@@ -332,12 +332,10 @@ describe("manager route search canonicalization", () => {
     );
 
     expect(location.search).toEqual({
-      periodType: "CREATED_AT",
+      searched: true,
       types: ["AGENCY"],
-      sortType: "CREATED_AT",
-      sortDirection: "DESC",
     });
-    expect(location.href).toContain("CREATED_AT");
+    expect(location.href).toContain("searched=true");
   });
 
   it("removes an array query when none of its elements are valid", async () => {

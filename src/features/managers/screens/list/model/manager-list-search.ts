@@ -1,3 +1,16 @@
+import { standardPageSizeOptions } from "@/shared/config/list";
+import { defineSearchFields } from "@/shared/lib/search-fields";
+import {
+  optionalInstant,
+  optionalPositiveInteger,
+  recoverArray,
+} from "@/shared/lib/search-codecs";
+import {
+  normalizeClosedInstantRange,
+  omitSearchDefaults,
+  resolveSearchDefaults,
+} from "@/shared/lib/search";
+import { filterPartitionValues } from "@/shared/lib/search-partition";
 import { type ManagerListSearch } from "../../../model/manager-list-search";
 /**
  * 제품 운영자 목록의 URL 필드·정렬과 필터 부분 추출을 정의한다.
@@ -6,7 +19,15 @@ import { type ManagerListSearch } from "../../../model/manager-list-search";
 import { compactSearchValues } from "@/shared/lib/compact-search-values";
 import { z } from "zod";
 
-const states = [
+export const managerListPeriodTypes = ["joinedAt", "lastAccessAt"] as const;
+export const managerListKeywordFields = [
+  "id",
+  "name",
+  "phone",
+  "email",
+] as const;
+export const managerListRegistrationRoutes = ["WEB", "APP"] as const;
+export const managerListStatuses = [
   "awaiting",
   "rejected",
   "active",
@@ -30,73 +51,103 @@ export const managerListSorts = [
 /**
  * 제품의 화면 검색값이다. 기존 API enum을 확장하지 않으며 서버 변환은 별도로 연결한다.
  */
-export const managerListSearchSchema = z
-  .object({
-    periodType: z
-      .enum(["joinedAt", "lastAccessAt"])
-      .optional()
-      .catch(undefined),
-    keywords: z
-      .array(
-        z.object({
-          field: z.enum(["id", "name", "phone", "email"]),
-          value: z.string().min(1),
-        }),
-      )
-      .optional()
-      .catch(undefined),
-    types: z.array(z.string()).optional().catch(undefined),
-    permission: z.string().optional().catch(undefined),
-    statuses: z.array(z.enum(states)).optional().catch(undefined),
-    registrationRoutes: z
-      .array(z.enum(["WEB", "APP"]))
-      .optional()
-      .catch(undefined),
-    startDateTime: z.iso.datetime().optional().catch(undefined),
-    endDateTime: z.iso.datetime().optional().catch(undefined),
-    sort: z.enum(managerListSorts).optional().catch(undefined),
-    direction: z.enum(["asc", "desc"]).optional().catch(undefined),
-    page: z.coerce.number().int().positive().optional().catch(undefined),
-    pageSize: z
-      .enum(["100", "200", "300", "400", "500", "700", "1000"])
+export const managerListSearchFields = {
+  periodType: {
+    schema: z.enum(managerListPeriodTypes).optional().catch(undefined),
+    defaultValue: "joinedAt",
+    kind: "filter",
+  },
+  keywords: {
+    schema: recoverArray(
+      z.object({
+        field: z.enum(managerListKeywordFields),
+        value: z.string().min(1),
+      }),
+    ),
+    defaultValue: [],
+    kind: "filter",
+  },
+  types: { schema: recoverArray(z.string()), defaultValue: [], kind: "filter" },
+  permission: {
+    schema: z.string().min(1).optional().catch(undefined),
+    defaultValue: "",
+    kind: "filter",
+  },
+  statuses: {
+    schema: recoverArray(z.enum(managerListStatuses)),
+    defaultValue: [],
+    kind: "filter",
+  },
+  registrationRoutes: {
+    schema: recoverArray(z.enum(managerListRegistrationRoutes)),
+    defaultValue: [],
+    kind: "filter",
+  },
+  startDateTime: {
+    schema: optionalInstant,
+    defaultValue: undefined,
+    kind: "filter",
+  },
+  endDateTime: {
+    schema: optionalInstant,
+    defaultValue: undefined,
+    kind: "filter",
+  },
+  sort: {
+    schema: z.enum(managerListSorts).optional().catch(undefined),
+    defaultValue: "joinedAt",
+    kind: "view",
+  },
+  direction: {
+    schema: z.enum(["asc", "desc"]).optional().catch(undefined),
+    defaultValue: "desc",
+    kind: "view",
+  },
+  page: { schema: optionalPositiveInteger, defaultValue: 1, kind: "view" },
+  pageSize: {
+    schema: z
+      .enum(standardPageSizeOptions.map(String))
       .or(
         z
           .number()
           .refine((value) =>
-            [100, 200, 300, 400, 500, 700, 1000].includes(value),
+            standardPageSizeOptions.some((size) => size === value),
           ),
       )
       .transform(Number)
       .optional()
       .catch(undefined),
-  })
-  .transform((value) => {
-    if (
-      value.startDateTime &&
-      value.endDateTime &&
-      value.startDateTime > value.endDateTime
-    ) {
-      value.startDateTime = undefined;
-      value.endDateTime = undefined;
-    }
-    return compactSearchValues(value);
+    defaultValue: 100,
+    kind: "view",
+  },
+} as const;
+export const managerListSearchContract = defineSearchFields(
+  managerListSearchFields,
+);
+export const managerListSearchDefaults = managerListSearchContract.defaults;
+export const managerListSearchPartition = managerListSearchContract.partition;
+export type ManagerListRouteSearch = ManagerListSearch & {
+  readonly searched?: true;
+};
+export const managerListSearchSchema = managerListSearchContract.schema
+  .extend({ searched: z.literal(true).optional().catch(undefined) })
+  .transform(({ searched, ...fields }): ManagerListRouteSearch => {
+    const valid = compactSearchValues(normalizeClosedInstantRange(fields));
+    if (searched !== true && Object.keys(valid).length === 0) return {};
+    return {
+      ...omitSearchDefaults(valid, managerListSearchDefaults),
+      searched: true,
+    };
   });
 export type ManagerListSort = (typeof managerListSorts)[number];
 
-/** 보기 수의 기본값은 URL에 넣지 않고 여기서만 적용한다. 요청·건수 계산·보기 컨트롤이 같은 값을 쓴다. */
-export function managerListPageSize(search: ManagerListSearch) {
-  return search.pageSize ?? 100;
+export function resolveManagerListSearch(search: ManagerListSearch) {
+  return resolveSearchDefaults(search, managerListSearchDefaults);
 }
+export type ResolvedManagerListSearch = ReturnType<
+  typeof resolveManagerListSearch
+>;
 
-export function managerListFilter(search: ManagerListSearch) {
-  return {
-    periodType: search.periodType ?? "joinedAt",
-    keywords: search.keywords ?? [],
-    types: search.types ?? [],
-    permission: search.permission ?? "",
-    statuses: search.statuses ?? [],
-    registrationRoutes: search.registrationRoutes ?? [],
-    startDateTime: search.startDateTime,
-    endDateTime: search.endDateTime,
-  };
+export function managerListFilter(search: ResolvedManagerListSearch) {
+  return filterPartitionValues(search, managerListSearchPartition);
 }

@@ -23,6 +23,14 @@ const baseProps = {
 };
 
 describe("active member list screens", () => {
+  it('clears an uncommitted draft when default-search history returns to idle', () => {
+    const { rerender } = render(<AllMemberListScreen {...baseProps} search={{ searched: true }} />);
+    fireEvent.change(screen.getByRole('textbox', { name: '검색어' }), { target: { value: 'draft@example.test' } });
+    fireEvent.change(screen.getByLabelText('시작일'), { target: { value: '2026-09-01' } });
+    rerender(<AllMemberListScreen {...baseProps} search={{}} />);
+    expect(screen.getByRole('textbox', { name: '검색어' })).toHaveValue('');
+    expect(screen.getByLabelText('시작일')).toHaveValue('');
+  });
   it("keeps the three route identities and their filter differences explicit", () => {
     const { rerender } = render(<AllMemberListScreen {...baseProps} />);
     expect(
@@ -68,7 +76,7 @@ describe("active member list screens", () => {
     expect(screen.queryByText("검색결과 : 0")).not.toBeInTheDocument();
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "검색" }));
-    expect(onSearchChange).toHaveBeenCalledWith({ periodType: "joinedAt" });
+    expect(onSearchChange).toHaveBeenCalledWith({ searched: true });
   });
 
   // Notion states `다중 키워드 허용` on 30 list screens and never states the opposite.

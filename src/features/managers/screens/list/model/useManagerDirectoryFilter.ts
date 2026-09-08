@@ -3,51 +3,58 @@
  * 필드 의미·기본값·확정 시점은 이 훅이 소유하고 초안 보존 mechanic은 공용 훅에 맡긴다.
  * 옵션 목록은 조회 상태를 그대로 노출해 필드가 로딩·실패·재시도를 표시할 수 있게 한다.
  */
+import { filterPartitionKey } from "@/shared/lib/search-partition";
 import { useDraftCommit } from "@/shared/lib/use-draft-commit";
 import { useKeywordDraft } from "@/shared/lib/use-keyword-draft";
 import { usePeriodDraft } from "@/shared/lib/use-period-draft";
 import { type SubmitEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { type ManagerListSearch } from "../../../model/manager-list-search";
 import {
   managerListFilter,
+  managerListKeywordFields as keywordFields,
+  managerListPeriodTypes as periodTypes,
+  managerListRegistrationRoutes as registrationRoutes,
+  managerListStatuses as accountStatuses,
+  managerListSearchPartition,
   managerListSearchSchema,
   type ManagerListSort,
+  type ManagerListRouteSearch,
+  type ResolvedManagerListSearch,
 } from "./manager-list-search";
 import { useManagerDirectoryFilterOptions } from "./useManagerDirectoryFilterOptions";
-
-/** 검색어 구분은 제품 화면 값이며 서버 enum으로 확정하지 않는다. */
-const keywordFields = ["id", "name", "phone", "email"] as const;
-const periodTypes = ["joinedAt", "lastAccessAt"] as const;
-const registrationRoutes = ["WEB", "APP"] as const;
-const accountStatuses = [
-  "awaiting",
-  "rejected",
-  "active",
-  "inactive",
-  "locked",
-] as const;
 
 type ManagerDirectoryKeywordField = (typeof keywordFields)[number];
 
 export function useManagerDirectoryFilter({
   search,
+  searched,
   onSearchChange,
 }: {
-  readonly search: ManagerListSearch;
-  readonly onSearchChange: (next: ManagerListSearch) => void;
+  readonly search: ResolvedManagerListSearch;
+  readonly searched: boolean;
+  readonly onSearchChange: (next: ManagerListRouteSearch) => void;
 }) {
   const { t } = useTranslation("managers");
-  const filterKey = JSON.stringify(managerListFilter(search));
+  const filterKey = JSON.stringify([
+    searched,
+    filterPartitionKey(managerListFilter(search), managerListSearchPartition),
+  ]);
   const { draft, patchDraft, resetDraft } = useDraftCommit({
-    committed: search,
-    keyOf: (value) => JSON.stringify(managerListFilter(value)),
-    createDraft: managerListFilter,
+    committed: { search, searched },
+    keyOf: (value) =>
+      JSON.stringify([
+        value.searched,
+        filterPartitionKey(
+          managerListFilter(value.search),
+          managerListSearchPartition,
+        ),
+      ]),
+    createDraft: (value) => managerListFilter(value.search),
   });
   const period = usePeriodDraft({ committed: search, resetKey: filterKey });
   const keyword = useKeywordDraft<ManagerDirectoryKeywordField>({
-    committedItems: search.keywords ?? [],
-    initialField: "id",
+    committedItems: search.keywords,
+    initialField: keywordFields[0],
     resetKey: filterKey,
   });
   const options = useManagerDirectoryFilterOptions();
@@ -82,9 +89,11 @@ export function useManagerDirectoryFilter({
     },
     submit: (event: SubmitEvent<HTMLFormElement>) => {
       event.preventDefault();
+      period.reset();
       onSearchChange(
         managerListSearchSchema.parse({
           ...search,
+          searched: true,
           ...draft,
           ...period.utcRange,
           keywords: [...keyword.itemsIncludingPending()],

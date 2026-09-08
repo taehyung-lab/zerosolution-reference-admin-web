@@ -322,7 +322,7 @@ describe("ManagerListResult", () => {
     fireEvent.click(screen.getByRole("button", { name: "가입일" }));
     const routeSearch = onSearchChange.mock.calls[0]?.[0] as ManagerRouteSearch;
     expect(routeSearch).toEqual({
-      periodType: "CREATED_AT",
+      searched: true,
       sortDirection: "ASC",
     });
     expect(toManagerListParams(resolveManagerSearch(routeSearch))).toEqual(

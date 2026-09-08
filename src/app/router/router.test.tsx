@@ -82,12 +82,13 @@ describe('router 진입', () => {
 
     await waitFor(() =>
       expect(router.state.location.href).toBe(
-        '/managers?periodType=lastAccessAt&direction=asc',
+        '/managers?periodType=lastAccessAt&direction=asc&searched=true',
       ),
     )
     expect(router.state.location.search).toEqual({
       periodType: 'lastAccessAt',
       direction: 'asc',
+      searched: true,
     })
   })
 })
