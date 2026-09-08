@@ -1,12 +1,16 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, expectTypeOf, it } from "vitest";
 import { memberPageSizes, memberSortTypes } from "../../../model/member-search";
 import {
   allMemberCanonicalSearchSchema,
+  memberSearchContract,
+  generalMemberSearchContract,
+  flaggedMemberSearchContract,
   flaggedMemberCanonicalSearchSchema,
   generalMemberCanonicalSearchSchema,
   memberCanonicalSearchSchema,
   resolveMemberSearch,
   toMemberRouteSearch,
+  memberCanonicalSearchSchemas,
 } from "./search-schema";
 
 describe("member route search", () => {
@@ -41,13 +45,13 @@ describe("member route search", () => {
         signupMethods: ["direct", "unknown"],
       }),
     ).toEqual({
-      periodType: "joinedAt",
+      searched: true,
       page: 2,
       signupMethods: ["direct"],
     });
     expect(
       toMemberRouteSearch(resolveMemberSearch({ periodType: "joinedAt" })),
-    ).toEqual({ periodType: "joinedAt" });
+    ).toEqual({ searched: true });
   });
 
   it("removes filters that are not owned by the general and flagged routes", () => {
@@ -56,12 +60,12 @@ describe("member route search", () => {
       accountStatuses: ["general"],
       restrictions: ["entry"],
     };
-    expect(allMemberCanonicalSearchSchema.parse(input)).toEqual(input);
+    expect(allMemberCanonicalSearchSchema.parse(input)).toEqual({ searched: true, accountStatuses: input.accountStatuses, restrictions: input.restrictions });
     expect(generalMemberCanonicalSearchSchema.parse(input)).toEqual({
-      periodType: "joinedAt",
+      searched: true,
     });
     expect(flaggedMemberCanonicalSearchSchema.parse(input)).toEqual({
-      periodType: "joinedAt",
+      searched: true,
       restrictions: ["entry"],
     });
   });
@@ -74,6 +78,59 @@ describe("member route search", () => {
         endDateTime: "2026-09-01T00:00:00.000Z",
         page: 2,
       }),
-    ).toEqual({ periodType: "lastAccessedAt", page: 2 });
+    ).toEqual({ periodType: "lastAccessedAt", page: 2, searched: true });
   });
+});
+
+it('normalizes direct search intent idempotently and keeps it out of resolved values', () => {
+  for (const schema of Object.values(memberCanonicalSearchSchemas)) {
+    for (const input of [{ searched: true }, { page: 1 }, { page: 2, searched: false }, { periodType: 'joinedAt' }]) {
+      const canonical = schema.parse(input);
+      expect(canonical.searched).toBe(true);
+      expect(schema.parse(canonical)).toEqual(canonical);
+      expect(resolveMemberSearch(canonical)).not.toHaveProperty('searched');
+    }
+    for (const input of [{ searched: false }, { page: 'wrong' }, { unknown: 'value' }, { keywords: [] }]) {
+      expect(schema.parse(input)).toEqual({});
+    }
+    expect(schema.parse({ searched: true, page: 'wrong' })).toEqual({ searched: true });
+  }
+});
+
+it("derives exact variant fields and ignores hidden-only URL conditions", () => {
+  const common = [
+    "periodType",
+    "startDateTime",
+    "endDateTime",
+    "keywords",
+    "signupMethods",
+    "sortType",
+    "sortDirection",
+    "page",
+    "pageSize",
+  ];
+  for (const [contract, extra] of [
+    [memberSearchContract, ["accountStatuses", "restrictions"]],
+    [generalMemberSearchContract, []],
+    [flaggedMemberSearchContract, ["restrictions"]],
+  ] as const) {
+    for (const value of [
+      contract.schema.shape,
+      contract.defaults,
+      contract.partition,
+    ])
+      expect(Object.keys(value).sort()).toEqual([...common, ...extra].sort());
+  }
+  expect(
+    generalMemberCanonicalSearchSchema.parse({ accountStatuses: ["general"] }),
+  ).toEqual({});
+  expect(
+    flaggedMemberCanonicalSearchSchema.parse({ accountStatuses: ["general"] }),
+  ).toEqual({});
+  expectTypeOf<
+    keyof typeof generalMemberSearchContract.defaults
+  >().toEqualTypeOf<keyof typeof generalMemberSearchContract.schema.shape>();
+  expectTypeOf(memberSearchContract.schema.parse({}).pageSize).toEqualTypeOf<
+    100 | 200 | 300 | 400 | 500 | 700 | 1000 | undefined
+  >();
 });

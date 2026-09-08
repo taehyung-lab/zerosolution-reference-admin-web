@@ -4,7 +4,7 @@ test('@smoke 운영자 검색은 mock Query 결과·페이지·검색 초기화�
   await page.goto('/managers');
   await expect(page.getByText('검색 조건을 입력한 뒤 검색해 주세요.')).toBeVisible();
   await page.getByRole('form', { name: '검색', exact: true }).getByRole('button', { name: '검색', exact: true }).click();
-  await expect(page).toHaveURL(/periodType=joinedAt/);
+  await expect(page).toHaveURL(/searched=true/);
   await expect(page.getByText('검색결과 : 105', { exact: true })).toBeVisible();
   await expect(page.getByRole('row')).toHaveCount(101);
   await page.getByRole('button', { name: '다음', exact: true }).click();

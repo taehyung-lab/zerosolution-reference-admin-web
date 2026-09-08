@@ -44,7 +44,7 @@ describe("active member list routes", () => {
     const filter = await screen.findByRole("form", { name: "검색" });
     fireEvent.click(within(filter).getByRole("button", { name: "검색" }));
     await waitFor(() =>
-      expect(router.state.location.search).toEqual({ periodType: "joinedAt" }),
+      expect(router.state.location.search).toEqual({ searched: true }),
     );
     fireEvent.click(screen.getByRole("button", { name: "초기화" }));
     await waitFor(() => expect(router.state.location.search).toEqual({}));

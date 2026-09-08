@@ -1,3 +1,9 @@
+import {
+  withdrawnSearchContract,
+  withdrawnSearchSchema,
+  resolveMemberRecordSearch,
+  type MemberRecordRouteSearch,
+} from "../../../mechanics/record-list/model/member-record-search";
 import { withdrawnDataQuery } from "../../../api/list-queries";
 /**
  * 탈퇴 목록의 필터·데이터·결과·업무 액션을 연결하는 화면 조립 컴포넌트다.
@@ -13,22 +19,33 @@ import type { MemberRecordSearch } from "../../../model/member-record-search";
 import { useWithdrawnMemberListResult } from "./useWithdrawnMemberListResult";
 import { WithdrawnMemberListFilters } from "./WithdrawnMemberListFilters";
 export function WithdrawnMemberListScreen({
-  search,
-  onSearchChange,
+  search: routeSearch,
+  onSearchChange: changeSearch,
   onActivate,
   onRegister,
 }: {
-  readonly search: MemberRecordSearch;
+  readonly search: MemberRecordRouteSearch;
   readonly onSearchChange: (next: MemberRecordSearch) => void;
   readonly onActivate: (id: string) => void;
   readonly onRegister: () => void;
 }) {
+  const onSearchChange = (next: MemberRecordRouteSearch) =>
+    changeSearch(withdrawnSearchSchema.parse(next));
   const { t } = useTranslation("members");
-  const filter = useMemberRecordFilter(search, onSearchChange, "joinedAt");
+  const search = resolveMemberRecordSearch(
+    routeSearch,
+    withdrawnSearchContract,
+  );
+  const filter = useMemberRecordFilter(
+    search,
+    onSearchChange,
+    withdrawnSearchContract,
+    routeSearch.searched === true,
+  );
   const data = useMemberRecordListData(
     search,
     withdrawnDataQuery,
-    search.periodType !== undefined,
+    routeSearch.searched === true,
   );
   const result = useWithdrawnMemberListResult({ search, data, onSearchChange });
   return (

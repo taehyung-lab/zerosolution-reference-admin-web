@@ -4,22 +4,22 @@ import { useLocale } from "@/shared/i18n/locale-context";
 import { toTotalPages } from "@/shared/lib/search";
 import type { ListResultData } from "@/shared/ui/patterns/ListResult";
 import { memberListQuery } from "../../../api/list-queries";
-import { memberListSearched, toMemberListRow } from "./member-list-page";
+import { toMemberListRow } from "./member-list-page";
 import type { MemberListRow } from "./member-row";
-import { resolveMemberSearch, type MemberRouteSearch } from "./search-schema";
+import type { MemberSearch } from "../../../model/member-search";
 export type MemberListData = ListResultData<MemberListRow> & {
   readonly total: number;
   readonly totalPages: number;
 };
 export function useMemberListData(
-  routeSearch: MemberRouteSearch,
+  search: MemberSearch,
   variant: "all" | "general" | "flagged",
+  searched: boolean,
 ): MemberListData {
   const { locale } = useLocale();
-  const search = resolveMemberSearch(routeSearch);
   const data = useListQuery({
     options: memberListQuery(locale, search, variant),
-    searched: memberListSearched(routeSearch),
+    searched,
     select: (page) => ({
       rows: page.rows.map(toMemberListRow),
       total: page.total,

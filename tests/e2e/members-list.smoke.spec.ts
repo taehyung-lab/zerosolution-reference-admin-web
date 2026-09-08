@@ -23,7 +23,7 @@ test('@smoke active member routes expose the confirmed no-API workflow', async (
   await expect(page.getByRole('tooltip')).toHaveCount(0);
 
   await page.getByRole('form', { name: '검색' }).getByRole('button', { name: '검색', exact: true }).click();
-  await expect(page).toHaveURL(/periodType=joinedAt/);
+  await expect(page).toHaveURL(/searched=true/);
   await expect(page.getByRole('table')).toBeVisible();
   await expect(page.getByRole('row')).toHaveCount(3);
   await expect(page.getByRole('combobox', { name: '보기' })).toBeVisible();

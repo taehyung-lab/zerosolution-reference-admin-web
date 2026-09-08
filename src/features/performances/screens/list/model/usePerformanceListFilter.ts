@@ -9,33 +9,37 @@ import type { SubmitEvent } from "react";
 import {
   performanceSearchPartition,
   performanceSearchSchema,
-  resolvePerformanceSearch,
+  performanceKeywordFields,
+  type ResolvedPerformanceSearch,
   type PerformanceRouteSearch,
 } from "./search-schema";
 
-const filterKey = (value: PerformanceRouteSearch) =>
-  filterPartitionKey(value, performanceSearchPartition);
-
 export function usePerformanceListFilter(
-  search: PerformanceRouteSearch,
+  search: ResolvedPerformanceSearch,
   onChange: (next: PerformanceRouteSearch) => void,
+  searched: boolean,
 ) {
+  const filterKey = (value: {
+    search: ResolvedPerformanceSearch;
+    searched: boolean;
+  }) =>
+    JSON.stringify([
+      value.searched,
+      filterPartitionKey(value.search, performanceSearchPartition),
+    ]);
   const draft = useDraftCommit({
-    committed: search,
+    committed: { search, searched },
     keyOf: filterKey,
     createDraft: (value) => ({
-      ...filterPartitionValues(
-        resolvePerformanceSearch(value),
-        performanceSearchPartition,
-      ),
+      ...filterPartitionValues(value.search, performanceSearchPartition),
       venueKeyword: "",
     }),
   });
-  const resetKey = filterKey(search);
+  const resetKey = filterKey({ search, searched });
   const period = usePeriodDraft({ committed: search, resetKey });
   const keyword = useKeywordDraft({
-    committedItems: search.keywords ?? [],
-    initialField: "title" as const,
+    committedItems: search.keywords,
+    initialField: performanceKeywordFields[0],
     resetKey,
   });
 
@@ -45,6 +49,7 @@ export function usePerformanceListFilter(
     keyword,
     submit: (event: SubmitEvent<HTMLFormElement>) => {
       event.preventDefault();
+      period.reset();
       onChange(
         performanceSearchSchema.parse({
           ...search,

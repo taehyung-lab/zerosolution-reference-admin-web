@@ -1,4 +1,4 @@
-import { compactSearchValues } from './compact-search-values';
+import { compactSearchValues } from "./compact-search-values";
 
 export type Resolved<
   TSparse extends object,
@@ -33,7 +33,7 @@ export interface SearchParser<TSearch extends Record<string, unknown>> {
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function jsonLikeEqual(left: unknown, right: unknown): boolean {
@@ -72,6 +72,41 @@ export function canonicalizeRouteSearch<
 
 export function nonEmptyArray<T>(values: readonly T[]): T[] | undefined {
   return values.length > 0 ? [...values] : undefined;
+}
+
+type InstantRange = {
+  readonly startDateTime?: string | undefined;
+  readonly endDateTime?: string | undefined;
+};
+
+// Use only at a committed-search boundary; an editable draft may have one bound.
+export function normalizeClosedInstantRange<T extends InstantRange>(
+  value: T,
+): Omit<T, keyof InstantRange> & InstantRange {
+  if (value.startDateTime === undefined && value.endDateTime === undefined)
+    return value;
+  const start = Date.parse(value.startDateTime ?? "");
+  const end = Date.parse(value.endDateTime ?? "");
+  if (!Number.isFinite(start) || !Number.isFinite(end) || start > end) {
+    return { ...value, startDateTime: undefined, endDateTime: undefined };
+  }
+  return value;
+}
+
+export function omitSearchDefaults<T extends object>(
+  search: T,
+  defaults: object,
+): Partial<T> {
+  const defaultValues = defaults as Record<string, unknown>;
+  return Object.fromEntries(
+    Object.entries(search).filter(
+      ([key, value]) =>
+        value !== undefined &&
+        !(Array.isArray(value) && value.length === 0) &&
+        (!Object.hasOwn(defaultValues, key) ||
+          !jsonLikeEqual(value, defaultValues[key])),
+    ),
+  ) as Partial<T>;
 }
 
 export function toTotalPages(total: number, pageSize: number): number {

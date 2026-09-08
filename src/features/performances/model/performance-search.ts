@@ -1,5 +1,4 @@
 export type PerformanceSearch = {
-  readonly searched: false | undefined;
   readonly periodType: "updatedAt" | "performedAt" | "registeredAt";
   readonly startDateTime: string | undefined;
   readonly endDateTime: string | undefined;

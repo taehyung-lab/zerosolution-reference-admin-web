@@ -1,3 +1,9 @@
+import {
+  appealSearchContract,
+  appealSearchSchema,
+  resolveMemberRecordSearch,
+  type MemberRecordRouteSearch,
+} from "../../../mechanics/record-list/model/member-record-search";
 import { appealDataQuery } from "../../../api/list-queries";
 /**
  * 소명 목록의 필터·데이터·결과·업무 액션을 연결하는 화면 조립 컴포넌트다.
@@ -14,13 +20,13 @@ import { AppealBulkAction } from "./AppealBulkAction";
 import { MemberAppealListFilters } from "./MemberAppealListFilters";
 import { useMemberAppealListResult } from "./useMemberAppealListResult";
 export function MemberAppealListScreen({
-  search,
-  onSearchChange,
+  search: routeSearch,
+  onSearchChange: changeSearch,
   onActivate,
   onMessage,
   onBulkChange,
 }: {
-  readonly search: MemberRecordSearch;
+  readonly search: MemberRecordRouteSearch;
   readonly onSearchChange: (next: MemberRecordSearch) => void;
   readonly onActivate: (id: string) => void;
 
@@ -31,7 +37,10 @@ export function MemberAppealListScreen({
 
   readonly onBulkChange: (request: AppealBulkChange) => void;
 }) {
+  const onSearchChange = (next: MemberRecordRouteSearch) =>
+    changeSearch(appealSearchSchema.parse(next));
   const { t } = useTranslation("members");
+  const search = resolveMemberRecordSearch(routeSearch, appealSearchContract);
   const data = useMemberRecordListData(search, appealDataQuery, true);
   const result = useMemberAppealListResult({ data, search, onSearchChange });
   return (

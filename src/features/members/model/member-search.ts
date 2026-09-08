@@ -1,3 +1,4 @@
+import { standardPageSizeOptions } from "@/shared/config/list";
 import type {
   memberAccountStatuses,
   memberRestrictions,
@@ -19,7 +20,7 @@ export const memberSortTypes = [
 
 export const memberSortDirections = ["asc", "desc"] as const;
 
-export const memberPageSizes = [100, 200, 300, 400, 500, 700, 1000] as const;
+export const memberPageSizes = standardPageSizeOptions;
 
 export interface MemberSearch {
   readonly periodType: (typeof memberPeriodTypes)[number];

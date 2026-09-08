@@ -2,7 +2,7 @@ import { afterEach, expect, it } from 'vitest'
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { selectedDocuments, sectionText } from './document-context.mjs'
 import { hookDecision } from './hook.mjs'
-import { workflowContext, surfaceIndexFailures } from './surface-context.mjs'
+import { workflowContext, surfaceIndexFailures, contextReport, readSurfaceIndex } from './surface-context.mjs'
 import { spawnSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
@@ -118,11 +118,60 @@ it('validates heading and marker references even when another request includes t
   expect(selectedDocuments(root, [inventory, { file: inventory, heading: 'List' }])).toHaveLength(1)
   expect(() => sectionText('# Root\n## Same\nA\n## Same\nB', 'Same')).toThrow(/exactly once/)
 })
+it('delivers overlapping sections and their ancestor introductions only once', () => {
+  const { root, write, inventory } = fixture()
+  write(inventory, '# Root\nGlobal rule.\n## Parent\nParent rule.\n### Child\nChild rule.\n## Sibling\nSibling rule.\n')
+  const refs = ['Child', 'Parent', 'Sibling'].map(heading => ({file: inventory, heading}))
+  const output = selectedDocuments(root, refs).map(doc => doc.selected).join('\n')
+  for (const rule of ['Global rule.', 'Parent rule.', 'Child rule.', 'Sibling rule.']) {
+    expect(output.split(rule)).toHaveLength(2)
+  }
+  expect(() => selectedDocuments(root, [...refs, {file: inventory, heading:'Child', marker:'missing'}])).toThrow(/marker/)
+})
+it('identifies the input that promotes a section to full-file delivery', () => {
+  const {checkpoint,inventory,run}=fixture()
+  checkpoint.references.push(inventory)
+  expect(run()).toContain(`Full-file selection overrides headings: ${inventory} (checkpoint.references)`)
+})
+it('reports nested support as direct, linked or unlinked without forcing it into surface inventory', () => {
+  const {root,write,inventory}=fixture()
+  write(inventory,readFileSync(join(root,inventory),'utf8')+'\n[Policy](notion/nested/policy.md)\n')
+  write('docs/reference/zero-sol/notion/nested/policy.md','# Policy\n')
+  write('docs/reference/zero-sol/notion/unlinked.md','# Comparison\n')
+  const report=contextReport(root)
+  expect(report.supporting).toEqual(expect.arrayContaining([
+    expect.objectContaining({file:'docs/reference/zero-sol/notion/nested/policy.md',route:'linked'}),
+    expect.objectContaining({file:'docs/reference/zero-sol/notion/unlinked.md',route:'unlinked'}),
+  ]))
+  expect(surfaceIndexFailures(root)).toEqual([])
+  expect(hookDecision(root,{session_id:'unprepared',hook_event_name:'PreToolUse',tool_name:'Bash',tool_input:{command:'node scripts/agents/cli.mjs context-report'}})).toEqual({})
+})
+it('routes content actions and preserves unresolved entry policy without importing manager API judgments', () => {
+  const index=readSurfaceIndex(process.cwd())
+  const content=index.surfaces.find(surface=>surface.id==='performance-content')
+  expect(content.related).toEqual(expect.arrayContaining(['content-bulk','content-edit','content-preview']))
+  const bulk=index.surfaces.find(surface=>surface.id==='content-bulk')
+  const output=selectedDocuments(process.cwd(),[...index.judgment,...content.references,...bulk.references]).map(doc=>doc.selected).join('\n')
+  expect(output).toContain('Send stable IDs, not row objects.')
+  expect(output).toContain('다른 화면의 답으로 확장하지 않는다.')
+  expect(output).not.toContain('members/managers API 책임 재대조')
+  expect(output).not.toContain('코드 결함 후보')
+})
 it('protects surrounding text and newly uncovered actual edit paths', () => {
   const { root, write, inventory, run } = fixture()
   run()
   write(inventory, readFileSync(join(root, inventory), 'utf8') + '\nNew global policy.\n')
   expect(checkEdit(root, 'one', ['src/features/performances/screens/list/ui/Screen.tsx'])).toMatch(/changed/)
+})
+it('keeps empty explicit references protected by whole-file hashes', () => {
+  const {root,write,checkpoint,run}=fixture()
+  const reference='docs/empty.md'
+  write(reference,'  \n')
+  checkpoint.references.push(reference)
+  run()
+  expect(selectedDocuments(root,[reference])).toHaveLength(1)
+  write(reference,'# New policy\n')
+  expect(checkEdit(root,'one',['src/features/performances/screens/list/ui/Screen.tsx'])).toMatch(/changed/)
 })
 it('rejects index drift with normal and negative controls', () => {
   const { root, write } = fixture()
@@ -220,6 +269,12 @@ it('discovers valid seed bundle IDs and their four roots without reading the dec
 it('allows read-only bundle discovery before prepare', () => {
   const { root } = fixture()
   expect(hookDecision(root, { session_id: 'unprepared', hook_event_name: 'PreToolUse', tool_name: 'Bash', tool_input: { command: 'rtk proxy node scripts/agents/cli.mjs bundle data-table' } })).toEqual({})
+})
+it('recognizes quoted literal searches without admitting executable shell syntax or hidden options', () => {
+  const {root}=fixture()
+  const call=command=>hookDecision(root,{session_id:'unprepared',hook_event_name:'PreToolUse',tool_name:'Bash',tool_input:{command}})
+  for(const command of ["rtk proxy rg 'a|b' file", 'rg "a|b" file', "r'g' 'a|b' file", "rg '$(touch x)' file", "sed '-n' '1,40p' 'file name.md'"]) expect(call(command), command).toEqual({})
+  for(const command of ["rg a file | sh", 'rg "$(touch x)" file', "rg --p're'=script file", "git diff --out'put'=file", "cat'evil' file", "rg --p\\re=script file", "rg 'unterminated", "sed -n 1p --file=script", 'rg a <(touch x)']) expect(call(command), command).toHaveProperty('hookSpecificOutput.permissionDecision','deny')
 })
 
 it('routes shared feature API paths to an edit consumer without inventing a list requirement', () => {

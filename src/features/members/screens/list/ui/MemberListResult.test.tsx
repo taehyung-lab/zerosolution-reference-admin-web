@@ -17,6 +17,7 @@ import {
 import type { MemberListRow } from "../model/member-row";
 import {
   resolveMemberSearch,
+  memberCanonicalSearchSchemas,
   type MemberRouteSearch,
 } from "../model/search-schema";
 import type { MemberListData } from "../model/useMemberListData";
@@ -58,7 +59,9 @@ function Harness({
     rows,
     total,
     totalPages,
-    searched: search.periodType !== undefined,
+    searched:
+      memberCanonicalSearchSchemas[definition.identity].parse(search)
+        .searched === true,
     isPending: false,
     isFetching: false,
     isError: false,
@@ -237,7 +240,7 @@ describe("member list result", () => {
     ).toHaveLength(1);
     fireEvent.click(screen.getByRole("button", { name: "이름" }));
     expect(onSearchChange).toHaveBeenCalledWith({
-      periodType: "joinedAt",
+      searched: true,
       sortType: "name",
     });
   });
@@ -267,7 +270,7 @@ describe("member list result", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: "3" }));
     expect(onSearchChange).toHaveBeenCalledWith({
-      periodType: "joinedAt",
+      searched: true,
       page: 3,
       pageSize: 200,
       sortType: "name",

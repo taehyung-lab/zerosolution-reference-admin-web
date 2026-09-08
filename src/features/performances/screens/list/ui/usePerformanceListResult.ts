@@ -3,53 +3,58 @@ import { useTranslation } from "react-i18next";
 import {
   performanceSearchSchema,
   performanceSortTypes,
-  resolvePerformanceSearch,
+  type ResolvedPerformanceSearch,
   type PerformanceRouteSearch,
 } from "../model/search-schema";
 import type { usePerformanceListData } from "../model/usePerformanceListData";
 import { performanceColumns } from "./performance-columns";
 
 export function usePerformanceListResult(
-  search: PerformanceRouteSearch,
+  search: ResolvedPerformanceSearch,
   data: ReturnType<typeof usePerformanceListData>,
   onChange: (next: PerformanceRouteSearch) => void,
 ) {
   const { t } = useTranslation("performances");
-  const resolved = resolvePerformanceSearch(search);
   const change = (patch: PerformanceRouteSearch) =>
-    onChange(performanceSearchSchema.parse({ ...search, ...patch }));
+    onChange(
+      performanceSearchSchema.parse({
+        ...search,
+        searched: data.searched ? undefined : false,
+        ...patch,
+      }),
+    );
 
   return {
     columns: performanceColumns({
       t,
-      search: resolved,
+      search: search,
       total: data.total,
       onSort: (sortType) =>
         change({
           sortType,
           sortDirection:
-            resolved.sortType === sortType && resolved.sortDirection === "asc"
+            search.sortType === sortType && search.sortDirection === "asc"
               ? "desc"
               : "asc",
           page: undefined,
         }),
     }),
     pageSize: {
-      value: resolved.pageSize,
+      value: search.pageSize,
       options: standardPageSizeOptions,
       onValueChange: (pageSize: number) =>
         change({
-          pageSize: pageSize as typeof resolved.pageSize,
+          pageSize: pageSize as typeof search.pageSize,
           page: undefined,
         }),
     },
     sort: {
-      value: resolved.sortType,
+      value: search.sortType,
       options: performanceSortTypes.map((value) => ({
         value,
         label: t(`fields.${value}`),
       })),
-      onValueChange: (sortType: typeof resolved.sortType) =>
+      onValueChange: (sortType: typeof search.sortType) =>
         change({ sortType, page: undefined }),
     },
     pagination: {

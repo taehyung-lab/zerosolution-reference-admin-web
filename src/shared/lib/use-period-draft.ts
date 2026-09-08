@@ -1,4 +1,4 @@
-import { useDraftCommit } from './use-draft-commit';
+import { useDraftCommit } from "./use-draft-commit";
 import {
   displayTimeZone,
   inferPeriodPreset,
@@ -7,9 +7,9 @@ import {
   utcRangeToDateRange,
   type DateRange,
   type PeriodValue,
-} from './datetime';
+} from "./datetime";
 
-export type { PeriodPreset, PeriodValue } from './datetime';
+export type { PeriodPreset, PeriodValue } from "./datetime";
 
 export type DisplayDateRange = DateRange;
 
@@ -28,7 +28,10 @@ export function createPeriodDraft(
 ): PeriodDraft {
   return {
     ...committed,
-    preset: inferPeriodPreset(utcRangeToDateRange(committed, timezone), timezone),
+    preset: inferPeriodPreset(
+      utcRangeToDateRange(committed, timezone),
+      timezone,
+    ),
   };
 }
 
@@ -53,7 +56,7 @@ export function usePeriodDraft({
   const range = utcRangeToDateRange(draft, timezone);
 
   const setPreset = (preset: PeriodValue) => {
-    if (preset === 'CUSTOM') {
+    if (preset === "CUSTOM") {
       setDraft((current) => ({ ...current, preset }));
       return;
     }
@@ -62,19 +65,16 @@ export function usePeriodDraft({
     setDraft({
       preset,
       ...(nextRange.from
-        ? { startDateTime: utcDayBoundary(nextRange.from, 'start', timezone) }
+        ? { startDateTime: utcDayBoundary(nextRange.from, "start", timezone) }
         : {}),
       ...(nextRange.to
-        ? { endDateTime: utcDayBoundary(nextRange.to, 'end', timezone) }
+        ? { endDateTime: utcDayBoundary(nextRange.to, "end", timezone) }
         : {}),
     });
   };
 
-  /**
-   * Notion states every date limit as 선택 불가, never as an error message, and the pickers
-   * already carry min/max. A bound typed past the other one is the one path min/max cannot
-   * stop, so the bound just edited wins and the stale one clears.
-   */
+  // Calendar-day order is a draft interaction, not instant URL validation.
+  // Keep the edited bound so the user can complete the pair before submitting.
   const setRange = (input: DisplayDateRange) => {
     const nextRange =
       input.from && input.to && input.from > input.to
@@ -83,12 +83,12 @@ export function usePeriodDraft({
           : { from: input.from }
         : input;
     setDraft({
-      preset: 'CUSTOM',
+      preset: nextRange.from || nextRange.to ? "CUSTOM" : "ALL",
       ...(nextRange.from
-        ? { startDateTime: utcDayBoundary(nextRange.from, 'start', timezone) }
+        ? { startDateTime: utcDayBoundary(nextRange.from, "start", timezone) }
         : {}),
       ...(nextRange.to
-        ? { endDateTime: utcDayBoundary(nextRange.to, 'end', timezone) }
+        ? { endDateTime: utcDayBoundary(nextRange.to, "end", timezone) }
         : {}),
     });
   };

@@ -26,8 +26,11 @@ export function useMemberListRecipients(
   const client = useQueryClient();
   return (channel, ids) => {
     const page = client.getQueryData(
-      memberListQuery(locale, resolveMemberSearch(routeSearch), variant)
-        .queryKey,
+      memberListQuery(
+        locale,
+        resolveMemberSearch(routeSearch, variant),
+        variant,
+      ).queryKey,
     );
     return memberMessageRecipients(
       page === undefined ? [] : page.rows.map(memberProfileContact),

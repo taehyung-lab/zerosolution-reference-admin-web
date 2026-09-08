@@ -1,3 +1,4 @@
+import type { ResolvedMemberRecordSearch } from "../../../mechanics/record-list/model/member-record-search";
 /**
  * 소명 목록의 표시 필드·날짜/연락처 표시·선택 열과 가능한 정렬 이벤트를 정의한다.
  * 실제 API에서도 컬럼 책임은 유지한다. 서버가 마스킹한 값을 반환하는지는 응답 계약에서 확인하고 원본 주소를 추정하지 않는다.
@@ -20,7 +21,7 @@ export function buildAppealColumns({
 }: {
   readonly t: TFunction<"members">;
   readonly selection: PageRowSelection<AppealRow>;
-  readonly search: MemberRecordSearch;
+  readonly search: ResolvedMemberRecordSearch;
   readonly onSort: (
     sortType: NonNullable<MemberRecordSearch["sortType"]>,
   ) => void;
@@ -58,7 +59,7 @@ export function buildAppealColumns({
       meta: {
         sort: {
           direction:
-            (search.sortType ?? "appliedAt") === "appliedAt"
+            search.sortType === "appliedAt"
               ? search.sortDirection === "asc"
                 ? "ascending"
                 : "descending"
@@ -75,7 +76,7 @@ export function buildAppealColumns({
       meta: {
         sort: {
           direction:
-            (search.sortType ?? "appliedAt") === "flaggedAt"
+            search.sortType === "flaggedAt"
               ? search.sortDirection === "asc"
                 ? "ascending"
                 : "descending"

@@ -240,20 +240,28 @@ export const SEED_BUNDLES = [
   },
   {
     id: 'search-partition',
-    code: ['src/shared/lib/search-partition.ts'],
+    code: ['src/shared/lib/search-partition.ts', 'src/shared/lib/search-fields.ts', 'src/shared/lib/search-codecs.ts', 'src/shared/lib/search.ts'],
     skills: [location(
       '.agents/skills/shared-ui-contract/references/shared-values.md',
       'Pure utilities (`shared/lib`)',
       'filterPartitionKey',
+    ), location(
+      '.agents/skills/shared-ui-contract/references/shared-values.md',
+      'Search field declarations and codecs',
+      'defineSearchFields',
+    ), location(
+      '.agents/skills/feature-contract/references/list-search-contract.md',
+      'Search 계약과 기본값 작성',
+      'defineSearchFields',
     )],
     adrs: [location(
       'docs/decisions/0009-shared-boundaries.md',
       '현재 provisional 계약',
       'filter/view partition',
     )],
-    tests: ['src/shared/lib/search-partition.test.ts'],
+    tests: ['src/shared/lib/search-partition.test.ts', 'src/shared/lib/search-fields.test.ts', 'src/shared/lib/search-codecs.test.ts', 'src/shared/lib/search.test.ts'],
     ownership: {
-      shared: 'Owns the filter-versus-view split of a committed search: the draft identity key and the filter-only values, read from a partition the caller declares.',
+      shared: 'Derives schema/defaults/partition from caller fields, supplies domain-neutral recovery codecs, and projects filter-only draft identity/values.',
       feature: 'Owns which field is a filter and which is a view, the search shape itself, and the submit and URL transition.',
     },
   },

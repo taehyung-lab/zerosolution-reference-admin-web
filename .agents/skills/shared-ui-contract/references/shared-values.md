@@ -7,6 +7,8 @@ Read this file only for a `shared/lib` function or hook, a `shared/config` prese
 | Function | Input → output | Use for | Not for |
 | --- | --- | --- | --- |
 | `resolveSearchDefaults(sparse, defaults)` | sparse route search + complete defaults → resolved object; only declared keys, `??` per key | turning canonical sparse URL search into UI/request values | injecting defaults into the URL |
+| `omitSearchDefaults(search, defaults)` | removes undefined, empty arrays and structurally equal declared defaults | canonical sparse URL output | deciding whether a search was requested; the caller detects valid conditions before omission |
+| `normalizeClosedInstantRange(value)` | optional instant pair → missing/invalid/reversed pair cleared, independent fields preserved | consistent chronological comparison including fractional-second spellings | ISO syntax codecs, changing an editable partial draft, selecting a period criterion or search policy |
 | `canonicalizeRouteSearch(schema, raw)` | `{ search, changed }` after `schema.parse` → `compactSearchValues` → structural compare | the route canonical guard (`replace` when `changed`) | validation policy (that is the feature schema) |
 | `compactSearchValues(obj)` | drops top-level `undefined` and empty arrays only; keeps `null`, `''`, nested values | writing sparse URL search | deep cleaning |
 | `filterPartitionKey(search, partition)`, `filterPartitionValues(search, partition)` (`search-partition.ts`) | committed search + a caller-declared `filter \| view` map → draft identity string / filter-only values | keeping a draft rebuild and a submit from carrying committed view state (sort, page, page size) back over the URL | deciding which field is filter or view — that map is the feature's, and the mechanic never reads a field name it was not given |
@@ -19,11 +21,41 @@ Read this file only for a `shared/lib` function or hook, a `shared/config` prese
 | `hasRepeatedOrSequentialAsciiTriplet` (`ascii-triplet.ts`) | string → boolean, case-insensitive repeated or ascending/descending ASCII letter/digit triplet | member/manager validation predicate | password length, character classes, schema, copy or server password history |
 | `cn(...classes)` | clsx + tailwind-merge | primitive class composition | — |
 
-`resolveSearchDefaults` is the existing reuse boundary for list defaults. Consumers declare all keys
-(including deliberate `undefined`) with a complete typed defaults object. The helper neither names
-period/keyword/sort fields nor supplies a universal default schema; those meanings stay in the feature.
-Member, manager API and performance lists consume it. Default declaration coverage does not prove
-that the declared product default is correct: evidence and round-trip/entry/reset tests do that.
+## Search field declarations and codecs
+
+`defineSearchFields(fields)` (`search-fields.ts`) derives a sparse Zod object schema, defaults, and
+filter/view partition from the same keys. Every source field declares `schema`, `defaultValue`, and `kind`.
+Defaults must fit the schema output type; explicit `undefined` keeps absence, and array literals can be
+readonly in the declaration. Resolved arrays retain their element type, enums and numeric unions stay
+narrow, and partition kinds stay literal. Object projection assertions are confined to this helper.
+The tool does not validate product policy or refinements such as a numeric minimum in the default.
+
+`resolveSearchDefaults(sparse, contract.defaults)` remains the value-resolution boundary. It applies
+`??` to declared keys only; it does not modify the URL or decide whether to search. Source declarations
+and returned defaults are immutable configuration: consumers replace draft arrays, never mutate defaults.
+
+| Codec (`search-codecs.ts`) | Contract |
+| --- | --- |
+| `optionalInstant` | ISO datetime input → same string; missing/invalid → undefined. No timezone conversion or pair ordering. |
+| `optionalPositiveInteger` | Coerced positive integer → number; missing/invalid → undefined. No default or product page-size choices. |
+| `recoverArray(item)` | Validate the whole array; one invalid item, invalid array, or missing array → undefined. Empty array stays empty. |
+| `recoverArrayItems(item)` | Keep parsed valid items in order; drop invalid items. Invalid/missing array → undefined; all-invalid array → empty array. |
+
+Current comparison: member/record/rehearsal-manager arrays recover per item; performance/product-manager
+arrays recover as a whole. Keyword trimming, enum meaning, page-size acceptance,
+search discriminator, and which declared defaults may be omitted remain feature choices; the structural omission algorithm is shared. These codecs do not know field names.
+Manager (product and rehearsal), member and performance consumers adopt `normalizeClosedInstantRange` after codecs and `omitSearchDefaults` after any explicit-intent detection. These pure functions own neither Router nor Query and never choose defaults or whether to query. Screen consumers receive resolved types; optional dates remain optional by declaration. Search metadata is not included in `defineSearchFields` or its defaults/partition.
+
+Compose source fields before derivation, including subset and override. Do not trim only a derived schema
+and reuse old maps. Shared code does not generate a UI, Router, Query, DTO, or reset controller. The
+consumer workflow and current default inventory live in
+[list-search-contract](../../feature-contract/references/list-search-contract.md#search-계약과-기본값-작성).
+
+Tests cover exact keys after remove/add/override, default compatibility, literal enum and optional output,
+filter-only draft typing, sparse vs resolved values, and the two distinct array failure contracts.
+Actual member variants, performance, manager, and five record lists test adoption; helper tests alone do
+not establish product defaults or end-to-end behavior. This is a local reference contract, not completed
+new-product transplant evidence.
 
 ## State mechanics (`shared/lib`)
 
@@ -31,7 +63,7 @@ that the declared product default is correct: evidence and round-trip/entry/rese
 | --- | --- | --- | --- |
 | `useConfirmation({ run })` | opaque validated value via `requestConfirmation` | closed/confirm state, cancel, confirmed callback | validation, copy, API, success/failure, navigation; extracted from bulk and reused by member/manager forms |
 | `useDraftCommit({ committed, keyOf, createDraft })` | committed value, identity function, draft factory | `draft`, `setDraft`, `patchDraft`, `resetDraft`; preserves the draft while `keyOf(committed)` is `Object.is`-equal and rebuilds when it changes | what counts as identity (filter vs view fields), when to commit |
-| `usePeriodDraft({ committed: { startDateTime?, endDateTime? }, resetKey })` | committed UTC range | `preset`, browser-zone `range`, `utcRange`, `setPreset` (writes UTC day boundaries), `setRange` (forces `CUSTOM`), `reset` | period criterion, adopted presets, default preset, validation copy |
+| `usePeriodDraft({ committed: { startDateTime?, endDateTime? }, resetKey })` | committed UTC range | `preset`, browser-zone `range`, `utcRange`, `setPreset` (writes UTC day boundaries), `setRange` (nonempty draft → `CUSTOM`, empty → `ALL`), `reset` | period criterion, adopted presets, committed closed-range validation, validation copy |
 | `useKeywordDraft<TField>({ committedItems, initialField, resetKey })` | committed `{ field, value }[]`, initial target | `items`, `pending`, `setPendingField/Value`, `addPending` (trims; empty is ignored), `removeAt`, `clear` (empties `items`, keeps `pending`), `reset` (rebuilds both from committed), `itemsIncludingPending` | target enum, server mapping, duplicate policy (unconfirmed product rule) |
 
 ## Config (`shared/config/list.ts`)

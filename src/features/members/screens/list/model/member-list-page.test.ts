@@ -41,9 +41,11 @@ describe("member list page mapping", () => {
     expect(row.lastAccessedAt).toBe("2026-09-05 11:00");
   });
 
-  it("starts the query only once the committed period discriminator exists", () => {
+  it("starts from explicit intent or valid owned conditions before resolving defaults", () => {
     expect(memberListSearched({})).toBe(false);
-    expect(memberListSearched({ page: 2 })).toBe(false);
+    expect(memberListSearched({ page: 2 })).toBe(true);
+    expect(memberListSearched({ searched: true })).toBe(true);
+    expect(memberListSearched({ accountStatuses: ['general'] }, 'general')).toBe(false);
     expect(memberListSearched({ periodType: "joinedAt" })).toBe(true);
   });
 });

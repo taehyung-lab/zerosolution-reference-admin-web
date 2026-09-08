@@ -10,7 +10,8 @@ import type { DataTableProps } from "@/shared/ui/patterns/DataTable";
 import { useTranslation } from "react-i18next";
 import { type ManagerListSearch } from "../../../model/manager-list-search";
 import {
-  managerListPageSize,
+  type ResolvedManagerListSearch,
+  type ManagerListRouteSearch,
   managerListSearchSchema,
   managerListSorts,
   type ManagerListSort,
@@ -22,15 +23,15 @@ export function useManagerDirectoryResult({
   data,
   onSearchChange,
 }: {
-  readonly search: ManagerListSearch;
+  readonly search: ResolvedManagerListSearch;
   readonly data: ReturnType<typeof useManagerDirectoryData>;
-  readonly onSearchChange: (next: ManagerListSearch) => void;
+  readonly onSearchChange: (next: ManagerListRouteSearch) => void;
 }) {
   const { t } = useTranslation("managers");
   const commit = (next: ManagerListSearch) =>
     onSearchChange(managerListSearchSchema.parse(next));
-  const sort = search.sort ?? "joinedAt";
-  const direction = search.direction ?? "desc";
+  const resolved = search;
+  const { sort, direction } = resolved;
   const selection = usePageRowSelection({
     rows: data.rows,
     getId: (row) => row.id,
@@ -55,7 +56,7 @@ export function useManagerDirectoryResult({
     columns,
     selectedIds: selection.selectedIds,
     pageSize: {
-      value: managerListPageSize(search),
+      value: resolved.pageSize,
       options: standardPageSizeOptions,
       onValueChange: (pageSize: number) =>
         commit({ ...search, pageSize, page: undefined }),

@@ -1,3 +1,4 @@
+import type { ResolvedMemberRecordSearch } from "../model/member-record-search";
 import { ResultTotal } from "@/shared/ui/patterns/ResultTotal";
 import type { MemberRecordListData } from "../model/member-record-data";
 /** 회원 기록 목록의 결과 조립이다. 조회 상태는 데이터 훅이 소유하며 이 컴포넌트는 그대로 표시한다. */
@@ -22,7 +23,7 @@ export function MemberRecordResult<TRow extends { readonly id: string }>({
 }: {
   readonly data: MemberRecordListData<TRow>;
   readonly columns: DataTableProps<TRow>["columns"];
-  readonly search: MemberRecordSearch;
+  readonly search: ResolvedMemberRecordSearch;
   readonly onSearchChange: (next: MemberRecordSearch) => void;
   readonly sortOptions: readonly { value: string; label: string }[];
   readonly toolbarRight: ReactNode;

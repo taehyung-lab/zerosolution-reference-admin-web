@@ -4,7 +4,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { useState, type ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { ManagerRouteSearch } from "../model/search-schema";
+import {
+  resolveManagerSearch,
+  managerCanonicalSearchSchema,
+  type ManagerRouteSearch,
+} from "../model/search-schema";
 import { useManagerListFilter } from "../model/useManagerListFilter";
 import { ManagerListFilters } from "./ManagerListFilters";
 
@@ -39,7 +43,11 @@ function FilterHarness({
   readonly search?: ManagerRouteSearch;
   readonly onSearchChange: (next: ManagerRouteSearch) => void;
 }) {
-  const filter = useManagerListFilter({ search, onSearchChange });
+  const filter = useManagerListFilter({
+    search: resolveManagerSearch(search),
+    searched: managerCanonicalSearchSchema.parse(search).searched === true,
+    onSearchChange,
+  });
   return <ManagerListFilters filter={filter} />;
 }
 
@@ -68,7 +76,7 @@ describe("ManagerListFilters", () => {
     expect(onSearchChange).toHaveBeenCalledWith({
       types: ["AGENCY"],
       keywords: [{ keywordType: "ID", keyword: "manager-1" }],
-      periodType: "CREATED_AT",
+      searched: true,
     });
   });
 
@@ -127,7 +135,8 @@ describe("ManagerListFilters", () => {
     fireEvent.click(screen.getByRole("button", { name: "검색" }));
 
     expect(screen.getByLabelText("시작일")).toHaveValue("");
-    expect(screen.getByLabelText("종료일")).toHaveValue("2026-08-31");
+    expect(screen.getByLabelText("종료일")).toHaveValue("");
+    expect(onSearchChange).toHaveBeenCalledWith({ searched: true });
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     expect(onSearchChange).toHaveBeenCalledTimes(1);
   });

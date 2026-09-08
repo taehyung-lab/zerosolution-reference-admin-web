@@ -96,7 +96,7 @@ describe("manager product search input", () => {
       keywords: [{ field: "email", value: "test@example.com" }],
       permission: "1",
     };
-    expect(managerListSearchSchema.parse(search)).toEqual(search);
+    expect(managerListSearchSchema.parse(search)).toEqual({ keywords: search.keywords, statuses: search.statuses, permission: search.permission, searched: true });
   });
 
   it("removes a reversed date pair but preserves independently valid input", () => {
@@ -107,7 +107,7 @@ describe("manager product search input", () => {
         startDateTime: "2026-09-06T00:00:00Z",
         endDateTime: "2026-09-05T00:00:00Z",
       }),
-    ).toEqual({ periodType: "joinedAt", permission: "1" });
+    ).toEqual({ searched: true, permission: "1" });
   });
 
   it("commits email, permission and status then retains view settings on a later search", async () => {
@@ -129,7 +129,7 @@ describe("manager product search input", () => {
     fireEvent.click(screen.getByRole("button", { name: "검색" }));
     expect(onCommit).toHaveBeenLastCalledWith(
       expect.objectContaining({
-        periodType: "joinedAt",
+        searched: true,
         permission: "1",
         statuses: ["awaiting", "active", "inactive", "locked"],
         keywords: [{ field: "email", value: "test@example.com" }],

@@ -1,3 +1,4 @@
+import type { ResolvedMemberRecordSearch } from "./member-record-search";
 /** 회원 기록 목록의 조회 상태·페이지 표시값을 연결한다. 업무별 Query와 검색 시작 정책은 호출부가 정한다. */
 import { useListQuery, type ListQueryResult } from "@/api/list-query";
 import { useLocale } from "@/shared/i18n/locale-context";
@@ -16,7 +17,7 @@ export function useMemberRecordListData<
   TPage extends RecordPage<unknown>,
   TKey extends QueryKey,
 >(
-  search: MemberRecordSearch,
+  search: ResolvedMemberRecordSearch,
   query: (
     locale: string,
     search: MemberRecordSearch,
@@ -29,6 +30,6 @@ export function useMemberRecordListData<
     searched,
     select: (page) => page,
   });
-  const totalPages = toTotalPages(data.total, search.pageSize ?? 100);
-  return { ...data, totalPages, page: Math.min(search.page ?? 1, totalPages) };
+  const totalPages = toTotalPages(data.total, search.pageSize);
+  return { ...data, totalPages, page: Math.min(search.page, totalPages) };
 }

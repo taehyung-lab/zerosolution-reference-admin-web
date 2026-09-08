@@ -26,7 +26,7 @@
 
 레퍼런스의 완성은 현재 화면이 동작한다는 사실만으로 판정하지 않는다. 새 프로젝트의 AI와 개발자가 위 설계 입력만으로도 제품별 요구사항을 다시 추출하고, 공용/feature 경계를 근거와 함께 결정하고, 요구사항별 구현·검증 결과와 미확인 조건을 추적할 수 있어야 한다. 실제 신규 프로젝트에서 이 인계 흐름을 검증하기 전에는 목표 달성이 확인됐다고 말하지 않으며, 발견된 누락은 해당 사실·ADR·skill·코드·검사의 단일 소유자에 반영한다.
 
-제품 전체의 관찰 증거는 두 원장이 나눠 소유한다. 화면 구성과 정책은 `docs/reference/zero-sol/`(화면 × surface, 대조 범위는 그 `README.md`가 소유), 런타임 상태 전이·실패·복구는 `docs/reference/scenarios/`다. 그 증거로 내린 공용/feature 판정과 미확인 질문은 `docs/reference/zero-sol-figma-analysis.md`가 소유한다. 화면을 새로 조립하거나 공용화를 판단할 때 그 화면의 인벤토리 절과 판정 문서 §5를 먼저 대조하고, 없는 증거는 리허설·현재 코드로 채우지 않는다. Figma·Notion 원문 확인은 [원문 확인 절차](scripts/agents/README.md#find-the-task-context)에 따라 `aside-browser`로 진행한다.
+제품 전체의 관찰 증거는 두 원장이 나눠 소유한다. 화면 구성과 정책은 `docs/reference/zero-sol/`(화면 × surface, 대조 범위는 그 `README.md`가 소유), 런타임 상태 전이·실패·복구는 `docs/reference/scenarios/`다. 그 증거로 내린 공용/feature 판정과 미확인 질문은 `docs/reference/zero-sol-figma-analysis.md`가 소유한다. 화면을 새로 조립하거나 공용화를 판단할 때 그 화면의 인벤토리 절과 context가 연결한 판정·확정 답·미확인 질문을 먼저 대조하고, 없는 증거는 리허설·현재 코드로 채우지 않는다. Figma·Notion 원문 확인은 [원문 확인 절차](scripts/agents/README.md#find-the-task-context)에 따라 `aside-browser`로 진행한다.
 
 반복 화면을 다룰 때 현재 코드 한 곳만 보고 shared/feature를 결정하지 않는다. 현재 화면에만 맞춰 반복 mechanic까지 모두 feature-local로 두는 것과, 미래를 추측해 Router·Query·API·권한을 흡수하는 범용 프레임워크를 모두 금지한다. 목록·필터·테이블·결과 작업의 실행 규칙은 `feature-contract`, 공용 승격 판단은 `shared-ui-contract`, 결정 이유와 현재 검증 단계는 `docs/decisions/0009-shared-boundaries.md`가 소유한다.
 
@@ -117,7 +117,7 @@ API 선언·API-only 실행은 feature API, 업무 상태·캐시 후속 처리�
 
 ## 5. 실행·협업 모델
 
-에이전트 사전 준비·완료 리뷰의 실행 진입점은 [scripts/agents/README.md](scripts/agents/README.md)다. 화면 작업은 `node scripts/agents/cli.mjs context`로 해당 인벤토리·시나리오·내부 surface 연결을 찾고, 요구사항별 근거·공용 계약·구현·검증을 작업 checkpoint/review에서 대조한다. hook의 적용 범위는 실행 안내를 따르며, 선언 정합성과 설계의 타당성을 구분한다.
+에이전트 사전 준비·완료 리뷰의 실행 진입점은 [scripts/agents/README.md](scripts/agents/README.md)다. 화면 작업은 `node scripts/agents/cli.mjs context`로 해당 인벤토리·시나리오·내부 surface 연결을 찾고, `node scripts/agents/cli.mjs bundle`로 채택할 공용 계약 ID와 근거를 찾는다. 요구사항별 근거·공용 계약·구현·검증을 작업 checkpoint/review에서 대조한다. hook의 적용 범위는 실행 안내를 따르며, 선언 정합성과 설계의 타당성을 구분한다.
 
 작업은 `Goal → Context → Decision → Ask | Design | Act | Review → Verify → Done` 흐름에서 필요한 경로만 선택한다. 고정된 역할·단계·산출물 순서를 기본값으로 두지 않으며, 단순 작업에 형식용 역할이나 문서를 만들지 않는다.
 
@@ -163,5 +163,5 @@ API 선언·API-only 실행은 feature API, 업무 상태·캐시 후속 처리�
 - 새 규칙은 반복 실수를 막고 코드·타입·테스트·lint가 대신 소유할 수 없으며 소유 위치와 제거 조건이 분명할 때만 추가한다.
 - 행동 규칙 자체를 폐기하는 근거는 저장소가 통제하고 CI가 집행하는 장치(타입, lint, 테스트, script)뿐이다. 정본을 skill·ADR로 옮기거나 중복을 지우는 것은 소유자 포인터와 drift 대조를 근거로 한다. 런타임 시스템 프롬프트나 권한 모드는 런타임·버전·설정에 따라 달라지므로 삭제 근거가 되지 못한다. 이 파일은 어떤 에이전트 런타임에서 읽히든 자립해야 한다.
 - reference는 코드가 실제로 하는 것만 현재형으로 쓴다. 미구현·미검증 동작을 완료 시제로 서술하면 다음 사람이 "고칠 게 없다"는 잘못된 결론에 도달한다. 실제로 그렇게 됐다. 계획은 계획으로, 미확인은 미확인으로 표시한다.
-- 세부 규칙은 가장 가까운 skill/reference 한 곳에만 두고 루트에는 자세·전역 경계·라우팅만 둔다. 코드와 중복되거나 판단을 바꾸지 않는 규칙은 축소하거나 삭제한다. 에이전트가 읽는 Markdown 문서는 각각 200줄 이하를 **권고**한다. 넘겼다고 실패가 아니다 — 길이를 맞추려고 내용을 눌러 담으면 판단이 표 칸 안으로 숨는다. 넘긴 문서는 줄이기 전에 **중복이 있는지, 이 파일이 그 내용의 소유자가 맞는지, 나눌 수 있는지**를 먼저 보고 그 결과로 처리한다.
+- 세부 규칙은 가장 가까운 skill/reference 한 곳에만 두고 루트에는 자세·전역 경계·라우팅만 둔다. 코드와 중복되거나 판단을 바꾸지 않는 규칙은 축소하거나 삭제한다. 에이전트가 읽는 Markdown 문서는 각각 200줄 이하를 **권고**하며, 바이트 크기도 검사 안내의 진단으로 함께 본다. 넘겼다고 실패가 아니다 — 길이를 맞추려고 내용을 눌러 담으면 판단이 표 칸 안으로 숨는다. 넘긴 문서는 줄이기 전에 **중복이 있는지, 이 파일이 그 내용의 소유자가 맞는지, 나눌 수 있는지**를 먼저 보고 그 결과로 처리한다.
 - `.agents/skills`를 단일 원본으로 두고 `.claude/skills` 같은 런타임별 복제본과 동기화 체계를 만들지 않는다. 런타임 포인터만 루트와 정본 경로를 가리킨다.

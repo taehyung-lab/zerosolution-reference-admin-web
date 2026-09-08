@@ -1,3 +1,4 @@
+import type { ResolvedMemberRecordSearch } from "../../../mechanics/record-list/model/member-record-search";
 /**
  * 접속 목록의 현재 페이지 선택 상태·컬럼·정렬 옵션과 조건 변경 callback을 조립한다.
  * 실제 API에서도 선택/표시 책임은 필요하다. 현재 타입이 임시 데이터 함수의 반환형에 의존하므로 조회 교체 때 행/페이지 계약으로 분리한다.
@@ -14,7 +15,7 @@ export function useMemberAccessListResult({
   data,
   onSearchChange,
 }: {
-  readonly search: MemberRecordSearch;
+  readonly search: ResolvedMemberRecordSearch;
   readonly data: MemberRecordListData<MemberAccessRow>;
   readonly onSearchChange: (next: MemberRecordSearch) => void;
 }) {

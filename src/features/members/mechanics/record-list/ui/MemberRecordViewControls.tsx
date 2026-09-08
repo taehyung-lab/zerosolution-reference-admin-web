@@ -1,3 +1,4 @@
+import type { ResolvedMemberRecordSearch } from "../model/member-record-search";
 /**
  * 페이지 크기와 정렬 항목을 선택해 확정 검색 조건을 바꾸는 UI다.
  * 실제 API에서도 유지한다. 데이터를 직접 자르거나 정렬하지 않고 변경된 조건의 재조회는 데이터 흐름에 맡긴다.
@@ -13,7 +14,7 @@ export function MemberRecordViewControls({
   onChange,
   sortOptions,
 }: {
-  readonly search: MemberRecordSearch;
+  readonly search: ResolvedMemberRecordSearch;
   readonly onChange: (search: MemberRecordSearch) => void;
   readonly sortOptions: readonly { value: string; label: string }[];
 }) {
@@ -22,7 +23,7 @@ export function MemberRecordViewControls({
     <>
       <PageSizeControl
         label={t("result.pageSize")}
-        value={search.pageSize ?? 100}
+        value={search.pageSize}
         options={standardPageSizeOptions}
         onValueChange={(pageSize) =>
           onChange({
@@ -34,7 +35,7 @@ export function MemberRecordViewControls({
       />
       <SortControl
         label={t("result.sort")}
-        value={search.sortType ?? sortOptions[0]?.value ?? ""}
+        value={search.sortType}
         options={sortOptions}
         onValueChange={(sortType) =>
           onChange({ ...search, sortType, page: undefined })

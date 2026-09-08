@@ -44,13 +44,13 @@
 | 커밋된 검색·정렬·페이지·보기 | 공유·복원할 화면 상태 → Router search | AGENTS.md:95 |
 | 폼 값·dirty·검증 상태 | 폼 값과 검증 상태 → TanStack Form | AGENTS.md:96 |
 | draft 필터 값, 섹션 접힘, tab 활성 | 임시 상호작용 상태 → 가장 가까운 component | AGENTS.md:97 |
-| **행 선택 집합** | 임시 상호작용 상태 → feature 목록 화면. 요청 입력으로 사용된다는 사실은 상태 소유자를 바꾸지 않는다 | [list-workflow.md](../../../.agents/skills/feature-contract/references/list-workflow.md):33, [bulk-actions.md](../../../.agents/skills/feature-contract/references/bulk-actions.md):5 → **feature(목록 화면)** |
+| **행 선택 집합** | 임시 상호작용 상태 → feature 목록 화면. 요청 입력으로 사용된다는 사실은 상태 소유자를 바꾸지 않는다 | [list-workflow.md](../../../.agents/skills/feature-contract/references/list-workflow.md#state-and-url-lifecycle), [bulk-actions.md](../../../.agents/skills/feature-contract/references/bulk-actions.md):5 → **feature(목록 화면)** |
 | **보기·정렬 기억값** | 지속 범위 미확인. 현재 커밋 값은 URL; 계정 설정 응답이 되면 Query, 브라우저 설정이면 client UI 경계 | 미확인 3이 소유자를 정한다 |
 
 ### 2.3 전이
 
 ```text
-검색 전 {} ──검색──▶ 검색 후 { 판별자, …기본값 아닌 값 } ──초기화──▶ 검색 전 {}   (Notion :90)
+검색 전 {} ──검색──▶ 검색 후 { searched: true, …기본값 아닌 값 } ──초기화──▶ 검색 전 {}   (2026-09-07 사용자 결정)
                         ▼
         notSearched → loading → error → empty → ready   (한 사실에서 파생)
                         │ 행 클릭(:93)
@@ -76,7 +76,7 @@
 | **F5** `[계약]` 초기 요청이 401/403인데 **로컬 오류 화면과 incident overlay가 함께** 떴다 | 상세 상태를 `notFound\|error\|ready` 3항으로 화면마다 판정했다(같은 판정이 글자 그대로 3곳에 복제) | 세션·권한 실패는 로컬 표면을 만들지 않고 incident boundary가 소유해야 한다는 것([0011](../../decisions/0011-detail-data-and-update-history-boundaries.md):21,30) |
 | **F6** `[계약]` 캐시된 상세가 있으면 background 404가 와도 **삭제된 레코드를 계속 표시**했다 | data 우선 규칙을 무조건 적용했다 | 서버가 방금 없다고 답한 사실은 캐시보다 우선이고 다른 실패는 반대라는 것(0011:32) |
 | **F7** `[외부]` **목록 조회 실패가 "검색해주세요"로 위장**됐고, 다른 목록에서는 실패가 빈 결과로 보였다 | `[추론]` 요청 실패·재시도 사실이 결과 표면에 도달하지 않는 조건 | 검색 전·빈 결과·오류를 별도 사실로 전달한다 |
-| **F8** `[외부]` 빈 결과 문구가 "등록된 데이터 없음"과 "검색 결과 없음"으로 갈리지 않았고, 검색 전 판정 기준을 나중에 바꿔야 했다 | `[추론]` 검색 전과 검색 후 빈 결과의 판별 조건이 분리되지 않는 조건 | 검색 전/후를 제품이 지정한 실제 필터 값 하나에서 판정한다 |
+| **F8** `[외부]` 빈 결과 문구가 "등록된 데이터 없음"과 "검색 결과 없음"으로 갈리지 않았고, 검색 전 판정 기준을 나중에 바꿔야 했다 | `[추론]` 검색 전과 검색 후 빈 결과의 판별 조건이 분리되지 않는 조건 | 검색 의도를 URL에서 복원하고 Query와 결과 표면이 같은 사실을 읽는다(2026-09-07 사용자 결정) |
 | **F9** `[외부]` 만료된 참조 ID가 옵션에서 안 잡히는 상태와 "이름 미등록"이 같은 표시로 합쳐졌고, 하위 칸이 데이터가 없다고 단정했다 | `[추론]` "찾지 못함"과 "값 없음"을 한 상태로 접는 조건 | 미해결 참조와 값 없음·하위 빈 결과를 분리한다 |
 | **F10** `[외부]` **헤더 전체선택이 해제되지 않았다.** 선택 불가 행이 섞인 페이지에서 header checkbox가 계속 "전체선택"으로만 동작했다 | `[추론]` 행과 헤더가 서로 다른 선택 가능 판정을 쓰는 조건 | header 상태와 행 disabled를 하나의 선택 가능 판정에서 파생한다 |
 | **F11** `[외부]` 상태가 바뀐 행의 checkbox가 잠겼고, checkbox 1회 조작이 과도한 DOM 변이를 만들었다 | `[추론]` 행 밖의 선택 가능 사실이 렌더 정체성에서 빠지거나 상위 입력이 불안정한 조건 | 행 밖 사실을 identity에 포함하고 실제 측정 없이 memo를 추가하지 않는다 |
@@ -88,7 +88,9 @@
 
 ## 4. 처음부터 알았다면 이렇게 설계한다
 
-**(a) 검색 상태의 소유자는 URL 하나이고, 판별자도 하나다.** 커밋된 값만 URL에 있고 draft는 들어가지 않는다. **검색 전 `{}` / 검색 후 `{판별자, …}`의 union**이며 Query enablement와 `notSearched`가 **같은 한 사실**에서 파생한다(list-workflow.md:36,60). 두 번째 `searched` 플래그를 만들면 그 순간 두 값이 갈라질 자리가 생긴다. 그리고 판별자는 **제품이 지정한 실제 필터 값**이어야 한다 — "URL이 비었다"를 판별자로 쓰면 F8이 재현된다. 초기화는 기본값 복원이 아니라 `{}`로의 복귀다(:90). `[추론]`
+**(a) 검색 상태의 소유자는 URL 하나다.** 2026-09-07 사용자 결정으로 `periodType` 판별을 검색 의도와 분리했다. 활성 3 variant는 빈 URL에서 대기하고 기본값 검색은 `{ searched: true }`로 복원한다. 유효한 해당 variant 조건이 있는 직접 접근도 검색하며, 다른 variant 전용 필드만 있는 주소는 대기한다. `searched=false`는 조회 금지가 아니므로 유효 조건이 남으면 조회한다. 기본값 주입 전 판정한 한 사실이 Query enablement와 `notSearched`를 함께 정한다. 초기화는 `{}`로의 복귀다. 상세 실행 규칙은 [list-workflow](../../../.agents/skills/feature-contract/references/list-workflow.md#state-and-url-lifecycle)가 소유한다. `[확인: 사용자 결정·현재 코드]`
+
+Chromium `search-contract.spec.ts`에서 활성 3 variant의 기본값 검색·새로고침·표식 변경·보기/정렬 후 재검색·초기화 2회·뒤로/앞으로를 확인했다. 기본값 검색 후 미확정 검색어/날짜를 입력하고 뒤로 가도 초안이 지워지는 것을 검증했다(2026-09-07). 예시 Query 응답으로 확인한 시나리오 구현이며 실 API 완료·신규 제품 이관 검증은 아니다.
 
 **3 variant를 한 route에 `status` search로 얹지 않는다.** 그 값은 필터인 동시에 화면 정체성이라 초기화가 그것까지 지워야 하는지 답할 수 없고, 필터 그룹과 컬럼이 화면마다 다르다는 사실(:27,:29,:30)이 `variant` 분기로 숨는다. ADR 0009:42가 목록에서, 0010:128-130이 폼에서 이미 거부한 형태다. Figma·Notion의 별도 화면 정체성과 2026-09-04 사용자 답에 따라 전체·일반·불량은 각각 별도 route다. `[확인]`
 
@@ -131,7 +133,7 @@
 
 | 이 시나리오가 요구하는 것 | 현재 공용 계약 | 근거 | 판정 |
 | --- | --- | --- | --- |
-| 검색 전/후 판별과 Query gate | 판별자 union이 선언돼 있고 `notSearched`와 enablement가 한 사실에서 나온다 | list-workflow.md:36,60 | 커버됨 — F8이 여기서 닫힌다 |
+| 검색 전/후 판별과 Query gate | 판별자 union이 선언돼 있고 `notSearched`와 enablement가 한 사실에서 나온다 | [URL lifecycle](../../../.agents/skills/feature-contract/references/list-workflow.md#state-and-url-lifecycle), [Query lifecycle](../../../.agents/skills/feature-contract/references/list-workflow.md#query-and-option-lifecycle) | 커버됨 — F8이 여기서 닫힌다 |
 | 필터 행 조립(기간·검색어·다중선택 그룹) | `PeriodFilterField`·`KeywordFilterField`의 slot 조립, `CheckboxTree` + `emptyMeansAll` | [filter-fields.md](../../../.agents/skills/shared-ui-contract/references/filter-fields.md):11,12, [checkbox-group.md](../../../.agents/skills/shared-ui-contract/references/checkbox-group.md):22,24 | 커버됨 |
 | 검색 전·빈 결과·오류가 서로를 위장하지 않기 | `ListResult`가 다섯 상태 판정과 공용 error/retry/trace를 한 곳에서 소유 | ListResult.tsx:27-33, [list-result.md](../../../.agents/skills/shared-ui-contract/references/list-result.md):5 | 커버됨 — F7이 여기서 닫힌다 |
 | 상세 상태 판정과 결함 입력 4종 | `resolveRequiredQueryOutcome` 우선순위 + `DetailStateBoundary` | required-query.ts:22-41, detail-workflow.md:15 | 커버됨 — F5·F6이 여기서 닫힌다 |
@@ -143,7 +145,7 @@
 | locale 전환 시 이미 뜬 폼 오류 | 어댑터가 `fieldMeta.errors`를 그대로 읽고 `onServer`는 다음 submit까지 남는다. **오류 문자열의 locale 재계산을 다룬 문장이 없다** | [form-fields.md](../../../.agents/skills/shared-ui-contract/references/form-fields.md):7,10, form-workflow.md:36 | **수정 필요** — F13이 닿는 자리 |
 | dialog 안 폼(SMS·이메일 발송) | Dialog primitive의 feature 조립, `closeLabel`과 opener focus 복원 구현 | [dialogs.md](../../../.agents/skills/shared-ui-contract/references/dialogs.md) | messaging feature 소비 및 회원/운영자 route 연결 구현, 실발송 제외 |
 | **dialog·인라인 폼의 dirty 이탈** | local 취소 경고 제외, route 보호 유지 | [form-workflow.md](../../../.agents/skills/feature-contract/references/form-workflow.md#cancel-and-tabs), [기존 통합 테스트](../../../src/shared/ui/form/UnsavedChangesGuard.integration.test.tsx) | 2026-09-07 현재 consumer 구현 및 Chromium 대조; 실서버 연결은 제외 |
-| 행 선택과 전체선택 | 선택 소유자가 "목록 화면 또는 feature-local table adapter"로 이미 선언됐고 `DataTable`은 선택을 소유하지 않는다 | list-workflow.md:33, bulk-actions.md:5, data-table.md:11 | feature 소유 |
+| 행 선택과 전체선택 | 선택 소유자가 "목록 화면 또는 feature-local table adapter"로 이미 선언됐고 `DataTable`은 선택을 소유하지 않는다 | [목록 상태](../../../.agents/skills/feature-contract/references/list-workflow.md#state-and-url-lifecycle), bulk-actions.md:5, data-table.md:11 | feature 소유 |
 | **선택의 수명**(검색·정렬·페이지 전환 시 유지/폐기) | 현재 페이지의 선택 가능 행만 전체선택하고 결과 정체성 변경·bulk 성공 때 해제하며 같은 조건 refetch·bulk 실패 때 유효 ID를 유지한다 | [bulk-actions.md](../../../.agents/skills/feature-contract/references/bulk-actions.md) | 커버됨 — 2026-09-04 사용자 답 |
 | bulk 실행 3단계 alert(미선택 오류→확인→완료) | `useSelectionGate`·`useConfirmation`·`BulkActionDialogs`를 members/managers가 소비한다. 대상·실행·완료 사실은 feature 소유 | [zero-sol-figma-analysis.md](../zero-sol-figma-analysis.md) | mechanic 공용 적용됨; 실제 성공 응답은 이번 범위 밖 |
 | **bulk 부분 성공의 표면** | "응답이 행 단위 결과를 노출할 때만 보고한다"만 있고 거처는 없다. 4-outcome은 `ApiError` 축이라 성공 응답 안의 실패를 다루지 않는다 | bulk-actions.md:9, error-outcome.ts:25-38 | **아예 없음** (서버 계약 확정 전) |
@@ -182,3 +184,5 @@
 9. **별도 목록 route 사이에서 검색 조건을 넘기는가.** 발생: 전체회원에서 조건을 검색한 뒤 일반회원·불량회원 LNB로 이동.
    기대: 공통 필터를 넘길지 각 route의 검색 전 상태로 진입할지. 답에 따라 LNB link search, route별 schema 초기값과
    page reset이 갈린다. 선택은 답과 무관하게 route 변경 시 해제한다.
+
+2026-09-07 기간 계약 확장: 확정 검색은 양끝을 요구하며 한쪽 결손·불량·역전은 양쪽을 제거한다. 입력 중 draft는 한쪽을 보존한다. 공통 실행 규칙은 [list-search-contract](../../../.agents/skills/feature-contract/references/list-search-contract.md#기간-입력과-확정-경계), 전체 목록의 직접 입력·mock 비교 회귀는 `src/test/workflows/closed-search.test.ts`가 소유한다.

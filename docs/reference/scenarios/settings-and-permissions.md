@@ -63,13 +63,15 @@ tab primitive는 controlled value·tab/tabpanel 접근성만 맡고, URL/local �
 | 요구 | 현재 계약 | 판정 |
 | --- | --- | --- |
 | page/sub-tab | 다섯 shared 후보 중 `Tabs` | 후보 유지 — [primitives-and-tokens.md](../../../.agents/skills/shared-ui-contract/references/primitives-and-tokens.md):21 |
-| 화면별 권한 leaf | `CheckboxTree(emptyMeansAll)` 구현 | 채택 — [list-workflow.md](../../../.agents/skills/feature-contract/references/list-workflow.md):20 |
+| 화면별 권한 leaf | `CheckboxTree(emptyMeansAll)` 구현 | 채택 — [list-workflow.md](../../../.agents/skills/feature-contract/references/list-workflow.md#multi-select-group) |
 | 접이식 설정 섹션 | `SectionCard(collapsible)` 구현 | 채택 — [form-workflow.md](../../../.agents/skills/feature-contract/references/form-workflow.md):19,28 |
 | 취소와 dirty 이탈 | 독립 등록·수정 화면의 dirty 취소에 한정; 설정 내부 local 편집은 자동 채택하지 않음 | 2026-09-07 시나리오 적용 대상 대조 필요 — [form-workflow](../../../.agents/skills/feature-contract/references/form-workflow.md#cancel-and-tabs) |
 | 반복 행·편집 표 | kind D, row schema·정책은 feature 소유 | 커버됨 — [table-composition.md](../../../.agents/skills/feature-contract/references/table-composition.md):14,27-30 |
 | 선택복사 | 안정 ID·검증·intent는 feature 소유 | 커버됨 — [bulk-actions.md](../../../.agents/skills/feature-contract/references/bulk-actions.md):3-9 |
 
 현재 운영자 consumer(2026-09-07): 등록·수정 dirty 취소 경고는 유지하고 `ManagerActionForm`의 local 취소 경고만 제외했다. `managers-form.smoke.spec.ts`는 clean 취소·dirty 취소 질문의 취소/확인·뒤로가기 문장 구분을, `ManagerDetailActions.test.tsx`는 거절 입력 취소의 무호출과 재입력 요청을 검증한다. 설정의 다른 편집 화면 구현 완료를 뜻하지 않는다.
+
+운영자 목록 검색 구현 관찰(2026-09-07): 빈 URL은 대기, 기본값 검색은 `?searched=true`, 유효한 조건 직접 접근은 표식 없이도 조회한다. 기간 기준은 검색 gate가 아니며 기본값 해석은 화면 경계가 소유한다. Chromium `search-contract.spec.ts`·`managers-list.smoke.spec.ts`에서 새로고침·표식 변경·초기화 2회·보기/정렬 후 검색·history와 결과 표시를 확인했다. 예시 Query 응답에 대한 시나리오 구현 증거이며, 실제 API와 이관 완료를 뜻하지 않는다. 세부 계약은 [list-workflow](../../../.agents/skills/feature-contract/references/list-workflow.md#state-and-url-lifecycle)에 둔다.
 
 ## 6. 미확인
 
@@ -78,3 +80,5 @@ tab primitive는 controlled value·tab/tabpanel 접근성만 맡고, URL/local �
 3. 회원 정책 반복 사유의 최소·최대 개수와 다국어 표의 저장 단위·행 상한.
 4. 마케팅 인증 흐름과 조건부 필드의 정확한 request 계약.
 5. `- 이하 생략 -`이 행 상한·축약·paging 대체 중 무엇을 뜻하는지.
+
+2026-09-07 기간 계약 확장: 확정 검색은 양끝을 요구하며 한쪽 결손·불량·역전은 양쪽을 제거한다. 입력 중 draft는 한쪽을 보존한다. 공통 실행 규칙은 [list-search-contract](../../../.agents/skills/feature-contract/references/list-search-contract.md#기간-입력과-확정-경계), 전체 목록의 직접 입력·mock 비교 회귀는 `src/test/workflows/closed-search.test.ts`가 소유한다.

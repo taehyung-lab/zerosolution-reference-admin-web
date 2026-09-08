@@ -1,3 +1,9 @@
+import {
+  counselSearchContract,
+  counselSearchSchema,
+  resolveMemberRecordSearch,
+  type MemberRecordRouteSearch,
+} from "../../../mechanics/record-list/model/member-record-search";
 import { counselDataQuery } from "../../../api/list-queries";
 /**
  * 상담 목록의 필터·데이터·결과·업무 액션을 연결하는 화면 조립 컴포넌트다.
@@ -13,13 +19,13 @@ import type { MemberRecordSearch } from "../../../model/member-record-search";
 import { MemberCounselListFilters } from "./MemberCounselListFilters";
 import { useMemberCounselListResult } from "./useMemberCounselListResult";
 export function MemberCounselListScreen({
-  search,
-  onSearchChange,
+  search: routeSearch,
+  onSearchChange: changeSearch,
   onActivate,
   onDownload,
   inquiryOptions,
 }: {
-  readonly search: MemberRecordSearch;
+  readonly search: MemberRecordRouteSearch;
   readonly onSearchChange: (next: MemberRecordSearch) => void;
   readonly onActivate: (id: string) => void;
 
@@ -27,7 +33,10 @@ export function MemberCounselListScreen({
 
   readonly inquiryOptions: readonly { value: string; label: string }[];
 }) {
+  const onSearchChange = (next: MemberRecordRouteSearch) =>
+    changeSearch(counselSearchSchema.parse(next));
   const { t } = useTranslation("members");
+  const search = resolveMemberRecordSearch(routeSearch, counselSearchContract);
   const data = useMemberRecordListData(search, counselDataQuery, true);
   const result = useMemberCounselListResult({
     data,

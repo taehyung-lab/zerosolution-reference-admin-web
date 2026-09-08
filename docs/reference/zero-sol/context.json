@@ -2,15 +2,7 @@
   "judgment": [
     {
       "file": "docs/reference/zero-sol-figma-analysis.md",
-      "heading": "2. surface별 판정"
-    },
-    {
-      "file": "docs/reference/zero-sol-figma-analysis.md",
-      "heading": "5. 미확인 — 답이 구현을 바꾸는 질문"
-    },
-    {
-      "file": "docs/reference/zero-sol-figma-analysis.md",
-      "heading": "8. 상세·폼·팝업 판정 (2026-09-02 ①′~②′, Claude·Codex 독립 초안 + 교차 리뷰)"
+      "heading": "1. 판정 원칙"
     }
   ],
   "surfaces": [
@@ -26,7 +18,19 @@
         "src/app/shell/"
       ],
       "references": [
-        ".agents/skills/feature-contract/references/screen-composition.md"
+        ".agents/skills/feature-contract/references/screen-composition.md",
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 7"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 11"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 16"
+        }
       ],
       "related": [],
       "gap": "세션 외 공통 alert/incident 전체 workflow는 인벤토리와 개별 소비 시나리오를 추가 대조한다."
@@ -43,7 +47,16 @@
         "src/features/auth/",
         "src/routes/login.tsx"
       ],
-      "references": [],
+      "references": [
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 11"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 12"
+        }
+      ],
       "related": []
     },
     {
@@ -56,7 +69,11 @@
       ],
       "paths": [],
       "references": [
-        ".agents/skills/feature-contract/references/specialized-screens.md"
+        ".agents/skills/feature-contract/references/specialized-screens.md",
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 14"
+        }
       ],
       "related": [],
       "gap": "집계 mechanic 카드이며 대시보드 tile별 이동과 기간 정책은 미확인이다."
@@ -74,7 +91,80 @@
         "src/features/members/",
         "src/routes/_app/members/"
       ],
-      "references": [],
+      "references": [
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "2. surface별 판정"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "8. 상세·폼·팝업 판정 (2026-09-02 ①′~②′, Claude·Codex 독립 초안 + 교차 리뷰)"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 1"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 3"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 4"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 5"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 7"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 8"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 9"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 10"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 15"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 19"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 20"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 22"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "검색·선택 판독"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "members/managers API 책임 재대조 (2026-09-07)"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "개인정보 재인증 후속 조건"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "회원 활동정보 판독"
+        }
+      ],
       "related": [
         "member-messaging"
       ]
@@ -92,7 +182,27 @@
       ],
       "references": [
         ".agents/skills/feature-contract/references/form-workflow.md",
-        ".agents/skills/feature-contract/references/mutation-actions.md"
+        ".agents/skills/feature-contract/references/mutation-actions.md",
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "8. 상세·폼·팝업 판정 (2026-09-02 ①′~②′, Claude·Codex 독립 초안 + 교차 리뷰)"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 7"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 9"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "검색·선택 판독"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "members/managers API 책임 재대조 (2026-09-07)"
+        }
       ],
       "related": []
     },
@@ -112,9 +222,63 @@
         "src/routes/_app/performances.tsx"
       ],
       "references": [
-        "docs/reference/zero-sol/notion/05-performances.md",
-        ".agents/skills/feature-contract/references/list-workflow.md",
-        ".agents/skills/feature-contract/references/table-composition.md"
+        {
+          "file": "docs/reference/zero-sol/notion/05-performances.md",
+          "heading": "공연 > 공연목록"
+        },
+        {
+          "file": ".agents/skills/feature-contract/references/list-workflow.md",
+          "heading": "Confirm the feature contract"
+        },
+        {
+          "file": ".agents/skills/feature-contract/references/list-workflow.md",
+          "heading": "Composition index"
+        },
+        {
+          "file": ".agents/skills/feature-contract/references/list-workflow.md",
+          "heading": "State and URL lifecycle"
+        },
+        {
+          "file": ".agents/skills/feature-contract/references/list-workflow.md",
+          "heading": "Query and option lifecycle"
+        },
+        {
+          "file": ".agents/skills/feature-contract/references/list-workflow.md",
+          "heading": "Result ownership"
+        },
+        {
+          "file": ".agents/skills/feature-contract/references/list-workflow.md",
+          "heading": "Verification"
+        },
+        {
+          "file": ".agents/skills/feature-contract/references/list-workflow.md",
+          "heading": "Repeated result and search shapes"
+        },
+        {
+          "file": ".agents/skills/feature-contract/references/list-search-contract.md",
+          "heading": "Search 계약과 기본값 작성"
+        },
+        ".agents/skills/feature-contract/references/table-composition.md",
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "2. surface별 판정"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 1"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 2"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 3"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "검색·선택 판독"
+        }
       ],
       "related": [
         "performance-venue"
@@ -130,8 +294,15 @@
       ],
       "paths": [],
       "references": [
-        "docs/reference/zero-sol/notion/05-performances.md",
-        ".agents/skills/shared-ui-contract/references/combobox.md"
+        {
+          "file": "docs/reference/zero-sol/notion/05-performances.md",
+          "heading": "공연 > 공연목록"
+        },
+        ".agents/skills/shared-ui-contract/references/combobox.md",
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 2"
+        }
       ],
       "related": []
     },
@@ -149,12 +320,27 @@
         "src/features/performances/fixtures/"
       ],
       "references": [
-        "docs/reference/zero-sol/notion/05-performances.md",
+        {
+          "file": "docs/reference/zero-sol/notion/05-performances.md",
+          "heading": "공연 > 공연목록"
+        },
         ".agents/skills/feature-contract/references/detail-workflow.md",
         ".agents/skills/feature-contract/references/form-workflow.md",
         ".agents/skills/feature-contract/references/table-composition.md",
         ".agents/skills/feature-contract/references/file-workflow.md",
-        ".agents/skills/feature-contract/references/mutation-actions.md"
+        ".agents/skills/feature-contract/references/mutation-actions.md",
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "8. 상세·폼·팝업 판정 (2026-09-02 ①′~②′, Claude·Codex 독립 초안 + 교차 리뷰)"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 7"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "검색·선택 판독"
+        }
       ],
       "related": [
         "performance-language"
@@ -185,13 +371,80 @@
       ],
       "paths": [],
       "references": [
-        "docs/reference/zero-sol/notion/05-performances.md",
-        ".agents/skills/feature-contract/references/list-workflow.md",
-        ".agents/skills/feature-contract/references/detail-workflow.md",
-        ".agents/skills/feature-contract/references/table-composition.md"
+        {
+          "file": "docs/reference/zero-sol/notion/05-performances.md",
+          "heading": "공연 > 콘텐츠"
+        },
+        {
+          "file": ".agents/skills/feature-contract/references/list-workflow.md",
+          "heading": "Confirm the feature contract"
+        },
+        {
+          "file": ".agents/skills/feature-contract/references/list-workflow.md",
+          "heading": "Composition index"
+        },
+        {
+          "file": ".agents/skills/feature-contract/references/list-workflow.md",
+          "heading": "State and URL lifecycle"
+        },
+        {
+          "file": ".agents/skills/feature-contract/references/list-workflow.md",
+          "heading": "Query and option lifecycle"
+        },
+        {
+          "file": ".agents/skills/feature-contract/references/list-workflow.md",
+          "heading": "Result ownership"
+        },
+        {
+          "file": ".agents/skills/feature-contract/references/list-workflow.md",
+          "heading": "Verification"
+        },
+        {
+          "file": ".agents/skills/feature-contract/references/list-workflow.md",
+          "heading": "Repeated result and search shapes"
+        },
+        {
+          "file": ".agents/skills/feature-contract/references/list-search-contract.md",
+          "heading": "Search 계약과 기본값 작성"
+        },
+        ".agents/skills/feature-contract/references/table-composition.md",
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "2. surface별 판정"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "8. 상세·폼·팝업 판정 (2026-09-02 ①′~②′, Claude·Codex 독립 초안 + 교차 리뷰)"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 1"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 2"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 3"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 7"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 9"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "검색·선택 판독"
+        }
       ],
       "related": [
-        "content-preview"
+        "content-preview",
+        "content-bulk",
+        "content-edit"
       ],
       "gap": "콘텐츠 코드 경로와 등록전/등록후 의미는 미확인이다. 공연 목록의 정책으로 대체하지 않는다."
     },
@@ -205,7 +458,11 @@
       ],
       "paths": [],
       "references": [
-        ".agents/skills/feature-contract/references/detail-workflow.md"
+        ".agents/skills/feature-contract/references/detail-workflow.md",
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "8. 상세·폼·팝업 판정 (2026-09-02 ①′~②′, Claude·Codex 독립 초안 + 교차 리뷰)"
+        }
       ],
       "related": []
     },
@@ -220,8 +477,83 @@
       ],
       "paths": [],
       "references": [
-        ".agents/skills/feature-contract/references/list-workflow.md",
-        ".agents/skills/feature-contract/references/table-composition.md"
+        {
+          "file": ".agents/skills/feature-contract/references/list-workflow.md",
+          "heading": "Confirm the feature contract"
+        },
+        {
+          "file": ".agents/skills/feature-contract/references/list-workflow.md",
+          "heading": "Composition index"
+        },
+        {
+          "file": ".agents/skills/feature-contract/references/list-workflow.md",
+          "heading": "State and URL lifecycle"
+        },
+        {
+          "file": ".agents/skills/feature-contract/references/list-workflow.md",
+          "heading": "Query and option lifecycle"
+        },
+        {
+          "file": ".agents/skills/feature-contract/references/list-workflow.md",
+          "heading": "Result ownership"
+        },
+        {
+          "file": ".agents/skills/feature-contract/references/list-workflow.md",
+          "heading": "Verification"
+        },
+        {
+          "file": ".agents/skills/feature-contract/references/list-workflow.md",
+          "heading": "Repeated result and search shapes"
+        },
+        {
+          "file": ".agents/skills/feature-contract/references/list-search-contract.md",
+          "heading": "Search 계약과 기본값 작성"
+        },
+        ".agents/skills/feature-contract/references/table-composition.md",
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "2. surface별 판정"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "8. 상세·폼·팝업 판정 (2026-09-02 ①′~②′, Claude·Codex 독립 초안 + 교차 리뷰)"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 1"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 3"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 6"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 7"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 9"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 15"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 16"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "검색·선택 판독"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "발권·출입 판독"
+        }
       ],
       "related": []
     },
@@ -234,7 +566,44 @@
         "docs/reference/scenarios/exhibition-promotion-community.md"
       ],
       "paths": [],
-      "references": [],
+      "references": [
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "2. surface별 판정"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "8. 상세·폼·팝업 판정 (2026-09-02 ①′~②′, Claude·Codex 독립 초안 + 교차 리뷰)"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 1"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 2"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 3"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 7"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 9"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 17"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "검색·선택 판독"
+        }
+      ],
       "related": []
     },
     {
@@ -246,7 +615,40 @@
         "docs/reference/scenarios/exhibition-promotion-community.md"
       ],
       "paths": [],
-      "references": [],
+      "references": [
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "2. surface별 판정"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "8. 상세·폼·팝업 판정 (2026-09-02 ①′~②′, Claude·Codex 독립 초안 + 교차 리뷰)"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 1"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 2"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 3"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 7"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 9"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "검색·선택 판독"
+        }
+      ],
       "related": []
     },
     {
@@ -259,7 +661,47 @@
       ],
       "paths": [],
       "references": [
-        ".agents/skills/feature-contract/references/table-composition.md"
+        ".agents/skills/feature-contract/references/table-composition.md",
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "2. surface별 판정"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "8. 상세·폼·팝업 판정 (2026-09-02 ①′~②′, Claude·Codex 독립 초안 + 교차 리뷰)"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 1"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 2"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 3"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 7"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 9"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 18"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "검색·선택 판독"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "커뮤니티 판독"
+        }
       ],
       "related": []
     },
@@ -274,7 +716,27 @@
       "paths": [],
       "references": [
         ".agents/skills/feature-contract/references/specialized-screens.md",
-        ".agents/skills/feature-contract/references/table-composition.md"
+        ".agents/skills/feature-contract/references/table-composition.md",
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "2. surface별 판정"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 1"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 3"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 14"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "검색·선택 판독"
+        }
       ],
       "related": []
     },
@@ -290,7 +752,60 @@
         "src/features/managers/",
         "src/routes/_app/managers/"
       ],
-      "references": [],
+      "references": [
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "2. surface별 판정"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "8. 상세·폼·팝업 판정 (2026-09-02 ①′~②′, Claude·Codex 독립 초안 + 교차 리뷰)"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 1"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 3"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 5"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 7"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 9"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 15"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 21"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 22"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "검색·선택 판독"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "members/managers API 책임 재대조 (2026-09-07)"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "운영자 상태 판독"
+        }
+      ],
       "related": []
     },
     {
@@ -302,7 +817,28 @@
         "docs/reference/scenarios/aggregation-and-search.md"
       ],
       "paths": [],
-      "references": [],
+      "references": [
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "2. surface별 판정"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 1"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 3"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 13"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "검색·선택 판독"
+        }
+      ],
       "related": []
     },
     {
@@ -312,7 +848,12 @@
       "inventory": "docs/reference/zero-sol/13-profile.md",
       "scenarios": [],
       "paths": [],
-      "references": [],
+      "references": [
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "8. 상세·폼·팝업 판정 (2026-09-02 ①′~②′, Claude·Codex 독립 초안 + 교차 리뷰)"
+        }
+      ],
       "related": [],
       "gap": "인벤토리는 조회·수정 frame 존재만 기록한다. 실제 필드·전이·별도 시나리오는 원문 확인 후 보강해야 한다."
     },
@@ -326,7 +867,48 @@
         "docs/reference/scenarios/ticketing-realtime.md"
       ],
       "paths": [],
-      "references": [],
+      "references": [
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "2. surface별 판정"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "8. 상세·폼·팝업 판정 (2026-09-02 ①′~②′, Claude·Codex 독립 초안 + 교차 리뷰)"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 1"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 3"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 6"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 7"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 9"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 15"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "검색·선택 판독"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "발권·출입 판독"
+        }
+      ],
       "related": [],
       "gap": "연결 카드는 발권 공통 mechanic이다. 현장발권 고유 shell·배포·출입 결과 정책은 인벤토리의 미확인을 별도 대조한다."
     },
@@ -340,6 +922,89 @@
       "references": [],
       "related": [],
       "gap": "toast/panel 구성만 기록돼 있다. 수명·읽음·닫기·복구 시나리오는 원문 확인 후 보강해야 한다."
+    },
+    {
+      "coverage": "surface",
+      "inventory": "docs/reference/zero-sol/05-performances.md",
+      "scenarios": [
+        "docs/reference/scenarios/performance-and-content.md"
+      ],
+      "paths": [],
+      "related": [],
+      "gap": "콘텐츠 코드 경로와 실제 API는 미확인이다. 기존 인벤토리의 호출 직전 동작만 근거로 삼는다.",
+      "id": "content-bulk",
+      "title": "5.1 콘텐츠 사용상태 일괄변경",
+      "references": [
+        {
+          "file": "docs/reference/zero-sol/notion/05-performances.md",
+          "heading": "공연 > 콘텐츠"
+        },
+        ".agents/skills/feature-contract/references/bulk-actions.md",
+        {
+          "file": ".agents/skills/feature-contract/references/mutation-actions.md",
+          "heading": "Interaction choice"
+        },
+        {
+          "file": ".agents/skills/feature-contract/references/mutation-actions.md",
+          "heading": "시나리오 상태와 관찰 범위"
+        },
+        {
+          "file": ".agents/skills/feature-contract/references/mutation-actions.md",
+          "heading": "API 연결 전 시나리오 요청"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 9"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 7"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "검색·선택 판독"
+        }
+      ]
+    },
+    {
+      "coverage": "surface",
+      "inventory": "docs/reference/zero-sol/05-performances.md",
+      "scenarios": [
+        "docs/reference/scenarios/performance-and-content.md"
+      ],
+      "paths": [],
+      "related": [
+        "content-preview"
+      ],
+      "gap": "콘텐츠 코드 경로와 실제 API는 미확인이다. 기존 인벤토리의 호출 직전 동작만 근거로 삼는다.",
+      "id": "content-edit",
+      "title": "5.1 콘텐츠 조회·수정",
+      "references": [
+        {
+          "file": "docs/reference/zero-sol/notion/05-performances.md",
+          "heading": "공연 > 콘텐츠"
+        },
+        {
+          "file": ".agents/skills/feature-contract/references/detail-workflow.md",
+          "heading": "Detail ownership"
+        },
+        {
+          "file": ".agents/skills/feature-contract/references/detail-workflow.md",
+          "heading": "Detail state"
+        },
+        {
+          "file": ".agents/skills/feature-contract/references/detail-workflow.md",
+          "heading": "Actions and verification"
+        },
+        ".agents/skills/feature-contract/references/form-workflow.md",
+        ".agents/skills/feature-contract/references/file-workflow.md",
+        ".agents/skills/feature-contract/references/table-composition.md",
+        ".agents/skills/feature-contract/references/mutation-actions.md",
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "8. 상세·폼·팝업 판정 (2026-09-02 ①′~②′, Claude·Codex 독립 초안 + 교차 리뷰)"
+        }
+      ]
     }
   ]
 }

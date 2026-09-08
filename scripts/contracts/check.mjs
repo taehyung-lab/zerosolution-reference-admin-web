@@ -22,6 +22,7 @@ import {
   documentBudgetNotices,
   ledgerIndexFailures,
   DOCUMENT_LINE_BUDGET,
+  DOCUMENT_BYTE_BUDGET,
   parseReadmeVerifyProjection,
   parseVerifyChain,
   pnpmCommandFailures,
@@ -169,7 +170,7 @@ console.log(`  ✓ verify 체인 ${chain.length}단계가 README 투영과 일�
 console.log('  ✓ verify↔CI stage 소유가 누락·추가·중복 없이 일치')
 console.log(`  ✓ 문서 ${documents.length}개의 pnpm 명령과 로컬 link 대상 실존`)
 if (budgetNotices.length === 0) {
-  console.log(`  ✓ 에이전트 문서 ${documents.length}개가 권고 길이 ${DOCUMENT_LINE_BUDGET}줄 이내`)
+  console.log(`  ✓ 에이전트 문서 ${documents.length}개가 권고 ${DOCUMENT_LINE_BUDGET}줄 / ${DOCUMENT_BYTE_BUDGET} bytes 이내`)
 } else {
   for (const notice of budgetNotices) console.log(`  · ${notice}`)
 }

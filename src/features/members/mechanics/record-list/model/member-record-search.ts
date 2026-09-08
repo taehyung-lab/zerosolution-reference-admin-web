@@ -1,3 +1,14 @@
+import { defineSearchFields } from "@/shared/lib/search-fields";
+import {
+  optionalInstant,
+  optionalPositiveInteger,
+  recoverArrayItems,
+} from "@/shared/lib/search-codecs";
+import {
+  normalizeClosedInstantRange,
+  omitSearchDefaults,
+  resolveSearchDefaults,
+} from "@/shared/lib/search";
 import { type MemberRecordSearch } from "../../../model/member-record-search";
 /**
  * 기록 목록별로 URL에서 허용할 검색 필드·정렬·페이지와 잘못된 값의 복구 규칙을 정의한다.
@@ -11,79 +22,127 @@ import {
   memberSignupMethods,
 } from "../../../model/account";
 
-const values = <T extends z.ZodType>(schema: T) =>
-  z
-    .array(z.unknown())
-    .transform((items) =>
-      items.flatMap((item) => {
-        const result = schema.safeParse(item);
-        return result.success ? [result.data] : [];
-      }),
-    )
-    .optional()
-    .catch(undefined);
 const keyword = z.object({
   field: z.enum(["email", "name", "phone", "content"]),
   value: z.string().trim().min(1),
 });
-export const memberRecordSearchSchema = z.object({
-  periodType: z.string().optional().catch(undefined),
-  startDateTime: z.iso.datetime().optional().catch(undefined),
-  endDateTime: z.iso.datetime().optional().catch(undefined),
-  keywords: values(keyword),
-  signupMethods: values(z.enum(memberSignupMethods)),
-  accountStatuses: values(z.enum(memberAccountStatuses)),
-  restrictions: values(z.enum(["specialContent", "inquiry"])),
-  statuses: values(z.enum(["waiting", "reviewing", "held", "completed"])),
-  results: values(z.enum(["waiting", "completed", "rejected"])),
-  inquiryType: z.string().optional().catch(undefined),
-  accessPaths: values(z.literal("app")),
-  sortType: z.string().optional().catch(undefined),
-  sortDirection: z.enum(["asc", "desc"]).optional().catch(undefined),
-  page: z.coerce.number().int().positive().optional().catch(undefined),
-  pageSize: z.coerce
-    .number()
-    .pipe(z.union(standardPageSizeOptions.map((size) => z.literal(size))))
-    .optional()
-    .catch(undefined),
-});
-const common = memberRecordSearchSchema;
-function canonical<TSearch extends MemberRecordSearch>(
-  search: TSearch,
-  defaultPeriod: NoInfer<TSearch["periodType"]>,
-): Partial<TSearch> {
-  const next = compactSearchValues(search);
-  if (
-    next.startDateTime &&
-    next.endDateTime &&
-    next.startDateTime > next.endDateTime
-  ) {
-    delete next.startDateTime;
-    delete next.endDateTime;
-  }
-  return Object.keys(next).length === 0
-    ? {}
-    : { ...next, periodType: next.periodType ?? defaultPeriod };
+const recordFields = {
+  periodType: {
+    schema: z.string().optional().catch(undefined),
+    defaultValue: undefined,
+    kind: "filter",
+  },
+  startDateTime: {
+    schema: optionalInstant,
+    defaultValue: undefined,
+    kind: "filter",
+  },
+  endDateTime: {
+    schema: optionalInstant,
+    defaultValue: undefined,
+    kind: "filter",
+  },
+  keywords: {
+    schema: recoverArrayItems(keyword),
+    defaultValue: [],
+    kind: "filter",
+  },
+  signupMethods: {
+    schema: recoverArrayItems(z.enum(memberSignupMethods)),
+    defaultValue: [],
+    kind: "filter",
+  },
+  accountStatuses: {
+    schema: recoverArrayItems(z.enum(memberAccountStatuses)),
+    defaultValue: [],
+    kind: "filter",
+  },
+  restrictions: {
+    schema: recoverArrayItems(z.enum(["specialContent", "inquiry"])),
+    defaultValue: [],
+    kind: "filter",
+  },
+  statuses: {
+    schema: recoverArrayItems(
+      z.enum(["waiting", "reviewing", "held", "completed"]),
+    ),
+    defaultValue: [],
+    kind: "filter",
+  },
+  results: {
+    schema: recoverArrayItems(z.enum(["waiting", "completed", "rejected"])),
+    defaultValue: [],
+    kind: "filter",
+  },
+  inquiryType: {
+    schema: z.string().optional().catch(undefined),
+    defaultValue: undefined,
+    kind: "filter",
+  },
+  accessPaths: {
+    schema: recoverArrayItems(z.literal("app")),
+    defaultValue: [],
+    kind: "filter",
+  },
+  sortType: {
+    schema: z.string().optional().catch(undefined),
+    defaultValue: undefined,
+    kind: "view",
+  },
+  sortDirection: {
+    schema: z.enum(["asc", "desc"]).optional().catch(undefined),
+    defaultValue: "desc",
+    kind: "view",
+  },
+  page: { schema: optionalPositiveInteger, defaultValue: 1, kind: "view" },
+  pageSize: {
+    schema: z.coerce
+      .number()
+      .pipe(z.union(standardPageSizeOptions.map((size) => z.literal(size))))
+      .optional()
+      .catch(undefined),
+    defaultValue: 100,
+    kind: "view",
+  },
+} as const;
+export const memberRecordSearchContract = defineSearchFields(recordFields);
+export type MemberRecordRouteSearch = MemberRecordSearch & {
+  readonly searched?: true;
+};
+const searchIntent = z.literal(true).optional().catch(undefined);
+function canonical<TSearch extends MemberRecordRouteSearch>(
+  { searched, ...fields }: TSearch,
+  defaults: object,
+) {
+  const valid = compactSearchValues(normalizeClosedInstantRange(fields));
+  const sparse = omitSearchDefaults(valid, defaults);
+  return searched || Object.keys(valid).length > 0
+    ? { ...sparse, searched: true as const }
+    : sparse;
 }
-export const dormantSearchSchema = common
-  .pick({
-    periodType: true,
-    startDateTime: true,
-    endDateTime: true,
-    keywords: true,
-    signupMethods: true,
-    accountStatuses: true,
-    sortType: true,
-    sortDirection: true,
-    page: true,
-    pageSize: true,
-  })
-  .extend({
-    periodType: z
+
+export const dormantSearchFields = {
+  periodType: {
+    schema: z
       .enum(["joinedAt", "lastAccessedAt", "dormantAt"])
       .optional()
       .catch(undefined),
-    sortType: z
+    defaultValue: "joinedAt",
+    kind: "filter",
+  },
+  startDateTime: recordFields.startDateTime,
+  endDateTime: recordFields.endDateTime,
+  keywords: {
+    schema: recoverArrayItems(
+      keyword.extend({ field: z.enum(["email", "name", "phone"]) }),
+    ),
+    defaultValue: [],
+    kind: "filter",
+  },
+  signupMethods: recordFields.signupMethods,
+  accountStatuses: recordFields.accountStatuses,
+  sortType: {
+    schema: z
       .enum([
         "joinedAt",
         "lastAccessedAt",
@@ -95,30 +154,38 @@ export const dormantSearchSchema = common
       ])
       .optional()
       .catch(undefined),
-    keywords: values(
-      keyword.extend({ field: z.enum(["email", "name", "phone"]) }),
-    ),
-  })
-  .transform((search) => canonical(search, "joinedAt"));
-export const withdrawnSearchSchema = common
-  .pick({
-    periodType: true,
-    startDateTime: true,
-    endDateTime: true,
-    keywords: true,
-    signupMethods: true,
-    accountStatuses: true,
-    sortType: true,
-    sortDirection: true,
-    page: true,
-    pageSize: true,
-  })
-  .extend({
-    periodType: z
+    defaultValue: "joinedAt",
+    kind: "view",
+  },
+  sortDirection: recordFields.sortDirection,
+  page: recordFields.page,
+  pageSize: recordFields.pageSize,
+} as const;
+export const dormantSearchContract = defineSearchFields(dormantSearchFields);
+export const dormantSearchSchema = dormantSearchContract.schema
+  .extend({ searched: searchIntent })
+  .transform((search) => canonical(search, dormantSearchContract.defaults));
+
+export const withdrawnSearchFields = {
+  periodType: {
+    schema: z
       .enum(["joinedAt", "lastAccessedAt", "withdrawnAt"])
       .optional()
       .catch(undefined),
-    sortType: z
+    defaultValue: "joinedAt",
+    kind: "filter",
+  },
+  startDateTime: recordFields.startDateTime,
+  endDateTime: recordFields.endDateTime,
+  keywords: {
+    schema: recoverArrayItems(keyword.extend({ field: z.literal("email") })),
+    defaultValue: [],
+    kind: "filter",
+  },
+  signupMethods: recordFields.signupMethods,
+  accountStatuses: recordFields.accountStatuses,
+  sortType: {
+    schema: z
       .enum([
         "joinedAt",
         "lastAccessedAt",
@@ -130,25 +197,39 @@ export const withdrawnSearchSchema = common
       ])
       .optional()
       .catch(undefined),
-    keywords: values(keyword.extend({ field: z.literal("email") })),
-  })
-  .transform((search) => canonical(search, "withdrawnAt"));
-export const accessSearchSchema = common
-  .pick({
-    periodType: true,
-    startDateTime: true,
-    endDateTime: true,
-    keywords: true,
-    accountStatuses: true,
-    accessPaths: true,
-    sortType: true,
-    sortDirection: true,
-    page: true,
-    pageSize: true,
-  })
-  .extend({
-    periodType: z.literal("accessedAt").optional().catch(undefined),
-    sortType: z
+    defaultValue: "withdrawnAt",
+    kind: "view",
+  },
+  sortDirection: recordFields.sortDirection,
+  page: recordFields.page,
+  pageSize: recordFields.pageSize,
+} as const;
+export const withdrawnSearchContract = defineSearchFields(
+  withdrawnSearchFields,
+);
+export const withdrawnSearchSchema = withdrawnSearchContract.schema
+  .extend({ searched: searchIntent })
+  .transform((search) => canonical(search, withdrawnSearchContract.defaults));
+
+export const accessSearchFields = {
+  periodType: {
+    schema: z.literal("accessedAt").optional().catch(undefined),
+    defaultValue: "accessedAt",
+    kind: "filter",
+  },
+  startDateTime: recordFields.startDateTime,
+  endDateTime: recordFields.endDateTime,
+  keywords: {
+    schema: recoverArrayItems(
+      keyword.extend({ field: z.enum(["email", "name", "phone"]) }),
+    ),
+    defaultValue: [],
+    kind: "filter",
+  },
+  accountStatuses: recordFields.accountStatuses,
+  accessPaths: recordFields.accessPaths,
+  sortType: {
+    schema: z
       .enum([
         "accessedAt",
         "grade",
@@ -160,32 +241,37 @@ export const accessSearchSchema = common
       ])
       .optional()
       .catch(undefined),
-    keywords: values(
-      keyword.extend({ field: z.enum(["email", "name", "phone"]) }),
-    ),
-  })
-  .transform((search) => canonical(search, "accessedAt"));
-export const counselSearchSchema = common
-  .pick({
-    periodType: true,
-    startDateTime: true,
-    endDateTime: true,
-    keywords: true,
-    signupMethods: true,
-    accountStatuses: true,
-    inquiryType: true,
-    statuses: true,
-    sortType: true,
-    sortDirection: true,
-    page: true,
-    pageSize: true,
-  })
-  .extend({
-    periodType: z
-      .enum(["receivedAt", "answeredAt"])
-      .optional()
-      .catch(undefined),
-    sortType: z
+    defaultValue: "accessedAt",
+    kind: "view",
+  },
+  sortDirection: recordFields.sortDirection,
+  page: recordFields.page,
+  pageSize: recordFields.pageSize,
+} as const;
+export const accessSearchContract = defineSearchFields(accessSearchFields);
+export const accessSearchSchema = accessSearchContract.schema
+  .extend({ searched: searchIntent })
+  .transform((search) => canonical(search, accessSearchContract.defaults));
+
+export const counselSearchFields = {
+  periodType: {
+    schema: z.enum(["receivedAt", "answeredAt"]).optional().catch(undefined),
+    defaultValue: "receivedAt",
+    kind: "filter",
+  },
+  startDateTime: recordFields.startDateTime,
+  endDateTime: recordFields.endDateTime,
+  keywords: recordFields.keywords,
+  signupMethods: recordFields.signupMethods,
+  accountStatuses: recordFields.accountStatuses,
+  inquiryType: recordFields.inquiryType,
+  statuses: {
+    schema: recoverArrayItems(z.enum(["waiting", "reviewing", "completed"])),
+    defaultValue: [],
+    kind: "filter",
+  },
+  sortType: {
+    schema: z
       .enum([
         "receivedAt",
         "answeredAt",
@@ -198,26 +284,42 @@ export const counselSearchSchema = common
       ])
       .optional()
       .catch(undefined),
-    statuses: values(z.enum(["waiting", "reviewing", "completed"])),
-  })
-  .transform((search) => canonical(search, "receivedAt"));
-export const appealSearchSchema = common
-  .pick({
-    periodType: true,
-    startDateTime: true,
-    endDateTime: true,
-    keywords: true,
-    restrictions: true,
-    statuses: true,
-    results: true,
-    sortType: true,
-    sortDirection: true,
-    page: true,
-    pageSize: true,
-  })
-  .extend({
-    periodType: z.enum(["appliedAt", "flaggedAt"]).optional().catch(undefined),
-    sortType: z
+    defaultValue: "receivedAt",
+    kind: "view",
+  },
+  sortDirection: recordFields.sortDirection,
+  page: recordFields.page,
+  pageSize: recordFields.pageSize,
+} as const;
+export const counselSearchContract = defineSearchFields(counselSearchFields);
+export const counselSearchSchema = counselSearchContract.schema.transform(
+  (search) =>
+    omitSearchDefaults(
+      normalizeClosedInstantRange(search),
+      counselSearchContract.defaults,
+    ),
+);
+
+export const appealSearchFields = {
+  periodType: {
+    schema: z.enum(["appliedAt", "flaggedAt"]).optional().catch(undefined),
+    defaultValue: "appliedAt",
+    kind: "filter",
+  },
+  startDateTime: recordFields.startDateTime,
+  endDateTime: recordFields.endDateTime,
+  keywords: {
+    schema: recoverArrayItems(
+      keyword.extend({ field: z.enum(["email", "name", "phone"]) }),
+    ),
+    defaultValue: [],
+    kind: "filter",
+  },
+  restrictions: recordFields.restrictions,
+  statuses: recordFields.statuses,
+  results: recordFields.results,
+  sortType: {
+    schema: z
       .enum([
         "appliedAt",
         "flaggedAt",
@@ -228,8 +330,38 @@ export const appealSearchSchema = common
       ])
       .optional()
       .catch(undefined),
-    keywords: values(
-      keyword.extend({ field: z.enum(["email", "name", "phone"]) }),
+    defaultValue: "appliedAt",
+    kind: "view",
+  },
+  sortDirection: recordFields.sortDirection,
+  page: recordFields.page,
+  pageSize: recordFields.pageSize,
+} as const;
+export const appealSearchContract = defineSearchFields(appealSearchFields);
+export const appealSearchSchema = appealSearchContract.schema.transform(
+  (search) =>
+    omitSearchDefaults(
+      normalizeClosedInstantRange(search),
+      appealSearchContract.defaults,
     ),
-  })
-  .transform((search) => canonical(search, "appliedAt"));
+);
+
+export type MemberRecordSearchContract =
+  | typeof dormantSearchContract
+  | typeof withdrawnSearchContract
+  | typeof accessSearchContract
+  | typeof counselSearchContract
+  | typeof appealSearchContract;
+
+export function resolveMemberRecordSearch(
+  search: MemberRecordSearch,
+  contract: MemberRecordSearchContract,
+) {
+  return resolveSearchDefaults(
+    contract.schema.parse(search),
+    contract.defaults,
+  );
+}
+export type ResolvedMemberRecordSearch = ReturnType<
+  typeof resolveMemberRecordSearch
+>;

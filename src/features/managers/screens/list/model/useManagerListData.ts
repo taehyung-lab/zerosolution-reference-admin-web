@@ -9,7 +9,7 @@ import type { ListResultData } from "@/shared/ui/patterns/ListResult";
 import { managerListQuery } from "../../../api/queries";
 import type { ManagerListItem } from "../../../model/manager";
 import { toManagerListItem } from "./manager-mapper";
-import { resolveManagerSearch, type ManagerRouteSearch } from "./search-schema";
+import type { ManagerSearch } from "../../../api/manager-search";
 
 export type ManagerListData = ListResultData<ManagerListItem> & {
   readonly total: number;
@@ -20,13 +20,13 @@ export type ManagerListData = ListResultData<ManagerListItem> & {
  * 사용할 조회·검색 시작 조건·행 변환만 소유하고 조회 상태는 useListQuery에 맡긴다.
  */
 export function useManagerListData(
-  routeSearch: ManagerRouteSearch,
+  search: ManagerSearch,
+  searched: boolean,
 ): ManagerListData {
   const { locale } = useLocale();
-  const search = resolveManagerSearch(routeSearch);
   const list = useListQuery({
     options: managerListQuery(locale, search),
-    searched: routeSearch.periodType !== undefined,
+    searched,
     select: (data) => ({
       rows: (data.list ?? []).map(toManagerListItem),
       total: data.totalCount ?? 0,
