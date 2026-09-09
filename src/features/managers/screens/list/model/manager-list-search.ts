@@ -10,10 +10,9 @@ import {
   omitSearchDefaults,
   resolveSearchDefaults,
 } from "@/shared/lib/search";
-import { filterPartitionValues } from "@/shared/lib/search-partition";
 import { type ManagerListSearch } from "../../../model/manager-list-search";
 /**
- * 제품 운영자 목록의 URL 필드·정렬과 필터 부분 추출을 정의한다.
+ * 제품 운영자 목록의 URL 필드·정렬과 필터/view 구분을 정의한다.
  * 제품 route가 사용하는 단일 검색 계약이다. 기존 리허설 API용 search-schema와의 서버 enum 대응은 미확정이다.
  */
 import { compactSearchValues } from "@/shared/lib/compact-search-values";
@@ -147,7 +146,3 @@ export function resolveManagerListSearch(search: ManagerListSearch) {
 export type ResolvedManagerListSearch = ReturnType<
   typeof resolveManagerListSearch
 >;
-
-export function managerListFilter(search: ResolvedManagerListSearch) {
-  return filterPartitionValues(search, managerListSearchPartition);
-}

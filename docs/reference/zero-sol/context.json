@@ -219,7 +219,7 @@
         "src/features/performances/api/",
         "src/features/performances/model/",
         "src/features/performances/fixtures/",
-        "src/routes/_app/performances.tsx"
+        "src/routes/_app/performances/index.tsx"
       ],
       "references": [
         {
@@ -317,7 +317,10 @@
       "paths": [
         "src/features/performances/api/",
         "src/features/performances/model/",
-        "src/features/performances/fixtures/"
+        "src/features/performances/fixtures/",
+        "src/features/performances/screens/detail/",
+        "src/routes/_app/performances/$performanceId/",
+        "src/routes/_app/performances/detail-navigation.test.tsx"
       ],
       "references": [
         {
@@ -345,7 +348,7 @@
       "related": [
         "performance-language"
       ],
-      "gap": "공연 상세·수정 코드 경로는 미구현이다. 신규 경로는 checkpoint evidenceGaps로 연결하고 제품 정책 미확인은 unresolved로 분리한다."
+      "gap": "실제 저장 API·업로드 확장자/용량·구역↔등급 입력 보존 정책은 미확정이다. 상세는 임시 단건 응답으로 구현됐고 편집은 대상 요청 지점까지다."
     },
     {
       "id": "performance-language",
@@ -355,7 +358,9 @@
       "scenarios": [
         "docs/reference/scenarios/performance-and-content.md"
       ],
-      "paths": [],
+      "paths": [
+        "src/features/performances/screens/detail/ui/PerformanceBasicSection.tsx"
+      ],
       "references": [
         ".agents/skills/feature-contract/references/form-workflow.md"
       ],
@@ -446,7 +451,7 @@
         "content-bulk",
         "content-edit"
       ],
-      "gap": "콘텐츠 코드 경로와 등록전/등록후 의미는 미확인이다. 공연 목록의 정책으로 대체하지 않는다."
+      "gap": "콘텐츠 등록전/등록후 의미와 미리보기 대상은 시나리오 §6의 미확인이다. 공연 목록의 정책으로 대체하지 않는다."
     },
     {
       "id": "content-preview",
@@ -931,7 +936,7 @@
       ],
       "paths": [],
       "related": [],
-      "gap": "콘텐츠 코드 경로와 실제 API는 미확인이다. 기존 인벤토리의 호출 직전 동작만 근거로 삼는다.",
+      "gap": "콘텐츠 변경 API와 성공 이후 계약은 미확인이다. 기존 인벤토리의 호출 직전 동작만 근거로 삼는다.",
       "id": "content-bulk",
       "title": "5.1 콘텐츠 사용상태 일괄변경",
       "references": [
@@ -976,7 +981,7 @@
       "related": [
         "content-preview"
       ],
-      "gap": "콘텐츠 코드 경로와 실제 API는 미확인이다. 기존 인벤토리의 호출 직전 동작만 근거로 삼는다.",
+      "gap": "콘텐츠 등록전/등록후 의미와 저장 API는 미확인이다. 기존 인벤토리의 호출 직전 동작만 근거로 삼는다.",
       "id": "content-edit",
       "title": "5.1 콘텐츠 조회·수정",
       "references": [

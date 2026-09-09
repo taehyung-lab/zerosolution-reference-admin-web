@@ -64,7 +64,7 @@ it('requires explicit evidence gaps for unknown workflows and forbids them as a 
   checkpoint.scope = ['src/features/new-product/']
   checkpoint.surfaces = []
   checkpoint.requirements[0].surfaces = []
-  checkpoint.evidenceGaps = [{ paths: checkpoint.scope, reason: 'New product has no indexed inventory yet.', references: [inventory] }]
+  checkpoint.evidenceGaps = [{ paths: checkpoint.scope, requirements: ['R1'], reason: 'New product has no indexed inventory yet.', references: [inventory] }]
   expect(() => run()).not.toThrow()
   checkpoint.stage = 'settled'
   expect(() => run()).toThrow(/settled/)
@@ -81,10 +81,42 @@ it('rejects unknown requirement sources and contracts instead of accepting empty
   checkpoint.requirements[0].contracts = ['unreviewed-bundle']
   expect(() => run()).toThrow(/contract/)
 })
+it('rejects sibling and whole-file substitutions for a section while accepting a child section', () => {
+  const { checkpoint, run, inventory, write } = fixture()
+  checkpoint.requirements[0].sources = [{ file: inventory, heading: 'Edit' }]
+  expect(run).toThrow(/surface evidence/)
+  checkpoint.requirements[0].sources = [inventory]
+  expect(run).toThrow(/surface evidence/)
+  write(inventory, '# Performance\nCommon policy.\n## List\nNo selection column.\n### Row action\nOpen detail.\n## Edit\nSection-owned save.\n')
+  checkpoint.requirements[0].sources = [{ file: inventory, heading: 'Row action' }]
+  expect(run).not.toThrow()
+})
+it('does not borrow evidence or coverage from another requirement gap', () => {
+  const { checkpoint, run, inventory, write } = fixture()
+  const other = '.ai-work/other.md'
+  write(other, '# Other\nIndependent evidence.')
+  checkpoint.scope = ['src/features/new-product/']
+  checkpoint.surfaces = []
+  checkpoint.requirements[0].surfaces = []
+  checkpoint.requirements[0].sources = [inventory]
+  checkpoint.requirements.push({ ...checkpoint.requirements[0], id: 'R2', sources: [other] })
+  checkpoint.evidenceGaps = [
+    { paths: checkpoint.scope, requirements: ['R1'], reason: 'First surface.', references: [inventory] },
+    { paths: checkpoint.scope, requirements: ['R2'], reason: 'Second surface.', references: [other] },
+  ]
+  expect(run).not.toThrow()
+  checkpoint.requirements[0].sources = [other]
+  expect(run).toThrow(/R1.*surface evidence/)
+  checkpoint.requirements[0].sources = ['user']
+  checkpoint.evidenceGaps.shift()
+  expect(run).toThrow(/R1.*surfaces/)
+  checkpoint.evidenceGaps[0].requirements = ['missing']
+  expect(run).toThrow(/Evidence gaps/)
+})
 it('requires concrete implementation paths and verification results for completed workflow requirements', () => {
   const { root, run, write } = fixture()
   run()
-  const report = { requirements: [{ id: 'R1', status: 'implemented', evidence: 'Looks good.' }], contractReview: 'Checked.', complexityReview: 'Checked.', assumptions: [], limitations: [] }
+  const report = { requirements: [{ id: 'R1', status: 'implemented', evidence: 'Looks good.', appliedSections: ['AGENTS.md'] }], contractReview: 'Checked.', complexityReview: 'Checked.', assumptions: [], limitations: [] }
   expect(() => recordReview(root, 'one', report, () => ({}))).toThrow(/files|verification/)
   write('src/features/performances/screens/list/ui/Screen.tsx', 'export const Screen = 1')
   report.requirements[0].files = ['src/features/performances/screens/list/ui/Screen.tsx']
@@ -145,6 +177,33 @@ it('reports nested support as direct, linked or unlinked without forcing it into
   ]))
   expect(surfaceIndexFailures(root)).toEqual([])
   expect(hookDecision(root,{session_id:'unprepared',hook_event_name:'PreToolUse',tool_name:'Bash',tool_input:{command:'node scripts/agents/cli.mjs context-report'}})).toEqual({})
+})
+it('shows group decomposition and gaps in a compact global discovery report', () => {
+  const { root, write } = fixture()
+  const path = 'docs/reference/zero-sol/context.json'
+  const index = readSurfaceIndex(root)
+  index.surfaces[0].coverage = 'group'
+  index.surfaces[0].gap = 'Policy not observed.'
+  write(path, JSON.stringify(index))
+  const summary = contextReport(root, { summary: true })
+  expect(summary.surfaces[0]).toMatchObject({ coverage: 'group', gap: 'Policy not observed.', requiresDecomposition: true })
+  expect(summary.surfaces[0].selections).toBeUndefined()
+  expect(summary.surfaces[0].fullFiles).toBeGreaterThan(0)
+  expect(summary.supporting).toEqual(contextReport(root).supporting)
+  const call = hookDecision(root, { session_id: 'unprepared', hook_event_name: 'PreToolUse', tool_name: 'Bash', tool_input: { command: 'node scripts/agents/cli.mjs context-report --summary' } })
+  expect(call).toEqual({})
+})
+it('reduces actual prepare delivery by selecting a section while retaining global constraints and open questions', () => {
+  const { checkpoint, run, write, inventory } = fixture()
+  write(inventory, '# Performance\nCommon policy.\n## List\nNo selection column.\n### Unresolved\nWhich detail destination?\n## Edit\n' + 'Independent form evidence.\n'.repeat(100))
+  const narrow = run('narrow')
+  expect(narrow).toContain('Common policy.')
+  expect(narrow).toContain('Which detail destination?')
+  expect(narrow).toContain('Entry loads; reset clears.')
+  checkpoint.references.push(inventory)
+  const broad = run('broad')
+  expect(Buffer.byteLength(narrow)).toBeLessThan(Buffer.byteLength(broad))
+  expect(broad).toContain('Independent form evidence.')
 })
 it('routes content actions and preserves unresolved entry policy without importing manager API judgments', () => {
   const index=readSurfaceIndex(process.cwd())
@@ -209,6 +268,8 @@ it('allows context discovery before preparation but rejects command chaining and
   const call = (command) => hookDecision(root, { session_id: 'unprepared', hook_event_name: 'PreToolUse', tool_name: 'Bash', tool_input: { command } })
   expect(call('rtk proxy node scripts/agents/cli.mjs context performance-list')).toEqual({})
   expect(call('rtk proxy node scripts/agents/cli.mjs context')).toEqual({})
+  expect(call('node scripts/agents/cli.mjs context-report --summary --write')).toHaveProperty('hookSpecificOutput.permissionDecision', 'deny')
+  expect(call('node scripts/agents/cli.mjs context-report --summary; touch changed')).toHaveProperty('hookSpecificOutput.permissionDecision', 'deny')
   expect(call('node scripts/agents/cli.mjs context performance-list; touch changed')).toHaveProperty('hookSpecificOutput.permissionDecision', 'deny')
   expect(call('node scripts/agents/other.mjs context')).toHaveProperty('hookSpecificOutput.permissionDecision', 'deny')
 })
@@ -223,7 +284,7 @@ it('rechecks actual targets even when a broad preparation scope overlaps a valid
 it('does not force an implementation artifact for an honestly unimplemented requirement', () => {
   const { root, run } = fixture()
   run()
-  expect(() => recordReview(root, 'one', { requirements: [{ id: 'R1', status: 'unimplemented', evidence: 'Awaiting confirmed server contract.' }], contractReview: 'Not adopted yet.', complexityReview: 'No edits.', assumptions: [], limitations: ['Blocked.'] }, () => ({}))).not.toThrow()
+  expect(() => recordReview(root, 'one', { requirements: [{ id: 'R1', status: 'unimplemented', evidence: 'Awaiting confirmed server contract.', blocked: 'The server contract is unconfirmed.' }], contractReview: 'Not adopted yet.', complexityReview: 'No edits.', assumptions: [], limitations: ['Blocked.'] }, () => ({}))).not.toThrow()
 })
 
 it('tracks index edits as stale references', () => {
@@ -239,7 +300,7 @@ it('rejects directories as implementation files or verification artifacts', () =
   checkpoint.scope = ['src/features/performances/']
   run()
   write('src/features/performances/screens/list/ui/Screen.tsx', 'export const value = 1')
-  const report = { requirements: [{ id: 'R1', status: 'implemented', evidence: 'Observed.', files: ['src/features/performances/screens/list'], verification: [{ method: 'Scenario test', result: 'passed' }] }], contractReview: 'Reviewed.', complexityReview: 'Reviewed.', assumptions: [], limitations: [] }
+  const report = { requirements: [{ id: 'R1', status: 'implemented', evidence: 'Observed.', appliedSections: ['AGENTS.md'], files: ['src/features/performances/screens/list'], verification: [{ method: 'Scenario test', result: 'passed' }] }], contractReview: 'Reviewed.', complexityReview: 'Reviewed.', assumptions: [], limitations: [] }
   expect(() => recordReview(root, 'one', report, () => ({}))).toThrow(/files/)
   report.requirements[0].files = ['src/features/performances/screens/list/ui/Screen.tsx']
   report.requirements[0].verification[0].artifact = 'src/features/performances/screens/list'

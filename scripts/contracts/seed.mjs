@@ -102,7 +102,7 @@ export const SEED_BUNDLES = [
     tests: ['src/api/required-query.test.tsx'],
     ownership: {
       shared: 'API owns the required-query outcome priority (incident, not-found, cached data, pending, error) and its projection to the three detail states.',
-      feature: 'Owns the queryOptions factory, the workflow hook beside the screen that injects locale and runs it, safe copy, retry, and content.',
+      feature: 'Owns the queryOptions factory and API-only execution in api; screen workflow owns business state and follow-up effects. The screen owns safe copy, retry, and content.',
     },
   },
   {
@@ -215,21 +215,37 @@ export const SEED_BUNDLES = [
   },
   {
     id: 'draft-commit',
-    code: ['src/shared/lib/use-draft-commit.ts'],
+    examples: [{
+      files: [
+        'src/features/members/screens/list/model/useMemberListFilter.ts',
+        'src/features/performances/screens/list/model/usePerformanceListFilter.ts',
+      ],
+      useWhen: 'Compare filter, period and keyword drafts that share a commit identity; callers collect input through prepareSubmit and retain URL transitions.',
+      doNotCopy: 'Member explicit-search and performance immediate-search/reset policies, keyword fields or venueKeyword. Use individual primitives when input lifecycles differ.',
+    }],
+    code: ['src/shared/lib/use-draft-commit.ts', 'src/shared/lib/use-list-filter-draft.ts'],
     skills: [location(
       '.agents/skills/shared-ui-contract/references/logic-promotion.md',
       'Shared logic admission',
       'draft preservation while a caller identity is equal',
+    ), location(
+      '.agents/skills/shared-ui-contract/references/shared-values.md',
+      'State mechanics (`shared/lib`)',
+      '`useListFilterDraft` composes',
     )],
     adrs: [location(
       'docs/decisions/0009-shared-boundaries.md',
       '현재 provisional 계약',
       '`useDraftCommit`',
+    ), location(
+      'docs/decisions/0012-list-filter-draft-composition.md',
+      '초안 조합 결정',
+      '`useListFilterDraft`를 **provisional shared**로 채택한다',
     )],
-    tests: ['src/shared/lib/use-draft-commit.test.tsx'],
+    tests: ['src/shared/lib/use-draft-commit.test.tsx', 'src/shared/lib/use-list-filter-draft.test.tsx'],
     ownership: {
-      shared: 'Owns preserve, rebuild, reset, and patch mechanics for an explicit caller identity.',
-      feature: 'Owns committed identity, draft shape, submit/reset/navigation, and page policy.',
+      shared: 'Owns preserve, rebuild, reset, and patch mechanics; composes declared filter identity, period and keyword drafts and input collection.',
+      feature: 'Owns identity policy, field declarations, defaults, validation, keyword mapping, submit/reset destinations, navigation, and page policy.',
     },
   },
   {

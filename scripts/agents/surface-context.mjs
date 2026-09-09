@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { dirname, relative, resolve } from 'node:path'
-import { readReference, referenceOf, selectedDocuments } from './document-context.mjs'
+import { readReference, referenceCovers, referenceOf, selectedDocuments } from './document-context.mjs'
+import { pointerState, rowsForSurface, summarize } from './screen-contract.mjs'
 
 export const SURFACE_INDEX = 'docs/reference/zero-sol/context.json'
 const text = (value) => typeof value === 'string' && value.trim().length > 0
@@ -66,6 +67,7 @@ export function workflowContext(root, checkpoint, paths = checkpoint.scope) {
   const included = decisions.filter((decision) => decision.decision === 'include').map((decision) => byId.get(decision.id))
   for (const gap of gaps) {
     if (!text(gap.reason) || !list(gap.paths) || !gap.paths.length || !gap.paths.every((path) => safePath(path) && checkpoint.scope.some((scope) => inside(path, scope))) || !list(gap.references) || !gap.references.length) throw new Error('Evidence gaps need scoped paths, reason and existing references')
+    if (!list(gap.requirements) || !gap.requirements.length || new Set(gap.requirements).size !== gap.requirements.length || !gap.requirements.every((id) => checkpoint.requirements.some((requirement) => requirement.id === id))) throw new Error('Evidence gaps need existing requirement IDs')
   }
   if (checkpoint.stage === 'settled' && (gaps.length || included.some((surface) => surface.gap))) throw new Error('A settled workflow cannot have evidence gaps')
   for (const path of paths.filter(productPath)) {
@@ -80,11 +82,12 @@ export function workflowContext(root, checkpoint, paths = checkpoint.scope) {
   }
   const references = [...index.judgment, ...included.flatMap((surface) => [surface.inventory, ...surface.scenarios, ...surface.references]), ...gaps.flatMap((gap) => gap.references)]
   for (const requirement of checkpoint.requirements) {
-    if (!list(requirement.surfaces) || !requirement.surfaces.every((id) => included.some((surface) => surface.id === id)) || (!requirement.surfaces.length && !gaps.length)) throw new Error(`Requirement ${requirement.id} needs included surfaces`)
+    const requirementGaps = gaps.filter((gap) => gap.requirements.includes(requirement.id))
+    if (!list(requirement.surfaces) || !requirement.surfaces.every((id) => included.some((surface) => surface.id === id)) || (!requirement.surfaces.length && !requirementGaps.length)) throw new Error(`Requirement ${requirement.id} needs included surfaces or its own evidence gap`)
     if (!list(requirement.sources) || !requirement.sources.length) throw new Error(`Requirement ${requirement.id} needs sources (Markdown locations or user)`)
     if (!list(requirement.contracts) || !requirement.contracts.every((id) => checkpoint.contracts.some((contract) => contract.id === id)) || (!requirement.contracts.length && !text(requirement.contractReason))) throw new Error(`Requirement ${requirement.id} needs declared contracts or contractReason`)
-    const evidence = [...included.filter((surface) => requirement.surfaces.includes(surface.id)).flatMap((surface) => [surface.inventory, ...surface.scenarios, ...surface.references]), ...gaps.flatMap((gap) => gap.references)].map((ref) => referenceOf(ref).file)
-    if (!requirement.sources.some((source) => source === 'user' || evidence.includes(referenceOf(source).file))) throw new Error(`Requirement ${requirement.id} sources must include its surface evidence or the explicit user request`)
+    const evidence = [...included.filter((surface) => requirement.surfaces.includes(surface.id)).flatMap((surface) => [surface.inventory, ...surface.scenarios, ...surface.references]), ...requirementGaps.flatMap((gap) => gap.references)]
+    if (!requirement.sources.some((source) => source === 'user' || evidence.some((ref) => referenceCovers(root, ref, source)))) throw new Error(`Requirement ${requirement.id} sources must include its surface evidence or the explicit user request`)
     references.push(...requirement.sources.filter((source) => source !== 'user'))
   }
   for (const surface of included) if (!checkpoint.requirements.some((requirement) => requirement.surfaces.includes(surface.id))) throw new Error(`Included surface needs a requirement: ${surface.id}`)
@@ -96,21 +99,39 @@ export function describeContext(root, id) {
   if (!id) return index.surfaces.map((surface) => `${surface.id} — ${surface.title} [${surface.coverage}]`).join('\n') + '\n'
   const surface = index.surfaces.find((item) => item.id === id)
   if (!surface) throw new Error(`Unknown surface: ${id}. Run context without an id to list targets.`)
-  return JSON.stringify({ ...surface, judgment: index.judgment, related: surface.related.map((related) => {
+  const rows = rowsForSurface(root, surface)
+  const contract = rows.length
+    ? {
+        rows: rows.map((row) => ({
+          id: row.id, kind: row.kind, surface: row.surface,
+          unresolved: row.unresolved, questions: row.questions,
+          pointer: row.pointer, pointerState: pointerState(root, row),
+        })),
+        summary: summarize(rows, root),
+        note: 'These rows are what this screen must be — the denominator of completeness. Scenario cards own verification, and pointer says where to look, never that the work is done or missing.',
+      }
+    : { rows: [], note: `Not migrated: ${surface.inventory} declares no row id for ${surface.id}. Read the section table itself; an empty list is not an empty screen.` }
+  return JSON.stringify({ ...surface, contract, judgment: index.judgment, related: surface.related.map((related) => {
     const target = index.surfaces.find((item) => item.id === related)
     return { id: related, title: target?.title, instruction: 'Explicitly include or exclude with a reason.' }
   }), note: 'Paths route evidence; they never assign code ownership or prescribe new product architecture. Feature API/model modules can serve several surfaces. Group entries require manual decomposition of their inner surfaces. Read linked facts; this is not a product specification.' }, null, 2) + '\n'
 }
 
 /** Diagnostics only: reachable support documents need not be direct surface inventory entries. */
-export function contextReport(root) {
+export function contextReport(root, { summary = false } = {}) {
   const index = readSurfaceIndex(root)
   const direct = new Set(index.judgment.map(ref => referenceOf(ref).file))
   const surfaces = index.surfaces.map(surface => {
     const refs = [...index.judgment, surface.inventory, ...surface.scenarios, ...surface.references]
     refs.forEach(ref => direct.add(referenceOf(ref).file))
     const documents = selectedDocuments(root, refs)
-    return {id:surface.id, bytes:documents.reduce((sum,doc)=>sum+Buffer.byteLength(doc.selected),0), selections:documents.map(doc=>({file:doc.file, heading:doc.heading ?? null, bytes:Buffer.byteLength(doc.selected)}))}
+    return {
+      id: surface.id, coverage: surface.coverage, gap: surface.gap ?? null,
+      requiresDecomposition: surface.coverage === 'group',
+      bytes: documents.reduce((sum, doc) => sum + Buffer.byteLength(doc.selected), 0),
+      fullFiles: documents.filter(doc => doc.heading === undefined).length,
+      ...(summary ? {} : { selections: documents.map(doc => ({ file: doc.file, heading: doc.heading ?? null, bytes: Buffer.byteLength(doc.selected) })) }),
+    }
   })
   const reachable=new Set(direct)
   const pending=[...direct]

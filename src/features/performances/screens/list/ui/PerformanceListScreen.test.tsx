@@ -14,6 +14,7 @@ import type {
 } from "../../../fixtures/performances";
 import type { PerformanceRouteSearch } from "../model/search-schema";
 import { PerformanceListScreen } from "./PerformanceListScreen";
+import { performanceVenuesQuery } from "../../../api/queries";
 
 const { readPage } = vi.hoisted(() => ({
   readPage: vi.fn<typeof readPerformancePage>(),
@@ -46,6 +47,10 @@ function setup(search: PerformanceRouteSearch = {}) {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
+  client.setQueryData(performanceVenuesQuery("ko").queryKey, [
+    { id: "venue-1", name: "Venue A" },
+    { id: "venue-2", name: "Venue B" },
+  ]);
   const view = (value: PerformanceRouteSearch) => (
     <QueryClientProvider client={client}>
       <TestLocaleProvider>
@@ -53,10 +58,6 @@ function setup(search: PerformanceRouteSearch = {}) {
           search={value}
           onSearchChange={onSearchChange}
           onActivate={onActivate}
-          venues={[
-            { id: "venue-1", name: "Venue A" },
-            { id: "venue-2", name: "Venue B" },
-          ]}
         />
       </TestLocaleProvider>
     </QueryClientProvider>

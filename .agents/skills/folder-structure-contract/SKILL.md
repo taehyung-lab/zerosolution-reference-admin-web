@@ -124,7 +124,7 @@ dialog props는 compose/ui, 전화번호 표시 함수는 compose/lib가 소유�
 | --- | --- | --- |
 | members | list, detail, form, counsel, appeals, access, dormant, withdrawn | record-list, activity, counsel-record |
 | managers | list, detail, form | manager-select-options |
-| performances | list | 현재 필요 없음 |
+| performances | list, detail | 현재 필요 없음; form은 입력 정책 확인 대기 |
 | messaging | compose | 현재 필요 없음 |
 | auth | login | 현재 필요 없음 |
 

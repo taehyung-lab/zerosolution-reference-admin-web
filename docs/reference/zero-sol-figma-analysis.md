@@ -85,7 +85,7 @@
 
 ### 질문 1
 
-1. "보기/정렬 default: 100 **or 마지막으로 설정한 값**" — `or`의 우선순위, 저장 범위(화면/계정/브라우저), URL 공유 시 우선권. 답에 따라 resolver 기본값 주입 mechanic 필요 여부가 갈린다.
+1. **해결(2026-09-09 사용자 결정, 목록 공통)** 보기(page size)는 URL에 값이 있으면 그 값을 쓰고, 없으면 상수 기본값 — 100, 또는 그 화면의 Notion 원문이 다른 값을 표기하면 그 값 — 을 쓴다. 방문 사이에 마지막 선택을 기억하지 않는다. 따라서 저장 범위(화면/계정/브라우저)와 URL 공유 우선권은 쟁점이 아니고, **resolver 기본값 주입 mechanic도 만들지 않는다.** 원래 질문은 `"보기/정렬 default: 100 or 마지막으로 설정한 값"`의 `or` 우선순위였다. 이 답은 보기에 한정하며 정렬 방향의 미확인(질문 3)을 확정하지 않는다.
 
 ### 질문 2
 
@@ -255,7 +255,7 @@ DOM 관련 3건은 2026-09-05 현재 코드를 직접 재대조해 아래 변경
 | 상세 archetype(헤더 action·접이식 섹션·2열 dl·이력·상태 종속 하단 action) | feature composition | 회원·발권·소명·운영자 조회 4 화면 동일 골격 | detail-workflow 문장 |
 | 상세 안 인라인 편집 섹션·섹션 단위 저장 | 섹션 하나 = 폼 하나(form-workflow) | 회원상담·소명 처리 결과·공연 입장안내 | detail-workflow 문장 |
 | dialog 안 폼 | feature composition 유지 | SMS·이메일·댓글 | dialogs.md close 표면 문장 |
-| page tab·언어 tab | Tabs primitive 후보(미구현), URL 여부는 feature | 7 화면 유형 | form-workflow 문장 |
+| page tab·언어 tab | `Tabs*` primitive 구현(2026-09-08), 선택값·URL 여부·panel 수명은 feature | 7 화면 유형 중 공연 상세의 읽기 언어 탭을 첫 코드 consumer로 검증 | primitives-and-tokens; 편집 폼의 입력 보존은 미검증 |
 | 편집 테이블·반복 행·파일 업로드 | kind D·`FormFileField` 현행 | 다국어·공연 수정 | — |
 | 권한 matrix | `CheckboxTree`(1D) 로 불충분 → feature-first Table+Checkbox. **`CheckboxTree` 자체는 다중선택 필터 그룹(30여 화면)의 shared 표면으로 이관 대상** — 9/1 "matrix 전용" 제외 사유 철회 | 접근권한 등록 2D / 목록 필터 1D | form-fields.md 문장, ADR 0009 표 |
 | `FormSaveDialogs` | opt-in 으로 축소(9/2) → **9/3 ②: `useSaveForm.dialogs` 안에서만 렌더**. 확인 쌍이 없는 인라인 저장은 `useSaveForm` 자체를 쓰지 않는다 | 호출 직전 reference처럼 확인만 있고 실제 저장·성공이 없으면 `ConfirmDialog` 직접 조립. #24의 confirmation-only `FormSaveDialogs` 제안은 현행 계약과 다르므로 이식하지 않는다 | 주석·ADR 0010 개정 ②, form-workflow |

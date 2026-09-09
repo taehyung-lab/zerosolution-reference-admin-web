@@ -12,13 +12,13 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as AppPerformancesRouteImport } from './routes/_app/performances'
 import { Route as AppManagersIndexRouteImport } from './routes/_app/managers/index'
 import { Route as AppManagersNewRouteImport } from './routes/_app/managers/new'
 import { Route as AppMembersAccessRouteImport } from './routes/_app/members/access'
 import { Route as AppMembersCounselRouteImport } from './routes/_app/members/counsel'
 import { Route as AppMembersDormantRouteImport } from './routes/_app/members/dormant'
 import { Route as AppMembersNewRouteImport } from './routes/_app/members/new'
+import { Route as AppPerformancesIndexRouteImport } from './routes/_app/performances/index'
 import { Route as AppManagersManagerIdIndexRouteImport } from './routes/_app/managers/$managerId/index'
 import { Route as AppManagersManagerIdEditRouteImport } from './routes/_app/managers/$managerId/edit'
 import { Route as AppMembersMemberIdIndexRouteImport } from './routes/_app/members/$memberId/index'
@@ -30,6 +30,7 @@ import { Route as AppMembersAppealsIndexRouteImport } from './routes/_app/member
 import { Route as AppMembersAppealsAppealIdRouteImport } from './routes/_app/members/appeals/$appealId'
 import { Route as AppMembersWithdrawnIndexRouteImport } from './routes/_app/members/withdrawn/index'
 import { Route as AppMembersWithdrawnMemberIdRouteImport } from './routes/_app/members/withdrawn/$memberId'
+import { Route as AppPerformancesPerformanceIdIndexRouteImport } from './routes/_app/performances/$performanceId/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -44,11 +45,6 @@ const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => rootRouteImport,
-} as any)
-const AppPerformancesRoute = AppPerformancesRouteImport.update({
-  id: '/performances',
-  path: '/performances',
-  getParentRoute: () => AppRoute,
 } as any)
 const AppManagersIndexRoute = AppManagersIndexRouteImport.update({
   id: '/managers/',
@@ -78,6 +74,11 @@ const AppMembersDormantRoute = AppMembersDormantRouteImport.update({
 const AppMembersNewRoute = AppMembersNewRouteImport.update({
   id: '/members/new',
   path: '/members/new',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPerformancesIndexRoute = AppPerformancesIndexRouteImport.update({
+  id: '/performances/',
+  path: '/performances/',
   getParentRoute: () => AppRoute,
 } as any)
 const AppManagersManagerIdIndexRoute =
@@ -140,17 +141,23 @@ const AppMembersWithdrawnMemberIdRoute =
     path: '/members/withdrawn/$memberId',
     getParentRoute: () => AppRoute,
   } as any)
+const AppPerformancesPerformanceIdIndexRoute =
+  AppPerformancesPerformanceIdIndexRouteImport.update({
+    id: '/performances/$performanceId/',
+    path: '/performances/$performanceId/',
+    getParentRoute: () => AppRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
-  '/performances': typeof AppPerformancesRoute
   '/managers/new': typeof AppManagersNewRoute
   '/members/access': typeof AppMembersAccessRoute
   '/members/counsel': typeof AppMembersCounselRoute
   '/members/dormant': typeof AppMembersDormantRoute
   '/members/new': typeof AppMembersNewRoute
   '/managers/': typeof AppManagersIndexRoute
+  '/performances/': typeof AppPerformancesIndexRoute
   '/managers/$managerId/edit': typeof AppManagersManagerIdEditRoute
   '/members/$memberId/edit': typeof AppMembersMemberIdEditRoute
   '/members/active/all': typeof AppMembersActiveAllRoute
@@ -162,17 +169,18 @@ export interface FileRoutesByFullPath {
   '/members/$memberId/': typeof AppMembersMemberIdIndexRoute
   '/members/appeals/': typeof AppMembersAppealsIndexRoute
   '/members/withdrawn/': typeof AppMembersWithdrawnIndexRoute
+  '/performances/$performanceId/': typeof AppPerformancesPerformanceIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
-  '/performances': typeof AppPerformancesRoute
   '/managers/new': typeof AppManagersNewRoute
   '/members/access': typeof AppMembersAccessRoute
   '/members/counsel': typeof AppMembersCounselRoute
   '/members/dormant': typeof AppMembersDormantRoute
   '/members/new': typeof AppMembersNewRoute
   '/managers': typeof AppManagersIndexRoute
+  '/performances': typeof AppPerformancesIndexRoute
   '/managers/$managerId/edit': typeof AppManagersManagerIdEditRoute
   '/members/$memberId/edit': typeof AppMembersMemberIdEditRoute
   '/members/active/all': typeof AppMembersActiveAllRoute
@@ -184,19 +192,20 @@ export interface FileRoutesByTo {
   '/members/$memberId': typeof AppMembersMemberIdIndexRoute
   '/members/appeals': typeof AppMembersAppealsIndexRoute
   '/members/withdrawn': typeof AppMembersWithdrawnIndexRoute
+  '/performances/$performanceId': typeof AppPerformancesPerformanceIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
-  '/_app/performances': typeof AppPerformancesRoute
   '/_app/managers/new': typeof AppManagersNewRoute
   '/_app/members/access': typeof AppMembersAccessRoute
   '/_app/members/counsel': typeof AppMembersCounselRoute
   '/_app/members/dormant': typeof AppMembersDormantRoute
   '/_app/members/new': typeof AppMembersNewRoute
   '/_app/managers/': typeof AppManagersIndexRoute
+  '/_app/performances/': typeof AppPerformancesIndexRoute
   '/_app/managers/$managerId/edit': typeof AppManagersManagerIdEditRoute
   '/_app/members/$memberId/edit': typeof AppMembersMemberIdEditRoute
   '/_app/members/active/all': typeof AppMembersActiveAllRoute
@@ -208,19 +217,20 @@ export interface FileRoutesById {
   '/_app/members/$memberId/': typeof AppMembersMemberIdIndexRoute
   '/_app/members/appeals/': typeof AppMembersAppealsIndexRoute
   '/_app/members/withdrawn/': typeof AppMembersWithdrawnIndexRoute
+  '/_app/performances/$performanceId/': typeof AppPerformancesPerformanceIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/login'
-    | '/performances'
     | '/managers/new'
     | '/members/access'
     | '/members/counsel'
     | '/members/dormant'
     | '/members/new'
     | '/managers/'
+    | '/performances/'
     | '/managers/$managerId/edit'
     | '/members/$memberId/edit'
     | '/members/active/all'
@@ -232,17 +242,18 @@ export interface FileRouteTypes {
     | '/members/$memberId/'
     | '/members/appeals/'
     | '/members/withdrawn/'
+    | '/performances/$performanceId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/login'
-    | '/performances'
     | '/managers/new'
     | '/members/access'
     | '/members/counsel'
     | '/members/dormant'
     | '/members/new'
     | '/managers'
+    | '/performances'
     | '/managers/$managerId/edit'
     | '/members/$memberId/edit'
     | '/members/active/all'
@@ -254,18 +265,19 @@ export interface FileRouteTypes {
     | '/members/$memberId'
     | '/members/appeals'
     | '/members/withdrawn'
+    | '/performances/$performanceId'
   id:
     | '__root__'
     | '/'
     | '/_app'
     | '/login'
-    | '/_app/performances'
     | '/_app/managers/new'
     | '/_app/members/access'
     | '/_app/members/counsel'
     | '/_app/members/dormant'
     | '/_app/members/new'
     | '/_app/managers/'
+    | '/_app/performances/'
     | '/_app/managers/$managerId/edit'
     | '/_app/members/$memberId/edit'
     | '/_app/members/active/all'
@@ -277,6 +289,7 @@ export interface FileRouteTypes {
     | '/_app/members/$memberId/'
     | '/_app/members/appeals/'
     | '/_app/members/withdrawn/'
+    | '/_app/performances/$performanceId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -307,13 +320,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/_app/performances': {
-      id: '/_app/performances'
-      path: '/performances'
-      fullPath: '/performances'
-      preLoaderRoute: typeof AppPerformancesRouteImport
-      parentRoute: typeof AppRoute
     }
     '/_app/managers/': {
       id: '/_app/managers/'
@@ -355,6 +361,13 @@ declare module '@tanstack/react-router' {
       path: '/members/new'
       fullPath: '/members/new'
       preLoaderRoute: typeof AppMembersNewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/performances/': {
+      id: '/_app/performances/'
+      path: '/performances'
+      fullPath: '/performances/'
+      preLoaderRoute: typeof AppPerformancesIndexRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/managers/$managerId/': {
@@ -434,17 +447,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppMembersWithdrawnMemberIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/performances/$performanceId/': {
+      id: '/_app/performances/$performanceId/'
+      path: '/performances/$performanceId'
+      fullPath: '/performances/$performanceId/'
+      preLoaderRoute: typeof AppPerformancesPerformanceIdIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
-  AppPerformancesRoute: typeof AppPerformancesRoute
   AppManagersNewRoute: typeof AppManagersNewRoute
   AppMembersAccessRoute: typeof AppMembersAccessRoute
   AppMembersCounselRoute: typeof AppMembersCounselRoute
   AppMembersDormantRoute: typeof AppMembersDormantRoute
   AppMembersNewRoute: typeof AppMembersNewRoute
   AppManagersIndexRoute: typeof AppManagersIndexRoute
+  AppPerformancesIndexRoute: typeof AppPerformancesIndexRoute
   AppManagersManagerIdEditRoute: typeof AppManagersManagerIdEditRoute
   AppMembersMemberIdEditRoute: typeof AppMembersMemberIdEditRoute
   AppMembersActiveAllRoute: typeof AppMembersActiveAllRoute
@@ -456,16 +476,17 @@ interface AppRouteChildren {
   AppMembersMemberIdIndexRoute: typeof AppMembersMemberIdIndexRoute
   AppMembersAppealsIndexRoute: typeof AppMembersAppealsIndexRoute
   AppMembersWithdrawnIndexRoute: typeof AppMembersWithdrawnIndexRoute
+  AppPerformancesPerformanceIdIndexRoute: typeof AppPerformancesPerformanceIdIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppPerformancesRoute: AppPerformancesRoute,
   AppManagersNewRoute: AppManagersNewRoute,
   AppMembersAccessRoute: AppMembersAccessRoute,
   AppMembersCounselRoute: AppMembersCounselRoute,
   AppMembersDormantRoute: AppMembersDormantRoute,
   AppMembersNewRoute: AppMembersNewRoute,
   AppManagersIndexRoute: AppManagersIndexRoute,
+  AppPerformancesIndexRoute: AppPerformancesIndexRoute,
   AppManagersManagerIdEditRoute: AppManagersManagerIdEditRoute,
   AppMembersMemberIdEditRoute: AppMembersMemberIdEditRoute,
   AppMembersActiveAllRoute: AppMembersActiveAllRoute,
@@ -477,6 +498,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppMembersMemberIdIndexRoute: AppMembersMemberIdIndexRoute,
   AppMembersAppealsIndexRoute: AppMembersAppealsIndexRoute,
   AppMembersWithdrawnIndexRoute: AppMembersWithdrawnIndexRoute,
+  AppPerformancesPerformanceIdIndexRoute:
+    AppPerformancesPerformanceIdIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

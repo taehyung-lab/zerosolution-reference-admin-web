@@ -54,6 +54,16 @@ export function sectionText(content, heading) {
   return sectionRanges(content, heading).map(([from, to]) => lines.slice(from, to).join('\n')).filter(Boolean).join('\n\n')
 }
 
+export function referenceCovers(root, evidence, source) {
+  const parent = referenceOf(evidence)
+  const child = referenceOf(source)
+  if (parent.file !== child.file) return false
+  const { content } = readReference(root, parent)
+  const [from, to] = sectionRanges(content, parent.heading).at(-1)
+  const [start, end] = sectionRanges(content, child.heading).at(-1)
+  return from <= start && end <= to
+}
+
 export function readReference(root, value) {
   const reference = referenceOf(value)
   const content = readFileSync(resolve(root, reference.file), 'utf8')

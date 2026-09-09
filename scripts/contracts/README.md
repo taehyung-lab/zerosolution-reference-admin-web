@@ -22,7 +22,8 @@ A bundle missing any part is not an adoption candidate; it is code that happens 
 
 `node scripts/agents/cli.mjs bundle <id>` also returns optional `examples` from `seed.mjs`:
 `files` to read together, `useWhen` describing the composition to compare, and `doNotCopy` naming
-product-specific choices or unverified behavior. Initial examples cover list results, tables and save forms. Other bundles still expose their code, contract and focused tests;
+product-specific choices or unverified behavior. Initial examples cover list results, tables, draft
+composition and save forms. Other bundles still expose their code, contract and focused tests;
 an absent example is not a finding that no consumer exists.
 
 These are scoped reading aids, not approved whole screens or a second contract. Read their current

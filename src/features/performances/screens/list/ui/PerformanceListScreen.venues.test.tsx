@@ -83,11 +83,15 @@ describe("performance venue option supply", () => {
     ).toBeVisible();
   });
 
-  it("does not query venues at all when the caller supplies them", async () => {
+  it("reuses warmed venue options without a duplicate read on mount", async () => {
     const client = new QueryClient({
       defaultOptions: { queries: { retry: false } },
     });
     vi.mocked(readPerformancePage).mockResolvedValue({ rows: [], total: 0 });
+    vi.mocked(readPerformanceVenues).mockResolvedValue([
+      { id: "warmed", name: "Warmed Hall" },
+    ]);
+    await client.query(performanceVenuesQuery("ko"));
     render(
       <QueryClientProvider client={client}>
         <TestLocaleProvider>
@@ -95,19 +99,18 @@ describe("performance venue option supply", () => {
             search={{}}
             onSearchChange={vi.fn()}
             onActivate={vi.fn()}
-            venues={[{ id: "injected", name: "Injected Hall" }]}
           />
         </TestLocaleProvider>
       </QueryClientProvider>,
     );
     fireEvent.change(
       await screen.findByRole("textbox", { name: "공연장 검색" }),
-      { target: { value: "Injected" } },
+      { target: { value: "Warmed" } },
     );
     expect(
-      await screen.findByRole("button", { name: "Injected Hall" }),
+      await screen.findByRole("button", { name: "Warmed Hall" }),
     ).toBeVisible();
-    expect(vi.mocked(readPerformanceVenues)).not.toHaveBeenCalled();
+    expect(vi.mocked(readPerformanceVenues)).toHaveBeenCalledOnce();
     expect(screen.queryByText("옵션을 불러오는 중입니다.")).toBeNull();
   });
 });

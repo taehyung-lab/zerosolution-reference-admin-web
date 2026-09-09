@@ -14,7 +14,7 @@ Share stable behavior, not a guessed resource framework. Source-owned UI remains
 - Promoting or demoting a shared state mechanic or pure utility: read [references/logic-promotion.md](references/logic-promotion.md).
 - Any `shared/lib` function or hook or `shared/config` preset: read [references/shared-values.md](references/shared-values.md).
 - Translation namespace, adding a key, product-generic copy ownership, or locale parity: read [references/i18n.md](references/i18n.md).
-- Filter panel/row, period or keyword filter composition, `usePeriodDraft`, or `useKeywordDraft`: read [references/filter-fields.md](references/filter-fields.md); add the select or date reference only when changing that lower-level contract.
+- Filter panel/row, period or keyword filter composition, `useListFilterDraft`, `usePeriodDraft`, or `useKeywordDraft`: read [references/filter-fields.md](references/filter-fields.md), which links the adoption criteria and state API; add the select or date reference only when changing that lower-level contract.
 - TanStack Form adapter, `FormField`, label/control/error association, or typed field name: read [references/form-fields.md](references/form-fields.md).
 - Select or single-selection adapter: read [references/select.md](references/select.md); add form-fields only for a form adapter.
 - Searchable Combobox, remote option search, or custom entry: read [references/combobox.md](references/combobox.md); add form-fields only for a form adapter.

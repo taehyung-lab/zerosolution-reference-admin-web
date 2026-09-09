@@ -12,6 +12,9 @@ function setup() {
   roots.push(root)
   mkdirSync(join(root, '.ai-work'), { recursive: true })
   mkdirSync(join(root, 'scripts'), { recursive: true })
+  // Attribution enumerates the tree through Git, so the fixture needs a repository to be measured in.
+  writeFileSync(join(root, '.gitignore'), '.ai-work/\n')
+  execFileSync('git', ['init'], { cwd: root, stdio: 'ignore' })
   writeFileSync(join(root, 'AGENTS.md'), 'Read the contract. Do not guess policy.')
   writeFileSync(join(root, 'scripts/example.mjs'), 'export const value = 1\n')
   const checkpoint = {
@@ -26,6 +29,25 @@ const fingerprint = (root) => ({ 'scripts/example.mjs': readFileSync(join(root, 
 afterEach(() => { for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true }) })
 
 describe('repository preflight', () => {
+  it('keeps requirement identity across re-preparation while allowing additions and evidence changes', () => {
+    const { root, checkpoint } = setup()
+    const run = () => {
+      writeFileSync(join(root, '.ai-work/checkpoint.json'), JSON.stringify(checkpoint))
+      return prepare(root, 'one', '.ai-work/checkpoint.json', fingerprint)
+    }
+    run()
+    const original = { ...checkpoint.requirements[0] }
+    checkpoint.requirements = [{ id: 'R2', text: 'A new requirement.' }]
+    expect(run).toThrow(/Preserve requirement R1/)
+    checkpoint.requirements = [{ ...original, text: 'An easier replacement.' }]
+    expect(run).toThrow(/Preserve requirement R1/)
+    checkpoint.requirements = [original, { id: 'R2', text: 'A new requirement.' }]
+    expect(run).not.toThrow()
+    checkpoint.requirements[0].sources = ['user']
+    expect(run).not.toThrow()
+    checkpoint.requirements.pop()
+    expect(run).toThrow(/Preserve requirement R2/)
+  })
   it('executes the checked-in runtime adapter commands with native payloads', () => {
     const read = (file) => JSON.parse(readFileSync(file, 'utf8'));
     const codex = read('.codex/hooks.json').hooks;
@@ -67,6 +89,118 @@ describe('repository preflight', () => {
     checkpoint.scope = ['src/features/members/screens/list/']
     writeFileSync(join(root, '.ai-work/checkpoint.json'), JSON.stringify(checkpoint))
     expect(() => prepare(root, 'one', '.ai-work/checkpoint.json', fingerprint)).toThrow(/feature-contract/)
+  })
+  it('reports a prefix-loaded reference instead of rendering it, without weakening the reference checks', () => {
+    const { root, checkpoint } = setup()
+    const write = (value) => writeFileSync(join(root, '.ai-work/checkpoint.json'), JSON.stringify(value))
+    // Negative control: a checkpoint that declares nothing still receives the full reference text.
+    expect(prepare(root, 'plain', '.ai-work/checkpoint.json', fingerprint)).toContain('Do not guess policy')
+
+    const declared = { ...checkpoint, prefixLoaded: ['AGENTS.md'] }
+    write(declared)
+    // Negative control: with no runtime pointer in the repository, the declaration proves nothing.
+    expect(() => prepare(root, 'pointerless', '.ai-work/checkpoint.json', fingerprint)).toThrow(/verified against this repository's runtime pointers/)
+    writeFileSync(join(root, 'CLAUDE.md'), '@AGENTS.md\n\nProject pointer.\n')
+    const first = prepare(root, 'one', '.ai-work/checkpoint.json', fingerprint)
+    expect(first).not.toContain('Do not guess policy')
+    expect(first).toMatch(/AGENTS\.md — declared as already loaded/)
+    // The whole-file hash is still recorded, so scope and staleness behave exactly as before.
+    expect(checkEdit(root, 'one', ['scripts/example.mjs'])).toBeNull()
+    writeFileSync(join(root, 'AGENTS.md'), 'Contract changed')
+    expect(checkEdit(root, 'one', ['scripts/example.mjs'])).toMatch(/changed/)
+    // The runtime prefix cannot reload mid-session, so a changed file is delivered in full.
+    expect(prepare(root, 'one', '.ai-work/checkpoint.json', fingerprint)).toContain('Contract changed')
+
+    // The declaration cannot stand in for the required reference itself.
+    write({ ...declared, references: [] })
+    expect(() => prepare(root, 'two', '.ai-work/checkpoint.json', fingerprint)).toThrow(/Required reference: AGENTS\.md/)
+    // Nor can it name a document this checkpoint never declared in full.
+    write({ ...declared, prefixLoaded: ['scripts/example.mjs'] })
+    expect(() => prepare(root, 'three', '.ai-work/checkpoint.json', fingerprint)).toThrow(/prefixLoaded/)
+  })
+  it('sends an insufficient requirement back into the loop instead of closing on it', () => {
+    const { root, checkpoint } = setup()
+    const two = { ...checkpoint, requirements: [checkpoint.requirements[0], { id: 'R2', text: 'The replacement scope.' }] }
+    writeFileSync(join(root, '.ai-work/checkpoint.json'), JSON.stringify(two))
+    prepare(root, 'one', '.ai-work/checkpoint.json', fingerprint)
+    hookDecision(root, { session_id: 'one', hook_event_name: 'PreToolUse', tool_name: 'Bash', tool_input: { command: 'node build.mjs' } })
+    writeFileSync(join(root, 'scripts/example.mjs'), 'export const value = 4\n')
+    const base = {
+      contractReview: 'No contract changed.', complexityReview: 'One constant.',
+      assumptions: [], limitations: [],
+    }
+    const gap = (extra) => ({
+      ...base,
+      requirements: [
+        { id: 'R1', status: 'different', evidence: 'Implemented as a narrower constant.', appliedSections: ['AGENTS.md'], ...extra },
+        { id: 'R2', status: 'implemented', evidence: 'Covered.', appliedSections: ['AGENTS.md'] },
+      ],
+    })
+    // A gap that points nowhere would close the task on it.
+    expect(() => recordReview(root, 'one', gap({}), fingerprint)).toThrow(/name a replacement requirement ID/)
+    // Pointing at itself is not a replacement either.
+    expect(() => recordReview(root, 'one', gap({ replacement: 'R1' }), fingerprint)).toThrow(/replacement requirement ID/)
+    expect(() => recordReview(root, 'one', gap({ replacement: 'R7' }), fingerprint)).toThrow(/replacement requirement ID/)
+    // Either the successor requirement or the blocking condition re-opens it.
+    expect(() => recordReview(root, 'one', gap({ replacement: 'R2' }), fingerprint)).not.toThrow()
+    expect(() => recordReview(root, 'one', gap({ blocked: 'Waiting on the wire value.' }), fingerprint)).not.toThrow()
+  })
+  it('refuses a review that cites a convention section this session never received', () => {
+    const { root, checkpoint } = setup()
+    writeFileSync(join(root, 'scripts/notes.md'), '# Owned\n\nA rule.\n\n# Other\n\nAnother rule.\n')
+    const cited = { ...checkpoint, references: ['AGENTS.md', { file: 'scripts/notes.md', heading: 'Owned' }] }
+    writeFileSync(join(root, '.ai-work/checkpoint.json'), JSON.stringify(cited))
+    prepare(root, 'one', '.ai-work/checkpoint.json', fingerprint)
+    hookDecision(root, { session_id: 'one', hook_event_name: 'PreToolUse', tool_name: 'Bash', tool_input: { command: 'node build.mjs' } })
+    writeFileSync(join(root, 'scripts/example.mjs'), 'export const value = 5\n')
+    const review = (appliedSections) => ({
+      requirements: [{ id: 'R1', status: 'implemented', evidence: 'Done.', appliedSections }],
+      contractReview: 'No contract changed.', complexityReview: 'One constant.',
+      assumptions: [], limitations: [],
+    })
+    // The delivered section, and the whole file that contains it, both count.
+    expect(() => recordReview(root, 'one', review([{ file: 'scripts/notes.md', heading: 'Owned' }]), fingerprint)).not.toThrow()
+    expect(() => recordReview(root, 'one', review(['AGENTS.md']), fingerprint)).not.toThrow()
+    // A sibling section was never delivered, so it cannot be the source of a claim.
+    expect(() => recordReview(root, 'one', review([{ file: 'scripts/notes.md', heading: 'Other' }]), fingerprint)).toThrow(/never received|not delivered/)
+    // Neither can a document this session was never given.
+    writeFileSync(join(root, 'scripts/undelivered.md'), '# Elsewhere\n\nA rule nobody prepared.\n')
+    expect(() => recordReview(root, 'one', review(['scripts/undelivered.md']), fingerprint)).toThrow(/not delivered/)
+    expect(() => recordReview(root, 'one', review([]), fingerprint)).toThrow(/appliedSections/)
+    // A whole-file delivery covers its headings, so an invented one must still be rejected.
+    expect(() => recordReview(root, 'one', review([{ file: 'AGENTS.md', heading: 'No Such Rule' }]), fingerprint)).toThrow(/heading must exist/)
+  })
+  it('attributes a large whole-file delivery to the input that requested it', () => {
+    const { root, checkpoint } = setup()
+    writeFileSync(join(root, 'scripts/ledger.md'), `# Ledger\n\n${'A rule sentence for the ledger. '.repeat(300)}\n`)
+    const wide = { ...checkpoint, references: ['AGENTS.md', 'scripts/ledger.md'] }
+    writeFileSync(join(root, '.ai-work/checkpoint.json'), JSON.stringify(wide))
+    const output = prepare(root, 'one', '.ai-work/checkpoint.json', fingerprint)
+    expect(output).toMatch(/Whole-file deliveries over 4096 bytes/)
+    expect(output).toMatch(/scripts\/ledger\.md — requested whole by checkpoint\.references/)
+    expect(output).toMatch(/bytes delivered \(\d+ in whole files\)/)
+    // Below the threshold there is no decision to prompt, so the report stays quiet.
+    writeFileSync(join(root, '.ai-work/checkpoint.json'), JSON.stringify(checkpoint))
+    expect(prepare(root, 'two', '.ai-work/checkpoint.json', fingerprint)).not.toMatch(/Whole-file deliveries over/)
+  })
+  it('routes an app error-boundary edit to the shared UI contract', () => {
+    const { root, checkpoint } = setup()
+    const write = (value) => writeFileSync(join(root, '.ai-work/checkpoint.json'), JSON.stringify(value))
+    for (const skill of ['feature-contract', 'shared-ui-contract']) {
+      mkdirSync(join(root, `.agents/skills/${skill}`), { recursive: true })
+      writeFileSync(join(root, `.agents/skills/${skill}/SKILL.md`), `${skill}.`)
+    }
+    const routed = {
+      ...checkpoint,
+      scope: ['src/app/error-boundary/'],
+      references: ['AGENTS.md', '.agents/skills/feature-contract/SKILL.md'],
+      work: { kind: 'infrastructure', reason: 'Boundary presentation only; no screen workflow changes.' },
+    }
+    write(routed)
+    expect(() => prepare(root, 'one', '.ai-work/checkpoint.json', fingerprint)).toThrow(/shared-ui-contract/)
+    write({ ...routed, references: [...routed.references, '.agents/skills/shared-ui-contract/SKILL.md'] })
+    expect(() => prepare(root, 'two', '.ai-work/checkpoint.json', fingerprint)).not.toThrow()
+    expect(checkEdit(root, 'two', ['src/app/error-boundary/ui/Boundary.tsx'])).toBeNull()
   })
   it('requires a workflow decision by default and allows explained infrastructure work', () => {
     const { root, checkpoint } = setup()
@@ -113,7 +247,7 @@ describe('repository preflight', () => {
     writeFileSync(join(root, 'scripts/example.mjs'), 'export const value = 2\n')
     expect(checkStop(root, 'one', fingerprint)).toMatch(/review/)
     const report = {
-      requirements: [{ id: 'R1', status: 'implemented', evidence: 'Focused value test passed.' }],
+      requirements: [{ id: 'R1', status: 'implemented', evidence: 'Focused value test passed.', appliedSections: ['AGENTS.md'] }],
       contractReview: 'No shared candidate applies to this script.',
       complexityReview: 'One constant; no wrapper or domain switch.',
       assumptions: [], limitations: ['No browser scope.'],
@@ -142,6 +276,21 @@ describe('repository preflight', () => {
     expect(hookDecision(root, { ...event, tool_input: { command: 'rtk read AGENTS.md; python3 change.py' } }).hookSpecificOutput.permissionDecision).toBe('deny')
     expect(hookDecision(root, { ...event, tool_input: { command: 'git diff --output=scripts/example.mjs' } }).hookSpecificOutput.permissionDecision).toBe('deny')
   })
+  it('names the operator that stopped read-only recognition instead of only asking for preparation', () => {
+    const { root } = setup()
+    const event = { session_id: 'unprepared', hook_event_name: 'PreToolUse', tool_name: 'Bash' }
+    const reason = (command) => hookDecision(root, { ...event, tool_input: { command } })
+      .hookSpecificOutput.permissionDecisionReason
+    // The cause is the pipe, not a missing preparation, so the denial must say so first.
+    expect(reason('ls src | head')).toMatch(/^Not recognized as a read-only command because of the shell operator \|/)
+    expect(reason('cat AGENTS.md 2>&1')).toMatch(/Not recognized as a read-only command/)
+    // A backtick inside double quotes is command substitution; single quotes keep it literal.
+    expect(reason('grep -n "a `b` c" AGENTS.md')).toMatch(/inside double quotes/)
+    expect(hookDecision(root, { ...event, tool_input: { command: "grep -n 'a `b` c' AGENTS.md" } })).toEqual({})
+    // A parsable command that is simply not allowlisted keeps the preparation message alone.
+    expect(reason('python3 change.py')).not.toMatch(/Not recognized as a read-only command/)
+    expect(reason('python3 change.py')).toMatch(/prepare/)
+  })
   it('checks the actual edit contract even when a parent directory was prepared', () => {
     const { root, checkpoint } = setup()
     checkpoint.scope = ['src/']
@@ -163,8 +312,25 @@ describe('repository preflight', () => {
     writeFileSync(join(root, 'outside.txt'), 'shell change')
     git(['add', 'outside.txt'])
     git(['-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', 'commit', '-m', 'shell change'])
-    expect(checkStop(root, 'one')).toMatch(/scope/)
-    expect(checkStop(root, 'one')).toMatch(/cannot identify the author/)
+    // No post-tool event fired, so the still-open bracket is closed by the stop check itself.
+    expect(checkStop(root, 'one')).toMatch(/wrote outside its declared scope/)
+    expect(checkStop(root, 'one')).toMatch(/outside\.txt/)
+    expect(checkStop(root, 'one')).toMatch(/re-run prepare/)
+  })
+  it('reports a concurrent session change without blocking, and still blocks its own out-of-scope write', () => {
+    const { root } = setup()
+    prepare(root, 'one', '.ai-work/checkpoint.json')
+    const call = (event) => hookDecision(root, { session_id: 'one', hook_event_name: event, tool_name: 'Bash', tool_input: { command: 'python3 write.py' } })
+    call('PreToolUse'); call('PostToolUse')
+    // Written while this session held no write capability: someone else's change to answer for.
+    writeFileSync(join(root, 'concurrent.txt'), 'another session')
+    expect(checkStop(root, 'one')).toBeNull()
+    call('PreToolUse')
+    writeFileSync(join(root, 'outside.txt'), 'this session')
+    call('PostToolUse')
+    const blocked = checkStop(root, 'one')
+    expect(blocked).toMatch(/wrote outside its declared scope: outside\.txt/)
+    expect(blocked).toMatch(/Reported, not blocking: 1 path\(s\).*concurrent\.txt/)
   })
   it('lets a session that only inspected finish while another session edits the tree', () => {
     const { root } = setup()
@@ -174,7 +340,7 @@ describe('repository preflight', () => {
     writeFileSync(join(root, 'scripts/example.mjs'), 'export const value = 9\n')
     expect(checkStop(root, 'one', fingerprint)).toBeNull()
     const report = {
-      requirements: [{ id: 'R1', status: 'unimplemented', evidence: 'Read-only review; no edit made.' }],
+      requirements: [{ id: 'R1', status: 'unimplemented', evidence: 'Read-only review; no edit made.', blocked: 'Nothing was implemented, so there is no output to own.' }],
       contractReview: 'No contract changed.', complexityReview: 'No diff.',
       assumptions: [], limitations: ['Another session changed scripts/example.mjs.'],
     }
@@ -277,9 +443,14 @@ describe('repository preflight', () => {
   it('routes every tool name the handler answers through each adapter matcher', () => {
     const handled = ['Bash', 'bash', 'exec_command', 'shell', 'powershell', 'Edit', 'Write', 'MultiEdit', 'edit', 'create', 'apply_patch']
     for (const file of ['.codex/hooks.json', '.claude/settings.json']) {
-      const { matcher } = JSON.parse(readFileSync(file, 'utf8')).hooks.PreToolUse[0]
-      const names = new Set(matcher.split('|'))
-      for (const name of handled) expect(names.has(name), `${file} misses ${name}`).toBe(true)
+      const { hooks } = JSON.parse(readFileSync(file, 'utf8'))
+      // A bracket that opens on more tools than it closes on would attribute the difference to the
+      // next call, so both events must answer the same names.
+      for (const event of ['PreToolUse', 'PostToolUse']) {
+        const names = new Set(hooks[event][0].matcher.split('|'))
+        for (const name of handled) expect(names.has(name), `${file} ${event} misses ${name}`).toBe(true)
+      }
+      expect(Boolean(hooks.Stop), `${file} has no Stop handler`).toBe(true)
     }
   })
 })

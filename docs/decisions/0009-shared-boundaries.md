@@ -20,7 +20,7 @@
 
 ## 맥락
 
-이 저장소는 Manager 한 화면을 납품하는 제품이 아니라, 이후 신규 프로젝트에 채택할 수 있는 UI·상태·URL·API 경계를 실제 vertical slice에서 검증하는 레퍼런스다. Managers는 첫 consumer이지 계약의 소유자나 전체 제품의 축소판이 아니다.
+저장소 운영 모드와 Managers의 consumer 지위는 [AGENTS.md §0](../../AGENTS.md)가 소유한다.
 
 Figma에서 filter frame, 기간 선택, 검색 전·후 상태, toolbar, table, pagination의 반복을 관찰했다. 이 관찰은 domain-free mechanic을 provisional shared로 검증할 근거는 되지만 Query `enabled`, endpoint, enum, 권한, payload, 실패 semantics를 증명하지 않는다. 리허설 OpenAPI도 실제 복잡도를 시험할 근거일 뿐 신규 제품 계약이나 두 번째 실제 consumer가 아니다.
 
@@ -117,7 +117,7 @@ Managers 리허설에서는 URL search와 요청에 리허설 서버 enum을 그
 | filter surface   | `FilterPanel`, `FilterField`, `AsyncFieldBoundary`, `PeriodField`, `KeywordChipField`, `PeriodFilterField`, `KeywordFilterField`, `CheckboxTree`(다중선택 그룹) | frame·field layout·accessible association·caller가 결정한 비동기 field state의 generic·controlled rendering만 소유. `FilterField group`은 여러 컨트롤을 한 이름으로 묶는 `role=group` 래퍼. composite 행은 optional 기준·대상 select(`FilterSelectSlot`: 문자열 value·options·label만)까지, `CheckboxTree`는 전체/leaf 토글 대수와 `emptyMeansAll`까지. enum 의미·기본값·라벨·행 의미는 feature |
 | result surface   | `ResultToolbar`, `ResultSummary`, `ListResult`                                                                                   | slot/layout, caller가 결정한 state, 공용 error/retry/trace 표현만 소유                                                                                                                                                                                                                                                                                                                                                                                                       |
 | table/navigation | `DataTable`, `Pagination`, `PageSizeControl`, `SortControl`                                                                      | table/paging/control mechanics만 소유; URL·Query·options·sort behavior는 제외. `SortControl`은 정렬 필드 select만. `DataTable`은 caller의 `meta.sort`(optional `direction: ascending \| descending` + `onSort`)에서 헤더 버튼·`aria-sort`·glyph를 렌더한다. 정렬 가능 컬럼·방향·전이는 feature |
-| state mechanic   | `useDraftCommit`, `usePeriodDraft`, `useKeywordDraft`                                                                            | preserve/rebuild, preset/custom conversion, pending keyword 대수만 소유. 편집 중 draft는 반쪽 기간을 허용하고 확정 경계가 닫힌 범위를 요구한다                                                                                                                                                                                                                                                                                                                                                                                                      |
+| state mechanic   | `useDraftCommit`, `usePeriodDraft`, `useKeywordDraft`, `useListFilterDraft`                                                                            | preserve/rebuild, preset/custom conversion, pending keyword 대수와 동일 수명의 입력 조합만 소유. 필터 분류·초기값·제출/초기화 목적지는 feature 정책이다. 편집 중 draft는 반쪽 기간을 허용하고 확정 경계가 닫힌 범위를 요구한다                                                                                                                                                                                                                                                                                                                                                                                                      |
 | row selection    | `usePageRowSelection`                                                                                                            | 현재 페이지의 선택 가능 행만, 커밋된 view가 바뀌면 해제, 같은 view refetch에는 잔존·선택 가능 ID만 유지. `getId`·`isSelectable`·`resetKey`는 caller가 주는 opaque 값이라 shared가 도메인을 배우지 않는다 |
 | list query 투영  | `api/list-query.ts` (`useListQuery`)                                                                                             | provisional. `required-query.ts`의 형제 자리([API 소비 경계](0011-detail-data-and-update-history-boundaries.md#api-호출-계층-조회목록mutation-공통)). 빈 페이지는 결과이고 오류가 아님, 진입 fetch만 blocking 표면을 염, incident surface가 가진 실패(session·permission)는 목록의 오류가 아님 — 셋만 소유. queryOptions·searched 판별·응답→rows/total·pageSize는 feature |
 | pure utility     | search compact/default resolve, closed instant pair 정규화, 선언 기본값 생략, datetime/format/option mapping                                                                   | 입력·출력이 domain-free인 순수 변환만 소유; 업무 schema·mapper·endpoint 조립은 제외. filter/view partition(`shared/lib/search-partition.ts`)과 `defineSearchFields`는 caller가 선언한 필드·map만 읽고 도메인을 모른다. 필드별 복구·기본값·분류, 검색 gate·기간 기준·기본값 선택·초기화·API/캐시는 feature. 세부 사용법과 기본값은 list-search-contract/shared-values가 소유하고 목록 lifecycle은 list-workflow가 소유한다                                                                                                                                                                                                                                                                                                      |
@@ -139,13 +139,18 @@ filter/view partition을 2026-09-02 demote 했다가 재승격한 이유는 두 
 
 `ListResult`는 `notSearched | loading | error | empty | ready` 다섯 상태를 판정하며 `ListResultData`는 renderer가 실제로 읽는 facts(rows·searched·isPending·isFetching·isError·trace·retry)만 요구한다(2026-09-02 narrow). total·totalPages는 feature 확장 타입이다. searched entry의 pending 첫 조회는 공용 `BlockingProgress`가 loading 표면을 덮고 area skeleton은 두지 않는다. observer가 없는 prefetch는 로딩·에러 표면에서 배제한다. feature는 상태, 검색 전/결과 없음 문구, retry 동작, 구조적 trace, footer와 ready content를 제공한다. shared pattern은 공용 error/retry 문구, live region과 `ErrorTrace` disclosure를 직접 소유하며 API를 import하거나 raw message를 받지 않는다. 이 다섯 상태는 모든 목록의 필수 단계가 아니며, `DataTable`은 caller의 `meta.sort`로 헤더 버튼·`aria-sort`·glyph를 렌더하고 `onSort`를 호출할 뿐 어떤 컬럼이 정렬 가능한지, 방향 전이, route policy를 소유하지 않는다.
 
-2026-09-07 사용자 결정: managers(제품·리허설)·members의 검색 의도를 실제 필터(`periodType`)와 분리한다. 명시 검색은 `{}` / `{ searched: true, ...기본값 아닌 조건 }`으로 URL에서 복원하고, 유효한 소유 필드가 있는 직접 접근도 검색으로 정규화한다. 즉시 조회 화면은 표식 없이 빈 URL도 조회한다. 이는 기본값 검색과 최초 진입이 같은 빈 URL로 합쳐지는 문제를 해결하며, boolean을 local state에 복제하지 않는다. 화면별 정책은 feature에 남기고 공용화는 실제 소비자에서 중복·비교 차이가 확인된 날짜 pair 정규화와 기본값 생략의 순수 변환에 한정한다. 값·표식·기본값의 실행 순서와 예외 소비자는 [list-workflow](../../.agents/skills/feature-contract/references/list-workflow.md#state-and-url-lifecycle), 공용 함수 계약은 [shared-values](../../.agents/skills/shared-ui-contract/references/shared-values.md)가 소유한다. 이전의 서버 필터 판별자 의무와 별도 표식 금지는 이 범위에서 대체한다. 공연도 같은 날짜·기본값 공용 도구와 화면 1회 해소를 채택하며, 진입 즉시 조회/초기화 대기를 구분하는 `searched: false`는 URL 메타데이터로만 남긴다.
+2026-09-07 사용자 결정: managers(제품·리허설)·members의 검색 의도를 실제 필터(`periodType`)와 분리한다. 명시 검색은 `{}` / `{ searched: true, ...기본값 아닌 조건 }`으로 URL에서 복원하고, 유효한 소유 필드가 있는 직접 접근도 검색으로 정규화한다. 즉시 조회 화면은 표식 없이 빈 URL도 조회한다. 이는 기본값 검색과 최초 진입이 같은 빈 URL로 합쳐지는 문제를 해결하며, boolean을 local state에 복제하지 않는다. 화면별 정책은 feature에 남기고 이 날짜·기본값 결정의 공용 범위는 실제 소비자에서 중복·비교 차이가 확인된 순수 변환이다. 초안 조합의 후속 결정은 아래 별도 절을 따른다. 값·표식·기본값의 실행 순서와 예외 소비자는 [list-workflow](../../.agents/skills/feature-contract/references/list-workflow.md#state-and-url-lifecycle), 공용 함수 계약은 [shared-values](../../.agents/skills/shared-ui-contract/references/shared-values.md)가 소유한다. 이전의 서버 필터 판별자 의무와 별도 표식 금지는 이 범위에서 대체한다. 공연도 같은 날짜·기본값 공용 도구와 화면 1회 해소를 채택하며, 진입 즉시 조회/초기화 대기를 구분하는 `searched: false`는 URL 메타데이터로만 남긴다.
 
 기간 range는 오류 메시지를 두지 않는다(2026-09-05 demote). 반대쪽 값이 `min/max`와 calendar bound가 되고, 그것으로 막지 못하는 직접 타이핑은 방금 편집한 bound를 남기고 낡은 bound를 지운다. 2026-09-07 사용자 결정으로 확정 범위는 양끝을 요구한다. 제출·직접 URL의 한쪽 결손, 불량 또는 역전은 날짜 pair만 제거하고 기간 기준·정렬처럼 독립적으로 유효한 검색값은 보존한다. 이 demote의 제품 근거(원장에 역전 오류 문구 0건)는 판정 기록 §5가 소유한다.
 
 `AsyncFieldBoundary`는 feature가 결정한 초기 `loading | error | ready`와 retry callback만 받아 제품 공통 문구와 접근 가능한 상태를 렌더한다. Query, endpoint, option mapping, 선택 의미를 알지 않으며 cached data가 있으면 background refetch 실패 중에도 feature가 `ready`로 판정한다.
 
 위 소유권 표를 목록에 적용하면 route schema, defaults, option query, endpoint, enum, params mapper, query key, result-state 결정, columns, summary 의미, page-size default·preset 선택, domain copy, permission, selection, bulk action value와 navigation이 전부 feature-local이다. 특정 제품의 enum·옵션 endpoint·누락 같은 사실은 그 화면의 인벤토리가 소유하며 공통 계약으로 승격하지 않는다.
+
+### 목록 필터 초안 조합 (2026-09-08)
+
+결정의 비교 근거·대안·적용 한계는 [ADR 0012](0012-list-filter-draft-composition.md)가 소유한다.
+이 절은 기존 링크의 진입점이며, 단위별 단계 표는 해당 결정으로 연결한다.
 
 ### 행 선택 소유권
 
@@ -166,6 +171,7 @@ Figma 원장의 field-level evidence는 현재 surface와 의도적 차이를 �
 | `CheckboxTree(emptyMeansAll)` | **confirmed** | 2 | 양쪽이 leaf-only 값·전체 선택=`[]`·caller enum 소유로 일치. domain mode 없이 같은 API를 소비한다 |
 | `DataTable` 기본·`meta.sort` | **confirmed** | 2 | feature column·opaque `getRowId`·단일 active `aria-sort`. URL/sort policy는 feature |
 | `Accordion`/filter/draft/period/keyword·page controls | **confirmed** | 2 | `FilterPanel`이 공용 disclosure를 조립하고 draft 보존·UTC range·URL commit·page reset이 일치. 한쪽의 중복 target 거부는 feature validation이라 shared API를 넓히지 않았다 |
+| `useListFilterDraft` | **provisional shared(2026-09-08)** | 미확정 — 5 코드 호출부 대조 | [초안 조합 판정](0012-list-filter-draft-composition.md). 동일 입력 수명의 반복 실행만 묶고 제품 정책은 유지. 기본 훅의 confirmed와 구분 |
 | `useListQuery` | **confirmed(2026-09-06)** | 4 | 위 목록 계약 표 참조. 확장 없는 3인자 소비 + focused test |
 | `ListResult`·summary·toolbar | **provisional 유지** | 2 | `notSearched`·`empty`·ready 조립만 비교했다. loading/error/retry failure lifecycle을 두 번째 workflow에서 확인하지 못했다 |
 | 행 활성화 | **provisional shared** | 1 | `DataTable.onRowActivate(row)`가 pointer·Enter·Space와 interactive child 제외만 소유. destination·permission은 feature callback |
@@ -218,7 +224,7 @@ matrix·알림처럼 미구현 화면 유형은 후보로 추측하지 않는다
 - 새 제품의 요구사항과 레퍼런스 가정이 구분되고, 각 요구사항의 소유 레이어와 채택 판정 근거가 추적된다.
 - Manager schema, 리허설 endpoint·DTO·enum·permission, 사용하지 않는 provisional code가 제품 사실로 유입되지 않는다.
 - 선택한 공용 계약이 도메인 mode, resource config, Router·Query·API·permission 분기로 제품 차이를 숨기지 않는다.
-- 요구사항별 `구현됨 / 미구현 / 다르게 구현됨`, 실행한 검사, 실제 화면·응답 실측, 미확인 정책과 차단 조건이 보고된다.
+- 완료 보고가 [AGENTS.md §4](../../AGENTS.md)의 필드를 갖춘다.
 
 문서가 존재하거나 코드를 복사했다는 사실만으로는 성공이 아니다. 실제 신규 프로젝트에서 이 절차만으로 요구사항에 맞는 vertical slice를 구현·검증하고, 그 과정에서 발견한 기준의 누락을 단일 소유 문서·코드·검사에 되돌려 반영했을 때 인계 가능성이 검증된다. 목록·필터 외 화면 유형은 이 ADR을 범용 근거로 삼지 않고 처음 필요할 때 자체 관찰 근거와 경계 결정을 만든다.
 

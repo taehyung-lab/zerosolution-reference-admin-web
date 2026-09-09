@@ -20,13 +20,15 @@ A caller declares the preset values it adopts — `usePeriodPresets(standardPeri
 
 ## State boundary
 
+For every filter host, apply the [Draft commit adoption criteria](../../feature-contract/references/list-workflow.md#draft-commit). `useListFilterDraft` coordinates matching filter/period/keyword lifecycles; [shared-values](shared-values.md#state-mechanics-sharedlib) owns its input and reset API. The host's page type is not an exemption from reuse.
+
 `usePeriodDraft` and `useKeywordDraft` may own domain-free draft transitions. The feature still owns route search, Query gating, request mapping, API payloads, validation policy, and when a draft commits. The period mechanic converts browser-zone calendar days to UTC. Partial date drafts remain editable; closed-range consumers validate both bounds on submit/URL entry and reset the period draft on submit even when canonical URL identity is unchanged.
 
 Do not add a schema/config renderer, resource filter framework, URL adapter, Query wrapper, or API-aware option loader to these patterns. Similar appearance is not enough when state transitions or failure behavior differ.
 
 ## Data the caller passes
 
-- `FilterPanel({ title, collapseLabel, expandLabel, submitLabel, resetLabel, onSubmit(SubmitEvent<HTMLFormElement>), onReset, children })` — a `form` named by `title` with an uncontrolled disclosure (`aria-expanded`/`aria-controls`); the caller commits in `onSubmit` and returns to `{}` in `onReset`.
+- `FilterPanel({ title, collapseLabel, expandLabel, submitLabel, resetLabel, onSubmit(SubmitEvent<HTMLFormElement>), onReset, children })` — a `form` named by `title` with an uncontrolled disclosure (`aria-expanded`/`aria-controls`); the caller commits in `onSubmit` and chooses the `onReset` destination (member/manager `{}`, performance `{ searched: false }`). Input reset mechanics are described in [shared-values.md](shared-values.md).
 - `FilterField({ label, group?, children: ({ labelId, controlId }) => node })` — reading `controlId` in the render prop makes the label a `<label htmlFor>`; not reading it renders a `<span id={labelId}>` for a self-naming composite; `group` wraps the children in `role="group" aria-labelledby={labelId}` for sibling controls (never around `CheckboxTree`, which names itself with `labelId`).
 - `AsyncFieldBoundary({ state: 'loading' | 'error' | 'ready', labelledBy, onRetry, children })` — loading is `role="status"`, error is `role="alert"` with a retry button, ready renders children; the feature computes `state` (cached data ⇒ `ready`).
 - `KeywordChipField({ items: { field, value }[], pendingValue, onPendingValueChange, onAdd, onRemoveAt(index), addLabel, removeLabel(item), inputLabel, formatItem(item), ariaLabelledby? })` — chips render `formatItem(item)`; the caller decides the "대상 : 값" format.

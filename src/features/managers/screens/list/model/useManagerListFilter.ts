@@ -7,13 +7,7 @@ import {
  * 기존 API 운영자 목록의 필터 초안·기간·검색어와 URL 검색 확정을 연결한다.
  * 실제 API에서도 필요한 입력 workflow다. 서버 enum에 의존하는 기본값은 계약 교체 때 재검토한다.
  */
-import {
-  filterPartitionKey,
-  filterPartitionValues,
-} from "@/shared/lib/search-partition";
-import { useDraftCommit } from "@/shared/lib/use-draft-commit";
-import { useKeywordDraft } from "@/shared/lib/use-keyword-draft";
-import { usePeriodDraft } from "@/shared/lib/use-period-draft";
+import { useListFilterDraft } from "@/shared/lib/use-list-filter-draft";
 import { type SubmitEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { type ManagerSearch } from "../../../api/manager-search";
@@ -29,16 +23,6 @@ import {
 type KeywordItem = ManagerSearch["keywords"][number];
 type KeywordField = KeywordItem["keywordType"];
 
-function committedFilterKey(value: {
-  search: ManagerSearch;
-  searched: boolean;
-}): string {
-  return JSON.stringify([
-    value.searched,
-    filterPartitionKey(value.search, managerSearchPartition),
-  ]);
-}
-
 export function useManagerListFilter({
   search,
   searched,
@@ -50,30 +34,21 @@ export function useManagerListFilter({
 }) {
   const { t } = useTranslation("managers");
   const managerTypeOptions = useManagerTypeOptions();
-  const committedKey = committedFilterKey({ search, searched });
-  // 초안에는 필터만 보관한다. 확정된 정렬·페이지 상태를 다음 필터 입력이 덮어쓰지 않게 한다.
-  const { draft, patchDraft, resetDraft } = useDraftCommit({
-    committed: { search, searched },
-    keyOf: committedFilterKey,
-    createDraft: (value) =>
-      filterPartitionValues(value.search, managerSearchPartition),
-  });
-  const keyword = useKeywordDraft<KeywordField>({
-    committedItems: search.keywords.map((item) => ({
+  const inputs = useListFilterDraft({
+    search,
+    partition: managerSearchPartition,
+    scope: searched,
+    keywords: search.keywords.map((item) => ({
       field: item.keywordType,
       value: item.keyword,
     })),
-    initialField: managerKeywordTypes[0],
-    resetKey: committedKey,
+    initialKeywordField: managerKeywordTypes[0],
   });
-  const period = usePeriodDraft({
-    committed: search,
-    resetKey: committedKey,
-  });
+  const { draft, patchDraft, period, keyword } = inputs;
   const submit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
-    period.reset();
-    const keywords = keyword.itemsIncludingPending().map((item) => ({
+    const input = inputs.prepareSubmit();
+    const keywords = input.keywords.map((item) => ({
       keywordType: item.field,
       keyword: item.value,
     }));
@@ -83,8 +58,8 @@ export function useManagerListFilter({
         changeManagerView(
           {
             ...search,
-            ...draft,
-            ...period.utcRange,
+            ...input.filters,
+            ...input.range,
             keywords,
           },
           {},
@@ -94,9 +69,7 @@ export function useManagerListFilter({
   };
   // 운영자 URL은 기본 보기/검색 조건을 빈 객체로 표현한다.
   const reset = () => {
-    resetDraft();
-    period.reset();
-    keyword.reset();
+    inputs.resetDrafts();
     onSearchChange({});
   };
   const keywordLabels = {
