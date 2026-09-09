@@ -314,6 +314,26 @@ Stop and review judge only those authored paths. One outside the declared scope 
 stated: add it to the scope with the requirement that justifies it and re-run prepare, or revert it.
 Paths this session did not write are listed as reported-not-blocking; name them in `limitations`.
 
+## Where a failure sends the work back
+
+`AGENTS.md` §5 states the loop in the abstract: requirements return to Goal, context to Context, design to
+Decision, implementation to Act, evidence to Verify. This table is its concrete form. Every row was
+observed in a drill that followed the documents and then compared the result with existing code; a failure
+nobody has hit is not listed, because a guessed edge sends work to the wrong place.
+
+| Failure | Return to | Why that place |
+| --- | --- | --- |
+| The entry id does not resolve | discovery — decompose the `group` yourself | A screen can live inside a group whose title names several businesses, and `related` may be empty |
+| `contract.rows` is empty | **forward to implementation.** Structure is owned by the skills, so it is not blocked. Only the missing product fact returns to evidence | Almost every screen is unmigrated; waiting for a migration would stop all work |
+| A table cell and prose in the same ledger file describe different points in time | evidence — the later re-observation wins, and the cell is corrected then | The parser reads only the table, so a stale cell would be promoted into the machine layer |
+| A name implies an ownership the code does not have | evidence — derive the product path from the route entry | One screen can host a product and a rehearsal assembly, and the same file name can mean opposite roles in two features |
+| A requirement is unimplemented or differently implemented | declaration — name a replacement requirement ID or the blocking condition | The review gate refuses a gap that points nowhere |
+| The request cannot be satisfied without widening a shared contract | **leave implementation** for [promotion.md](../../.agents/skills/shared-ui-contract/references/promotion.md) step 4 | A single caller's need never widens a contract |
+
+Passing means every locked requirement is implemented, unimplemented or different with evidence; the
+sections a review cites were delivered to that session; the request terminus was observed or honestly
+recorded as blocked; and implemented unknowns carry a sentinel.
+
 ## Put a delegation brief in a file only when it must outlive the message
 
 AGENTS §5 owns what a brief contains — goal, scope, owned files, prohibitions, expected evidence — and
