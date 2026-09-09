@@ -19,29 +19,8 @@ procedure: their truth source, denominator and evidence differ, so decide which 
 | boundary | inner surfaces included or excluded with a reason | `ownership.feature` in the bundle, which shared must not absorb |
 | never | copy another screen's implementation | copy the `examples.doNotCopy` items |
 
-A screen entry decomposes a `group` id itself, and empty machine rows mean **unmigrated, not empty**.
-Walk the **route**, not just the screen, because another feature can be composed at the same route entry.
-
-**Structure and product fact are independent axes, and the inventory gates neither.** How a screen is
-assembled — router, filter, form, table, dialog, result — is owned by the skills and their bundles, and
-that work proceeds whether or not the inventory has rows. What the screen must contain — which columns,
-which options, which policy — is owned by the inventory. Missing rows therefore remove the completeness
-denominator for that screen and nothing else: they never block structural implementation, and no agent
-should wait for a migration to start. Naming that screen's row ids is what gives it a denominator, so do
-it while the facts are in hand, and leave screens nobody has worked on visibly unmigrated.
-
-So a screen with no rows splits three ways rather than stopping. Structure proceeds from the skills.
-A product fact the ledger does not carry is observed at the source — that is the missing-detail trigger
-in [Find the task context](#find-the-task-context), recorded as evidence per
-[Start from missing evidence](#start-from-missing-evidence). Only a fact that cannot be observed becomes
-an unresolved question that blocks its own part.
-
-A shared contract entry deliberately builds no denominator. Its contract is its focused tests, so
-completeness is those tests plus regression across consumers rather than a row count. Two rules follow:
-never absorb what the bundle assigns to the feature, and **widening the contract is not implementation** —
-it leaves the task for the promotion judgment in
-[promotion.md](../../.agents/skills/shared-ui-contract/references/promotion.md), which owns the
-one-place / two-place / third-use decision and its exceptions.
+Walk the **route**, not just the screen, because one route entry can compose another feature and
+the same file name can mean opposite roles in two of them.
 
 ## Find the task context
 
@@ -108,6 +87,8 @@ the parser derives from them.
   or enum. Descriptions are for a reader to judge.
 - An unmigrated screen returns an empty `rows` with a note. Empty means not yet promoted, never an empty
   screen; read the section table itself.
+- The parser reads the table only. A cell that a later re-observation has outdated is still promoted, and
+  prose beside it is not, so correct the cell in the same task rather than leaving the two disagreeing.
 
 Promotion is incremental. A table without an `id` column, or a row with an empty `id`, is untouched and
 contributes nothing, so one screen can be promoted without migrating the product.
@@ -132,7 +113,7 @@ measurement, or the user requests source verification. A link or prepared docume
 observation. If access fails, record the exact unverified fact and affected implementation; do not invent
 it or silently switch tools. Transplant projects follow their own source and browser instructions.
 
-## Trace the whole request
+### Trace the whole request
 
 To apply AGENTS' whole-workflow requirement, walk entry → input/selection → action → destination
 or returned value, including cancellation, failure and recovery where the product defines them.
@@ -152,7 +133,7 @@ owned files and dependencies, and assign one owner for common edits and the comb
 An isolated worktree does not synchronize product decisions. Artifact location and delegation authority
 follow AGENTS §5; this checkpoint records the scoped evidence and ownership.
 
-## Start from missing evidence
+### Start from missing evidence
 
 An unindexed surface starts with a local Markdown observation under `.ai-work/`, linked by
 `evidenceGaps.references`; external URLs belong inside that document, not in the reference array.
@@ -317,27 +298,6 @@ or a design is correct. `unimplemented` can close accountability, never certify 
 Stop and review judge only those authored paths. One outside the declared scope blocks with the exit
 stated: add it to the scope with the requirement that justifies it and re-run prepare, or revert it.
 Paths this session did not write are listed as reported-not-blocking; name them in `limitations`.
-
-## Where a failure sends the work back
-
-`AGENTS.md` §5 states the loop in the abstract: requirements return to Goal, context to Context, design to
-Decision, implementation to Act, evidence to Verify. This table is its concrete form. Every row was
-observed in a drill that followed the documents and then compared the result with existing code; a failure
-nobody has hit is not listed, because a guessed edge sends work to the wrong place.
-
-| Failure | Return to | Why that place |
-| --- | --- | --- |
-| The entry id does not resolve | discovery — decompose the `group` yourself | A screen can live inside a group whose title names several businesses, and `related` may be empty |
-| `contract.rows` is empty | **forward to implementation.** Structure is owned by the skills, so it is not blocked. Only the missing product fact returns to evidence | Almost every screen is unmigrated; waiting for a migration would stop all work |
-| A table cell and prose in the same ledger file describe different points in time | evidence — the later re-observation wins, and the cell is corrected then | The parser reads only the table, so a stale cell would be promoted into the machine layer |
-| A name implies an ownership the code does not have | evidence — derive the product path from the route entry | One screen can host a product and a rehearsal assembly, and the same file name can mean opposite roles in two features |
-| Two ledgers describe the same fact differently | evidence — Notion wins, per [판독 규칙](../../docs/reference/zero-sol/README.md#판독-규칙). Record the adopted side and leave the other observation in place | A conflict whose answer changes the screen skeleton cannot be locked partially: the board conflict decided the row checkbox, the toolbar actions and the status cascade at once, so the table could not be built around it |
-| A requirement is unimplemented or differently implemented | declaration — name a replacement requirement ID or the blocking condition | The review gate refuses a gap that points nowhere |
-| The request cannot be satisfied without widening a shared contract | **leave implementation** for [promotion.md](../../.agents/skills/shared-ui-contract/references/promotion.md) step 4 | A single caller's need never widens a contract |
-
-Passing means every locked requirement is implemented, unimplemented or different with evidence; the
-sections a review cites were delivered to that session; the request terminus was observed or honestly
-recorded as blocked; and implemented unknowns carry a sentinel.
 
 ## Put a delegation brief in a file only when it must outlive the message
 

@@ -121,7 +121,7 @@ API 선언·API-only 실행은 feature API, 업무 상태·캐시 후속 처리�
 
 작업은 `Goal → Context → Decision → Ask | Design | Act | Review → Verify → Done` 흐름에서 필요한 경로만 선택한다. 고정된 역할·단계·산출물 순서를 기본값으로 두지 않으며, 단순 작업에 형식용 역할이나 문서를 만들지 않는다.
 
-실패하면 요구사항은 Goal, 맥락은 Context, 설계는 Decision/Design, 구현은 Act, 증거는 Verify로 돌아간다. 실패 종류별 복귀 지점은 [실패 간선](scripts/agents/README.md#where-a-failure-sends-the-work-back)이 소유한다. 실패한 요구사항·증거·원인을 공개하고 수정 후 같은 성공 조건을 다시 검증한다. 원인 없이 검사만 반복하거나 실패 항목을 대조에서 지우지 않으며, 모든 성공 조건이 확인돼야 Done이다.
+실패하면 요구사항은 Goal, 맥락은 Context, 설계는 Decision/Design, 구현은 Act, 증거는 Verify로 돌아간다. 실패한 요구사항·증거·원인을 공개하고 수정 후 같은 성공 조건을 다시 검증한다. 원인 없이 검사만 반복하거나 실패 항목을 대조에서 지우지 않으며, 모든 성공 조건이 확인돼야 Done이다.
 
 **Simplicity First / Surgical Changes** — 요청을 충족하는 최소 코드·추상화를 선택한다. 모든 변경 줄을 요구사항에 연결하고 무관한 정리는 보고만 한다.
 
