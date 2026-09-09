@@ -314,6 +314,19 @@ Stop and review judge only those authored paths. One outside the declared scope 
 stated: add it to the scope with the requirement that justifies it and re-run prepare, or revert it.
 Paths this session did not write are listed as reported-not-blocking; name them in `limitations`.
 
+## Put a delegation brief in a file only when it must outlive the message
+
+AGENTS §5 owns what a brief contains — goal, scope, owned files, prohibitions, expected evidence — and
+sends the condition for making it a file here. Keep the brief in the dispatch message by default. Write it
+to `.ai-work/<task>/` instead only when one of these holds, and say which:
+
+- another agent or session must read it **verbatim**, so paraphrasing in a message would change the task
+- it carries quoted requirements or measured output that a message would truncate
+- it must survive the dispatch, because the work is reviewed or resumed against the original wording
+
+A brief file is a task artifact, so it follows the naming and expiry below and is never the completion
+report. It also never widens authority: it repeats the scope the checkpoint already declares.
+
 ## Name and expire workspace artifacts
 
 Name a task directory `YYYY-MM-DD-NN-slug`: the creation date, that day's sequence number, and a
