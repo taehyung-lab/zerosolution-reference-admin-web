@@ -1,10 +1,4 @@
-import {
-  filterPartitionKey,
-  filterPartitionValues,
-} from "@/shared/lib/search-partition";
-import { useDraftCommit } from "@/shared/lib/use-draft-commit";
-import { useKeywordDraft } from "@/shared/lib/use-keyword-draft";
-import { usePeriodDraft } from "@/shared/lib/use-period-draft";
+import { useListFilterDraft } from "@/shared/lib/use-list-filter-draft";
 import type { SubmitEvent } from "react";
 import {
   performanceSearchPartition,
@@ -19,52 +13,37 @@ export function usePerformanceListFilter(
   onChange: (next: PerformanceRouteSearch) => void,
   searched: boolean,
 ) {
-  const filterKey = (value: {
-    search: ResolvedPerformanceSearch;
-    searched: boolean;
-  }) =>
-    JSON.stringify([
-      value.searched,
-      filterPartitionKey(value.search, performanceSearchPartition),
-    ]);
-  const draft = useDraftCommit({
-    committed: { search, searched },
-    keyOf: filterKey,
-    createDraft: (value) => ({
-      ...filterPartitionValues(value.search, performanceSearchPartition),
-      venueKeyword: "",
-    }),
+  const inputs = useListFilterDraft({
+    search,
+    partition: performanceSearchPartition,
+    scope: searched,
+    keywords: search.keywords,
+    initialKeywordField: performanceKeywordFields[0],
+    localDefaults: { venueKeyword: "" },
   });
-  const resetKey = filterKey({ search, searched });
-  const period = usePeriodDraft({ committed: search, resetKey });
-  const keyword = useKeywordDraft({
-    committedItems: search.keywords,
-    initialField: performanceKeywordFields[0],
-    resetKey,
-  });
+  const { draft, patchDraft, period, keyword } = inputs;
 
   return {
-    ...draft,
+    draft,
+    patchDraft,
     period,
     keyword,
     submit: (event: SubmitEvent<HTMLFormElement>) => {
       event.preventDefault();
-      period.reset();
+      const input = inputs.prepareSubmit();
       onChange(
         performanceSearchSchema.parse({
           ...search,
-          ...draft.draft,
-          ...period.utcRange,
-          keywords: keyword.itemsIncludingPending(),
+          ...input.filters,
+          ...input.range,
+          keywords: input.keywords,
           page: undefined,
           searched: undefined,
         }),
       );
     },
     reset: () => {
-      draft.resetDraft();
-      period.reset();
-      keyword.reset();
+      inputs.resetDrafts();
       onChange({ searched: false });
     },
   };

@@ -18,6 +18,21 @@ declared as one bundle of four parts plus its ownership split:
 `ownership.shared` and `ownership.feature` say what the contract owns and what stays with the product.
 A bundle missing any part is not an adoption candidate; it is code that happens to exist.
 
+## Consumption examples
+
+`node scripts/agents/cli.mjs bundle <id>` also returns optional `examples` from `seed.mjs`:
+`files` to read together, `useWhen` describing the composition to compare, and `doNotCopy` naming
+product-specific choices or unverified behavior. Initial examples cover list results, tables, draft
+composition and save forms. Other bundles still expose their code, contract and focused tests;
+an absent example is not a finding that no consumer exists.
+
+These are scoped reading aids, not approved whole screens or a second contract. Read their current
+code against the linked skill/ADR; hook counts, matching names and file existence do not prove quality.
+When the example or its contract changes, recheck the described composition and limits, then update
+or remove that entry. The existing bundle checker checks paths and descriptions, not that comparison.
+Examples never enter the code/test export closure. On transplant, replace or remove these source-product
+pointers with the target's observed consumers; do not copy feature code to satisfy the catalog.
+
 ## What the checker proves, and what it does not
 
 People choose the four roots and the ownership split. `contracts:check` then computes, from those roots

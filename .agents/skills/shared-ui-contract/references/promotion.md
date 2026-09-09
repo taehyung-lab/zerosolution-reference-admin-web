@@ -44,6 +44,14 @@ For each candidate:
 
 Do not count rehearsal endpoints or a second visual instance as another implementation consumer. Keep current list-candidate status in ADR 0009 and form status in ADR 0010; this reference owns the decision procedure, not inventories or last-green reports.
 
+When the request itself names a shared contract rather than a screen, the same procedure applies from the
+other direction. The bundle's focused tests are the contract, so completeness is those tests plus every
+existing consumer still passing, not a count of facts. Implement only inside `ownership.shared`; absorbing
+anything the bundle assigns to the feature is a failure even when a caller asks for it. If the request
+cannot be satisfied without widening the public contract, that is step 4 above with a new consumer, not
+implementation: compare it and then confirm, narrow, or demote. A single caller's need never widens a
+contract on its own.
+
 ## Demotion signals
 
 - domain `mode`, resource descriptor, schema injection, or permission branch

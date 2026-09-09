@@ -1,8 +1,6 @@
 import { expect, test } from '@playwright/test';
 
 test('@reference performance venue remains a single draft until search', async ({ page }) => {
-  const requests: string[] = [];
-  page.on('console', (message) => { if (message.type() === 'log' && message.text().startsWith('[시나리오]')) requests.push(message.text()); });
   await page.goto('/performances');
   const table = page.getByRole('table');
   await expect(table.getByRole('row')).toHaveCount(3);
@@ -22,8 +20,13 @@ test('@reference performance venue remains a single draft until search', async (
   await expect(table.getByRole('row')).toHaveCount(2);
   await expect(table.getByRole('cell', { name: 'Reference Performance 2', exact: true })).toBeVisible();
   await table.getByRole('row').nth(1).press('Enter');
-  await expect.poll(() => requests).toEqual(['[시나리오] 공연 상세 이동: 대상 확인 → 상세 화면 연결 대기']);
-  await expect(page).toHaveURL(/\/performances\?/);
+  await expect(page).toHaveURL(/\/performances\/reference-performance-2$/);
+  await expect(page.getByRole('heading', { name: '공연 조회', exact: true })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'reference-admission.txt', exact: true })).toBeVisible();
+  await page.goBack();
+  await expect(page).toHaveURL(/venueId=reference-venue-b/);
+  await expect(table.getByRole('row')).toHaveCount(2);
+  await expect(table.getByRole('cell', { name: 'Reference Performance 2', exact: true })).toBeVisible();
   await page.getByRole('button', { name: '초기화', exact: true }).click();
   await expect(table).toHaveCount(0);
   await expect(lookup).toBeEnabled();

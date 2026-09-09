@@ -4,6 +4,45 @@ Owner: these scripts execute the observable preparation/review parts of `AGENTS.
 Product facts stay in the inventory and scenarios; shared decisions stay in skills/ADRs.
 Hooks verify routing, declarations and output scope, never policy truth or comprehension.
 
+## Know which entry the request is
+
+A request names either **one screen** ("implement the performance list", or an issue already split per
+screen) or **one shared contract** ("implement this shared component"). The two are not variants of one
+procedure: their truth source, denominator and evidence differ, so decide which entry applies first.
+
+| | screen entry | shared contract entry |
+| --- | --- | --- |
+| entry command | `context <surface id>` | `bundle <contract id>` |
+| truth source | inventory rows, scenario card, judgment document | the bundle's `skills` sections and `adrs` |
+| denominator | that screen's rows, minus `n/a` and `ref` | none — see below |
+| evidence | scenario observation plus enumerated rows against code | the bundle's `tests` plus every existing consumer still passing |
+| boundary | inner surfaces included or excluded with a reason | `ownership.feature` in the bundle, which shared must not absorb |
+| never | copy another screen's implementation | copy the `examples.doNotCopy` items |
+
+A screen entry decomposes a `group` id itself, and empty machine rows mean **unmigrated, not empty**.
+Walk the **route**, not just the screen, because another feature can be composed at the same route entry.
+
+**Structure and product fact are independent axes, and the inventory gates neither.** How a screen is
+assembled — router, filter, form, table, dialog, result — is owned by the skills and their bundles, and
+that work proceeds whether or not the inventory has rows. What the screen must contain — which columns,
+which options, which policy — is owned by the inventory. Missing rows therefore remove the completeness
+denominator for that screen and nothing else: they never block structural implementation, and no agent
+should wait for a migration to start. Naming that screen's row ids is what gives it a denominator, so do
+it while the facts are in hand, and leave screens nobody has worked on visibly unmigrated.
+
+So a screen with no rows splits three ways rather than stopping. Structure proceeds from the skills.
+A product fact the ledger does not carry is observed at the source — that is the missing-detail trigger
+in [Find the task context](#find-the-task-context), recorded as evidence per
+[Start from missing evidence](#start-from-missing-evidence). Only a fact that cannot be observed becomes
+an unresolved question that blocks its own part.
+
+A shared contract entry deliberately builds no denominator. Its contract is its focused tests, so
+completeness is those tests plus regression across consumers rather than a row count. Two rules follow:
+never absorb what the bundle assigns to the feature, and **widening the contract is not implementation** —
+it leaves the task for the promotion judgment in
+[promotion.md](../../.agents/skills/shared-ui-contract/references/promotion.md), which owns the
+one-place / two-place / third-use decision and its exceptions.
+
 ## Find the task context
 
 For a screen/workflow task, first read AGENTS and the applicable skill, then discover the target:
@@ -12,23 +51,61 @@ For a screen/workflow task, first read AGENTS and the applicable skill, then dis
 node scripts/agents/cli.mjs context
 node scripts/agents/cli.mjs context performance-list
 node scripts/agents/cli.mjs context-report
+node scripts/agents/cli.mjs context-report --summary
 node scripts/agents/cli.mjs bundle
 node scripts/agents/cli.mjs bundle data-table
 ```
 
+A denied shell call reports one of two causes, because they need different actions. When the command is
+not a literal argv — a pipe, a redirect, a glob, `&&`, or a backtick inside double quotes — the denial
+says so and preparing will not help; write the command without shell operators, and put literal text in
+single quotes so characters such as backticks stay literal. The recognized subset is not widened for
+double-quoted backticks, since the shell would run them as command substitution. When the command parses
+but is not an allowlisted read-only executable, the denial asks for preparation, which is the right action.
+
 These are read-only, available before prepare. `bundle` lists the valid IDs; an ID returns its code,
-reference sections, ADRs, focused tests and ownership split from the existing seed declaration. `docs/reference/zero-sol/context.json` is owned by the
+reference sections, ADRs, focused tests, ownership split and any scoped consumption examples from the
+existing seed declaration ([example semantics](../contracts/README.md#consumption-examples)). `docs/reference/zero-sol/context.json` is owned by the
 inventory and contains pointers, not copied policies. It connects targets to inventory/scenario
 locations, related inner surfaces, applicable references and existing code paths. Paths are discovery
 hints, never code ownership or a folder template. Feature API/model files can serve several surfaces;
 index those consumers rather than forcing an unrelated screen requirement just to satisfy a path match. Unimplemented paths are left empty. New product paths need explicit
 `evidenceGaps` until their own inventory is indexed; replace this product's index on transplant.
 
+### Read the migrated rows
+
+`context <id>` also returns a `contract` block when that screen's inventory section has rows carrying an
+`id`. The row columns and their meaning are owned by
+[the inventory table format](../../docs/reference/zero-sol/README.md#표-형식); this section owns only what
+the parser derives from them.
+
+- A row is **unresolved** when its `미확인` cell is filled, its `Figma 관찰` contains `(미판독)`, or its
+  `Notion 동작·정책` is `(대기)`. Reading the `미확인` column alone misses the other two and reports a row
+  with an unread original as confirmed. `Q<n>` tokens link the judgment ledger's questions.
+- `denominator` counts rows except `n/a` and `ref`. It is **what this screen must be**, so it is the
+  denominator of completeness. The numerator is not here: scenario cards own verification state.
+- `pointerState` says whether the `현재 코드` pointer still resolves against tracked paths — `present`,
+  `stale`, `unverifiable` (a component name, not a path), `none`, or `n/a`. It is pointer freshness only.
+  A pointer is a discovery hint: `none` is not proof of missing implementation and `present` is not
+  completion evidence.
+- `enumerations` lists rows whose facts are a list, so a checker can compare them against a code array
+  or enum. Descriptions are for a reader to judge.
+- An unmigrated screen returns an empty `rows` with a note. Empty means not yet promoted, never an empty
+  screen; read the section table itself.
+
+Promotion is incremental. A table without an `id` column, or a row with an empty `id`, is untouched and
+contributes nothing, so one screen can be promoted without migrating the product.
+
 `context-report` shows per-surface selected bytes and full-file/heading choices, plus direct, linked or
 unlinked Notion support documents recursively. It does not deliver the root/skill/bundle/checkpoint
 inputs that `prepare` adds; use actual prepare output for task comparisons. Link reachability is a
 discovery check, not proof that the linked policy answers the task. Cross-screen comparison remains
 supporting evidence, not a mandatory input for every surface.
+
+Start a whole-index audit with `context-report --summary`: it retains coverage, explicit gaps, group
+decomposition notices, selected bytes and full-file counts without printing every selection. Read the
+full report and source sections for affected targets before narrowing them. This summary locates work;
+it is neither observation evidence nor a substitute for the selected documents.
 
 A `group` entry routes a whole inventory family: decompose its actual sections/dialogs yourself.
 A `surface` entry is narrower. Neither label certifies complete observation. `gap` states missing
@@ -39,19 +116,55 @@ measurement, or the user requests source verification. A link or prepared docume
 observation. If access fails, record the exact unverified fact and affected implementation; do not invent
 it or silently switch tools. Transplant projects follow their own source and browser instructions.
 
+## Trace the whole request
+
+To apply AGENTS' whole-workflow requirement, walk entry → input/selection → action → destination
+or returned value, including cancellation, failure and recovery where the product defines them.
+Read the actual inventory sections to enumerate hosted tables, tabs, dialogs, files and final actions;
+an indexed `group` with no `related` entries is not an empty workflow. Do not invent CRUD for read-only,
+aggregation or realtime surfaces. Scope the walk to the requested business flow, not the whole product.
+
+In the temporary task checkpoint, map those discovered surfaces/actions and connections to numbered
+requirements, or state why they are excluded or unresolved. A requirement may cover several connected
+actions when they have one success condition. Give cross-screen work (selection return, navigation,
+post-save refresh) an explicit requirement and verification owner; do not leave it between screen tasks.
+Use existing `requirements`, `sources`, `surfaces` and `unresolved`, with explanatory Markdown beside
+the JSON when needed. The checker validates declared connections, not whether enumeration is complete.
+
+If delegating, preserve these request IDs in each scoped task, identify the shared decision revision,
+owned files and dependencies, and assign one owner for common edits and the combined requirement review.
+An isolated worktree does not synchronize product decisions. Artifact location and delegation authority
+follow AGENTS §5; this checkpoint records the scoped evidence and ownership.
+
+## Start from missing evidence
+
+An unindexed surface starts with a local Markdown observation under `.ai-work/`, linked by
+`evidenceGaps.references`; external URLs belong inside that document, not in the reference array.
+Record source location, observation time/method/scope, confirmed facts and unanswered questions using
+the [inventory evidence rules](../../docs/reference/zero-sol/README.md#근거의-수명과-읽기-범위).
+Bind each gap to its own requirement IDs. An indexing gap permits discovery; an unknown product policy
+uses `unresolved` and blocks its affected implementation. Missing code alone is neither kind of gap.
+
+Decisions shared by implementations go to their existing durable owner before the consumers diverge.
+Before `settled`, retain the implemented surface's minimum evidence in the product inventory and index
+it, including unresolved conditions; eliminate the indexing gap, never erase product unknowns to pass.
+This is incremental evidence, not a prerequisite to transcribe every page or wait for a second reading.
+Temporary observations remain historical evidence until checked; links and local hashes do not prove
+that an external source is still current. Follow the inventory's re-observation conditions.
+
 ## Prepare before editing
 
 For new screens, workflow changes or API/shared boundary changes, publish the target and excluded
 screens, routes and inner surfaces, state owners, applicable contracts with adopt/modify/exclude,
 scenario cards, consumed bundles, unresolved questions/sentinels, edit scope and states to verify.
-This checkpoint is disclosure, not an extra approval. Copy/style-only work states numbered requirements,
-scope and focused validation briefly; it needs no workflow checklist or permanent plan.
+Disclosure, approval and copy/style-only scope follow AGENTS' start gate. The fields below implement it.
 
 Keep the task checkpoint under `.ai-work/`. The native hook supplies the runtime session ID when
 preparation is missing. Use that ID with `prepare`; do not invent a second ID for an active runtime.
 A script-only task needs numbered requirements, scope, references, contracts and unresolved as before.
 A workflow task also links each requirement to included surfaces, sources and contract decisions.
-Applicable SKILL files follow the actual paths in AGENTS §2; an API path also needs api-contract.
+Applicable SKILL files follow the actual paths in AGENTS §2; an API path also needs api-contract, and
+an app error-boundary path also needs shared-ui-contract.
 For file creation, relocation or ownership changes, also declare/read folder-structure-contract.
 The path-only hook cannot distinguish a behavioral edit from a placement decision; review owns that distinction.
 Contract IDs must come from `bundle`, not component/hook names or invented labels:
@@ -85,17 +198,32 @@ node scripts/agents/cli.mjs prepare SESSION_ID .ai-work/task/checkpoint.json
   again, so a broad preparation scope cannot substitute for the right target.
 - `sources` are Markdown paths, `{ "file": "path.md", "heading": "Exact heading" }`, or `"user"` for
   an explicit user requirement. At least one source must belong to that requirement's target context
-  or be the user request. `contracts` names decisions declared above; when none apply, give an empty
+  or be the user request. Section evidence covers that section and its descendants, not a sibling or
+  a whole-file replacement; explicitly link shared policy sections when needed. Additional supporting
+  sources remain allowed but do not substitute for the target evidence. `contracts` names decisions declared above; when none apply, give an empty
   array and `contractReason` **inside that requirement**, not at checkpoint top level. Example:
   `{ "id": "R2", "text": "Local copy change", "surfaces": ["performance-list"], "sources": ["user"], "contracts": [], "contractReason": "Feature copy only" }`.
   The checker validates connections, not whether the decisions are sound.
-- Unknown paths need `evidenceGaps: [{ "paths": ["src/features/new/"], "reason": "New surface not yet indexed", "references": ["docs/reference/zero-sol/05-performances.md"] }]`.
+- Unknown paths need `evidenceGaps: [{ "paths": ["src/features/new/"], "requirements": ["R1"], "reason": "New surface not yet indexed", "references": [".ai-work/task/observations.md"] }]`.
   This allows evidence discovery without pretending the ledger is complete. It cannot bypass a known
-  path's surface. `settled` rejects evidence gaps and included index entries with a gap.
+  path's surface. Only that gap's requirements can use its evidence or unindexed coverage.
+  `settled` rejects evidence gaps and included index entries with a gap.
 - `work: { "kind": "maintenance", "reason": "Copy/style only; no workflow changes" }` keeps small
   maintenance light. `infrastructure` with a reason is for transport/tooling changes without screen
   behavior. These are reviewable declarations, not semantic detection; do not use them to skip a
   workflow's evidence. Script-only scopes default to infrastructure.
+- `prefixLoaded: ["AGENTS.md"]` names declared full-file references this runtime already placed in its
+  cached prefix through a root pointer, so the first preparation reports them by hash instead of
+  rendering a second copy. Entries must also appear in `references` as whole files. The required
+  reference check, whole-file hash and staleness detection are unchanged, and a file that changes
+  during the session is delivered in full on re-preparation because a runtime prefix cannot reload.
+  A session that owns such a reference as scope still receives it again after authoring it. The entry
+  is verified, not believed: preparation accepts it only when a runtime pointer in this repository
+  actually loads that document, reusing the pointer checks `scripts/contracts` owns, so a suppressed
+  delivery rests on a repository fact rather than a session's claim.
+- Preparation reports delivered bytes per whole-file selection over 4 KiB with the input that requested
+  it, and the total it contributes. This surfaces what a narrowing decision would buy; it never drops a
+  selection on its own. `SKILL.md` files stay whole because AGENTS §2 requires reading them in full.
 - Product unknowns use `unresolved: [{ "question": "Which wire value?", "paths": ["affected/path/"] }]`.
   Native edits on those paths remain blocked. An indexing gap does not resolve a product unknown.
 
@@ -111,10 +239,15 @@ The output reports selection count and delivered reference bytes (excluding cove
 a newly requested section in the same file is still delivered. Whole-file hashes detect changes outside
 the selected section too. Selected seed code and focused tests still need inspection.
 
-Publish the implementation checkpoint to the user; preparation is not another approval. If scope,
-requirements or references change, prepare again. A reference also in scope may be edited by this task;
+If scope, requirements or references change, prepare again. A reference also in scope may be edited by this task;
 other reference changes require re-preparation. Exact files or directory paths with a trailing `/` are
 supported. Avoid repository-wide scope. Local baselines survive re-preparation.
+
+Re-preparation preserves every previously prepared requirement ID and its original text. Add a new ID
+for changed or added scope; retain the superseded requirement for an `unimplemented` or `different`
+review with the reason and replacement ID. Evidence links may be refined. This preserves accountability,
+not authorization for a scope change. A new runtime session must receive the original requirements and
+recorded changes in its handoff; session-local state cannot recover another session's request history.
 
 ## Review the actual output
 
@@ -128,6 +261,7 @@ in-scope implementation files and verification methods/results:
 {
   "requirements": [{
     "id": "R1", "status": "implemented", "evidence": "Observed both sort directions on repeated clicks.",
+    "appliedSections": [{ "file": ".agents/skills/feature-contract/references/list-workflow.md", "heading": "Composition index" }],
     "files": ["src/features/performances/screens/list/ui/PerformanceListResult.tsx"],
     "verification": [{ "method": "Browser interaction", "result": "ascending → descending → ascending", "artifact": ".ai-work/task/browser-report.md" }]
   }],
@@ -143,66 +277,61 @@ implementation file. Script/maintenance reviews keep the smaller requirement sta
 all reviews still require top-level `contractReview`, `complexityReview`, `assumptions` and `limitations`.
 When no contract changes apply, say so with the reason; do not omit those fields.
 
-Run `node scripts/agents/cli.mjs review SESSION_ID .ai-work/task/review.json`. It runs contracts and lint,
-then records the report against the current output hash; further source edits invalidate it. Types,
-scenario tests, browser checks and `pnpm verify` still apply. Text/paths in the report do not prove a test
-ran or a design is correct. `unimplemented` can close accountability, never certify task completion.
+A gap must point somewhere. An `unimplemented` or `different` requirement names either `replacement`,
+another requirement ID declared in the same checkpoint, or `blocked`, the condition that stops it.
+Recording neither is rejected, because that would close the task on the gap instead of re-entering the
+loop. Every requirement except `unimplemented` also names the `appliedSections` it followed, and each
+one must appear in what preparation actually delivered to this session; a whole-file delivery covers
+its own headings, so a sibling section nobody prepared cannot become the source of a claim. The check
+compares delivery, not comprehension: naming a section is not evidence that its rule was understood.
 
-## Runtime adapters and limits
+Reconcile the final output with the original request and the discovered actions, not just each screen's
+latest checklist. Verify cross-screen input/identity transfer, navigation, cancellation and refresh when
+in scope. Record real observations under the owning requirement; API-disconnected request logs do not
+prove server success or post-success transitions. List omitted requirements and unverified connections
+in the final result. Passing separate task reviews is not proof that the combined workflow works.
 
-Checked-in commands require Node 24 and Git on the runtime PATH. Transplant hook files are merge templates:
-review runtime availability, repository paths and native trust before enabling them in another environment.
+Run `node scripts/agents/cli.mjs review SESSION_ID .ai-work/task/review.json`. It runs `contracts:check`
+repository-wide, then ESLint and `vitest related` **over the paths this session actually wrote**, and records
+the report against those paths; further edits to them invalidate it. Scoping the code checks keeps a
+concurrent session's unfinished work from failing — or silently passing — this review. Typecheck, browser
+checks and `pnpm verify` still apply and are not run here. Text/paths in the report do not prove a test ran
+or a design is correct. `unimplemented` can close accountability, never certify task completion.
 
-- Codex: `.codex/hooks.json`; inspect and trust the exact hook using `/hooks`. A changed definition needs trust again.
-- Claude Code: `.claude/settings.json`; workspace trust and active settings determine whether hooks run.
-- Copilot: `.github/hooks/reference.json`; CLI may also discover Claude settings, so handlers are idempotent.
-- Other runtimes: use the same prepare/review commands and root instructions. An adapter must be implemented and
-  exercised before claiming automatic interception there. “All agents” means one contract, not undocumented hook support.
+Stop and review judge only those authored paths. One outside the declared scope blocks with the exit
+stated: add it to the scope with the requirement that justifies it and re-run prepare, or revert it.
+Paths this session did not write are listed as reported-not-blocking; name them in `limitations`.
 
-Native Edit/Write/apply_patch calls check target scope before execution. General shell calls require preparation,
-but their write targets are not inferred from shell text. Each adapter's `matcher` must list every tool name the
-handler answers (`preflight.test.mjs` fails when one drifts); a name the matcher omits is never intercepted.
+## Name and expire workspace artifacts
 
-Read-only inspection stays available without preparation: `read`, `cat`, `ls`, `rg`, `grep`, `wc`, `pwd`, the listed
-`git` subcommands, `find` limited to read-only predicates, and `sed -n <range>p`. The writing forms of the same
-commands (`find -exec`/`-delete`/`-fprint`, `sed -i`/`-f`/`w`) require preparation. Literal quoted arguments
-are decoded before command/option checks, so `rg 'a|b' file` is inspection while a real pipe,
-redirection, separator or substitution requires preparation. Unsupported shell escapes/expansions are
-conservatively gated; quote glob patterns such as `find scripts -name '*.mjs'`. This is a limited argv
-recognizer, not a shell parser. Writes under `.ai-work/` remain available for preparation.
+Name a task directory `YYYY-MM-DD-NN-slug`: the creation date, that day's sequence number, and a
+lowercase slug. The name carries the date so `touch` cannot postpone expiry and `ls` sorts by age.
 
-Orchestration RPC is also available without preparation: `orca orchestration` messaging (`send`, `check`,
-`reply`, `ask`, `inbox`), run/task bookkeeping (`run-create`, `run-show`, `run-list`, `task-create`,
-`task-update`, `task-list`), read-only worker inspection (`dispatch-show`, `worker-show`, `worker-read`,
-`worker-list`, `status`) and gates. These reach the runtime, never the checkout, and accountability composes
-per session: a message that makes another agent edit files is still gated on that agent's own session. Blocking
-them only strands a finished worker that cannot report `worker_done` or read coordinator mail, and it made a
-coordinator accountable for the whole tree for merely sending mail. `worker-start` and `dispatch` stay gated
-because `--setup run` executes project scripts; every `orca terminal`, `orca worktree` and `orchestration reset`
-call stays gated because it acts on the checkout. Quote message bodies and keep active shell expansion
-or operators out of the command. A literal metacharacter inside single quotes is ordinary message data.
+```sh
+node scripts/agents/cli.mjs sweep           # classify only; available without preparation
+node scripts/agents/cli.mjs sweep --apply   # remove expired entries; gated like any other write
+```
 
-Accountability is per session, not per path, because shell text never reveals a write target. A session becomes
-accountable the first time the hook grants it a write capability — a native edit inside scope, or any general shell
-call. Review/stop then reconciles actual file changes against the preparation snapshot, even after a commit, and
-rejects out-of-scope or unresolved paths. A session that only ran recognized inspection commands received no
-write capability, so a concurrent session's edits do not block its stop. Mention observed external changes
-in the report's limitations; this is not a gate-exclusion field. Writing sessions compare the entire
-tree to their original baseline and cannot identify which session authored a change. Re-preparation
-preserves that baseline; an external label cannot waive stale references or out-of-scope edits.
-Shared-tree parallel writing is still not supported: run writing work in one session or an
-isolated worktree. Unsupported MCP/custom write
-tools and interactive shell continuations are not a complete interception boundary. Review and Git/CI remain
-necessary; do not describe this as a sandbox.
-No transcript, prompt, secret or global agent configuration is read or modified by these scripts.
-Normal and negative controls live in `preflight.test.mjs`; runtime input fixtures prove adapter decisions,
-not installation/trust or every native tool path. Report native runtime measurements separately.
-Freeze source while a same-tree preparation rehearsal runs. Even a source-read-only worker becomes
-accountable after a general shell command (such as copying a log; recognized inspection/RPC is exempt). Later
-coordinator edits can then block its Stop. Use a frozen checkout; do not broaden the worker scope or
-reset its baseline to conceal another session’s edits.
+Retention is 7 days for task artifacts and 30 days for session states under `agent-checks/`. An
+undated name falls back to mtime and is reported as `undated`. `sweep` classifies every entry:
 
-Source contracts checked 2026-09-06: [Codex hooks](https://learn.chatgpt.com/docs/hooks),
-[Claude hooks](https://code.claude.com/docs/en/hooks),
-[Copilot hooks](https://docs.github.com/en/copilot/reference/hooks-reference).
-Recheck adapters when the runtime payload, hook coverage or trust model changes.
+| Status | Meaning |
+| --- | --- |
+| `pinned` | `agent-checks`, `gates`, `archive`, `transplant-stage`, or a directory holding a `KEEP` file |
+| `live` | a session that owes a review still points at this directory |
+| `open` | a state with a write capability and no recorded review |
+| `recent` | inside retention |
+| `expired` | removed by `--apply` |
+
+`KEEP` holds nothing (keep indefinitely) or one `YYYY-MM-DD` line (keep until that date). Use it for
+a handoff another session still has to pick up, not to keep finished analysis around.
+
+An `open` state is never expired by age. Deleting one disarms that session's Stop check, because
+`checkStop` treats a missing state as nothing to reconcile. Age can only remove a state whose review
+was recorded or that never received a write capability; the rest stay listed until their session
+closes. Classification is evidence about accountability, not proof that a directory is disposable.
+
+## Runtime adapters and accountability
+
+Which runtimes the hook reaches, what it cannot intercept, and how a session becomes accountable for the
+tree is owned by [runtime-adapters.md](runtime-adapters.md), beside the hook it describes.

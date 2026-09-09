@@ -1,4 +1,43 @@
 {
+  "detail": {
+    "drawing": "Guidance drawing",
+    "guide": "Zone/grade guidance",
+    "inputMode": "Input method",
+    "modes": {
+      "zone": "Zone",
+      "grade": "Grade"
+    },
+    "gate": "Gate",
+    "history": "Update history",
+    "historyDate": "Updated at",
+    "historyChange": "Changes",
+    "historyManager": "Operator",
+    "historyLine": "{{field}}: {{before}} > {{after}}",
+    "title": "Performance details",
+    "path": "Performances",
+    "view": "Details",
+    "basic": "Basic information",
+    "admission": "Admission guidance",
+    "noAdmission": "No information has been registered.",
+    "edit": "Edit",
+    "language": "Basic information language",
+    "languages": {
+      "ko": "Korean",
+      "ja": "Japanese",
+      "en": "English"
+    },
+    "subtitle": "Subtitle",
+    "organizer": "Organizer",
+    "emptyValue": "-",
+    "session": "Session {{number}}",
+    "interval": "{{from}} ~ {{to}}",
+    "events": "Events",
+    "eventName": "Event name",
+    "eventPeriod": "Entry/exit time",
+    "seats": "Seats",
+    "sessionSeats": "Session {{number}}: sold {{sold}}, unsold {{unsold}}",
+    "grades": "Grades"
+  },
   "title": "Performances",
   "filters": {
     "title": "Search filters",

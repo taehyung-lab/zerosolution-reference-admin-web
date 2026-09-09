@@ -1,4 +1,4 @@
-import { checkEdit, checkStop, localPath, noteWrite } from './preflight.mjs'
+import { checkEdit, checkStop, localPath, noteWrite, settleWrite } from './preflight.mjs'
 
 /** `find` writes through these; every other leading-dash token must be a read-only predicate. */
 const READ_ONLY_FIND = new Set([
@@ -26,7 +26,7 @@ function literalArguments(command) {
   let started = false
   let quote = null
   for (const char of command) {
-    if (char === '\n' || char === '\r') return null
+    if (char === '\n' || char === '\r') return { reason: 'a newline' }
     if (quote === "'") {
       if (char === quote) quote = null
       else word += char
@@ -34,7 +34,7 @@ function literalArguments(command) {
     }
     if (quote === '"') {
       if (char === quote) quote = null
-      else if ('\\$`'.includes(char)) return null
+      else if ('\\$`'.includes(char)) return { reason: `${char} inside double quotes, which the shell would treat as an escape or a substitution` }
       else word += char
       continue
     }
@@ -46,19 +46,19 @@ function literalArguments(command) {
       word = ''
       started = false
     } else {
-      if ('\\;&|<>`$(){}*?[]~'.includes(char)) return null
+      if ('\\;&|<>`$(){}*?[]~'.includes(char)) return { reason: `the shell operator ${char}` }
       word += char
       started = true
     }
   }
-  if (quote) return null
+  if (quote) return { reason: 'an unclosed quote' }
   if (started) words.push(word)
   return words
 }
 
 function inspection(command) {
   const words = literalArguments(command)
-  if (!words?.length) return false
+  if (!Array.isArray(words) || !words.length) return false
   if (words[0] === 'rtk') {
     words.shift()
     if (words[0] === 'proxy') words.shift()
@@ -74,13 +74,37 @@ function inspection(command) {
   if (['orca', 'orca-ide', 'orca-dev'].includes(executable) && args[0] === 'orchestration' &&
       ORCHESTRATION_RPC.exec(words.slice(0, 3).join(' '))?.[0] === words.slice(0, 3).join(' ')) return true
   if (executable === 'node' && args[0] === 'scripts/agents/cli.mjs') {
-    if(args[1] === 'context-report') return args.length === 2
+    if (args[1] === 'context-report') return args.length === 2 || (args.length === 3 && args[2] === '--summary')
+    // Classification reads the workspace; `--apply` deletes, so it stays behind preparation.
+    if (args[1] === 'sweep') return args.length === 2
     if (['context', 'bundle'].includes(args[1])) return args.length === 2 ||
       (args.length === 3 && /^[a-z0-9-]+$/.test(args[2]))
     return args.length === 4 && ['prepare', 'review'].includes(args[1]) &&
       /^[\w-]+$/.test(args[2]) && /^\.ai-work\/[\w./-]+\.json$/.test(args[3])
   }
-  return executable === 'git' && ['status', 'diff', 'log', 'show', 'ls-files', 'rev-parse'].includes(args[0])
+  if (executable !== 'git') return false
+  // Directory selection changes where inspection runs, not which operation it performs.
+  // Other global options (especially config/aliases) still require preparation.
+  let index = 0
+  while (args[index]?.startsWith('-C')) {
+    if (args[index] === '-C') {
+      if (args[index + 1] === undefined) return false
+      index += 2
+    } else index += 1
+  }
+  return ['status', 'diff', 'log', 'show', 'ls-files', 'rev-parse'].includes(args[index])
+}
+
+/**
+ * A denial that only says "prepare" sends an agent to fix the wrong thing when the real cause was a
+ * shell operator, so it prepares, fails validation and retries the same shape. Naming the operator and
+ * the working alternative is what ends that loop. The recognized subset is deliberately not widened:
+ * a backtick inside double quotes is command substitution, while single quotes keep it literal.
+ */
+function recognitionNote(command) {
+  const parsed = literalArguments(command ?? '')
+  if (Array.isArray(parsed)) return ''
+  return `Not recognized as a read-only command because of ${parsed.reason}. Recognized inspection is a literal argv; put literal text in single quotes to keep characters such as backticks intact. `
 }
 
 export function hookDecision(root, payload, eventOverride) {
@@ -93,6 +117,11 @@ export function hookDecision(root, payload, eventOverride) {
   if (event === 'Stop' || event === 'agentStop') {
     const reason = checkStop(root, session)
     return reason ? { decision: 'block', reason } : {}
+  }
+  // Closes the write bracket so only what moved during the call is attributed to this session.
+  if (event === 'PostToolUse' || event === 'postToolUse' || event === 'agentPostTool') {
+    settleWrite(root, session)
+    return {}
   }
   if (event !== 'PreToolUse' && event !== 'preToolUse') return {}
   const name = payload.tool_name ?? payload.toolName
@@ -109,11 +138,12 @@ export function hookDecision(root, payload, eventOverride) {
     for (const match of patch.matchAll(/^\*\*\* (?:Add File|Update File|Delete File|Move to): (.+)$/gm)) targets.push(match[1])
     if (!targets.length) return deny('Cannot identify patch targets')
   } else if (['Bash', 'bash', 'exec_command', 'shell', 'powershell'].includes(name)) {
-    if (inspection(input.command ?? input.cmd ?? '')) return {}
+    const command = input.command ?? input.cmd ?? ''
+    if (inspection(command)) return {}
     const reason = checkEdit(root, session, [])
     // A general shell call may write anywhere, so the session becomes accountable for the tree.
     if (!reason) noteWrite(root, session)
-    return reason ? deny(reason) : {}
+    return reason ? deny(`${recognitionNote(command)}${reason}`) : {}
   } else {
     return {}
   }

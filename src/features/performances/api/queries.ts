@@ -1,5 +1,6 @@
 import { localizedQueryKey } from "@/api/query-key";
-import { inlineProgress } from "@/api/query-meta";
+import { blockingProgress, inlineProgress } from "@/api/query-meta";
+import { readPerformanceDetail } from "../fixtures/performance-details";
 import type { UiLocale } from "@/shared/i18n/locale";
 import { queryOptions } from "@tanstack/react-query";
 import {
@@ -7,6 +8,14 @@ import {
   readPerformanceVenues,
 } from "../fixtures/performances";
 import type { PerformanceSearch } from "../model/performance-search";
+
+export function performanceDetailQuery(locale: UiLocale, id: string) {
+  return queryOptions({
+    queryKey: localizedQueryKey(locale, "performances", "detail", id),
+    queryFn: () => readPerformanceDetail(id),
+    ...blockingProgress,
+  });
+}
 
 export function performanceListQuery(
   locale: UiLocale,
@@ -30,6 +39,7 @@ export function performanceVenuesQuery(locale: UiLocale) {
   return queryOptions({
     queryKey: localizedQueryKey(locale, "performances", "venues"),
     queryFn: () => readPerformanceVenues(),
+    staleTime: Infinity,
     ...inlineProgress,
   });
 }

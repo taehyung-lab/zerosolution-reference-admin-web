@@ -36,6 +36,11 @@ export const SEED_BUNDLES = [
   },
   {
     id: 'list-result',
+    examples: [{
+      files: ['src/features/performances/screens/list/ui/PerformanceListResult.tsx'],
+      useWhen: 'Compare a feature composing result facts, empty/not-searched copy, pagination and table slots.',
+      doNotCopy: 'Performance toolbar visibility, columns, translated messages or navigation. This is a composition example, not evidence of real-server recovery.',
+    }],
     code: [
       'src/shared/ui/patterns/ListResult.tsx',
       'src/shared/ui/patterns/ResultToolbar.tsx',
@@ -97,7 +102,7 @@ export const SEED_BUNDLES = [
     tests: ['src/api/required-query.test.tsx'],
     ownership: {
       shared: 'API owns the required-query outcome priority (incident, not-found, cached data, pending, error) and its projection to the three detail states.',
-      feature: 'Owns the queryOptions factory, the workflow hook beside the screen that injects locale and runs it, safe copy, retry, and content.',
+      feature: 'Owns the queryOptions factory and API-only execution in api; screen workflow owns business state and follow-up effects. The screen owns safe copy, retry, and content.',
     },
   },
   {
@@ -140,6 +145,14 @@ export const SEED_BUNDLES = [
   },
   {
     id: 'form-sections-and-adapters',
+    examples: [{
+      files: [
+        'src/features/managers/screens/form/ui/ManagerCreateScreen.tsx',
+        'src/features/managers/screens/form/ui/ManagerForm.tsx',
+      ],
+      useWhen: 'Compare feature-owned schema, mutation and error mapping passed to useSaveForm, then form fields, dialogs and cancellation bound to that same save lifecycle.',
+      doNotCopy: 'Rehearsal Manager fields, defaults, dependent options, request DTOs, route destinations or the optional internal options Query. Recheck the target product save policy.',
+    }],
     code: [
       'src/shared/ui/form/useFormSections.ts',
       'src/shared/ui/form/FormField.tsx',
@@ -202,21 +215,37 @@ export const SEED_BUNDLES = [
   },
   {
     id: 'draft-commit',
-    code: ['src/shared/lib/use-draft-commit.ts'],
+    examples: [{
+      files: [
+        'src/features/members/screens/list/model/useMemberListFilter.ts',
+        'src/features/performances/screens/list/model/usePerformanceListFilter.ts',
+      ],
+      useWhen: 'Compare filter, period and keyword drafts that share a commit identity; callers collect input through prepareSubmit and retain URL transitions.',
+      doNotCopy: 'Member explicit-search and performance immediate-search/reset policies, keyword fields or venueKeyword. Use individual primitives when input lifecycles differ.',
+    }],
+    code: ['src/shared/lib/use-draft-commit.ts', 'src/shared/lib/use-list-filter-draft.ts'],
     skills: [location(
       '.agents/skills/shared-ui-contract/references/logic-promotion.md',
       'Shared logic admission',
       'draft preservation while a caller identity is equal',
+    ), location(
+      '.agents/skills/shared-ui-contract/references/shared-values.md',
+      'State mechanics (`shared/lib`)',
+      '`useListFilterDraft` composes',
     )],
     adrs: [location(
       'docs/decisions/0009-shared-boundaries.md',
       '현재 provisional 계약',
       '`useDraftCommit`',
+    ), location(
+      'docs/decisions/0012-list-filter-draft-composition.md',
+      '초안 조합 결정',
+      '`useListFilterDraft`를 **provisional shared**로 채택한다',
     )],
-    tests: ['src/shared/lib/use-draft-commit.test.tsx'],
+    tests: ['src/shared/lib/use-draft-commit.test.tsx', 'src/shared/lib/use-list-filter-draft.test.tsx'],
     ownership: {
-      shared: 'Owns preserve, rebuild, reset, and patch mechanics for an explicit caller identity.',
-      feature: 'Owns committed identity, draft shape, submit/reset/navigation, and page policy.',
+      shared: 'Owns preserve, rebuild, reset, and patch mechanics; composes declared filter identity, period and keyword drafts and input collection.',
+      feature: 'Owns identity policy, field declarations, defaults, validation, keyword mapping, submit/reset destinations, navigation, and page policy.',
     },
   },
   {
@@ -415,6 +444,15 @@ export const SEED_BUNDLES = [
   },
   {
     id: 'data-table',
+    examples: [{
+      files: [
+        'src/features/performances/screens/list/ui/PerformanceListResult.tsx',
+        'src/features/performances/screens/list/ui/performance-columns.tsx',
+        'src/features/performances/screens/list/ui/usePerformanceListResult.ts',
+      ],
+      useWhen: 'Trace stable row IDs and controlled meta.sort from feature columns through a URL transition callback to DataTable rendering.',
+      doNotCopy: 'Performance fields, sort keys, direction defaults, row numbers or destinations. This example has no selection column or bulk workflow.',
+    }],
     code: ['src/shared/ui/patterns/DataTable.tsx', 'src/shared/ui/patterns/selection-column.tsx'],
     skills: [location(
       '.agents/skills/shared-ui-contract/references/data-table.md',
@@ -666,6 +704,23 @@ export function validateSeedBundles(bundles = SEED_BUNDLES) {
     }
     failures.push(...locationFailures(id, 'skill', bundle?.skills))
     failures.push(...locationFailures(id, 'ADR', bundle?.adrs))
+    if (bundle?.examples !== undefined) {
+      if (!Array.isArray(bundle.examples)) {
+        failures.push(`seed bundle ${id}: examples must be an array`)
+      } else for (const example of bundle.examples) {
+        if (!Array.isArray(example?.files) || example.files.length === 0) {
+          failures.push(`seed bundle ${id}: example files are required`)
+        } else for (const file of example.files) {
+          if (typeof file !== 'string' || !existsSync(resolve(file)) || !statSync(resolve(file)).isFile()) {
+            failures.push(`seed bundle ${id}: example file is missing: ${file}`)
+          }
+        }
+        if (typeof example?.useWhen !== 'string' || !example.useWhen.trim() ||
+            typeof example?.doNotCopy !== 'string' || !example.doNotCopy.trim()) {
+          failures.push(`seed bundle ${id}: example useWhen and doNotCopy are required`)
+        }
+      }
+    }
     if (!bundle?.ownership?.shared?.trim() || !bundle?.ownership?.feature?.trim()) {
       failures.push(`seed bundle ${id}: shared/feature 소유권 문장이 없다`)
     }

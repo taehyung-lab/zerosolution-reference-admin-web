@@ -485,6 +485,23 @@ describe('seed contract bundles', () => {
     )
   })
 
+  it('validates optional consumption examples without exporting feature code', () => {
+    const bundle = SEED_BUNDLES.find((item) => item.id === 'draft-commit')
+    const example = {
+      files: ['src/features/members/screens/list/model/useMemberListFilter.ts'],
+      useWhen: 'Compare matching filter, period and keyword lifecycles.',
+      doNotCopy: 'Member defaults and navigation policy.',
+    }
+    expect(validateSeedBundles([{ ...bundle, examples: [example] }])).toEqual([])
+    expect(validateSeedBundles([{ ...bundle, examples: [{ ...example, files: ['src/features/missing-example.ts'] }] }]))
+      .toEqual([expect.stringContaining('example')])
+    expect(validateSeedBundles([{ ...bundle, examples: [{ ...example, doNotCopy: '' }] }]))
+      .toEqual([expect.stringContaining('example')])
+    expect(validateSeedBundles([{ ...bundle, examples: [{ ...example, files: [] }] }]))
+      .toEqual([expect.stringContaining('example')])
+    expect(listSeedFiles([{ ...bundle, examples: [example] }])).not.toContain(example.files[0])
+  })
+
   it('rejects a bundle when one of the four required parts is missing', () => {
     const [code, skill, adr] = createDocuments({
       'src/shared/a.ts': '',

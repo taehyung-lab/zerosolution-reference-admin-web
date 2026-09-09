@@ -12,7 +12,7 @@ A focused shared state mechanic owns one domain-neutral algebra, such as:
 - period preset/custom transitions from explicit timezone inputs
 - pending keyword add/remove/trim behavior
 
-The caller owns identity, field/enum meaning, defaults, submit/reset/navigation, Query enablement, and API mapping. Navigation ports, query options, resource modes, or schema configs are demotion signals.
+The caller owns identity policy, field/enum meaning, defaults, submit/reset destinations, navigation, Query enablement, and API mapping. Shared code may execute the repeated identity calculation, input collection and coordinated draft reset from those declarations. `useListFilterDraft` does this for five actual filter consumers; it takes no schema or navigation callback. Navigation ports, query options, resource modes, or schema configs are demotion signals.
 
 A pure utility may compact values, resolve declared defaults, format primitive values, or map structurally generic options only when it does not broaden keys or invent server semantics. Keep it local when arguments grow to absorb domain differences.
 

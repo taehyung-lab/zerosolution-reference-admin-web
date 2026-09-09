@@ -47,7 +47,7 @@ search discriminator, and which declared defaults may be omitted remain feature 
 Manager (product and rehearsal), member and performance consumers adopt `normalizeClosedInstantRange` after codecs and `omitSearchDefaults` after any explicit-intent detection. These pure functions own neither Router nor Query and never choose defaults or whether to query. Screen consumers receive resolved types; optional dates remain optional by declaration. Search metadata is not included in `defineSearchFields` or its defaults/partition.
 
 Compose source fields before derivation, including subset and override. Do not trim only a derived schema
-and reuse old maps. Shared code does not generate a UI, Router, Query, DTO, or reset controller. The
+and reuse old maps. Shared code does not generate a UI, Router, Query, DTO, or product/URL reset controller. The
 consumer workflow and current default inventory live in
 [list-search-contract](../../feature-contract/references/list-search-contract.md#search-계약과-기본값-작성).
 
@@ -63,8 +63,26 @@ new-product transplant evidence.
 | --- | --- | --- | --- |
 | `useConfirmation({ run })` | opaque validated value via `requestConfirmation` | closed/confirm state, cancel, confirmed callback | validation, copy, API, success/failure, navigation; extracted from bulk and reused by member/manager forms |
 | `useDraftCommit({ committed, keyOf, createDraft })` | committed value, identity function, draft factory | `draft`, `setDraft`, `patchDraft`, `resetDraft`; preserves the draft while `keyOf(committed)` is `Object.is`-equal and rebuilds when it changes | what counts as identity (filter vs view fields), when to commit |
+| `useListFilterDraft({ search, partition, scope?, keywords, initialKeywordField, localDefaults? })` | resolved search, declared filter/view partition, optional caller scope, neutral keywords, optional local-only defaults | one identity for filter/period/keyword drafts, filter projection, `prepareSubmit`, `resetDrafts` | partition and scope meaning, keyword mapping, validation, submit/reset destination, page policy, Query |
 | `usePeriodDraft({ committed: { startDateTime?, endDateTime? }, resetKey })` | committed UTC range | `preset`, browser-zone `range`, `utcRange`, `setPreset` (writes UTC day boundaries), `setRange` (nonempty draft → `CUSTOM`, empty → `ALL`), `reset` | period criterion, adopted presets, committed closed-range validation, validation copy |
 | `useKeywordDraft<TField>({ committedItems, initialField, resetKey })` | committed `{ field, value }[]`, initial target | `items`, `pending`, `setPendingField/Value`, `addPending` (trims; empty is ignored), `removeAt`, `clear` (empties `items`, keeps `pending`), `reset` (rebuilds both from committed), `itemsIncludingPending` | target enum, server mapping, duplicate policy (unconfirmed product rule) |
+
+`useListFilterDraft` composes the three primitives for the five performance/member/member-record/
+product-manager/rehearsal-manager filters. View-only changes preserve input; filter or `scope` changes
+rebuild it. Explicit-search consumers pass their committed search discriminator as `scope`.
+The caller may supply URL-resolved or host-local committed values; the hook does not select their owner.
+Use the [Draft commit adoption criteria](../../feature-contract/references/list-workflow.md#draft-commit) for every host, not the names of these existing consumers.
+`defineSearchFields` owns complete field declarations; a selected variant may project a subset.
+Include every committed period/keyword field in the filter partition. Union-only fields are optional
+in the projected type because they may not belong to the selected variant.
+
+`prepareSubmit()` captures `{ filters, range, keywords }` (including trimmed pending keyword), then
+resets only the period draft so an incomplete range cannot survive an unchanged canonical URL.
+It does not validate, prevent a form event, navigate, or reset other drafts.
+`resetDrafts()` rebuilds all inputs from current committed values; the caller separately commits its
+reset destination. `localDefaults` cannot overlap search fields and is excluded from submitted filters.
+Initial keyword field and local defaults are configuration; if their meaning changes dynamically,
+the caller changes `scope`. Flows with different input lifecycles compose the primitives directly.
 
 ## Config (`shared/config/list.ts`)
 

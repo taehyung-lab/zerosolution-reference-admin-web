@@ -1,4 +1,43 @@
 {
+  "detail": {
+    "drawing": "안내 도면",
+    "guide": "구역/등급별 안내 가이드",
+    "inputMode": "입력 방식",
+    "modes": {
+      "zone": "구역",
+      "grade": "등급"
+    },
+    "gate": "게이트",
+    "history": "업데이트 이력",
+    "historyDate": "업데이트일",
+    "historyChange": "업데이트 사항",
+    "historyManager": "담당자",
+    "historyLine": "{{field}}: {{before}} > {{after}}",
+    "title": "공연 조회",
+    "path": "공연",
+    "view": "조회",
+    "basic": "기본정보",
+    "admission": "입장안내정보",
+    "noAdmission": "등록된 정보가 없습니다.",
+    "edit": "수정",
+    "language": "기본정보 언어",
+    "languages": {
+      "ko": "한국어",
+      "ja": "일본어",
+      "en": "영어"
+    },
+    "subtitle": "공연 부제",
+    "organizer": "기획/주관",
+    "emptyValue": "-",
+    "session": "{{number}}회차",
+    "interval": "{{from}} ~ {{to}}",
+    "events": "이벤트",
+    "eventName": "이벤트명",
+    "eventPeriod": "입퇴장일시",
+    "seats": "좌석수",
+    "sessionSeats": "{{number}}회차: 판매 {{sold}}, 미판매 {{unsold}}",
+    "grades": "등급"
+  },
   "title": "공연 목록",
   "filters": {
     "title": "검색 조건",

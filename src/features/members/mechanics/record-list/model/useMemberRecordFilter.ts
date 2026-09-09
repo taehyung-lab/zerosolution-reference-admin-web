@@ -4,27 +4,15 @@ import { memberKeywordTypes } from "../../../model/member-search";
  * 실제 API에서도 필요한 UI 상태다. 서버 행 필터링은 하지 않으며 기간·검색어 초안은 기존 공용 훅이 소유한다.
  */
 import { compactSearchValues } from "@/shared/lib/compact-search-values";
-import {
-  filterPartitionKey,
-  filterPartitionValues,
-  type FilterFieldKeys,
-} from "@/shared/lib/search-partition";
-import { useDraftCommit } from "@/shared/lib/use-draft-commit";
-import { useKeywordDraft } from "@/shared/lib/use-keyword-draft";
-import { usePeriodDraft } from "@/shared/lib/use-period-draft";
+import { useListFilterDraft } from "@/shared/lib/use-list-filter-draft";
 import type { SubmitEvent } from "react";
 import type { MemberRecordSearch } from "../../../model/member-record-search";
 
 import {
-  type memberRecordSearchContract,
   type ResolvedMemberRecordSearch,
   type MemberRecordRouteSearch,
   type MemberRecordSearchContract,
 } from "./member-record-search";
-type RecordFilter = Pick<
-  MemberRecordSearch,
-  FilterFieldKeys<typeof memberRecordSearchContract.partition>
-> & { readonly periodType: string };
 
 export function useMemberRecordFilter(
   search: ResolvedMemberRecordSearch,
@@ -32,21 +20,18 @@ export function useMemberRecordFilter(
   contract: MemberRecordSearchContract,
   searched: boolean,
 ) {
-  const filterKey = (value: MemberRecordSearch) =>
-    `${searched}:${filterPartitionKey(contract.schema.parse(value), contract.partition)}`;
-  const { draft, patchDraft, resetDraft } = useDraftCommit({
-    committed: search,
-    keyOf: filterKey,
-    createDraft: (value): RecordFilter =>
-      filterPartitionValues(value, contract.partition),
+  const inputs = useListFilterDraft<
+    MemberRecordSearch & { readonly periodType: string },
+    MemberRecordSearchContract["partition"],
+    NonNullable<MemberRecordSearch["keywords"]>[number]["field"]
+  >({
+    search,
+    partition: contract.partition,
+    scope: searched,
+    keywords: search.keywords,
+    initialKeywordField: memberKeywordTypes[0],
   });
-  const resetKey = filterKey(search);
-  const period = usePeriodDraft({ committed: search, resetKey });
-  const keyword = useKeywordDraft({
-    committedItems: search.keywords,
-    initialField: memberKeywordTypes[0],
-    resetKey,
-  });
+  const { draft, patchDraft, period, keyword } = inputs;
   return {
     draft,
     patchDraft,
@@ -54,22 +39,20 @@ export function useMemberRecordFilter(
     keyword,
     submit: (event: SubmitEvent<HTMLFormElement>) => {
       event.preventDefault();
-      period.reset();
+      const input = inputs.prepareSubmit();
       onSearchChange(
         compactSearchValues({
           ...search,
-          ...draft,
-          ...period.utcRange,
-          keywords: [...keyword.itemsIncludingPending()],
+          ...input.filters,
+          ...input.range,
+          keywords: [...input.keywords],
           page: undefined,
           searched: true,
         }),
       );
     },
     reset: () => {
-      resetDraft();
-      period.reset();
-      keyword.reset();
+      inputs.resetDrafts();
       onSearchChange({});
     },
   };

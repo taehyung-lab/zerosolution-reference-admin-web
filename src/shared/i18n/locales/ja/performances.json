@@ -1,4 +1,43 @@
 {
+  "detail": {
+    "drawing": "案内図",
+    "guide": "区域・等級別案内ガイド",
+    "inputMode": "入力方式",
+    "modes": {
+      "zone": "区域",
+      "grade": "等級"
+    },
+    "gate": "ゲート",
+    "history": "更新履歴",
+    "historyDate": "更新日時",
+    "historyChange": "更新内容",
+    "historyManager": "担当者",
+    "historyLine": "{{field}}: {{before}} > {{after}}",
+    "title": "公演詳細",
+    "path": "公演",
+    "view": "詳細",
+    "basic": "基本情報",
+    "admission": "入場案内情報",
+    "noAdmission": "登録された情報がありません。",
+    "edit": "編集",
+    "language": "基本情報の言語",
+    "languages": {
+      "ko": "韓国語",
+      "ja": "日本語",
+      "en": "英語"
+    },
+    "subtitle": "公演サブタイトル",
+    "organizer": "企画・主催",
+    "emptyValue": "-",
+    "session": "第{{number}}回",
+    "interval": "{{from}} ~ {{to}}",
+    "events": "イベント",
+    "eventName": "イベント名",
+    "eventPeriod": "入退場日時",
+    "seats": "座席数",
+    "sessionSeats": "第{{number}}回: 販売済み {{sold}}、未販売 {{unsold}}",
+    "grades": "等級"
+  },
   "title": "公演一覧",
   "filters": {
     "title": "検索条件",

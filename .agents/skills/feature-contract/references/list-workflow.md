@@ -22,7 +22,7 @@ Select only the surfaces the current list uses. A surface nested inside a cell, 
 | --- | --- |
 | Filter frame | `FilterPanel`, `FilterField`, `PeriodFilterField`, `KeywordFilterField` |
 | Multi-select group | `CheckboxTree` |
-| Draft commit | `useDraftCommit` |
+| Draft commit | `useListFilterDraft`, or individual primitives for a different input lifecycle |
 | Result state | `ListResult` + `ListResultData<TRow>` |
 | Toolbar/summary | `ResultToolbar`, `ResultSummary` |
 | Table | `DataTable` or feature-local `Table` primitives |
@@ -31,7 +31,7 @@ Select only the surfaces the current list uses. A surface nested inside a cell, 
 
 ### Filter frame
 
-The feature owns fields, rules, submit/reset, Query gate, criterion/target enums and labels.
+The feature owns fields, rules, submit/reset policy and destinations, Query gate, criterion/target enums and labels.
 Read [filter-fields.md](../../shared-ui-contract/references/filter-fields.md); read lower control references only when changing them.
 
 ### Multi-select group
@@ -42,7 +42,16 @@ Read [checkbox-group.md](../../shared-ui-contract/references/checkbox-group.md).
 
 ### Draft commit
 
-The feature owns identity (which fields are filter vs view), draft factory, navigation, and page reset.
+The feature declares identity policy (filter/view partition and any searched/idle scope), local-only defaults, navigation, and page reset. Matched filter/period/keyword lifecycles use `useListFilterDraft` to calculate one identity, create drafts, collect submit input and coordinate draft reset. Keep schema parsing, keyword DTO mapping, `preventDefault`, and the destination passed to `onSearchChange` in the feature.
+
+Apply this comparison to every existing or new filter host, including detail/form/dialog child lists.
+Matching means the inputs preserve/rebuild under one committed identity, submit collects them together
+and resets only the period, and discard rebuilds all drafts. Different names, enums, defaults, query
+gates or reset destinations do not justify copying that lifecycle into another feature hook.
+If the input lifecycle differs, record the differing transition and its owner in the task review and
+reuse only the matching primitives. An immediate option search or a single-text search without period
+and keyword chips needs no dummy state to consume this composition; keep its smallest state owner.
+Report adoption through wrappers as well as direct calls; a five-hook count is not a five-screen limit.
 Read [shared-values.md](../../shared-ui-contract/references/shared-values.md) for the algebra and [router.md](router.md) for the URL transition.
 
 ### Result state and toolbar
