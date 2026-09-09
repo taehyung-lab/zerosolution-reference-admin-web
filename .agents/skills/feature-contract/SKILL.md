@@ -16,7 +16,7 @@ Select references by the surfaces actually present, not by the page type alone. 
 For screen/workflow work, use `node scripts/agents/cli.mjs context` to locate the target before selecting
 references. The inventory-owned context index connects evidence and related inner surfaces; `group`
 entries still require manual decomposition. Declare include/exclude decisions and requirement evidence
-through [prepare/review](../../../scripts/agents/README.md). A code path is a routing hint, not a screen
+through [prepare/review](../../../scripts/agents/README.md#prepare-before-editing). A code path is a routing hint, not a screen
 template. New or incomplete evidence stays explicit; copy/style-only work uses the lighter maintenance path.
 
 - Before composing any screen, read its inventory section, applicable scenario cards and the judgment/answered/open-question sections selected by `context` and `prepare`. The index routes evidence, not policy: decompose group entries and follow linked sibling rules when they change ownership, exceptions or failure behavior. Read a reference in full only when the work spans it; a heading selection includes its children and ancestor constraints. Compose only what the inventory shows; record what it does not.
