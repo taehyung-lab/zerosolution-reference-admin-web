@@ -108,7 +108,7 @@ export function describeContext(root, id) {
           pointer: row.pointer, pointerState: pointerState(root, row),
         })),
         summary: summarize(rows, root),
-        note: 'These rows are what this screen must be — the denominator of completeness. Scenario cards own verification, and pointer says where to look, never that the work is done or missing.',
+        note: 'These rows are what has been observed and recorded so far, not the screen\'s full specification. They are the denominator of what this task must cover; covering all of them is not completeness, and a surface absent from this list is found at the source rather than inferred to not exist. Scenario cards own verification, and pointer says where to look, never that the work is done or missing.',
       }
     : { rows: [], note: `Not migrated: ${surface.inventory} declares no row id for ${surface.id}. Read the section table itself; an empty list is not an empty screen.` }
   return JSON.stringify({ ...surface, contract, judgment: index.judgment, related: surface.related.map((related) => {

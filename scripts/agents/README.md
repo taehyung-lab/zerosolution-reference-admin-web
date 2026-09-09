@@ -94,8 +94,12 @@ the parser derives from them.
 - A row is **unresolved** when its `미확인` cell is filled, its `Figma 관찰` contains `(미판독)`, or its
   `Notion 동작·정책` is `(대기)`. Reading the `미확인` column alone misses the other two and reports a row
   with an unread original as confirmed. `Q<n>` tokens link the judgment ledger's questions.
-- `denominator` counts rows except `n/a` and `ref`. It is **what this screen must be**, so it is the
-  denominator of completeness. The numerator is not here: scenario cards own verification state.
+- `denominator` counts rows except `n/a` and `ref`. It is **what has been observed and recorded so far**,
+  so it is the denominator of what this task must cover — **not** the screen's full specification.
+  Covering every row is not completeness, and a surface missing from the list is found at the source, never
+  inferred not to exist — the inventory already owns that rule at
+  [근거의 수명과 읽기 범위](../../docs/reference/zero-sol/README.md#근거의-수명과-읽기-범위):43,133.
+  The numerator is not here either: scenario cards own verification state.
 - `pointerState` says whether the `현재 코드` pointer still resolves against tracked paths — `present`,
   `stale`, `unverifiable` (a component name, not a path), `none`, or `n/a`. It is pointer freshness only.
   A pointer is a discovery hint: `none` is not proof of missing implementation and `present` is not
