@@ -63,6 +63,18 @@ single quotes so characters such as backticks stay literal. The recognized subse
 double-quoted backticks, since the shell would run them as command substitution. When the command parses
 but is not an allowlisted read-only executable, the denial asks for preparation, which is the right action.
 
+Read-only inspection stays available without preparation: `read`, `cat`, `ls`, `rg`, `grep`, `wc`, `pwd`,
+Git `status`/`diff`/`log`/`show`/`ls-files`/`rev-parse` (including leading `-C <path>` or `-C<path>`),
+`find` limited to read-only predicates, and `sed -n <range>p`. `rtk` and `rtk proxy` wrappers are recognized.
+Git config/alias options, external diff/text conversion and output-to-file options remain gated.
+General Python/Node programs cannot be classified as read-only from their executable name.
+The writing forms of the same
+commands (`find -exec`/`-delete`/`-fprint`, `sed -i`/`-f`/`w`) require preparation. Literal quoted arguments
+are decoded before command/option checks, so `rg 'a|b' file` is inspection while a real pipe,
+redirection, separator or substitution requires preparation. Unsupported shell escapes/expansions are
+conservatively gated; quote glob patterns such as `find scripts -name '*.mjs'`. This is a limited argv
+recognizer, not a shell parser. Writes under `.ai-work/` remain available for preparation.
+
 These are read-only, available before prepare. `bundle` lists the valid IDs; an ID returns its code,
 reference sections, ADRs, focused tests, ownership split and any scoped consumption examples from the
 existing seed declaration ([example semantics](../contracts/README.md#consumption-examples)). `docs/reference/zero-sol/context.json` is owned by the
