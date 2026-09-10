@@ -127,9 +127,13 @@ function rootPointerDocuments(root) {
   return loaded
 }
 
-function requiredReferences(scope) {
+function requiredReferences(scope, work) {
   const paths = scope.join('\n')
   const refs = ['AGENTS.md']
+  // Screen work enters through the loop skill before any path-routed contract, so it is listed first and
+  // the first missing-reference message names it. Declared maintenance/infrastructure work and app-shell
+  // paths are not screen requests and stay on the contracts alone.
+  if (work?.kind === undefined && /src\/(features|routes)\//.test(paths)) refs.push('.agents/skills/screen-loop/SKILL.md')
   if (/src\/(features|routes|app)\//.test(paths)) refs.push('.agents/skills/feature-contract/SKILL.md')
   if (/src\/shared\/|src\/app\/error-boundary\//.test(paths)) refs.push('.agents/skills/shared-ui-contract/SKILL.md')
   if (/openapi\/|src\/api\/|src\/features\/[^/]+\/api\/|src\/app\/providers\//.test(paths)) refs.push('.agents/skills/api-contract/SKILL.md')
@@ -151,7 +155,7 @@ export function prepare(root, session, checkpointFile, snapshot = outputSnapshot
   }
   if (!Array.isArray(references)) throw new Error('Declare repository Markdown references')
   const referenceFiles = references.map(referenceOf).filter((reference) => reference.heading === undefined).map((reference) => reference.file)
-  for (const file of requiredReferences(scope)) {
+  for (const file of requiredReferences(scope, checkpoint.work)) {
     if (!referenceFiles.includes(file)) throw new Error(`Required reference: ${file}`)
   }
   if (!Array.isArray(prefixLoaded) || !prefixLoaded.every((file) => text(file) && referenceFiles.includes(file))) {
@@ -246,7 +250,7 @@ export function checkEdit(root, session, targets) {
   for (const target of targets) {
     const path = localPath(root, target)
     if (!within(path, checkpoint.scope)) return `Outside declared scope: ${path}. Update the checkpoint with requirements and evidence.`
-    for (const file of requiredReferences([path])) {
+    for (const file of requiredReferences([path], checkpoint.work)) {
       if (!(file in documents)) return `Required reference for ${path}: ${file}. Update checkpoint and prepare.`
     }
     try { workflowContext(root, checkpoint, [path]) } catch (error) { return error.message }

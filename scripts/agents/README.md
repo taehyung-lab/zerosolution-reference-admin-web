@@ -160,8 +160,10 @@ Keep the task checkpoint under `.ai-work/`. The native hook supplies the runtime
 preparation is missing. Use that ID with `prepare`; do not invent a second ID for an active runtime.
 A script-only task needs numbered requirements, scope, references, contracts and unresolved as before.
 A workflow task also links each requirement to included surfaces, sources and contract decisions.
-Applicable SKILL files follow the actual paths in AGENTS §2; an API path also needs api-contract, and
-an app error-boundary path also needs shared-ui-contract.
+Applicable SKILL files follow the actual paths in AGENTS §2; default (undeclared `work`) work on a
+feature or route path also needs screen-loop, the request-shaped entry that decides mode, entry and
+return points — declared maintenance/infrastructure work does not; an API path also needs api-contract,
+and an app error-boundary path also needs shared-ui-contract.
 For file creation, relocation or ownership changes, also declare/read folder-structure-contract.
 The path-only hook cannot distinguish a behavioral edit from a placement decision; review owns that distinction.
 Contract IDs must come from `bundle`, not component/hook names or invented labels:
@@ -179,7 +181,7 @@ Contract IDs must come from `bundle`, not component/hook names or invented label
     "sources": ["docs/reference/zero-sol/05-performances.md"],
     "contracts": ["data-table"]
   }],
-  "references": ["AGENTS.md", ".agents/skills/feature-contract/SKILL.md"],
+  "references": ["AGENTS.md", ".agents/skills/screen-loop/SKILL.md", ".agents/skills/feature-contract/SKILL.md"],
   "contracts": [{ "id": "data-table", "decision": "adopt", "reason": "The table renders the feature-owned sort state." }],
   "unresolved": []
 }
