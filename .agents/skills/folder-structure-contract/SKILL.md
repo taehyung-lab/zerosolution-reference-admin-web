@@ -58,6 +58,11 @@ src/
 | 화면·표시용 컴포넌트·컬럼·렌더와 결합된 훅 | 소비 화면 또는 mechanic의 `ui` |
 | 여러 화면이 같은 의미·상태·실패 계약으로 쓰는 기능 | `mechanics/{기능명}/{ui,model}` |
 
+화면 안의 파일 집합(목록·상세·폼이 어떤 파일을 어떤 이름으로 갖는가)은 각 역할 reference 의 `형태` 절이
+소유하고([목록](../feature-contract/references/list-workflow.md#형태), [상세](../feature-contract/references/detail-workflow.md#형태),
+[폼](../feature-contract/references/form-workflow.md#형태), [route](../feature-contract/references/router.md#형태)),
+`contracts:check` 가 이름·위치를 대조한다. 이 표는 그 파일이 어느 segment 에 놓이는가만 정한다.
+
 확장자로 분류하지 않는다. `useMemberListResult.ts`는 컬럼과 표시 옵션을 조립하므로
 `screens/list/ui`다. `useManagerInputForm.tsx`는 JSX·focus·폼 연결을 반환하는 UI 어댑터다.
 검색 전이, 요청 입력, schema, mutation 후속 처리는 model에 남긴다. JSX를 없애려고 wrapper를 더하지 않는다.
