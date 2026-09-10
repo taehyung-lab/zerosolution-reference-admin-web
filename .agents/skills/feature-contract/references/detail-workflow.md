@@ -35,6 +35,20 @@ Select only the surfaces the current detail uses.
 | Actions | Confirm, Alert, Link | visibility per record status, permission, confirmation, destination | [mutation-actions.md](mutation-actions.md) |
 | Editable section | one form per section (see above) | section schema, mapper, read-only transition | [form-workflow.md](form-workflow.md) |
 
+## 형태
+
+파일 집합만 적는다. 각 역할의 규칙은 위 절들이 소유한다.
+
+| 파일 | 담는 것 |
+| --- | --- |
+| `<domain>/api/use*Detail.ts` | 위 [Detail ownership](#detail-ownership) 의 options + 실행 훅. `locale` 은 `UiLocale` |
+| `model/*-requests.ts` | 액션의 요청 경계(액션이 있을 때) |
+| `model/*-actions.ts` | 액션 가시성·확인·후속 정책(있을 때) |
+| `model/*-history.ts` | 위 표의 이력 mapper(이력이 있을 때) |
+| `ui/*DetailScreen.tsx` | 헤더·상태 경계·섹션 조립 |
+| `ui/*Section.tsx` | 섹션 하나씩. 현재 공연 상세만 이렇게 나누고 회원·운영자 상세는 Screen 안에 인라인이다 — 섹션이 둘 이상이면 나눈다 |
+| `ui/*ActionForm.tsx`·`*ActionDialog.tsx` | 액션 입력(있을 때) |
+
 ## Actions and verification
 
 The feature owns edit/back/delete visibility, confirmation, mutation outcome, cache consequence, and destination. Read [form-workflow.md](form-workflow.md) only when entering or changing a form, [mutation-actions.md](mutation-actions.md) when an action mutates or confirms, and [bulk-actions.md](bulk-actions.md) only for multi-row work.

@@ -40,6 +40,22 @@ Select only the surfaces the current form uses.
 | Save flow                         | `useSaveForm` (its `dialogs` node renders the confirm → acknowledge pair), `FormSaveFailureMessage`, `FormSubmitButton`, `FormCancelButton` (default 저장/취소 labels) | mutation, destination, error classification (`classifyFormError`) | [mutation-actions.md](mutation-actions.md). An inline save without the pair does not use `useSaveForm`; compose `useForm` + adapters directly (`LoginScreen`) |
 | Cancel and dirty leave            | `useUnsavedChangesGuard` (Router blocker + both confirmed sentences), composed by `useSaveForm` with `when: isDirty`, dialog rendered inside `save.dialogs` | destination after leaving (`guard.leave(navigate)`) | this file |
 
+## 형태
+
+등록·수정 한 쌍이 `screens/form/` 하나를 쓴다. 파일 집합만 적는다. 각 역할의 규칙은 위 [Form ownership](#form-ownership) 이 소유한다.
+
+| 파일 | 담는 것 |
+| --- | --- |
+| `model/*-schema.ts` | 입력 Zod schema(등록·수정이 다르면 각각) |
+| `model/*-defaults.ts` | 기본값(등록·수정이 기본값 계산을 공유할 때) |
+| `model/*-request.ts` | 검증된 입력 → 요청 입력 mapper |
+| `model/use*Mutation.ts` 또는 `*-requests.ts` | 저장 실행과 캐시 후속(API 연결 전이면 요청 함수 도달까지) |
+| `model/use*FormOptions.ts` | 선택지 투영 훅(선택지가 있을 때) |
+| `ui/{Domain}Form.tsx` | 등록·수정이 공유하는 폼(공유 필드가 있을 때. 회원 폼은 등록·수정 필드가 달라 없다) |
+| `ui/*CreateScreen.tsx`·`*EditScreen.tsx` | 각자의 `useSaveForm` 과 다른 필드 슬롯. 입력 화면 어댑터를 별도 파일(`*InputScreens.tsx`·`use*InputForm.tsx`)로 두는 것도 이 역할이다 |
+
+route 는 [Route file layout](router.md#route-file-layout) 을 따르고, 수정 route 는 상세 query 를 await 해 기본값을 준비할 수 있다.
+
 ## Sections and error visibility
 
 A collapsed section can hide an invalid field and make submit appear silent. Form sections therefore stay mounted while closed (`useFormSections` → `keepMounted`), so TanStack Form never clears their errors. On rejected submit, reveal the sections containing errors and focus the first invalid control in declared order; no revalidation after reveal is needed because nothing remounted. While a section with errors is collapsed, its header shows the invalid-field count (`errorCount` from the same `fieldMeta.errors` selection). Shared UI owns disclosure and the count rendering; the feature owns field-to-section mapping and the invalid-field selection.

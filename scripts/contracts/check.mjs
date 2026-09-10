@@ -38,6 +38,12 @@ import {
   readDeclaredPaths,
 } from './api-surface.mjs'
 import {
+  listRouteCoverageFailures,
+  resolvedShapeExceptionFailures,
+  screenShapeFailures,
+  screenShapeNotices,
+} from './screen-shape.mjs'
+import {
   SEED_BUNDLES,
   collectImportClosure,
   collectTestImportClosure,
@@ -119,6 +125,12 @@ failures.push(...surfaceIndexFailures(process.cwd()))
 // 문서 안의 sentinel 은 어느 모드에서도 결정 미해소다.
 failures.push(...transplantSentinelFailures(documents))
 
+// 화면 형태: 역할별 reference 의 형태 절이 정한 파일 집합·위치와, 목록 route 의 계약 e2e 합류.
+failures.push(...screenShapeFailures(process.cwd()))
+failures.push(...listRouteCoverageFailures(process.cwd()))
+failures.push(...resolvedShapeExceptionFailures(process.cwd()))
+notes.push(...screenShapeNotices(process.cwd()))
+
 // 타입·테스트가 통과해도 런타임에만 죽는 두 실패. 실제로 겪어서 넣었다.
 failures.push(...findUnregisteredPorts())
 const declaredPaths = readDeclaredPaths()
@@ -180,6 +192,7 @@ console.log(`  ✓ 삭제된 문서 이름·옛 AGENTS §번호·금지 추상�
 console.log('  ✓ 시나리오 원장 색인과 카드가 서로를 덮음')
 console.log('  ✓ 화면 context 색인의 인벤토리·시나리오·절·관련 surface 연결 실존 (의미·내부 구성 완전성은 리뷰)')
 console.log(`  ✓ 문서 안 미해소 이관 sentinel 없음${mode === 'target' ? ' (target: 코드 포함)' : ''}`)
+console.log('  ✓ 화면 형태: 역할 파일의 위치·필수 집합과 목록 route 의 계약 e2e 합류 (의미는 형태 절과 리뷰)')
 console.log(
   declaredPaths === null
     ? '  ✓ transport 포트 등록됨 (계약 snapshot 없음: 경로 대조 건너뜀)'
