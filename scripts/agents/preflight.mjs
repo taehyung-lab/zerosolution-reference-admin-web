@@ -318,6 +318,11 @@ export function recordReview(root, session, report, snapshot = outputSnapshot) {
       if (!Array.isArray(item.files) || !item.files.length || !item.files.every((file) => text(file) && localPath(root, file) === file && within(file, state.checkpoint.scope) && (existsSync(resolve(root, file)) ? statSync(resolve(root, file)).isFile() : Boolean(state.baseline[file])))) throw new Error(`Requirement ${item.id}: implementation files must exist in scope (or be a baseline deletion)`)
       if (!Array.isArray(item.verification) || !item.verification.length || !item.verification.every((check) => text(check.method) && text(check.result) && (!check.artifact || (localPath(root, check.artifact) === check.artifact && existsSync(resolve(root, check.artifact)) && statSync(resolve(root, check.artifact)).isFile())))) throw new Error(`Requirement ${item.id}: verification needs method, result and an existing artifact when provided`)
     }
+    // `unimplemented` skips the file check above, so without this a session could write source, attach it
+    // to no requirement, review every requirement as unimplemented and still close the stop gate.
+    const claimed = new Set(report.requirements.flatMap((item) => (Array.isArray(item.files) ? item.files : []).filter(text)))
+    const unclaimed = mine.filter((path) => !claimed.has(path))
+    if (unclaimed.length) throw new Error(`This session wrote paths no requirement claims in "files": ${unclaimed.join(', ')}. Name each in the requirement it serves, or revert it.`)
   }
   // Fingerprinted over this session's own paths so a concurrent edit cannot invalidate the review.
   save(root, session, { ...state, review: { fingerprint: fingerprintOf(mine, current), report } })
