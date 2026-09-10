@@ -13,7 +13,9 @@ review runtime availability, repository paths and native trust before enabling t
 - Other runtimes: use the same prepare/review commands and root instructions. An adapter must be implemented and
   exercised before claiming automatic interception there. “All agents” means one contract, not undocumented hook support.
 
-Native Edit/Write/apply_patch calls check target scope before execution. General shell calls require preparation,
+Native Edit/Write/apply_patch calls check target scope before execution, but only once the tool accepts the
+call: an Edit whose `old_string` does not match fails inside the tool first, so that path never reaches the
+handler and never reports a scope or unresolved reason. Measure a path boundary with Write. General shell calls require preparation,
 but their write targets are not inferred from shell text. Each adapter's `matcher` must list every tool name the
 handler answers (`preflight.test.mjs` fails when one drifts); a name the matcher omits is never intercepted.
 
