@@ -197,6 +197,10 @@ export default tseslint.config(
       'dist/**',
       'node_modules/**',
       '.ai-work/**', // 임시 세션과 격리 작업 트리는 현재 제품의 검사 대상이 아니다.
+      // 저장소 안의 checkout(격리 worktree). 아래 루트 고정 패턴은 그 안까지 닿지 않아 트리가 통째로 검사 대상이 되고,
+      // 2026-09-10 실측으로 본체 3.06GB + .worktrees 3.33GB + .claude/worktrees 3.13GB 가 heap 상한 4.1GB 를 넘겼다.
+      '.worktrees/**',
+      '.claude/worktrees/**',
       '.openapi-prepared/**',
       'src/api/generated/**', // 생성물은 편집·검사 대상이 아니다
       'src/routeTree.gen.ts',

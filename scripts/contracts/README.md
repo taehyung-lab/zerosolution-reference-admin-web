@@ -85,6 +85,11 @@ stage set and README projection with that declaration, and checks local links, c
 pointers, document-size notices and transplant sentinels. Remote OpenAPI drift and real-server login
 belong to explicit network jobs; do not hide them in the local entry point.
 
+The ESLint ignore list is root-anchored, so a second checkout inside the repository (an agent worktree
+under `.worktrees/` or `.claude/worktrees/`) is linted whole unless its root is listed; on 2026-09-10 that
+exceeded the Node heap. CI runs on a fresh checkout and never has such a tree, so this regression is
+local-only and no CI stage guards it.
+
 Document notices cover nested `docs/` and `.agents/` Markdown too, including Notion ledgers.
 `contracts.mjs` owns the advisory thresholds: 200 lines and 24 KiB (a triage baseline near the
 previous expensive list reference, not a semantic quality limit). Dense short files need review too.
