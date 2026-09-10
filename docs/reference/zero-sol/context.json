@@ -30,7 +30,8 @@
         {
           "file": "docs/reference/zero-sol-figma-analysis.md",
           "heading": "질문 16"
-        }
+        },
+        "docs/reference/zero-sol/notion/01-common.md"
       ],
       "related": [],
       "gap": "세션 외 공통 alert/incident 전체 workflow는 인벤토리와 개별 소비 시나리오를 추가 대조한다."
@@ -55,6 +56,22 @@
         {
           "file": "docs/reference/zero-sol-figma-analysis.md",
           "heading": "질문 12"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/02-auth.md",
+          "heading": "로그인"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/02-auth.md",
+          "heading": "아이디/비밀번호 찾기"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/02-auth.md",
+          "heading": "회원가입"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/02-auth.md",
+          "heading": "회원가입 결과조회"
         }
       ],
       "related": []
@@ -73,7 +90,8 @@
         {
           "file": "docs/reference/zero-sol-figma-analysis.md",
           "heading": "질문 14"
-        }
+        },
+        "docs/reference/zero-sol/notion/03-dashboard.md"
       ],
       "related": [],
       "gap": "집계 mechanic 카드이며 대시보드 tile별 이동과 기간 정책은 미확인이다."
@@ -163,6 +181,42 @@
         {
           "file": "docs/reference/zero-sol-figma-analysis.md",
           "heading": "회원 활동정보 판독"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/04-members.md",
+          "heading": "회원 > 공통(조회/등록/수정)"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/04-members.md",
+          "heading": "회원 > 활성회원 > 전체회원"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/04-members.md",
+          "heading": "회원 > 활성회원 > 일반회원"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/04-members.md",
+          "heading": "회원 > 활성회원 > 불량회원"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/04-members.md",
+          "heading": "회원 > 비활성회원 > 휴면회원"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/04-members.md",
+          "heading": "회원 > 비활성회원 > 탈퇴회원"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/04-members.md",
+          "heading": "회원 > 부가기능 > 회원접속"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/04-members.md",
+          "heading": "회원 > 불량회원 소명신청"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/04-members.md",
+          "heading": "회원 > 회원상담"
         }
       ],
       "related": [
@@ -202,6 +256,26 @@
         {
           "file": "docs/reference/zero-sol-figma-analysis.md",
           "heading": "members/managers API 책임 재대조 (2026-09-07)"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/04-members.md",
+          "heading": "회원 > 활성회원 > 전체회원"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/04-members.md",
+          "heading": "회원 > 활성회원 > 일반회원"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/04-members.md",
+          "heading": "회원 > 활성회원 > 불량회원"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/04-members.md",
+          "heading": "회원 > 비활성회원 > 휴면회원"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/04-members.md",
+          "heading": "회원 > 불량회원 소명신청"
         }
       ],
       "related": []
@@ -362,7 +436,11 @@
         "src/features/performances/screens/detail/ui/PerformanceBasicSection.tsx"
       ],
       "references": [
-        ".agents/skills/feature-contract/references/form-workflow.md"
+        ".agents/skills/feature-contract/references/form-workflow.md",
+        {
+          "file": "docs/reference/zero-sol/notion/05-performances.md",
+          "heading": "공연 > 공연목록"
+        }
       ],
       "related": []
     },
@@ -467,6 +545,10 @@
         {
           "file": "docs/reference/zero-sol-figma-analysis.md",
           "heading": "8. 상세·폼·팝업 판정 (2026-09-02 ①′~②′, Claude·Codex 독립 초안 + 교차 리뷰)"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/05-performances.md",
+          "heading": "공연 > 콘텐츠"
         }
       ],
       "related": []
@@ -558,6 +640,42 @@
         {
           "file": "docs/reference/zero-sol-figma-analysis.md",
           "heading": "발권·출입 판독"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/06-ticketing.md",
+          "heading": "발권 > 공통(조회/수정)"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/06-ticketing.md",
+          "heading": "발권 > 등록 > 일반발권"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/06-ticketing.md",
+          "heading": "발권 > 등록 > 대량재발권"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/06-ticketing.md",
+          "heading": "발권 > 발권대기"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/06-ticketing.md",
+          "heading": "발권 > 발권완료 > 신규발권"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/06-ticketing.md",
+          "heading": "발권 > 발권완료 > 재발권"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/06-ticketing.md",
+          "heading": "발권 > 부가기능 > 스마트프린터"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/06-ticketing.md",
+          "heading": "발권 > 분실"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/06-ticketing.md",
+          "heading": "발권 > 전체발권"
         }
       ],
       "related": []
@@ -607,6 +725,14 @@
         {
           "file": "docs/reference/zero-sol-figma-analysis.md",
           "heading": "검색·선택 판독"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/07-exhibition.md",
+          "heading": "전시 > 배너"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/07-exhibition.md",
+          "heading": "전시 > APP Splash"
         }
       ],
       "related": []
@@ -652,7 +778,8 @@
         {
           "file": "docs/reference/zero-sol-figma-analysis.md",
           "heading": "검색·선택 판독"
-        }
+        },
+        "docs/reference/zero-sol/notion/08-promotion.md"
       ],
       "related": []
     },
@@ -706,6 +833,14 @@
         {
           "file": "docs/reference/zero-sol-figma-analysis.md",
           "heading": "커뮤니티 판독"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/09-community.md",
+          "heading": "커뮤니티 > 게시판"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/09-community.md",
+          "heading": "커뮤니티 > 게시물"
         }
       ],
       "related": []
@@ -741,6 +876,30 @@
         {
           "file": "docs/reference/zero-sol-figma-analysis.md",
           "heading": "검색·선택 판독"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/10-statistics.md",
+          "heading": "통계 > 공통"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/10-statistics.md",
+          "heading": "통계 > 회원"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/10-statistics.md",
+          "heading": "통계 > 발권"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/10-statistics.md",
+          "heading": "통계 > 출입"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/10-statistics.md",
+          "heading": "통계 > APP > 실행"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/10-statistics.md",
+          "heading": "통계 > APP > 콘텐츠"
         }
       ],
       "related": []
@@ -809,6 +968,42 @@
         {
           "file": "docs/reference/zero-sol-figma-analysis.md",
           "heading": "운영자 상태 판독"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/11-settings.md",
+          "heading": "설정 > 운영자"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/11-settings.md",
+          "heading": "설정 > 접근권한"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/11-settings.md",
+          "heading": "설정 > 약관"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/11-settings.md",
+          "heading": "설정 > 로그"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/11-settings.md",
+          "heading": "설정 > 정책 > 회원"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/11-settings.md",
+          "heading": "설정 > 정책 > 전시"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/11-settings.md",
+          "heading": "설정 > 정책 > 마케팅"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/11-settings.md",
+          "heading": "설정 > 정책 > 메뉴/기능"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/11-settings.md",
+          "heading": "설정 > 정책 > 다국어"
         }
       ],
       "related": []
@@ -842,7 +1037,8 @@
         {
           "file": "docs/reference/zero-sol-figma-analysis.md",
           "heading": "검색·선택 판독"
-        }
+        },
+        "docs/reference/zero-sol/notion/12-search.md"
       ],
       "related": []
     },
@@ -857,7 +1053,8 @@
         {
           "file": "docs/reference/zero-sol-figma-analysis.md",
           "heading": "8. 상세·폼·팝업 판정 (2026-09-02 ①′~②′, Claude·Codex 독립 초안 + 교차 리뷰)"
-        }
+        },
+        "docs/reference/zero-sol/notion/13-profile.md"
       ],
       "related": [],
       "gap": "인벤토리는 조회·수정 frame 존재만 기록한다. 실제 필드·전이·별도 시나리오는 원문 확인 후 보강해야 한다."
@@ -912,6 +1109,18 @@
         {
           "file": "docs/reference/zero-sol-figma-analysis.md",
           "heading": "발권·출입 판독"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/14-onsite.md",
+          "heading": "GNB > 현장발권 > 예매검색"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/14-onsite.md",
+          "heading": "GNB > 현장발권 > 신규예매"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/14-onsite.md",
+          "heading": "GNB > 현장발권 > 출입조회"
         }
       ],
       "related": [],
@@ -924,7 +1133,9 @@
       "inventory": "docs/reference/zero-sol/15-notification.md",
       "scenarios": [],
       "paths": [],
-      "references": [],
+      "references": [
+        "docs/reference/zero-sol/notion/15-notification.md"
+      ],
       "related": [],
       "gap": "toast/panel 구성만 기록돼 있다. 수명·읽음·닫기·복구 시나리오는 원문 확인 후 보강해야 한다."
     },
