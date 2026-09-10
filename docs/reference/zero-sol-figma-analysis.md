@@ -145,7 +145,7 @@
 
 ### 질문 18
 
-18. **해결(2026-09-09 사용자 결정: 충돌 시 Notion 기준)** `커뮤니티 > 게시판`(9.1)에 **일괄변경이 있다.** 따라서 그 화면에는 행 선택 checkbox, toolbar의 `선택▾`+`변경`, 상태변경 cascade가 있다. Figma toolbar에는 없고 Notion Case02 목록에는 있었으며, [판독 규칙](zero-sol/README.md#판독-규칙)의 우선순위로 Notion을 채택했다. 그 결과 이 화면은 Figma frame에 없는 컨트롤을 갖는다. cascade의 실제 대상 값은 Notion 원문에서 확인해야 한다.
+18. **해결(2026-09-09 사용자 결정: 충돌 시 Notion 기준)** `커뮤니티 > 게시판`(9.1)에 **일괄변경이 있다.** 따라서 그 화면에는 행 선택 checkbox, toolbar의 `선택▾`+`변경`, 상태변경 cascade가 있다. Figma toolbar에는 없고 Notion Case02 목록에는 있었으며, [판독 규칙](zero-sol/README.md#판독-규칙)의 우선순위로 Notion을 채택했다. 그 결과 이 화면은 Figma frame에 없는 컨트롤을 갖는다. cascade의 실제 대상 값은 **Notion 원문에도 없다**(2026-09-10 원문 페이지 `3845169ef2f0801ba0f9e375071acb47` 를 열어 4개 시나리오 Description 전문을 확인). 따라서 이 조건은 사용자 답이나 Figma `Case 정의` frame 으로만 해소되며, 그때까지 일괄변경 전체를 구현하지 않는다.
 
 ### 질문 20
 
