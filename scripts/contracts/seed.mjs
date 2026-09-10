@@ -789,6 +789,7 @@ export function findBundleClosureLeaks(bundles = SEED_BUNDLES) {
  */
 export const TRANSPLANT_MANIFEST = {
   skills: [
+    '.agents/skills/screen-loop',
     '.agents/skills/folder-structure-contract',
     '.agents/skills/api-contract',
     '.agents/skills/feature-contract',

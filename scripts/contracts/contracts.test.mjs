@@ -582,6 +582,9 @@ describe('seed contract bundles', () => {
 describe('transplant manifest and seed negative controls', () => {
   it('carries the folder placement contract with the root instructions into a new project', () => {
     expect(listTransplantManifestFiles()).toContain('.agents/skills/folder-structure-contract/SKILL.md')
+    // The loop that turns "implement this screen" into a procedure travels too; without it the target
+    // project has the contracts but not the entry that finds them.
+    expect(listTransplantManifestFiles()).toContain('.agents/skills/screen-loop/SKILL.md')
   })
   it('flags feature code, rehearsal output, and domain translations inside the seed', () => {
     expect(findForbiddenSeedFiles([

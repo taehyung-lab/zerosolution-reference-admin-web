@@ -17,6 +17,7 @@ function fixture() {
   const scenario = 'docs/reference/scenarios/performance.md'
   write('AGENTS.md', '# Root\nGlobal constraints.\n')
   write('.agents/skills/feature-contract/SKILL.md', '# Feature\nOwnership.\n')
+  write('.agents/skills/screen-loop/SKILL.md', '# Loop\nEntry and return points.\n')
   write(inventory, '# Performance\nCommon policy.\n## List\nNo selection column.\n## Edit\nSection-owned save.\n')
   write(scenario, '# Scenario\nEntry loads; reset clears.\n')
   write('docs/reference/zero-sol/context.json', JSON.stringify({ judgment: [], surfaces: [
@@ -27,7 +28,7 @@ function fixture() {
   const checkpoint = {
     scope: ['src/features/performances/screens/list/'],
     requirements: [{ id: 'R1', text: 'Implement list.', surfaces: ['performance-list'], sources: [{ file: inventory, heading: 'List' }], contracts: [], contractReason: 'No new shared behavior in this test.' }],
-    references: ['AGENTS.md', '.agents/skills/feature-contract/SKILL.md'], contracts: [], unresolved: [],
+    references: ['AGENTS.md', '.agents/skills/feature-contract/SKILL.md', '.agents/skills/screen-loop/SKILL.md'], contracts: [], unresolved: [],
     surfaces: [{ id: 'performance-list', decision: 'include' }, { id: 'performance-venue', decision: 'exclude', reason: 'Result-only change.' }],
   }
   const run = (session = 'one') => { write('.ai-work/checkpoint.json', JSON.stringify(checkpoint)); return prepare(root, session, '.ai-work/checkpoint.json', () => ({})) }
@@ -41,6 +42,11 @@ it('delivers the actual selected surface evidence without requiring hand-copied 
   expect(output).toContain('No selection column.')
   expect(output).toContain('Entry loads; reset clears.')
   expect(output).not.toContain('Section-owned save.')
+})
+it('names the screen loop first when a default screen build omits it from references', () => {
+  const { checkpoint, run } = fixture()
+  checkpoint.references = ['AGENTS.md', '.agents/skills/feature-contract/SKILL.md']
+  expect(() => run()).toThrow(/screen-loop/)
 })
 it('rejects a different screen, missing inner-surface decision, and default-build bypass', () => {
   const { checkpoint, run } = fixture()

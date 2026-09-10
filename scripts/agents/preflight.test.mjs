@@ -84,11 +84,39 @@ describe('repository preflight', () => {
     writeFileSync(join(root, 'AGENTS.md'), 'Contract changed')
     expect(checkEdit(root, 'one', ['scripts/example.mjs'])).toMatch(/changed/)
   })
-  it('requires applicable skill and screen evidence before feature editing', () => {
+  it('names the screen loop first when a default screen build declares no skill', () => {
     const { root, checkpoint } = setup()
     checkpoint.scope = ['src/features/members/screens/list/']
     writeFileSync(join(root, '.ai-work/checkpoint.json'), JSON.stringify(checkpoint))
+    // The loop is read before any path-routed contract, so it is the first missing reference reported.
+    expect(() => prepare(root, 'one', '.ai-work/checkpoint.json', fingerprint)).toThrow(/screen-loop/)
+    checkpoint.work = { kind: 'maintenance', reason: 'Copy only.' }
+    writeFileSync(join(root, '.ai-work/checkpoint.json'), JSON.stringify(checkpoint))
     expect(() => prepare(root, 'one', '.ai-work/checkpoint.json', fingerprint)).toThrow(/feature-contract/)
+  })
+  it('requires the screen loop only for default screen work on feature and route scopes', () => {
+    const { root, checkpoint } = setup()
+    for (const skill of ['feature-contract', 'screen-loop', 'api-contract']) {
+      mkdirSync(join(root, `.agents/skills/${skill}`), { recursive: true })
+      writeFileSync(join(root, `.agents/skills/${skill}/SKILL.md`), `${skill}.`)
+    }
+    const write = (value) => writeFileSync(join(root, '.ai-work/checkpoint.json'), JSON.stringify(value))
+    const contract = ['AGENTS.md', '.agents/skills/feature-contract/SKILL.md']
+    // Default screen work: the path-routed contract alone is not enough for a route or a feature screen.
+    write({ ...checkpoint, scope: ['src/routes/_app/members/'], references: contract })
+    expect(() => prepare(root, 'one', '.ai-work/checkpoint.json', fingerprint)).toThrow(/screen-loop/)
+    write({ ...checkpoint, scope: ['src/features/members/screens/list/'], references: contract })
+    expect(() => prepare(root, 'two', '.ai-work/checkpoint.json', fingerprint)).toThrow(/screen-loop/)
+    // Declared maintenance on the same screen is copy/style work, which the loop excludes.
+    write({ ...checkpoint, scope: ['src/features/members/screens/list/'], references: contract, work: { kind: 'maintenance', reason: 'Copy only.' } })
+    expect(() => prepare(root, 'three', '.ai-work/checkpoint.json', fingerprint)).not.toThrow()
+    // Declared infrastructure on a feature API path is contract-only work.
+    write({ ...checkpoint, scope: ['src/features/members/api/'], references: [...contract, '.agents/skills/api-contract/SKILL.md'], work: { kind: 'infrastructure', reason: 'Type plumbing only.' } })
+    expect(() => prepare(root, 'four', '.ai-work/checkpoint.json', fingerprint)).not.toThrow()
+    // An app-shell edit is not a screen request even as default work; only the contract is required.
+    write({ ...checkpoint, scope: ['src/app/shell/'], references: contract, work: { kind: 'infrastructure', reason: 'Shell wiring only.' } })
+    expect(() => prepare(root, 'five', '.ai-work/checkpoint.json', fingerprint)).not.toThrow()
+    expect(checkEdit(root, 'five', ['src/app/shell/Shell.tsx'])).toBeNull()
   })
   it('reports a prefix-loaded reference instead of rendering it, without weakening the reference checks', () => {
     const { root, checkpoint } = setup()
@@ -230,12 +258,14 @@ describe('repository preflight', () => {
   })
   it('requires a workflow decision by default and allows explained infrastructure work', () => {
     const { root, checkpoint } = setup()
-    mkdirSync(join(root, '.agents/skills/feature-contract'), { recursive: true })
-    writeFileSync(join(root, '.agents/skills/feature-contract/SKILL.md'), 'Feature contract.')
+    for (const skill of ['feature-contract', 'screen-loop']) {
+      mkdirSync(join(root, `.agents/skills/${skill}`), { recursive: true })
+      writeFileSync(join(root, `.agents/skills/${skill}/SKILL.md`), `${skill}.`)
+    }
     const feature = {
       ...checkpoint,
       scope: ['src/features/members/screens/list/'],
-      references: ['AGENTS.md', '.agents/skills/feature-contract/SKILL.md'],
+      references: ['AGENTS.md', '.agents/skills/feature-contract/SKILL.md', '.agents/skills/screen-loop/SKILL.md'],
     }
     // A default build can no longer silently skip product evidence.
     writeFileSync(join(root, '.ai-work/checkpoint.json'), JSON.stringify(feature))

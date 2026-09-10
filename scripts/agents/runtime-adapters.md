@@ -30,6 +30,9 @@ are decoded before command/option checks, so `rg 'a|b' file` is inspection while
 redirection, separator or substitution requires preparation. Unsupported shell escapes/expansions are
 conservatively gated; quote glob patterns such as `find scripts -name '*.mjs'`. This is a limited argv
 recognizer, not a shell parser. Writes under `.ai-work/` remain available for preparation.
+A filtering wrapper such as `rtk` can truncate a long file without marking the cut (measured 2026-09-10:
+a 98-line reference printed as its first five lines). Read anything you will quote or judge through the
+runtime's file-read tool or `sed -n <range>p`, not through a wrapped `cat`.
 
 Orchestration RPC is also available without preparation: `orca orchestration` messaging (`send`, `check`,
 `reply`, `ask`, `inbox`), run/task bookkeeping (`run-create`, `run-show`, `run-list`, `task-create`,

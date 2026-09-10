@@ -49,10 +49,11 @@
 
 ## 2. 스킬 라우팅
 
-작업 범위와 편집 예상 경로가 확정되기 전에는 아래 표의 스킬을 선로딩하지 않는다.
+작업 범위와 편집 예상 경로가 확정되기 전에는 아래 표의 스킬을 선로딩하지 않는다. 예외는 첫 행 하나다: 경로가 아니라 요청 형태로 라우팅되는 `screen-loop`는 범위 확정 전에 읽고, 그 스킬이 모드·진입·증거 순서·복귀 지점을 정한 뒤 나머지 행을 따른다.
 
 | 경로·상황                                                            | 읽을 스킬                                                    |
 | -------------------------------------------------------------------- | ------------------------------------------------------------ |
+| 화면 하나 또는 공용 계약 하나를 구현해 달라는 요청(언어 무관)           | [`screen-loop`](.agents/skills/screen-loop/SKILL.md) — 범위 확정 전에 읽는 유일한 스킬 |
 | `openapi/**`, `src/api/**`, `src/features/*/api/**`, payload/cache/error | `api-contract`                                               |
 | `src/app/providers/**`, auth/session/transport boundary              | `api-contract` + `feature-contract`                          |
 | `src/app/shell/**`, config/permission/navigation/notification 조립   | `feature-contract` + 필요한 경우 `shared-ui-contract`        |
