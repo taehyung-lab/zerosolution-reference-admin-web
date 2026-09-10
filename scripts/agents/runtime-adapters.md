@@ -60,7 +60,11 @@ blocking: they belong to another session, and blocking on them previously left a
 exit. Mention them in the report's limitations; this is not a gate-exclusion field. Re-preparation preserves
 both the baseline and the attribution, so widening scope cannot erase what the session already wrote.
 Attribution narrows the window; it is not proof of authorship, and a shared tree still costs review time —
-prefer one writing session or an isolated worktree. Unsupported MCP/custom write
+prefer one writing session or an isolated worktree. A worktree that a runtime creates **inside** the
+checkout (Claude Code uses `.claude/worktrees/`) is listed by the parent's `git ls-files --others` as one
+directory path; until 2026-09-10 the snapshot read it as a file and the Stop hook died with EISDIR, and
+`eslint .` walked the second tree too. Register such roots in `.gitignore` and the ESLint ignores; the
+snapshot now treats a directory entry as absent. Unsupported MCP/custom write
 tools and interactive shell continuations are not a complete interception boundary. Review and Git/CI remain
 necessary; do not describe this as a sandbox.
 No transcript, prompt, secret or global agent configuration is read or modified by these scripts.

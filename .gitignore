@@ -18,5 +18,6 @@ src/api/generated/
 .ai-work/
 .serena/
 .worktrees/
+.claude/worktrees/
 
 # docs/ 를 ignore 하지 마라. docs/decisions 의 승인된 ADR 은 커밋 대상이다.
