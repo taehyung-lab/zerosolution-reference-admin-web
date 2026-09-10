@@ -83,8 +83,8 @@ the parser derives from them.
   `stale`, `unverifiable` (a component name, not a path), `none`, or `n/a`. It is pointer freshness only.
   A pointer is a discovery hint: `none` is not proof of missing implementation and `present` is not
   completion evidence.
-- `enumerations` lists rows whose facts are a list, so a checker can compare them against a code array
-  or enum. Descriptions are for a reader to judge.
+- `enumerations` lists rows whose facts are a list. Nothing compares them against a code array or enum
+  yet, so that comparison is a reader's job like the descriptions are.
 - An unmigrated screen returns an empty `rows` with a note. Empty means not yet promoted, never an empty
   screen; read the section table itself.
 - The parser reads the table only. A cell that a later re-observation has outdated is still promoted, and

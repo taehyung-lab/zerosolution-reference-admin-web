@@ -145,6 +145,32 @@ describe('repository preflight', () => {
     expect(() => recordReview(root, 'one', gap({ replacement: 'R2' }), fingerprint)).not.toThrow()
     expect(() => recordReview(root, 'one', gap({ blocked: 'Waiting on the wire value.' }), fingerprint)).not.toThrow()
   })
+  it('refuses a review that leaves a written path unclaimed by any requirement', () => {
+    const { root, checkpoint } = setup()
+    // `unimplemented` skips the per-requirement file check, so the claim check is what accounts for writes.
+    const flow = {
+      ...checkpoint, work: { kind: 'workflow' }, surfaces: [],
+      requirements: [{ ...checkpoint.requirements[0], surfaces: [], sources: ['user'], contracts: [], contractReason: 'No seed bundle applies.' }],
+      evidenceGaps: [{ paths: ['scripts/'], requirements: ['R1'], reason: 'Unindexed fixture surface.', references: ['AGENTS.md'] }],
+    }
+    writeFileSync(join(root, '.ai-work/checkpoint.json'), JSON.stringify(flow))
+    prepare(root, 'one', '.ai-work/checkpoint.json', fingerprint)
+    hookDecision(root, { session_id: 'one', hook_event_name: 'PreToolUse', tool_name: 'Bash', tool_input: { command: 'node build.mjs' } })
+    writeFileSync(join(root, 'scripts/example.mjs'), 'export const value = 5\n')
+    const base = { contractReview: 'No contract changed.', complexityReview: 'One constant.', assumptions: [], limitations: [] }
+    const report = (requirement) => ({ ...base, requirements: [{ id: 'R1', evidence: 'Reported.', ...requirement }] })
+    // Negative: the write happened and nothing accounts for it.
+    expect(() => recordReview(root, 'one', report({ status: 'unimplemented', blocked: 'Waiting on the wire value.' }), fingerprint))
+      .toThrow(/wrote paths no requirement claims/)
+    // Naming an unrelated file does not account for it either.
+    expect(() => recordReview(root, 'one', report({ status: 'unimplemented', blocked: 'Waiting.', files: ['scripts/other.mjs'] }), fingerprint))
+      .toThrow(/scripts\/example\.mjs/)
+    // Positive: the requirement that the write serves names it, with the evidence that status already requires.
+    expect(() => recordReview(root, 'one', report({
+      status: 'implemented', appliedSections: ['AGENTS.md'], files: ['scripts/example.mjs'],
+      verification: [{ method: 'node build.mjs', result: 'exit 0' }],
+    }), fingerprint)).not.toThrow()
+  })
   it('refuses a review that cites a convention section this session never received', () => {
     const { root, checkpoint } = setup()
     writeFileSync(join(root, 'scripts/notes.md'), '# Owned\n\nA rule.\n\n# Other\n\nAnother rule.\n')
