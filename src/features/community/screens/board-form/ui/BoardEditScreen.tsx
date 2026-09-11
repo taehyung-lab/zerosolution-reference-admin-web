@@ -1,20 +1,19 @@
 import { safeErrorKey } from '@/api/error-copy';
 import { useTranslation } from 'react-i18next';
 import { useBoardDetail } from '@/features/community/api/useBoardDetail';
+import type { BoardSettings } from '@/features/community/model/board';
 import { DetailStateBoundary } from '@/shared/ui/patterns/DetailStateBoundary';
 import { ErrorTrace } from '@/shared/ui/patterns/ErrorTrace';
 import { PageHeader } from '@/shared/ui/patterns/PageHeader';
 import { toBoardEditDefaults } from '../model/board-form-defaults';
-import type { BoardFormInput, BoardFormValues } from '../model/board-form-schema';
+import type { BoardFormInput } from '../model/board-form-schema';
 import { BoardForm } from './BoardForm';
 import { useBoardInputForm } from './useBoardInputForm';
 
 /**
- * 9.1 게시판 수정. 원문은 조회 화면의 `수정 버튼 → 수정 화면으로 이동` 까지만 적고 수정 화면의
- * 필드를 따로 열거하지 않는다. 등록과 같은 필드로 만든 것은 추론이며 판정 문서 질문 30 이 소유한다.
- *
+ * 9.1.4 게시판 수정(Figma, 2026-09-11 실측): 등록과 같은 항목을 조회 값으로 채워 보여 준다.
  * 조회 실패에도 제목이 남도록 헤더를 상태 경계 밖에 둔다. 폼은 조회가 성공한 뒤에만 mount 해
- * 서버 재조회가 입력 초안을 덮어쓰지 않게 한다.
+ * 서버 재조회가 입력 초안을 덮어쓰지 않게 한다. 진입 실패는 route loader 가 이미 처리했다.
  */
 export function BoardEditScreen({
   boardId,
@@ -22,7 +21,7 @@ export function BoardEditScreen({
   onCancel,
 }: {
   readonly boardId: string;
-  readonly onConfirm: (request: { boardId: string; input: BoardFormValues }) => void;
+  readonly onConfirm: (request: { boardId: string; input: BoardSettings }) => void;
   readonly onCancel: () => void;
 }) {
   const { t } = useTranslation('community');
@@ -69,7 +68,7 @@ function BoardEditForm({
   onCancel,
 }: {
   readonly defaults: BoardFormInput;
-  readonly onConfirm: (values: BoardFormValues) => void;
+  readonly onConfirm: (values: BoardSettings) => void;
   readonly onCancel: () => void;
 }) {
   const input = useBoardInputForm({ defaults, onConfirm });

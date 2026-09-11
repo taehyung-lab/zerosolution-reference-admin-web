@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { loadRequired } from '@/app/router/required-loader';
 import { boardDetailQueryOptions } from '@/features/community/api/queries';
-import { requestBoardDelete } from '@/features/community/screens/board-detail/model/board-detail-requests';
+import { requestBoardCategoriesSave, requestBoardDelete } from '@/features/community/screens/board-detail/model/board-detail-requests';
 import { BoardDetailScreen } from '@/features/community/screens/board-detail/ui/BoardDetailScreen';
 
 export const Route = createFileRoute('/_app/community/boards/$boardId/')({
@@ -23,6 +23,7 @@ function BoardDetailRoute() {
         void navigate({ to: '/community/boards/$boardId/edit', params: { boardId: id } });
       }}
       onDelete={requestBoardDelete}
+      onSaveCategories={requestBoardCategoriesSave}
     />
   );
 }

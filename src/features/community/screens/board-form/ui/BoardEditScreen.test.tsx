@@ -7,7 +7,7 @@ vi.mock('@tanstack/react-router', () => ({
   useBlocker: () => ({ status: 'idle' }),
 }));
 
-function setup(boardId = 'reference-board-5') {
+function setup(boardId = 'reference-board-2') {
   const onConfirm = vi.fn();
   const onCancel = vi.fn();
   render(
@@ -18,38 +18,47 @@ function setup(boardId = 'reference-board-5') {
   return { onConfirm, onCancel };
 }
 
-describe('board edit before API', () => {
-  it('조회한 게시판의 값을 초기값으로 싣는다', async () => {
+describe('board edit (Figma 9.1.4 수정)', () => {
+  it('조회한 게시판의 설정 전부를 초기값으로 싣고 꺼진 하위 항목은 비활성이다', async () => {
     setup();
 
-    expect(await screen.findByDisplayValue('Reference Board 5')).toBeInTheDocument();
-    expect(screen.getByRole('combobox', { name: '구분' })).toHaveTextContent('상담');
-    expect(screen.getByRole('combobox', { name: '쓰기 권한' })).toHaveTextContent('전체회원');
+    expect(await screen.findByDisplayValue('Reference Board 2')).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: '쓰기' })).toHaveTextContent('운영자');
+    expect(screen.getByRole('combobox', { name: '읽기' })).toHaveTextContent('비회원 포함');
+    expect(screen.getByRole('combobox', { name: '카테고리' })).toHaveTextContent('사용안함');
+    expect(screen.getByLabelText('파일첨부 용량제한*')).toHaveValue('10');
+    expect(screen.getByRole('combobox', { name: '댓글' })).toHaveTextContent('사용안함');
+    expect(screen.getByRole('combobox', { name: '비밀댓글' })).toBeDisabled();
+    expect(screen.getByRole('combobox', { name: '중복 허용' })).toBeDisabled();
   });
 
-  it('저장 확인을 거친 입력이 게시판 ID 와 함께 업무 요청에 닿는다', async () => {
+  it('저장 확인을 거친 설정이 게시판 ID 와 함께 업무 요청에 닿는다', async () => {
     const { onConfirm } = setup();
-    const name = await screen.findByDisplayValue('Reference Board 5');
+    const name = await screen.findByDisplayValue('Reference Board 2');
 
-    fireEvent.change(name, { target: { value: 'Reference Board 5 수정' } });
+    fireEvent.change(name, { target: { value: 'Reference Board 2 수정' } });
     fireEvent.click(screen.getByRole('button', { name: '저장' }));
 
     expect(await screen.findByText('저장하시겠습니까?')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '확인' }));
 
     expect(onConfirm).toHaveBeenCalledWith({
-      boardId: 'reference-board-5',
-      input: {
-        category: 'COUNSEL',
-        name: 'Reference Board 5 수정',
-        writePermission: 'ALL_MEMBERS',
-      },
+      boardId: 'reference-board-2',
+      input: expect.objectContaining({
+        name: 'Reference Board 2 수정',
+        write: { permission: 'MANAGER' },
+        attachment: 'IN_USE',
+        attachmentLimitMb: 10,
+        comment: 'NOT_IN_USE',
+      }),
     });
+    const request = onConfirm.mock.calls[0]?.[0] as { input: Record<string, unknown> } | undefined;
+    expect(request?.input).not.toHaveProperty('secretComment');
   });
 
   it('게시판명을 비우면 저장이 확인창까지 가지 않는다', async () => {
     const { onConfirm } = setup();
-    const name = await screen.findByDisplayValue('Reference Board 5');
+    const name = await screen.findByDisplayValue('Reference Board 2');
 
     fireEvent.change(name, { target: { value: '' } });
     fireEvent.click(screen.getByRole('button', { name: '저장' }));
@@ -59,7 +68,7 @@ describe('board edit before API', () => {
     expect(onConfirm).not.toHaveBeenCalled();
   });
 
-  it('없는 게시판은 폼 대신 notFound 로 선다', async () => {
+  it('진입 후 없는 게시판은 폼 대신 notFound 로 선다', async () => {
     setup('no-such-board');
 
     expect(await screen.findByText('요청한 정보를 찾을 수 없습니다.')).toBeInTheDocument();

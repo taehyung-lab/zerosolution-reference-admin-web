@@ -1,19 +1,19 @@
 import { useTranslation } from 'react-i18next';
+import type { BoardSettings } from '@/features/community/model/board';
 import { PageHeader } from '@/shared/ui/patterns/PageHeader';
 import { boardCreateDefaults } from '../model/board-form-defaults';
-import type { BoardFormValues } from '../model/board-form-schema';
 import { BoardForm } from './BoardForm';
 import { useBoardInputForm } from './useBoardInputForm';
 
 /**
- * 9.1 게시판 등록. 원문 「게시판을 등록할 수 있다」의 입력·유효성 체크 뒤 저장 확인까지 연결하고
- * 최종 입력을 필수 `onConfirm` 으로 넘긴다. 실제 저장과 완료 이동은 서버 계약 확정 후에 붙인다.
+ * 9.1.3 게시판 등록(Figma, 2026-09-11 실측). 저장은 검증 → 확인 alert → 요청 함수 도달까지이고
+ * 성공 이후는 만들지 않는다. 취소·dirty 이탈은 공용 가드가 묻는다.
  */
 export function BoardCreateScreen({
   onConfirm,
   onCancel,
 }: {
-  readonly onConfirm: (values: BoardFormValues) => void;
+  readonly onConfirm: (values: BoardSettings) => void;
   readonly onCancel: () => void;
 }) {
   const { t } = useTranslation('community');

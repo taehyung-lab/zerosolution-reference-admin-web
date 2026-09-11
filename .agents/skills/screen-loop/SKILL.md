@@ -53,6 +53,16 @@ description: Use when a request asks to implement one screen or one shared contr
 적고 사용자 요구를 따른다). 요구사항의 `sources` 가 그 순위를 그대로 보여 준다(`"user"` 또는 문서 절). 아래 1~5 는
 읽어야 할 **소유자 집합**이고 등급이 아니다.
 
+**나가는 조건(2026-09-11 게시판 드릴 실패로 추가):** 구현할 surface 의 원장 행에서 `Figma 관찰` 열이 화면 구성(항목 집합·순서·
+그룹·초기 상태·활성 조건·버튼)을 **열거하지 않으면** build 를 시작할 수 없다 — 행이 없거나, 셀이 `frame 존재`·`(대기)`·`(미판독)`
+같은 존재 표시만이거나, 항목을 세지 않는 산문만 있는 경우가 모두 해당한다. 근거는 판독 규칙의 [구성은 Figma frame 만이 열거한다](../../../docs/reference/zero-sol/README.md#판독-규칙)
+이고, 그 규칙대로 같은 사실이 어긋나면 여전히 Notion 이 이긴다(위 우선순위 문장과 충돌하지 않는다 — 이 조건은 충돌이 아니라
+**미관찰**을 막는다). frame 을 실측(Figma MCP, 막히면 `aside repl`)해 관찰 열을 채운 뒤 N3 으로 간다. E2(`contract.rows` 비면 진행)와는
+다른 검사다: E2 는 승격 색인(`id` 열이 있는 표)의 기계 행이고, 이 조건은 원장 셀의 내용이다 — 9장처럼 `id` 열이 없는 표는 `screen-contract.mjs`
+가 건너뛰어 `contract.rows` 가 항상 비고 `(대기)`·`(미판독)` 도 기계에 보이지 않으므로, **이 조건은 현재 리뷰 전용**이다(게이트가 잡지
+못한다; 기계화는 `screen-contract.mjs` 가 `frame 존재` 류 셀을 `unresolved` 로 올리는 것이며 아직 없다). 드릴 2회차는 이 조건이 없어
+Notion 이 적은 필드 3개로 폼을 만들었고 frame 의 19개 항목을 놓쳤다(판정 문서 「게시판 조회·등록·수정 재설계」).
+
 1. **원장 절** — `context`가 준 `docs/reference/zero-sol/NN-*.md`의 해당 화면 표. 읽는 법은 [승격 행 읽기](../../../scripts/agents/README.md#read-the-migrated-rows)가 소유한다.
 2. **Notion 원문 절** — `docs/reference/zero-sol/notion/NN-*.md`. 2026-09-10(#81) 이후 색인된 23개 surface 전부에 연결돼 `prepare`가 배달한다. 배달된 절을 끝까지 읽는다. 원문에만 있고 원장 표에는 없던 요구가 실제로 있었다(E8).
 3. **시나리오 카드** — `docs/reference/scenarios/`의 연결 카드.
@@ -70,7 +80,7 @@ description: Use when a request asks to implement one screen or one shared contr
 | --- | --- | --- | --- |
 | **E0** | 요청한 화면 이름이 `context` 목록에 없다 | N1. 원장 파일에서 절을 찾아 [없는 증거에서 시작](../../../scripts/agents/README.md#start-from-missing-evidence) | 2026-09-10 색인 23개에 `공연 등록`이 없다 |
 | **E1** | 진입 id가 `group`이거나 해석되지 않는다 | N1. 원장 표 본문에서 화면을 직접 분해 | `context managers` 실패, `settings` group 아래 |
-| **E2** | `contract.rows`가 비어 있다 | **진행.** 구조는 skill 소유라 막지 않고 없는 제품 사실만 원문 관찰 | 23 surface 중 1개만 승격 |
+| **E2** | `contract.rows`가 비어 있다 | **진행.** 구조는 skill 소유라 막지 않고 없는 제품 사실만 원문 관찰. 단 N2 나가는 조건(관찰 열이 구성을 열거하는가)은 이 행과 무관하게 따로 본다 | 23 surface 중 1개만 승격; 9장 표는 `id` 열이 없어 항상 빈다 |
 | **E3** | 표 셀·산문·판정 문서가 다른 시점을 말한다 | N2. 정본은 [승격 행 읽기](../../../scripts/agents/README.md#read-the-migrated-rows), 셀을 같은 작업에서 갱신 | 공연 상세 언어 탭(#72), 게시판 일괄변경 표↔산문(#83·#85) |
 | **E4** | 이름이 소유를 오도한다 | N2. [route 단위로 걷기](../../../scripts/agents/README.md#know-which-entry-the-request-is) | 이름이 비슷한 필터 컴포넌트가 리허설 소유, 같은 파일명이 폴더마다 역할 반대 |
 | **E5** | 요구사항이 미구현·다르게 구현됐다 | N3. [리뷰 절차](../../../scripts/agents/README.md#review-the-actual-output)가 대체 ID 또는 차단 조건을 강제 | 게이트 코드 |

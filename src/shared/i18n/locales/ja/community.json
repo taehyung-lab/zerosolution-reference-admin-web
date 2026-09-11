@@ -10,15 +10,17 @@
     },
     "detail": {
       "title": "掲示板照会",
-      "section": "掲示板情報",
-      "writePermission": "書き込み権限",
-      "readPermission": "読み取り権限",
+      "section": "基本情報",
       "emptyValue": "-",
+      "megabytes": "{{value}} MB",
       "history": "更新履歴",
       "historyDate": "更新日",
       "historyChange": "更新内容",
       "historyManager": "担当者",
-      "historyEmpty": "更新履歴はありません。",
+      "historyEmpty": "更新履歴がありません。",
+      "historyCreated": "登録",
+      "historyUpdated": "修正",
+      "historyLine": "{{field}} : {{before}} > {{after}}",
       "historyUnknownField": "不明な項目が変更されました。",
       "edit": "修正",
       "delete": "削除"
@@ -26,12 +28,61 @@
     "form": {
       "createTitle": "掲示板登録",
       "editTitle": "掲示板修正",
-      "section": "掲示板情報",
+      "section": "基本情報",
       "selectPlaceholder": "選択",
+      "namePlaceholder": "掲示板名（{{max}}文字以内）",
+      "permission": "権限",
+      "write": "書き込み",
+      "read": "閲覧",
+      "writeMemberGrade": "書き込み会員等級",
+      "readMemberGrade": "閲覧会員等級",
+      "categoryUsage": "カテゴリー",
+      "writing": "投稿設定",
+      "postTitleMode": "投稿タイトル指定",
+      "managerTitles": "タイトル指定",
+      "managerTitlePlaceholder": "タイトル指定（{{max}}文字以内）",
+      "addTitle": "追加",
+      "removeTitle": "{{title}} を削除",
+      "html": "HTML",
+      "attachment": "ファイル添付",
+      "attachmentLimitMb": "添付容量制限",
+      "attachmentLimitHint": "MB（最大：{{max}}MB）",
+      "popup": "ポップアップ",
+      "feedback": "フィードバック設定",
+      "rating": "評価",
+      "comment": "コメント",
+      "secretComment": "非公開コメント",
+      "commentNotice": "コメント通知",
+      "viewCount": "閲覧数設定",
+      "viewCountDisplay": "表示",
+      "viewCountDuplicate": "重複許可",
       "errors": {
         "category": "区分を選択してください。",
         "name": "掲示板名を入力してください。",
-        "writePermission": "書き込み権限を選択してください。"
+        "nameLength": "掲示板名は30文字以内で入力してください。",
+        "writePermission": "書き込み権限を選択してください。",
+        "readPermission": "閲覧権限を選択してください。",
+        "memberGrade": "会員等級を選択してください。",
+        "categoryUsage": "カテゴリー使用の有無を選択してください。",
+        "postTitleMode": "投稿タイトル指定を選択してください。",
+        "managerTitles": "タイトルを1つ以上追加してください。",
+        "html": "HTML使用の有無を選択してください。",
+        "attachment": "ファイル添付使用の有無を選択してください。",
+        "attachmentLimitMb": "1〜10の容量制限（MB）を入力してください。",
+        "popup": "ポップアップ使用の有無を選択してください。",
+        "rating": "評価を選択してください。",
+        "comment": "コメント使用の有無を選択してください。",
+        "secretComment": "非公開コメントを選択してください。",
+        "commentNotice": "コメント通知を選択してください。",
+        "viewCountDisplay": "閲覧数表示の有無を選択してください。",
+        "viewCountDuplicate": "重複許可の有無を選択してください。",
+        "usage": "使用状態を選択してください。",
+        "managerTitleLength": "タイトルは300文字以内で入力してください。"
+      },
+      "titleDraft": {
+        "empty": "タイトルを入力してから追加を押してください。",
+        "duplicate": "すでに追加されたタイトルです。",
+        "pending": "入力したタイトルは追加を押すと保存に含まれます。"
       }
     },
     "filter": {
@@ -130,7 +181,50 @@
       "periodType": {
         "registeredAt": "登録日",
         "updatedAt": "最終更新日"
+      },
+      "memberGrade": {
+        "GENERAL_MEMBER": "一般会員",
+        "SPECIAL_MEMBER": "特別会員"
+      },
+      "postTitleMode": {
+        "MANAGER_TITLES": "運営者がタイトル指定",
+        "AUTHOR_INPUT": "作成者が直接入力",
+        "NOT_IN_USE": "使用しない"
+      },
+      "rating": {
+        "NOT_IN_USE": "使用しない",
+        "LIKE_DISLIKE": "いいね＆よくないねを使用",
+        "RATING": "評価を使用",
+        "LIKE_DISLIKE_AND_RATING": "いいね＆よくないね、評価をすべて使用"
+      },
+      "secretComment": {
+        "PUBLIC_ONLY": "公開コメントのみ",
+        "PRIVATE_ONLY": "非公開コメントのみ",
+        "PUBLIC_AND_PRIVATE": "公開・非公開コメントすべて"
+      },
+      "commentNotice": {
+        "NOT_IN_USE": "使用しない",
+        "EMAIL": "メールで受信",
+        "SMS_SNS": "SMS/SNSで受信",
+        "EMAIL_OR_SMS_SNS_CHOICE": "メール、SMS/SNSを選択受信"
       }
+    },
+    "categories": {
+      "open": "カテゴリー設定",
+      "title": "カテゴリー設定",
+      "heading": "カテゴリー",
+      "add": "追加",
+      "order": "順序",
+      "name": "カテゴリー名",
+      "nameFor": "{{order}}番目のカテゴリー名",
+      "namePlaceholder": "{{max}}文字以内",
+      "usage": "使用状態",
+      "usageFor": "{{order}}番目の使用状態",
+      "remove": "削除",
+      "removeFor": "{{order}}番目のカテゴリーを削除",
+      "close": "閉じる",
+      "moveUp": "{{order}}番を上へ",
+      "moveDown": "{{order}}番を下へ"
     }
   }
 }

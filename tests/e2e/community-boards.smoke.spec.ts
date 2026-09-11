@@ -69,8 +69,10 @@ test('@smoke 행 → 조회 → 수정 이동 뒤 저장이 요청 로그까지 
 
   await expect(page).toHaveURL(/\/community\/boards\/reference-board-1$/);
   await expect(page.getByRole('heading', { name: '게시판 조회' })).toBeVisible();
-  await expect(page.getByText('게시판정보')).toBeVisible();
+  await expect(page.getByText('기본정보')).toBeVisible();
   await expect(page.getByText('업데이트 내역')).toBeVisible();
+  // Figma 9.1.2: 카테고리 옆 `카테고리 설정` 버튼이 팝업을 연다.
+  await expect(page.getByRole('button', { name: '카테고리 설정' })).toBeVisible();
 
   await page.getByRole('button', { name: '수정', exact: true }).click();
   await expect(page).toHaveURL(/\/community\/boards\/reference-board-1\/edit$/);
@@ -115,9 +117,18 @@ test('@smoke 등록은 검증·저장 확인을 거쳐 요청 로그까지 간�
   await page.getByRole('button', { name: '저장', exact: true }).click();
   await expect(page.getByText('저장하시겠습니까?')).toBeHidden();
 
+  // Figma 9.1.3: 하위 항목은 상위가 켤 때까지 비활성이다.
+  await expect(page.getByLabel('파일첨부 용량제한*')).toBeDisabled();
+  await expect(page.getByRole('combobox', { name: '팝업' })).toBeEnabled();
+  await expect(page.getByRole('combobox', { name: '비밀댓글' })).toBeDisabled();
+
   await page.getByLabel('게시판명*').fill('스모크 게시판');
-  await page.getByRole('combobox', { name: '쓰기 권한' }).click();
+  await page.getByRole('combobox', { name: '쓰기', exact: true }).click();
   await page.getByRole('option', { name: '운영자' }).click();
+  await page.getByRole('combobox', { name: '읽기', exact: true }).click();
+  await page.getByRole('option', { name: '전체회원' }).click();
+  await page.getByRole('combobox', { name: '게시글 제목 지정' }).click();
+  await page.getByRole('option', { name: '작성자가 직접입력' }).click();
   await page.getByRole('button', { name: '저장', exact: true }).click();
 
   await expect(page.getByText('저장하시겠습니까?')).toBeVisible();
