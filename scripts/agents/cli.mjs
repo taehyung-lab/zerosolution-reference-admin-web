@@ -3,7 +3,7 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
 import { authoredChanges, prepare, recordReview, localPath } from './preflight.mjs'
-import { hookDecision } from './hook.mjs'
+import { hookDecision, hookRoot } from './hook.mjs'
 import { describeContext, contextReport } from './surface-context.mjs'
 import { applySweep, describeSweep, sweepPlan } from './workspace.mjs'
 import { SEED_BUNDLES } from '../contracts/seed.mjs'
@@ -49,7 +49,18 @@ try {
     process.stdout.write(`Review recorded over ${mine.length} authored path(s); contracts, lint and related tests passed for them. This records evidence; it does not certify its truth or replace verify.\n`)
     if (external.length) process.stdout.write(`Changed outside this session's writes (${external.length}, not judged here): ${external.join(', ')}\n`)
   } else if (command === 'hook') {
-    process.stdout.write(JSON.stringify(hookDecision(root, JSON.parse(readFileSync(0, 'utf8')), sessionOrEvent)))
+    const payload = JSON.parse(readFileSync(0, 'utf8'))
+    // The gate judges the checkout the call acts on, which is not always the checkout this script lives in.
+    const actedOn = hookRoot(root, payload)
+    if (sessionOrEvent === 'Stop' || payload.hook_event_name === 'Stop' || payload.hook_event_name === 'SubagentStop') {
+      // A session can hold state in two checkouts (a parent and a nested worktree); Stop reconciles both.
+      const blocked = [...new Set([actedOn, root])]
+        .map((candidate) => hookDecision(candidate, payload, 'Stop'))
+        .find((decision) => decision.decision === 'block')
+      process.stdout.write(JSON.stringify(blocked ?? {}))
+    } else {
+      process.stdout.write(JSON.stringify(hookDecision(actedOn, payload, sessionOrEvent)))
+    }
   } else {
     throw new Error('Usage: node scripts/agents/cli.mjs context [surface-id] | context-report [--summary] | bundle [bundle-id] | sweep [--apply] | prepare|review <session-id> .ai-work/<task>/<file>.json | hook [event]')
   }
