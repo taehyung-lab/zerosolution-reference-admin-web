@@ -34,6 +34,7 @@ Loaders read `context.locale`; components read `useLocale().locale`. The app-lev
 
 목록 route 본문의 요소는 넷이다: `validateSearch: <sparse schema>`, `beforeLoad: canonicalSearchGuard(<schema>)`, 선택지 query 가 있을 때만 위 [Loader and preload](#loader-and-preload) 의 예열, 그리고 `component` 가 `<XScreen search={Route.useSearch()} onSearchChange={(next) => void navigate({ search: () => next })} onActivate={...} />` 를 mount 한다. 다른 feature 의 다이얼로그를 함께 조립하는 것은 위 [Thin route](#thin-route) 가 허용하는 배선이다. 파일 배치는 [Route file layout](#route-file-layout) 이 정한다.
 **목록 자체의 query 는 진입 즉시 조회 화면이어도 loader 에서 await 하지 않는다** — 진입 progress 는 `src/api/list-query.ts` 가, 이후 전이는 `contentProgress` 가 소유하며 `loaderDeps` 로 검색을 loader 에 묶으면 정렬·페이지마다 loader 가 다시 돈다. 해소(`resolve*Search`)는 route 가 아니라 화면이 한다.
+**진입 즉시 조회인지 검색을 눌러야 조회인지의 스위치는 loader 의 유무가 아니라 URL 계약의 `searched` 표식이다**([list-search-contract 형태](list-search-contract.md#형태)): 표식이 있으면 검색 전 상태로 서고(회원·운영자), 없으면 진입 즉시 조회한다(게시판·공연). loader 가 있는 목록 route 는 선택지 예열만 한다는 뜻이다(2026-09-11 사용자 확정). 상세(조회) route 의 loader await·route 404 통일은 별건으로 남아 있다.
 
 ## Guards
 

@@ -1,21 +1,11 @@
 import type { TFunction } from 'i18next';
 import type { BoardRow, BoardSortKey } from '@/features/community/model/board';
 import { formatDate } from '@/shared/lib/datetime';
-import type { DataTableProps, DataTableSortDirection } from '@/shared/ui/patterns/DataTable';
+import { headerSortDirection } from '@/shared/lib/list-sort';
+import type { DataTableProps } from '@/shared/ui/patterns/DataTable';
 import type { ResolvedBoardListSearch } from '../model/board-list-search';
 
 type BoardColumns = DataTableProps<BoardRow>['columns'];
-/**
- * 활성 정렬 컬럼에만 방향을 준다(DataTable 은 표당 aria-sort 하나만 허용한다).
- * URL 어휘 asc/desc 를 aria 어휘로 옮기는 유일한 지점이다.
- */
-function sortDirectionFor(
-  search: ResolvedBoardListSearch,
-  key: BoardSortKey,
-): DataTableSortDirection | undefined {
-  if (search.sortType !== key || search.sortDirection === undefined) return undefined;
-  return search.sortDirection === 'asc' ? 'ascending' : 'descending';
-}
 /**
  * 원장 12행의 컬럼 구성이다. 행 checkbox 는 없다(2026-09-10 사용자 확정).
  * 정렬 가능한 컬럼은 원장 13행의 7개와 같은 집합이며 활성 컬럼에만 방향이 붙는다.
@@ -37,9 +27,10 @@ export function boardListColumns({
   readonly offset: number;
   readonly onHeaderSort: (key: BoardSortKey) => void;
 }): BoardColumns {
+  const active = { type: search.sortType, direction: search.sortDirection };
   const sortMeta = (key: BoardSortKey) => ({
     sort: {
-      direction: sortDirectionFor(search, key),
+      direction: headerSortDirection(active, key),
       onSort: () => onHeaderSort(key),
     },
   });

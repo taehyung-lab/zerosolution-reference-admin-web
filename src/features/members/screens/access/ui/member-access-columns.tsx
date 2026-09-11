@@ -4,6 +4,7 @@ import type { ResolvedMemberRecordSearch } from "../../../mechanics/record-list/
  * 실제 API에서도 컬럼 책임은 유지한다. 서버가 마스킹한 값을 반환하는지는 응답 계약에서 확인하고 원본 주소를 추정하지 않는다.
  */
 import { maskEmail, maskPhone } from "@/shared/lib/mask-contact";
+import { headerSortDirection } from "@/shared/lib/list-sort";
 import type { PageRowSelection } from "@/shared/lib/use-page-row-selection";
 import type { DataTableProps } from "@/shared/ui/patterns/DataTable";
 import { selectionColumn } from "@/shared/ui/patterns/selection-column";
@@ -39,12 +40,10 @@ export function buildMemberAccessListColumns({
       header: t("columns.email"),
       meta: {
         sort: {
-          direction:
-            search.sortType === "email"
-              ? search.sortDirection === "asc"
-                ? "ascending"
-                : "descending"
-              : undefined,
+          direction: headerSortDirection(
+            { type: search.sortType, direction: search.sortDirection },
+            "email",
+          ),
           onSort: () => onSort("email"),
         },
       },
@@ -55,12 +54,10 @@ export function buildMemberAccessListColumns({
       header: t("columns.name"),
       meta: {
         sort: {
-          direction:
-            search.sortType === "name"
-              ? search.sortDirection === "asc"
-                ? "ascending"
-                : "descending"
-              : undefined,
+          direction: headerSortDirection(
+            { type: search.sortType, direction: search.sortDirection },
+            "name",
+          ),
           onSort: () => onSort("name"),
         },
       },
@@ -72,12 +69,10 @@ export function buildMemberAccessListColumns({
       header: t("columns.phone"),
       meta: {
         sort: {
-          direction:
-            search.sortType === "phone"
-              ? search.sortDirection === "asc"
-                ? "ascending"
-                : "descending"
-              : undefined,
+          direction: headerSortDirection(
+            { type: search.sortType, direction: search.sortDirection },
+            "phone",
+          ),
           onSort: () => onSort("phone"),
         },
       },
@@ -95,12 +90,10 @@ export function buildMemberAccessListColumns({
       header: t("secondary.fields.accessedAt"),
       meta: {
         sort: {
-          direction:
-            search.sortType === "accessedAt"
-              ? search.sortDirection === "asc"
-                ? "ascending"
-                : "descending"
-              : undefined,
+          direction: headerSortDirection(
+            { type: search.sortType, direction: search.sortDirection },
+            "accessedAt",
+          ),
           onSort: () => onSort("accessedAt"),
         },
       },

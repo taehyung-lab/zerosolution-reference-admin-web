@@ -61,12 +61,11 @@ export function readPerformancePage(
           Date.parse(instant) <= Date.parse(search.endDateTime))
       );
     });
-  if (search.sortDirection)
-    filtered.sort(
-      (a, b) =>
-        a[search.sortType].localeCompare(b[search.sortType]) *
-        (search.sortDirection === "asc" ? 1 : -1),
-    );
+  filtered.sort(
+    (a, b) =>
+      a[search.sortType].localeCompare(b[search.sortType]) *
+      (search.sortDirection === "asc" ? 1 : -1),
+  );
   return Promise.resolve({
     rows: filtered.slice(
       (search.page - 1) * search.pageSize,

@@ -2,6 +2,7 @@
  * 활성 회원의 표시 컬럼·선택 checkbox·정렬 이벤트와 불량 회원 전용 컬럼을 구성한다.
  * 실제 API에서도 필요한 표시 책임이다. 정렬 callback은 조회 조건을 바꾸며 서버 결과 배열을 여기서 정렬하지 않는다.
  */
+import { headerSortDirection } from "@/shared/lib/list-sort";
 import type { PageRowSelection } from "@/shared/lib/use-page-row-selection";
 import type { DataTableProps } from "@/shared/ui/patterns/DataTable";
 import { selectionColumn } from "@/shared/ui/patterns/selection-column";
@@ -33,12 +34,7 @@ export function buildMemberColumns({
     ...column,
     meta: {
       sort: {
-        direction:
-          sort.type === sortType
-            ? sort.direction === "asc"
-              ? "ascending"
-              : "descending"
-            : undefined,
+        direction: headerSortDirection(sort, sortType),
         onSort: () => onSortChange(sortType),
       },
     },

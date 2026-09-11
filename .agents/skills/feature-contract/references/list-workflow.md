@@ -74,7 +74,9 @@ See [State and URL lifecycle](#state-and-url-lifecycle) and [Result ownership](#
 `SortControl` is the field select only. `DataTable` `meta.sort` owns the header button, `aria-sort`, and glyph.
 The feature owns one typed source for the exposed sort set that derives select options, URL enum, and each `meta.sort`; server enum, direction policy, and URL transition.
 The sort-state mapping gives `direction` to exactly the active sort key and leaves every other sortable header undefined (one `aria-sort` per table).
-Select/header set equality and single active `aria-sort` are feature tests.
+The active column always has a direction, from the first render: the URL contract declares `sortDirection.defaultValue` (`desc` on every product list, 2026-09-11 user decision) and the resolved search never carries `undefined` there; `contracts:check` fails a list `*search*.ts` whose `sortDirection` default is `undefined`. For product lists `headerSortDirection` (`src/shared/lib/list-sort.ts`) is the only mapping from the resolved `{ sortType, sortDirection }` to a header's `aria-sort` value; its `direction` parameter is required so a missing default fails typecheck, and `contracts:check` requires a list `*-columns` file that declares `onSort` to import it and rejects hand-written aria vocabulary there. The rehearsal manager list maps its server vocabulary (`ASC`/`DESC`) in `model/manager-sort.ts` and is the listed exception. Before this rule the board and performance lists left the default undefined and rendered their active column with no arrow (2026-09-11, user measurement).
+The user decision covers the default direction only. Header transitions stay feature policy and differ today: boards, performances and the member record lists start another column ascending, the member list keeps the current direction — an open difference, not a rule.
+Select/header set equality and single active `aria-sort` are feature tests. An initial-render `aria-sort` assertion exists for the member, rehearsal manager and board lists; the member record lists have no header test yet, and the performance list cannot pass one until its default sort column exists (`performance-columns.tsx` fields have no 등록일).
 See [State and URL lifecycle](#state-and-url-lifecycle) and [data-table.md](../../shared-ui-contract/references/data-table.md).
 
 ## State and URL lifecycle
@@ -157,7 +159,7 @@ performance consumers have different direction defaults and reset/search policie
 | `model/use*Filter.ts` | `useListFilterDraft` 소비, submit(`preventDefault` → 정책 → `onSearchChange`), reset 목적지 |
 | `model/use*Data.ts` | query options 소비, `ListResultData` 사실과 total·totalPages 파생 |
 | `ui/use*Result.ts` | 컬럼 + `pageSize`·`sort`·`pagination` 컨트롤(위 반복 모양). 전이는 policy 를 부른다 |
-| `ui/*-columns.ts(x)` | 컬럼 정의와 `meta.sort` 매핑 |
+| `ui/*-columns.ts(x)` | 컬럼 정의와 `meta.sort` 매핑 — 방향은 `headerSortDirection`([Sorting](#sorting)) |
 | `ui/*Screen.tsx`·`*Filters.tsx`·`*Result.tsx`(·`*Actions.tsx`) | 조립만. 상태는 위 소유자에 |
 
 - 같은 도메인의 여러 기록 목록이 한 lifecycle 을 공유하면 `model` 넷은 `mechanics/<name>/model` 로 올라가고 화면은 `ui` 만 갖는다(회원 기록 목록). 검사기는 mechanic 안의 이름을 보지 않는다 — 현재 `record-list` 는 `member-record-data.ts`·`member-record-view.ts` 로 이 표와 이름이 다르다.

@@ -1,9 +1,13 @@
 import { formatDate } from "@/shared/lib/datetime";
+import { headerSortDirection } from "@/shared/lib/list-sort";
 import type { DataTableProps } from "@/shared/ui/patterns/DataTable";
 import type { TFunction } from "i18next";
 import type { PerformanceRow } from "../../../model/performance";
 import { type PerformanceSearch } from "../../../model/performance-search";
-import { performanceSortTypes } from "../model/search-schema";
+import {
+  performanceSortTypes,
+  type ResolvedPerformanceSearch,
+} from "../model/search-schema";
 
 export function performanceColumns({
   t,
@@ -12,7 +16,7 @@ export function performanceColumns({
   onSort,
 }: {
   readonly t: TFunction<"performances">;
-  readonly search: PerformanceSearch;
+  readonly search: ResolvedPerformanceSearch;
   readonly total: number;
   readonly onSort: (field: PerformanceSearch["sortType"]) => void;
 }): DataTableProps<PerformanceRow>["columns"] {
@@ -28,6 +32,7 @@ export function performanceColumns({
     "seller",
     "updatedAt",
   ] as const;
+  const active = { type: search.sortType, direction: search.sortDirection };
   return [
     {
       id: "number",
@@ -57,13 +62,7 @@ export function performanceColumns({
           : {
               meta: {
                 sort: {
-                  direction:
-                    search.sortType === sortType &&
-                    search.sortDirection !== undefined
-                      ? search.sortDirection === "asc"
-                        ? ("ascending" as const)
-                        : ("descending" as const)
-                      : undefined,
+                  direction: headerSortDirection(active, sortType),
                   onSort: () => onSort(sortType),
                 },
               },

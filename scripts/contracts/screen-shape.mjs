@@ -11,6 +11,7 @@ import { basename, join, relative, resolve } from 'node:path'
  * 보지 않는다. mechanic 위임은 그 mechanic 이 실제로 그 역할을 갖는지 확인하지 않는다.
  */
 export const SHAPE_SECTIONS = {
+  sorting: '.agents/skills/feature-contract/references/list-workflow.md#sorting',
   list: '.agents/skills/feature-contract/references/list-workflow.md#형태',
   detail: '.agents/skills/feature-contract/references/detail-workflow.md#형태',
   form: '.agents/skills/feature-contract/references/form-workflow.md#형태',
@@ -31,6 +32,13 @@ export const SHAPE_EXCEPTIONS = [
     until: '인라인 URL 전이(usePerformanceListResult)를 policy 파일로 분리한다',
   },
 ]
+
+/** 리허설 운영자 목록은 서버 어휘 ASC/DESC 를 model/manager-sort.ts 에서 옮기므로 headerSortDirection('asc'|'desc') 을 받을 수 없다. */
+export const SORT_MAPPING_EXCEPTIONS = [
+  { file: 'src/features/managers/screens/list/ui/manager-columns.tsx', until: '리허설 계약이 폐기되거나 서버 어휘가 asc/desc 로 바뀐다' },
+]
+
+const withoutComments = (source) => source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:'"])\/\/.*$/gm, '$1')
 
 const TEST_FILE = /\.(test|test-d)\.[jt]sx?$/
 
@@ -93,6 +101,25 @@ function requirementFailures(entry, files, exceptions) {
     need('ui', /Screen\.tsx$/, '*Screen.tsx', 'list')
     need('ui', /^use\w+Result\.tsx?$/, 'use*Result.ts', 'list')
     need('ui', /-columns\.tsx?$/, '*-columns.ts(x)', 'list')
+    // URL asc/desc → aria 어휘는 shared/lib/list-sort 가 한 곳에서 옮긴다. 손으로 쓴 매핑은 기본 방향을
+    // 빠뜨려 활성 컬럼이 표시 없이 렌더됐다(2026-09-11 게시판·공연). 주석은 벗기고 코드만 본다.
+    for (const file of files.filter((file) => file.startsWith('ui/') && /-columns\.tsx?$/.test(basename(file)))) {
+      const path = `${entry.path}/${file}`
+      const code = withoutComments(readFileSync(join(entry.dir, file), 'utf8'))
+      if (/['"](?:ascending|descending)['"]/.test(code)) {
+        failures.push(`화면 형태: ${path} 이 aria-sort 어휘를 직접 쓴다 → headerSortDirection(shared/lib/list-sort), ${SHAPE_SECTIONS.sorting}`)
+      }
+      if (/\bonSort\b/.test(code) && !/from\s+['"]@\/shared\/lib\/list-sort['"]/.test(code) && !SORT_MAPPING_EXCEPTIONS.some((item) => item.file === path)) {
+        failures.push(`화면 형태: ${path} 이 meta.sort 를 선언하면서 headerSortDirection(shared/lib/list-sort) 을 import 하지 않는다 → ${SHAPE_SECTIONS.sorting}`)
+      }
+    }
+    // 활성 컬럼은 첫 렌더부터 방향을 가져야 하므로 URL 계약이 기본 방향을 선언한다(2026-09-11 사용자 확정 desc).
+    for (const file of files.filter((file) => file.startsWith('model/') && /search.*\.ts$/.test(basename(file)))) {
+      const code = withoutComments(readFileSync(join(entry.dir, file), 'utf8'))
+      if (/\bsortDirection\s*:\s*\{[^}]*defaultValue\s*:\s*undefined/.test(code)) {
+        failures.push(`화면 형태: ${entry.path}/${file} 의 sortDirection 기본값이 undefined 다 → ${SHAPE_SECTIONS.sorting}`)
+      }
+    }
     // 필터·조회·전이 정책은 화면이 소유하거나 mechanic 의 model 에서 가져온다. 위임 시 mechanic 안의 이름은 검사하지 않는다.
     if (!delegated) {
       need('model', /search.*\.ts$/, '*search*.ts', 'list')

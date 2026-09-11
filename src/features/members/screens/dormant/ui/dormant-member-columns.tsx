@@ -4,6 +4,7 @@ import type { ResolvedMemberRecordSearch } from "../../../mechanics/record-list/
  * 실제 API에서도 컬럼 책임은 유지한다. 서버가 마스킹한 값을 반환하는지는 응답 계약에서 확인하고 원본 주소를 추정하지 않는다.
  */
 import { maskEmail, maskPhone } from "@/shared/lib/mask-contact";
+import { headerSortDirection } from "@/shared/lib/list-sort";
 import type { PageRowSelection } from "@/shared/lib/use-page-row-selection";
 import type { DataTableProps } from "@/shared/ui/patterns/DataTable";
 import { selectionColumn } from "@/shared/ui/patterns/selection-column";
@@ -35,12 +36,10 @@ export function dormantMemberColumns({
       cell: ({ row }) => t(`signup.${row.original.signupMethod}`),
       meta: {
         sort: {
-          direction:
-            search.sortType === "signupMethod"
-              ? search.sortDirection === "asc"
-                ? "ascending"
-                : "descending"
-              : undefined,
+          direction: headerSortDirection(
+            { type: search.sortType, direction: search.sortDirection },
+            "signupMethod",
+          ),
           onSort: () => onSort("signupMethod"),
         },
       },
@@ -52,12 +51,10 @@ export function dormantMemberColumns({
       header: t("columns.email"),
       meta: {
         sort: {
-          direction:
-            search.sortType === "email"
-              ? search.sortDirection === "asc"
-                ? "ascending"
-                : "descending"
-              : undefined,
+          direction: headerSortDirection(
+            { type: search.sortType, direction: search.sortDirection },
+            "email",
+          ),
           onSort: () => onSort("email"),
         },
       },
@@ -68,12 +65,10 @@ export function dormantMemberColumns({
       header: t("columns.name"),
       meta: {
         sort: {
-          direction:
-            search.sortType === "name"
-              ? search.sortDirection === "asc"
-                ? "ascending"
-                : "descending"
-              : undefined,
+          direction: headerSortDirection(
+            { type: search.sortType, direction: search.sortDirection },
+            "name",
+          ),
           onSort: () => onSort("name"),
         },
       },
@@ -85,12 +80,10 @@ export function dormantMemberColumns({
       header: t("columns.phone"),
       meta: {
         sort: {
-          direction:
-            search.sortType === "phone"
-              ? search.sortDirection === "asc"
-                ? "ascending"
-                : "descending"
-              : undefined,
+          direction: headerSortDirection(
+            { type: search.sortType, direction: search.sortDirection },
+            "phone",
+          ),
           onSort: () => onSort("phone"),
         },
       },
@@ -108,12 +101,10 @@ export function dormantMemberColumns({
       header: t("columns.joinedAt"),
       meta: {
         sort: {
-          direction:
-            search.sortType === "joinedAt"
-              ? search.sortDirection === "asc"
-                ? "ascending"
-                : "descending"
-              : undefined,
+          direction: headerSortDirection(
+            { type: search.sortType, direction: search.sortDirection },
+            "joinedAt",
+          ),
           onSort: () => onSort("joinedAt"),
         },
       },
@@ -125,12 +116,10 @@ export function dormantMemberColumns({
       header: t("columns.lastAccessedAt"),
       meta: {
         sort: {
-          direction:
-            search.sortType === "lastAccessedAt"
-              ? search.sortDirection === "asc"
-                ? "ascending"
-                : "descending"
-              : undefined,
+          direction: headerSortDirection(
+            { type: search.sortType, direction: search.sortDirection },
+            "lastAccessedAt",
+          ),
           onSort: () => onSort("lastAccessedAt"),
         },
       },
@@ -142,12 +131,10 @@ export function dormantMemberColumns({
       header: t("secondary.fields.dormantAt"),
       meta: {
         sort: {
-          direction:
-            search.sortType === "dormantAt"
-              ? search.sortDirection === "asc"
-                ? "ascending"
-                : "descending"
-              : undefined,
+          direction: headerSortDirection(
+            { type: search.sortType, direction: search.sortDirection },
+            "dormantAt",
+          ),
           onSort: () => onSort("dormantAt"),
         },
       },

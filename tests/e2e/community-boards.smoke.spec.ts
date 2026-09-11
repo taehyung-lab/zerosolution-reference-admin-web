@@ -42,8 +42,9 @@ test('@smoke 게시판 목록은 진입 즉시 조회하고 초기화 뒤에도 
 test('@smoke 게시판 목록의 활성 정렬 헤더만 방향을 바꾼다', async ({ page }) => {
   await page.goto('/community/boards');
 
+  // 기본 정렬(등록일 desc)은 첫 렌더부터 방향을 표시한다(2026-09-11 사용자 확정, 목록 공통).
   const header = page.getByRole('columnheader', { name: '등록일', exact: true });
-  await expect(header).not.toHaveAttribute('aria-sort', /.*/);
+  await expect(header).toHaveAttribute('aria-sort', 'descending');
 
   await header.getByRole('button').click();
   await expect(page).toHaveURL(/sortDirection=asc/);
@@ -51,6 +52,7 @@ test('@smoke 게시판 목록의 활성 정렬 헤더만 방향을 바꾼다', a
 
   await header.getByRole('button').click();
   await expect(header).toHaveAttribute('aria-sort', 'descending');
+  await expect(page).not.toHaveURL(/sortDirection=/);
 
   const other = page.getByRole('columnheader', { name: '게시물수', exact: true });
   await other.getByRole('button').click();

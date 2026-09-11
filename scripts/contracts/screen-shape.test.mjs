@@ -54,6 +54,29 @@ describe('screen shape', () => {
     ])
   })
 
+  it('rejects a columns file that writes aria-sort vocabulary by hand or declares meta.sort without the shared mapping', () => {
+    const files = list()
+    const columns = 'src/features/things/screens/list/ui/thing-columns.tsx'
+    files[columns] = "meta: { sort: { direction: sort === key ? (dir === 'asc' ? 'ascending' : 'descending') : undefined, onSort: () => go(key) } }"
+    expect(screenShapeFailures(fixture(files), [])).toEqual([
+      expect.stringMatching(/ui\/thing-columns\.tsx 이 aria-sort 어휘를 직접 쓴다 → headerSortDirection.*list-workflow\.md#sorting/),
+      expect.stringMatching(/ui\/thing-columns\.tsx 이 meta\.sort 를 선언하면서 headerSortDirection.*import 하지 않는다/),
+    ])
+    // Comments do not count; a columns file without sortable headers owes no import.
+    files[columns] = "/** direction is 'ascending' | 'descending' */\n// 'descending'\nconst plain = 1"
+    expect(screenShapeFailures(fixture(files), [])).toEqual([])
+    files[columns] = "import { headerSortDirection } from '@/shared/lib/list-sort'\nmeta: { sort: { direction: headerSortDirection(active, key), onSort: () => go(key) } }"
+    expect(screenShapeFailures(fixture(files), [])).toEqual([])
+  })
+  it('rejects a list search contract whose sortDirection default is undefined', () => {
+    const files = list()
+    files['src/features/things/screens/list/model/thing-search.ts'] = "sortType: { defaultValue: 'a', kind: 'view' },\n  sortDirection: {\n    schema: s,\n    defaultValue: undefined,\n    kind: 'view',\n  },"
+    expect(screenShapeFailures(fixture(files), [])).toEqual([
+      expect.stringMatching(/model\/thing-search\.ts 의 sortDirection 기본값이 undefined 다 → .*list-workflow\.md#sorting/),
+    ])
+    files['src/features/things/screens/list/model/thing-search.ts'] = "sortDirection: { schema: s, defaultValue: 'desc', kind: 'view' },"
+    expect(screenShapeFailures(fixture(files), [])).toEqual([])
+  })
   it('delegates the model set only when a screen imports a mechanic model, not on a comment or a ui import', () => {
     const screen = 'src/features/things/screens/recent'
     const ui = {

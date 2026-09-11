@@ -17,7 +17,7 @@ describe("performance search defaults", () => {
       keywords: [],
     });
     expect(entry).not.toHaveProperty("searched");
-    expect(entry.sortDirection).toBeUndefined();
+    expect(entry.sortDirection).toBe("desc");
     expect(entry.startDateTime).toBeUndefined();
     expect(entry.endDateTime).toBeUndefined();
     expect(resolvePerformanceSearch({ searched: false })).toEqual(entry);

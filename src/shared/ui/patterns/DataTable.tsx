@@ -1,8 +1,10 @@
 import { tableFeatures, useTable, type ColumnDef } from '@tanstack/react-table';
 import { Table, TableCell, TableHead } from '../primitives/Table';
 
-/** Active-sort `aria-sort` vocabulary; shared UI knows no server sort key. */
-export type DataTableSortDirection = 'ascending' | 'descending';
+import type { HeaderSortDirection } from '@/shared/lib/list-sort';
+
+/** Active-sort `aria-sort` vocabulary; shared UI knows no server sort key. Lists derive it with `headerSortDirection`. */
+export type DataTableSortDirection = HeaderSortDirection;
 
 /**
  * Controlled sort surface for one column. The caller owns which columns are sortable, the

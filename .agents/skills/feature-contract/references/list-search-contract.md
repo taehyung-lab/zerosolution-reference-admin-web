@@ -36,12 +36,12 @@ const contract = defineSearchFields(fields);
 | 필드 | 모양 |
 | --- | --- |
 | `page`, `pageSize` | 양의 정수. 제품 목록의 `pageSize` 는 `standardPageSizeOptions` 중 하나(리허설 계약은 위 서술대로 양의 정수 유지). kind `view` |
-| `sortType`, `sortDirection` | feature 의 정렬 키 enum, `'asc' \| 'desc'`(aria 어휘 `ascending/descending` 은 컬럼에서 변환). kind `view` |
+| `sortType`, `sortDirection` | feature 의 정렬 키 enum, `'asc' \| 'desc'`. `sortDirection` 은 `defaultValue` 필수(목록 공통 `desc`, 2026-09-11 사용자 확정) — `undefined` 를 두면 활성 컬럼이 표시 없이 렌더되므로 `contracts:check` 가 `defaultValue: undefined` 를 실패로 잡는다. aria 어휘 변환은 `headerSortDirection`([list-workflow Sorting](list-workflow.md#sorting)). kind `view` |
 | `periodType`, `startDateTime`, `endDateTime` | 기간 기준 enum, UTC instant 두 개. kind `filter` |
 | `keywords` | `{ field, value }[]` — 검색 대상이 하나여도 이 모양이다. 축이 없는 `string[]` 을 만들지 않는다. kind `filter` |
 | 다중선택 | `string[]`(enum 항목), 빈 배열 = 전체. kind `filter` |
 | 단일 선택 | enum 값 또는 `undefined`(전체·조건 없음) |
-| `searched` | 표식이 있는 화면만. 극성과 수명은 [list-workflow 상태 절](list-workflow.md#state-and-url-lifecycle)이 정한다 |
+| `searched` | 표식이 있는 화면만. 극성과 수명은 [list-workflow 상태 절](list-workflow.md#state-and-url-lifecycle)이 정한다. 이 표식의 유무가 "검색을 눌러야 조회" 와 "진입 즉시 조회" 를 가르는 유일한 스위치다 — route loader 는 그 신호가 아니다([router 형태](router.md#형태)) |
 
 현재 이탈(2026-09-10 3차 검토 실측): 제품 운영자 목록은 `sort`/`direction`(`manager-list-search.ts`)과 `permission` 기본값 `""`(위 "중복 정리" 표가 확정)를 쓴다 — 표에 맞추는 것은 별도 작업이다. 리허설 운영자의 `{keywordType, keyword}`·`ASC/DESC` 는 서버 어휘라 그대로 둔다.
 

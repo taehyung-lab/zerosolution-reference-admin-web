@@ -40,7 +40,8 @@ const pageSizeSchema = z.coerce
  * - pageSize 100: Notion 원문 46행 + 판정 문서 질문 1(2026-09-09 결정).
  * - sortType registeredAt: Notion 원문 47행은 `등록일 or 마지막으로 설정한 값`이라 확정값이 아니다.
  *   질문 1 의 답은 보기에만 적용되므로 정렬 default 는 미확인이고 여기 값은 추론이다(원장 13행).
- * - sortDirection 미지정: 두 출처 모두 방향 기본값을 적지 않는다. 활성 헤더 클릭이 유일한 방향 UI다(질문 3).
+ * - sortDirection desc: 두 출처 모두 방향 기본값을 적지 않아 2026-09-11 사용자가 확정했다(질문 3, 목록 공통).
+ *   활성 컬럼은 첫 렌더부터 방향을 표시하므로 undefined 를 두지 않는다. 활성 헤더 클릭이 유일한 방향 UI다.
  * - periodType registeredAt: 기준 목록의 첫 항목이자 정렬 기본값과 같은 축이다. 출처가 기본값을 적지 않아 추론이다.
  * - 배열 필터의 빈 값 = 전체(조건 없음). Notion 원문 39행이 구분·사용상태의 default 를 전체로 적는다.
  */
@@ -54,7 +55,7 @@ const fields = {
   },
   sortDirection: {
     schema: z.enum(['asc', 'desc']).optional().catch(undefined),
-    defaultValue: undefined,
+    defaultValue: 'desc',
     kind: 'view',
   },
   periodType: {

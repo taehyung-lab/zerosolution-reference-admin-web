@@ -19,10 +19,13 @@ describe('board list URL policy', () => {
   });
 
   it('returns to the first page when the sort field changes and keeps the direction', () => {
-    const next = toSortSearch({ ...search, sortDirection: 'desc' }, 'name');
+    const next = toSortSearch({ ...search, sortDirection: 'asc' }, 'name');
     expect(next.page).toBeUndefined();
     expect(next.sortType).toBe('name');
-    expect(next.sortDirection).toBe('desc');
+    expect(next.sortDirection).toBe('asc');
+    // 기본 방향 desc 는 canonical URL 에서 생략된다.
+    expect(toSortSearch(search, 'name').sortDirection).toBeUndefined();
+    expect(resolveBoardListSearch(toSortSearch(search, 'name')).sortDirection).toBe('desc');
   });
 
   it('preserves the committed conditions when only the page moves', () => {
@@ -33,11 +36,13 @@ describe('board list URL policy', () => {
   });
 
   it('flips the active header and starts another column ascending', () => {
+    // 기본 정렬은 등록일 desc 이므로 첫 클릭이 asc 로 뒤집고, 다시 누르면 기본(desc, URL 생략)으로 돌아간다.
     const first = toHeaderSortSearch(search, 'registeredAt');
     expect(first.sortDirection).toBe('asc');
 
     const flipped = toHeaderSortSearch({ ...search, sortDirection: 'asc' }, 'registeredAt');
-    expect(flipped.sortDirection).toBe('desc');
+    expect(flipped.sortDirection).toBeUndefined();
+    expect(resolveBoardListSearch(flipped).sortDirection).toBe('desc');
 
     const other = toHeaderSortSearch({ ...search, sortDirection: 'desc' }, 'postCount');
     expect(other.sortType).toBe('postCount');
