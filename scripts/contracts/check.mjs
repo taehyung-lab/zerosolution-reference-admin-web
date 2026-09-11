@@ -180,7 +180,7 @@ if (failures.length > 0) {
 
 console.log(`  ✓ verify 체인 ${chain.length}단계가 README 투영과 일치`)
 console.log('  ✓ verify↔CI stage 소유가 누락·추가·중복 없이 일치')
-console.log(`  ✓ 문서 ${documents.length}개의 pnpm 명령과 로컬 link 대상 실존`)
+console.log(`  ✓ 문서 ${documents.length}개의 pnpm 명령과 로컬 link 대상·앵커 실존`)
 if (budgetNotices.length === 0) {
   console.log(`  ✓ 에이전트 문서 ${documents.length}개가 권고 ${DOCUMENT_LINE_BUDGET}줄 / ${DOCUMENT_BYTE_BUDGET} bytes 이내`)
 } else {

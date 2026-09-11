@@ -11,6 +11,7 @@ import {
   ciWorkflowScriptFailures,
   copilotAgentsPointerFailure,
   documentBudgetNotices,
+  headingAnchors,
   ledgerIndexFailures,
   DOCUMENT_LINE_BUDGET,
   parseReadmeVerifyProjection,
@@ -270,7 +271,7 @@ describe('pnpm command existence', () => {
 describe('local markdown links', () => {
   it('accepts links whose target exists and ignores external URLs', () => {
     const files = createDocuments({
-      'index.md': '[peer](peer.md) [anchor](#s) [web](https://example.com/x.md)\n',
+      'index.md': '## s\n[peer](peer.md) [anchor](#s) [web](https://example.com/x.md)\n',
       'peer.md': 'peer\n',
     })
 
@@ -282,6 +283,40 @@ describe('local markdown links', () => {
 
     expect(readLocalLinkFailures(files)).toHaveLength(1)
     expect(readLocalLinkFailures(files)[0]).toContain('missing.md')
+  })
+
+  it('resolves anchors the way GitHub slugs headings, in the same file and across files', () => {
+    const files = createDocuments({
+      'index.md': [
+        '## 5. 실행·협업 모델',
+        '## API 호출 계층 (조회·목록·mutation 공통)',
+        '## Read the migrated rows',
+        '## Read the migrated rows',
+        '```',
+        '# not a heading',
+        '```',
+        '[a](#5-실행협업-모델) [b](#api-호출-계층-조회목록mutation-공통) [c](peer.md#형태) [d](#read-the-migrated-rows-1)',
+        '[gone](#not-a-heading) [typo](peer.md#형식) [file](peer.md)',
+      ].join('\n') + '\n',
+      'peer.md': '# Peer\n\n## 형태\n',
+    })
+
+    const failures = readLocalLinkFailures([files[0]])
+    expect(failures).toEqual([
+      expect.stringMatching(/index\.md:9: link 앵커 없음 → #not-a-heading/),
+      expect.stringMatching(/index\.md:9: link 앵커 없음 → peer\.md#형식/),
+    ])
+    expect([...headingAnchors('## 근거의 수명과 읽기 범위\n## `code` in heading\n')]).toEqual(['근거의-수명과-읽기-범위', 'code-in-heading'])
+  })
+
+  it('slugs the rendered heading text, keeps underscores, and survives a malformed percent anchor', () => {
+    // The inventory sections are titled with an inline link; GitHub slugs the link text, not its URL.
+    expect([...headingAnchors('## Notion 요점 (원문: [notion/08-promotion.md](notion/08-promotion.md))\n## a_b 형태\n')])
+      .toEqual(['notion-요점-원문-notion08-promotionmd', 'a_b-형태'])
+    // A ``` fence does not close a ~~~ fence, so the heading inside stays hidden.
+    expect([...headingAnchors('~~~\n```\n# hidden\n~~~\n# shown\n')]).toEqual(['shown'])
+    const files = createDocuments({ 'index.md': '## 100% 달성\n[ok](#100-달성) [bad](#100%-달성)\n' })
+    expect(readLocalLinkFailures(files)).toEqual([expect.stringMatching(/앵커 없음 → #100%-달성/)])
   })
 })
 

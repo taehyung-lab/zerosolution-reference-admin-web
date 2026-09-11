@@ -82,8 +82,10 @@ copies the complete declared documents and computes the same code/test closure.
 
 `package.json` owns the actual verify stages and fail-fast order. `contracts:check` compares the CI
 stage set and README projection with that declaration, and checks local links, commands, runtime root
-pointers, document-size notices and transplant sentinels. Remote OpenAPI drift and real-server login
-belong to explicit network jobs; do not hide them in the local entry point.
+pointers, document-size notices and transplant sentinels. A link's `#anchor` is compared with the
+target's headings slugged as GitHub renders them (link text, not URL; underscores kept; fenced code
+ignored); setext headings and HTML anchors are not recognized. Remote OpenAPI drift and real-server
+login belong to explicit network jobs; do not hide them in the local entry point.
 
 The ESLint ignore list is root-anchored, so a second checkout inside the repository (an agent worktree
 under `.worktrees/` or `.claude/worktrees/`) is linted whole unless its root is listed; on 2026-09-10 that
