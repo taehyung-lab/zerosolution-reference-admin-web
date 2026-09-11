@@ -1,3 +1,4 @@
+import { safeErrorKey } from '@/api/error-copy';
 import { useTranslation } from 'react-i18next';
 import { useBoardDetail } from '@/features/community/api/useBoardDetail';
 import type { BoardDetail } from '@/features/community/model/board';
@@ -47,7 +48,7 @@ export function BoardDetailScreen({
       <DetailStateBoundary
         state={detail.state}
         labels={{
-          error: shared('error.kind.business'),
+          error: shared(safeErrorKey(detail.error?.kind)),
           notFound: shared('error.kind.notFound'),
         }}
         retryLabel={shared('error.unexpected.retry')}
@@ -87,13 +88,13 @@ function BoardDetailContent({
             {t(`board.values.category.${board.category}`)}
           </DetailField>
           <DetailField label={t('board.columns.name')}>{board.name || empty}</DetailField>
-          <DetailField label={t('board.columns.postCount')}>{board.postCount}</DetailField>
           <DetailField label={t('board.detail.writePermission')}>
             {t(`board.values.permission.${board.writePermission}`)}
           </DetailField>
           <DetailField label={t('board.detail.readPermission')}>
             {t(`board.values.permission.${board.readPermission}`)}
           </DetailField>
+          <DetailField label={t('board.columns.postCount')}>{board.postCount}</DetailField>
           <DetailField label={t('board.columns.usage')}>
             {t(`board.values.usage.${board.usage}`)}
           </DetailField>
@@ -125,7 +126,7 @@ function BoardDetailContent({
       <ConfirmDialog
         open={deletion.state.kind === 'confirm'}
         title={shared('alert.title')}
-        description={t('board.detail.deleteConfirm')}
+        description={shared('deleteConfirm.description')}
         confirmLabel={shared('formSave.confirm')}
         cancelLabel={shared('formSave.cancel')}
         onOpenChange={(open) => {

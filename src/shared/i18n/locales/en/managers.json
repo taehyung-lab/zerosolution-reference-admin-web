@@ -1,11 +1,16 @@
 {
-  "path": {"settings": "Settings", "managers": "Managers", "detail": "Details", "create": "Add", "edit": "Edit"},
+  "path": {
+    "settings": "Settings",
+    "managers": "Managers",
+    "detail": "Details",
+    "create": "Add",
+    "edit": "Edit"
+  },
   "title": "Managers",
   "detailTitle": "Manager details",
   "detail": {
     "error": "Could not load manager information.",
     "notFound": "Manager not found.",
-
     "section": "Manager information",
     "type": "Type",
     "id": "ID",
@@ -40,7 +45,6 @@
       "false": "No"
     }
   },
-
   "search": "Search",
   "reset": "Reset",
   "filters": {
@@ -115,8 +119,6 @@
   "form": {
     "createTitle": "Add manager",
     "editTitle": "Edit manager",
-
-
     "section": "Manager information",
     "type": "Type",
     "permission": "Permission",
@@ -172,7 +174,6 @@
     "rejectionReason": "Rejection reason",
     "reasonRequired": "Enter a rejection reason.",
     "delete": "Delete",
-    "deleteDescription": "Delete this account?",
     "activate": "Activate",
     "activateDescription": "Change this account to active?",
     "deactivate": "Deactivate",

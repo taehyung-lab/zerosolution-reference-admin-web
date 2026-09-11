@@ -29,8 +29,8 @@ export function BoardCreateScreen({
         ]}
         title={t('board.form.createTitle')}
       />
-      {input.dialogs}
       <BoardForm
+        dialogs={input.dialogs}
         form={input.form}
         onSubmit={input.submit}
         onCancel={() => input.guard.leave(onCancel)}

@@ -21,8 +21,7 @@
       "historyEmpty": "There is no update history.",
       "historyUnknownField": "An unknown item was changed.",
       "edit": "Edit",
-      "delete": "Delete",
-      "deleteConfirm": "Do you want to delete it?"
+      "delete": "Delete"
     },
     "form": {
       "createTitle": "Register board",
@@ -59,9 +58,15 @@
         "remove": "Remove {{value}}",
         "chip": "{{field}} : {{value}}"
       },
-      "type": { "label": "Type" },
-      "category": { "label": "Category" },
-      "usage": { "label": "Usage" },
+      "type": {
+        "label": "Type"
+      },
+      "category": {
+        "label": "Category"
+      },
+      "usage": {
+        "label": "Usage"
+      },
       "permission": {
         "label": "Permission",
         "write": "Write",
@@ -104,9 +109,18 @@
       "updatedAt": "Last updated date"
     },
     "values": {
-      "type": { "GENERAL": "General" },
-      "category": { "GENERAL": "General", "COUNSEL": "Counsel", "NOTICE": "Notice" },
-      "usage": { "IN_USE": "In use", "NOT_IN_USE": "Not in use" },
+      "type": {
+        "GENERAL": "General"
+      },
+      "category": {
+        "GENERAL": "General",
+        "COUNSEL": "Counsel",
+        "NOTICE": "Notice"
+      },
+      "usage": {
+        "IN_USE": "In use",
+        "NOT_IN_USE": "Not in use"
+      },
       "permission": {
         "INCLUDING_GUEST": "Including guests",
         "ALL_MEMBERS": "All members",

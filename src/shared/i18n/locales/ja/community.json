@@ -21,8 +21,7 @@
       "historyEmpty": "更新履歴はありません。",
       "historyUnknownField": "不明な項目が変更されました。",
       "edit": "修正",
-      "delete": "削除",
-      "deleteConfirm": "削除しますか？"
+      "delete": "削除"
     },
     "form": {
       "createTitle": "掲示板登録",
@@ -59,9 +58,15 @@
         "remove": "{{value}}を削除",
         "chip": "{{field}} : {{value}}"
       },
-      "type": { "label": "タイプ" },
-      "category": { "label": "区分" },
-      "usage": { "label": "使用状態" },
+      "type": {
+        "label": "タイプ"
+      },
+      "category": {
+        "label": "区分"
+      },
+      "usage": {
+        "label": "使用状態"
+      },
       "permission": {
         "label": "権限",
         "write": "書き込み",
@@ -104,9 +109,18 @@
       "updatedAt": "最終更新日"
     },
     "values": {
-      "type": { "GENERAL": "一般" },
-      "category": { "GENERAL": "一般", "COUNSEL": "相談", "NOTICE": "お知らせ" },
-      "usage": { "IN_USE": "使用", "NOT_IN_USE": "使用しない" },
+      "type": {
+        "GENERAL": "一般"
+      },
+      "category": {
+        "GENERAL": "一般",
+        "COUNSEL": "相談",
+        "NOTICE": "お知らせ"
+      },
+      "usage": {
+        "IN_USE": "使用",
+        "NOT_IN_USE": "使用しない"
+      },
       "permission": {
         "INCLUDING_GUEST": "非会員を含む",
         "ALL_MEMBERS": "全会員",

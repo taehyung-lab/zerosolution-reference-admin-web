@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { boardPermissions, boardRecordCategories } from '@/features/community/model/board';
 import { FormCancelButton } from '@/shared/ui/form/FormCancelButton';
@@ -17,57 +18,63 @@ export function BoardForm({
   form,
   onSubmit,
   onCancel,
+  dialogs,
 }: {
   readonly form: FieldForm<BoardFormInput>;
   readonly onSubmit: () => void;
   readonly onCancel: () => void;
+  /** 저장 확인·이탈 확인 dialog. 폼이 렌더해 blocker 만 있고 dialog 가 없는 상태를 만들지 않는다(form-workflow.md). */
+  readonly dialogs: ReactNode;
 }) {
   const { t } = useTranslation('community');
 
   return (
-    <form
-      noValidate
-      onSubmit={(event) => {
-        event.preventDefault();
-        onSubmit();
-      }}
-    >
-      <SectionCard title={t('board.form.section')} collapsible={false}>
-        <div className="space-y-4 md:w-1/2">
-          <FormSelectField
-            form={form}
-            label={t('board.columns.category')}
-            name="category"
-            options={boardRecordCategories.map((value) => ({
-              value,
-              label: t(`board.values.category.${value}`),
-            }))}
-            placeholder={t('board.form.selectPlaceholder')}
-            required
-          />
-          <FormTextField
-            form={form}
-            label={t('board.columns.name')}
-            name="name"
-            required
-          />
-          <FormSelectField
-            form={form}
-            label={t('board.detail.writePermission')}
-            name="writePermission"
-            options={boardPermissions.map((value) => ({
-              value,
-              label: t(`board.values.permission.${value}`),
-            }))}
-            placeholder={t('board.form.selectPlaceholder')}
-            required
-          />
+    <>
+      {dialogs}
+      <form
+        noValidate
+        onSubmit={(event) => {
+          event.preventDefault();
+          onSubmit();
+        }}
+      >
+        <SectionCard title={t('board.form.section')} collapsible={false}>
+          <div className="space-y-4 md:w-1/2">
+            <FormSelectField
+              form={form}
+              label={t('board.columns.category')}
+              name="category"
+              options={boardRecordCategories.map((value) => ({
+                value,
+                label: t(`board.values.category.${value}`),
+              }))}
+              placeholder={t('board.form.selectPlaceholder')}
+              required
+            />
+            <FormTextField
+              form={form}
+              label={t('board.columns.name')}
+              name="name"
+              required
+            />
+            <FormSelectField
+              form={form}
+              label={t('board.detail.writePermission')}
+              name="writePermission"
+              options={boardPermissions.map((value) => ({
+                value,
+                label: t(`board.values.permission.${value}`),
+              }))}
+              placeholder={t('board.form.selectPlaceholder')}
+              required
+            />
+          </div>
+        </SectionCard>
+        <div className="mt-6 flex justify-center gap-2">
+          <FormSubmitButton pending={false} />
+          <FormCancelButton onClick={onCancel} />
         </div>
-      </SectionCard>
-      <div className="mt-6 flex justify-center gap-2">
-        <FormSubmitButton pending={false} />
-        <FormCancelButton onClick={onCancel} />
-      </div>
-    </form>
+      </form>
+    </>
   );
 }

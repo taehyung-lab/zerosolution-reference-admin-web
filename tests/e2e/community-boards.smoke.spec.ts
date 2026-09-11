@@ -127,6 +127,22 @@ test('@smoke 등록은 검증·저장 확인을 거쳐 요청 로그까지 간�
     .toBe(1);
 });
 
+test('@smoke 등록 중 취소는 이탈 확인을 거치고 유지하면 입력이 남는다', async ({ page }) => {
+  await page.goto('/community/boards/new');
+  await page.getByLabel('게시판명*').fill('취소 확인용');
+  await page.getByRole('button', { name: '취소', exact: true }).click();
+  // 99-cross-screen 21행(커뮤니티 > 게시판 포함): 취소할 경우 입력된 정보는 모두 삭제됩니다.
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toContainText('취소할 경우 입력된 정보는 모두 삭제됩니다.');
+  await dialog.getByRole('button', { name: '취소', exact: true }).click();
+  await expect(dialog).toHaveCount(0);
+  await expect(page.getByLabel('게시판명*')).toHaveValue('취소 확인용');
+  await page.getByRole('button', { name: '취소', exact: true }).click();
+  await dialog.getByRole('button', { name: '확인', exact: true }).click();
+  await expect(dialog).toHaveCount(0);
+  await expect(page).toHaveURL(/\/community\/boards$/);
+});
+
 test('@smoke 일치하는 결과가 없으면 원문 안내 문구를 보여 준다', async ({ page }) => {
   await page.goto('/community/boards');
 

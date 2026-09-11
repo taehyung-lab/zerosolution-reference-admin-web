@@ -107,5 +107,8 @@
     "validation": "The submitted values could not be saved.",
     "connection": "Check your network connection.",
     "general": "Could not save. Please try again."
+  },
+  "deleteConfirm": {
+    "description": "Delete this item?"
   }
 }

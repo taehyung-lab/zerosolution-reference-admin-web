@@ -1,3 +1,4 @@
+import { safeErrorKey } from '@/api/error-copy';
 import { useTranslation } from 'react-i18next';
 import { useBoardDetail } from '@/features/community/api/useBoardDetail';
 import { DetailStateBoundary } from '@/shared/ui/patterns/DetailStateBoundary';
@@ -42,7 +43,7 @@ export function BoardEditScreen({
       <DetailStateBoundary
         state={detail.state}
         labels={{
-          error: shared('error.kind.business'),
+          error: shared(safeErrorKey(detail.error?.kind)),
           notFound: shared('error.kind.notFound'),
         }}
         retryLabel={shared('error.unexpected.retry')}
@@ -73,13 +74,11 @@ function BoardEditForm({
 }) {
   const input = useBoardInputForm({ defaults, onConfirm });
   return (
-    <>
-      {input.dialogs}
-      <BoardForm
-        form={input.form}
-        onSubmit={input.submit}
-        onCancel={() => input.guard.leave(onCancel)}
-      />
-    </>
+    <BoardForm
+      dialogs={input.dialogs}
+      form={input.form}
+      onSubmit={input.submit}
+      onCancel={() => input.guard.leave(onCancel)}
+    />
   );
 }

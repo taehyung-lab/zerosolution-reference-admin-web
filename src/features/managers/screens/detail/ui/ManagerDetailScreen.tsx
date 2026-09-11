@@ -17,7 +17,7 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ManagerDetail } from "../../../api/manager-detail-contract";
-import { safeErrorKey } from "../../../lib/error-copy";
+import { safeErrorKey } from "@/api/error-copy";
 import { managerStatusMeta } from "../../../model/status";
 import { toManagerHistoryEntries } from "../model/manager-history";
 import { useManagerDetail } from "../../../api/useManagerDetail";
@@ -230,7 +230,8 @@ export function ManagerDetailContent({
         <ConfirmDialog
           open
           title={shared("alert.title")}
-          description={t(`actions.${confirmAction}Description`)}
+          // 삭제 확인은 공통 alert 카탈로그(1.1.3.1.1) 문장이라 shared 가 소유한다(dialogs.md).
+          description={confirmAction === "delete" ? shared("deleteConfirm.description") : t(`actions.${confirmAction}Description`)}
           confirmLabel={
             confirmAction === "approve"
               ? t("actions.approveConfirm")

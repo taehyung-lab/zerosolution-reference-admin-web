@@ -37,7 +37,7 @@ src/
   api/                         # 공용 transport와 교체 가능한 generated
 ```
 
-`screens`는 전체 페이지뿐 아니라 route가 다른 도메인과 조립하는 기능 진입도 포함한다.
+`screens`는 전체 페이지뿐 아니라 route가 다른 도메인과 조립하는 기능 진입도 포함한다. 도메인의 대표 엔티티는 `list`·`detail`·`form` 그대로 쓰고(`members/screens/list`), 대표가 아닌 엔티티나 두 엔티티가 같은 workflow 이름을 다투는 도메인은 엔티티를 접두한다(`members/screens/appeals`·`counsel`, `community/screens/board-list`·`board-detail`·`board-form` — 게시판과 게시물이 둘 다 목록·조회·폼을 갖는다, 2026-09-11).
 메시지 작성 다이얼로그는 `messaging/screens/compose`다. 회원 all/general/flagged는 같은
 `members/screens/list`를 쓰며 URL 계층을 그대로 복제하지 않는다. 별도 `pages` 레이어는 없다.
 

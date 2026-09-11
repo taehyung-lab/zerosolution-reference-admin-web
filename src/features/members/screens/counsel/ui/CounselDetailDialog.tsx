@@ -151,7 +151,7 @@ export function CounselDetailDialog({
       <ConfirmDialog
         open={deletion.state.kind === "confirm"}
         title={shared("alert.title")}
-        description={t("counsel.confirmDelete")}
+        description={shared("deleteConfirm.description")}
         confirmLabel={shared("formSave.confirm")}
         cancelLabel={shared("formSave.cancel")}
         onOpenChange={(open) => {
