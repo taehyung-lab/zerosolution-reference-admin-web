@@ -96,7 +96,7 @@
     "notSearched": "検索条件を設定して検索してください。",
     "pageSize": "表示件数",
     "sort": "並び順",
-    "empty": "検索結果がありません。",
+    "empty": "一致する検索結果がありません。",
     "pagination": "公演一覧のページ",
     "previous": "前へ",
     "next": "次へ"

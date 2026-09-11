@@ -43,7 +43,9 @@ try {
     const present = mine.filter((path) => existsSync(resolve(root, path)))
     const lintable = present.filter((path) => /\.(?:m|c)?[jt]sx?$/.test(path))
     run(['scripts/contracts/check.mjs'])
-    if (lintable.length) run(['node_modules/eslint/bin/eslint.js', ...lintable, '--max-warnings', '0'])
+    // Authored paths can include generated files that eslint.config.js ignores (for example src/routeTree.gen.ts); the
+    // "file ignored" warning is not a lint finding, so it must not fail the review under --max-warnings 0.
+    if (lintable.length) run(['node_modules/eslint/bin/eslint.js', ...lintable, '--max-warnings', '0', '--no-warn-ignored'])
     if (present.length) run(['node_modules/vitest/vitest.mjs', 'related', ...present, '--run', '--passWithNoTests'])
     recordReview(root, sessionOrEvent, JSON.parse(readFileSync(resolve(root, reportPath), 'utf8')))
     process.stdout.write(`Review recorded over ${mine.length} authored path(s); contracts, lint and related tests passed for them. This records evidence; it does not certify its truth or replace verify.\n`)

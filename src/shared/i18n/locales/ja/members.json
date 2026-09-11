@@ -81,7 +81,7 @@
     "previous": "前",
     "next": "次",
     "notSearched": "検索してください。",
-    "empty": "検索結果がありません。",
+    "empty": "一致する検索結果がありません。",
     "selectPage": "現在のページを全選択",
     "selectRow": "{{name}}を選択"
   },

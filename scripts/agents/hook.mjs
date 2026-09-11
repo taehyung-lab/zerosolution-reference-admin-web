@@ -1,3 +1,4 @@
+import { homedir } from 'node:os'
 import { execFileSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { dirname, isAbsolute } from 'node:path'
@@ -103,7 +104,22 @@ function literalArguments(command) {
   return words
 }
 
-function inspection(command) {
+const NVM_DIR = process.env.NVM_DIR ?? `${homedir()}/.nvm`
+const VERIFY_SCRIPTS = new Set(['lint', 'typecheck', 'typecheck:generated', 'test:unit', 'i18n:check', 'contracts:check'])
+
+/**
+ * Test paths a reviewer may run without preparation: inside the repository's own test roots only. `.ai-work/`
+ * is writable without preparation, so a test file there run as inspection would be an unattributed write
+ * anywhere in the tree; absolute and parent-relative paths are refused for the same reason.
+ */
+function repositoryTestPaths(root, tokens) {
+  return tokens.every((token) => {
+    if (token.startsWith('-')) return false
+    try { return /^(?:src|scripts|tests)(?:\/|$)/.test(localPath(root, token)) } catch { return false }
+  })
+}
+
+function inspection(command, root) {
   const words = literalArguments(command)
   if (!Array.isArray(words) || !words.length) return false
   if (words[0] === 'rtk') {
@@ -111,6 +127,9 @@ function inspection(command) {
     if (words[0] === 'proxy') words.shift()
   }
   if (words.some((word) => /^--(?:output|ext-diff|textconv|pre|hostname-bin)(?:=|$)/.test(word))) return false
+  // The user's nvm binary (`$NVM_DIR/versions/node/v<x.y.z>/bin/node`) is node; the declared engine is not
+  // always on PATH. Only that directory is accepted, so a planted `./x/bin/node` or `/tmp/x/.nvm/…` is not.
+  if (/^v\d+\.\d+\.\d+$/.test(words[0].replace(`${NVM_DIR}/versions/node/`, '').replace(/\/bin\/node$/, ''))) words[0] = 'node'
   const [executable, ...args] = words
   // `grep` and `wc` have no write option, so their argv needs no allowlist; `find` and `sed` do.
   if (['read', 'cat', 'ls', 'rg', 'grep', 'wc', 'pwd'].includes(executable)) return true
@@ -120,6 +139,16 @@ function inspection(command) {
   if (executable === 'sed') return args.length === 3 && args[0] === '-n' && READ_ONLY_SED.test(args[1]) && !args[2].startsWith('-')
   if (['orca', 'orca-ide', 'orca-dev'].includes(executable) && args[0] === 'orchestration' &&
       ORCHESTRATION_RPC.exec(words.slice(0, 3).join(' '))?.[0] === words.slice(0, 3).join(' ')) return true
+  // The repository's own check scripts are read-only by contract (tests write under tmpdir only), and an
+  // independent reviewer must be able to measure with them without preparing a checkpoint of its own.
+  // `pnpm verify`/`api:check` regenerate files and `vitest -u` rewrites snapshots, so they stay gated.
+  if (executable === 'pnpm') {
+    if (args.length === 1 && VERIFY_SCRIPTS.has(args[0])) return true
+    return args[0] === 'vitest' && args[1] === 'run' && repositoryTestPaths(root, args.slice(2))
+  }
+  if (executable === 'node' && args[0] === 'node_modules/vitest/vitest.mjs' && args[1] === 'run') {
+    return repositoryTestPaths(root, args.slice(2))
+  }
   if (executable === 'node' && args[0] === 'scripts/agents/cli.mjs') {
     if (args[1] === 'context-report') return args.length === 2 || (args.length === 3 && args[2] === '--summary')
     // Classification reads the workspace; `--apply` deletes, so it stays behind preparation.
@@ -154,9 +183,20 @@ function recognitionNote(command) {
   return `Not recognized as a read-only command because of ${parsed.reason}. Recognized inspection is a literal argv; put literal text in single quotes to keep characters such as backticks intact. `
 }
 
+/**
+ * A subagent's payload carries its parent's session id plus its own `agent_id`. Keyed by session alone,
+ * a read-only reviewer subagent inherited the parent's write bracket and 18 authored paths (measured
+ * 2026-09-11) and could have recorded the parent's review; each agent is its own accountable party.
+ */
+export function sessionOf(payload) {
+  const session = payload.session_id ?? payload.sessionId
+  const agent = payload.agent_id ?? payload.agentId
+  return session !== undefined && agent !== undefined ? `${session}/${agent}` : session
+}
+
 export function hookDecision(root, payload, eventOverride) {
   const native = payload.sessionId !== undefined
-  const session = payload.session_id ?? payload.sessionId
+  const session = sessionOf(payload)
   const event = eventOverride ?? payload.hook_event_name
   const deny = (reason) => native
     ? { permissionDecision: 'deny', permissionDecisionReason: reason }
@@ -186,7 +226,7 @@ export function hookDecision(root, payload, eventOverride) {
     if (!targets.length) return deny('Cannot identify patch targets')
   } else if (['Bash', 'bash', 'exec_command', 'shell', 'powershell'].includes(name)) {
     const command = input.command ?? input.cmd ?? ''
-    if (inspection(command)) return {}
+    if (inspection(command, root)) return {}
     const reason = checkEdit(root, session, [])
     // A general shell call may write anywhere, so the session becomes accountable for the tree.
     if (!reason) noteWrite(root, session)

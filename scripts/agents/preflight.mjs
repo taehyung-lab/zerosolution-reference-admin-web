@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, relative, resolve } from 'node:path'
 import { SEED_BUNDLES } from '../contracts/seed.mjs'
 import { claudeAgentsImportFailure, copilotAgentsPointerFailure } from '../contracts/contracts.mjs'
@@ -92,10 +92,51 @@ export function noteWrite(root, session, probe = traceSnapshot) {
   save(root, session, { ...settle(root, session, state, probe), wrote: true, trace: probe(root) })
 }
 
+/**
+ * Paths whose working copy differs from the remote default branch (`origin/HEAD`). A path this session
+ * moved that now equals it is pulled or merged work, not this session's output: after `git pull` of a
+ * merged PR that PR's whole diff otherwise counted as out-of-scope writes (2026-09-11). A local commit
+ * stays owned. The tree alone cannot tell a pull from a direct push to the default branch, so the
+ * remote-tracking reflog decides: when that ref last moved by `update by push` from this checkout, the
+ * content is this checkout's own and nothing is filtered. Without `origin/HEAD`, or when Git fails,
+ * `null` leaves every change in play — and nothing is logged, so the filter can be off silently.
+ */
+export function unsettledPaths(root) {
+  const git = (args) => execFileSync('git', args, { cwd: root, maxBuffer: 32 * 1024 * 1024, stdio: ['ignore', 'pipe', 'ignore'] }).toString()
+  try {
+    const remote = git(['rev-parse', '--verify', '--quiet', 'refs/remotes/origin/HEAD']).trim()
+    const branch = git(['symbolic-ref', '--quiet', 'refs/remotes/origin/HEAD']).trim()
+    const lastMove = git(['reflog', 'show', '-n', '1', '--format=%gs', branch]).trim()
+    // Only the last entry is read: a fetch after the push overwrites it and the pushed paths are filtered
+    // again. No reflog (core.logAllRefUpdates off) leaves the question open, so nothing is filtered either.
+    if (!lastMove || lastMove.startsWith('update by push')) return null
+    const differing = git(['diff', '--name-only', '--no-renames', '-z', remote, '--']).split('\0')
+    const untracked = git(['ls-files', '--others', '--exclude-standard', '-z']).split('\0')
+    return new Set([...differing, ...untracked].filter(Boolean))
+  } catch { return null }
+}
+
+/** A subagent's session id is `<parent session>/<agent id>` (hook.mjs sessionOf); the parent is the prefix. */
+const parentOf = (session) => session.includes('/') ? session.slice(0, session.lastIndexOf('/')) : undefined
+
+/**
+ * States that subagents of this session prepared in this checkout. The one who delegated answers for the
+ * result: a subagent's writes join the parent's review set, so a subagent that never reached its own
+ * SubagentStop (killed, or a runtime without that event) still leaves nothing unreviewed.
+ */
+function delegated(root, session) {
+  const directory = resolve(root, '.ai-work/agent-checks')
+  if (!existsSync(directory)) return []
+  return readdirSync(directory)
+    .filter((file) => file.endsWith('.json'))
+    .map((file) => { try { return readJson(resolve(directory, file)) } catch { return null } })
+    .filter((state) => state?.parent === session)
+}
+
 /** Paths this session is accountable for, and the concurrent edits it must never be blocked by. */
-function partitionChanges(state, current) {
-  const changed = changedPaths(state.baseline, current)
-  const authored = new Set(state.authored ?? [])
+function partitionChanges(state, current, unsettled, children = []) {
+  const changed = changedPaths(state.baseline, current).filter((path) => unsettled === null || unsettled.has(path))
+  const authored = new Set([...(state.authored ?? []), ...children.flatMap((child) => child.authored ?? [])])
   return { mine: changed.filter((path) => authored.has(path)), external: changed.filter((path) => !authored.has(path)) }
 }
 
@@ -204,6 +245,7 @@ export function prepare(root, session, checkpointFile, snapshot = outputSnapshot
     baseline: previous?.baseline ?? snapshot(root), review: null, wrote: previous?.wrote ?? false,
     // Attribution survives re-preparation: a wider scope must not erase what this session already wrote.
     authored: previous?.authored ?? [], trace: previous?.trace ?? null,
+    parent: parentOf(session),
   })
   // A `prefixLoaded` file reached the runtime through its root pointer before the first tool call, so
   // rendering it again only adds a second copy. The whole-file hash is still recorded, which keeps the
@@ -237,7 +279,8 @@ export function prepare(root, session, checkpointFile, snapshot = outputSnapshot
 
 export function checkEdit(root, session, targets) {
   const state = load(root, session)
-  if (!state) return `Run node scripts/agents/cli.mjs prepare ${session} .ai-work/<task>/checkpoint.json before editing. See scripts/agents/README.md.`
+  // The entry is AGENTS §2 (a screen request reads screen-loop first); the README only owns the checkpoint fields.
+  if (!state) return `Read AGENTS.md §2 first (a screen or shared-contract request starts with screen-loop), then run node scripts/agents/cli.mjs prepare ${session} .ai-work/<task>/checkpoint.json before editing. Checkpoint fields: scripts/agents/README.md#prepare-before-editing.`
   const { checkpointPath, checkpointHash, documents, checkpoint } = state
   const stale = (file) => `Reference/checkpoint changed: ${file}. Re-run prepare; reassess affected decisions.`
   if (!existsSync(resolve(root, checkpointPath)) || hash(readFileSync(resolve(root, checkpointPath))) !== checkpointHash) return stale(checkpointPath)
@@ -281,13 +324,14 @@ function reconcileOutput(root, session, state, mine, external) {
   return checkEdit(root, session, mine)
 }
 
-export function recordReview(root, session, report, snapshot = outputSnapshot) {
+export function recordReview(root, session, report, snapshot = outputSnapshot, unsettled = unsettledPaths) {
   const loaded = load(root, session)
   if (!loaded) throw new Error('Run prepare before review')
   const state = settle(root, session, loaded)
   const current = snapshot(root)
-  const { mine, external } = partitionChanges(state, current)
-  const failure = state.wrote ? reconcileOutput(root, session, state, mine, external) : null
+  const children = delegated(root, session)
+  const { mine, external } = partitionChanges(state, current, unsettled(root), children)
+  const failure = state.wrote || children.some((child) => child.wrote) ? reconcileOutput(root, session, state, mine, external) : null
   if (failure) throw new Error(failure)
   const expected = state.checkpoint.requirements.map(({ id }) => id).sort()
   const actual = report.requirements?.map(({ id }) => id).sort()
@@ -339,21 +383,24 @@ export function recordReview(root, session, report, snapshot = outputSnapshot) {
 }
 
 /** The paths a review must account for, for callers that run checks before recording one. */
-export function authoredChanges(root, session, snapshot = outputSnapshot) {
+export function authoredChanges(root, session, snapshot = outputSnapshot, unsettled = unsettledPaths) {
   const state = settle(root, session, load(root, session))
-  if (!state?.wrote) return { mine: [], external: [] }
-  return partitionChanges(state, snapshot(root))
+  if (!state) return { mine: [], external: [] }
+  const children = delegated(root, session)
+  if (!state.wrote && !children.some((child) => child.wrote)) return { mine: [], external: [] }
+  return partitionChanges(state, snapshot(root), unsettled(root), children)
 }
 
-export function checkStop(root, session, snapshot = outputSnapshot) {
+export function checkStop(root, session, snapshot = outputSnapshot, unsettled = unsettledPaths) {
   const loaded = load(root, session)
   if (!loaded) return null
-  // A session that was never granted a write capability owns no tracked change, so a concurrent
-  // session's edits must not hold its completion hostage.
-  if (!loaded.wrote) return null
+  // A session that was never granted a write capability, and delegated to no one who was, owns no
+  // tracked change, so a concurrent session's edits must not hold its completion hostage.
+  const children = delegated(root, session)
+  if (!loaded.wrote && !children.some((child) => child.wrote)) return null
   const state = settle(root, session, loaded)
   const current = snapshot(root)
-  const { mine, external } = partitionChanges(state, current)
+  const { mine, external } = partitionChanges(state, current, unsettled(root), children)
   if (!mine.length) return null
   const stale = reconcileOutput(root, session, state, mine, external)
   if (stale) return stale

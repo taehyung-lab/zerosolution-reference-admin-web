@@ -302,7 +302,7 @@ describe("manager route search canonicalization", () => {
       }),
     );
     expect(
-      await screen.findByText("검색 결과가 없습니다."),
+      await screen.findByText("일치하는 검색결과가 없습니다."),
     ).toBeInTheDocument();
     expect(managerListRequestCount).toBe(1);
   });

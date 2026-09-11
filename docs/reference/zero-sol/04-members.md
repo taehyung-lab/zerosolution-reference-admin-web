@@ -16,6 +16,7 @@
 | 4.1.1 | 검색 action | 패널 하단 중앙 `검색`(primary) + `초기화` | (대기) | 초기화가 기본값 복원인지 빈값인지 | `FilterPanel` actions |
 | 4.1.1 | 검색 전 상태 | 결과 영역에 "검색해주세요." 한 줄 + 우측 상단 `등록` 버튼만 노출. summary·toolbar·table·paging 없음 | (대기) | — | `ListResult.notSearched` |
 | 4.1.1 | summary | "검색결과 : 1,000" 단일 항목 | (대기) | — | `ResultSummary` |
+| 4.1.1 | 빈 결과 | (미판독) | 메시지 `일치하는 검색결과가 없습니다.` — [원문](notion/99-cross-screen.md) 등장 화면에 회원 > 활성회원 > 전체회원·일반회원·불량회원 | — | `members:result.empty` (구현됨) |
 | 4.1.1 | 결과 toolbar 좌 | 보기 select(100·200·300·400·500·700·1000) + 정렬 select(가입일·최근접속일·가입방법·이메일·이름·휴대폰번호) | (대기) | 정렬 방향 UI 없음 — 컬럼 헤더 아이콘만 | `PageSizeControl`, `SortControl`(필드 select만; 방향은 `DataTable.meta.sort` 헤더 클릭) |
 | 4.1.1 | 결과 toolbar 우 | `선택▾` + `변경` (cascade: 계정 상태 > 일반회원 / 불량회원 > 활동제한 설정 checkbox 스페셜콘텐츠·1:1문의·입장제한설정) · `SMS` · `이메일` · `등록`(primary) | Notion: 선택 검증·변경 확인, 발송 정책 gate | 권한·정책 데이터 계약 | `MemberListActions` → route의 `MessageComposerDialog` → 메시지 폼·정책 gate |
 | 4.1.1 | table | 헤더 전체선택 checkbox + 행 checkbox. 컬럼 등급·가입방법·이메일(마스킹)·이름·휴대폰번호(마스킹)·계정 상태·가입일(정렬 아이콘)·최근접속일. 하단 "- 이하 생략 -" 안내 행 | Notion: 행 클릭 시 회원 조회 | 마스킹 데이터 계약 | `useMemberListData` → `useMemberListResult` + `DataTable`; fixture 조회 및 현재 페이지 선택 |
@@ -54,6 +55,7 @@
 
 | 화면 | surface | Figma 관찰 | Notion 동작·정책 | 미확인 | 현재 코드 |
 | --- | --- | --- | --- | --- | --- |
+| 4.2.1·4.2.2·4.5.1 | 빈 결과 | (미판독) | 메시지 `일치하는 검색결과가 없습니다.` — [원문](notion/99-cross-screen.md) 등장 화면에 회원 > 비활성회원 > 휴면회원·탈퇴회원, 회원 > 부가기능 > 회원접속 | — | `members:result.empty` (`MemberRecordResult`, 구현됨) |
 | 4.2.1 | 기간 | 기준 가입일·최근접속일·**휴면회원전환일**. preset·range 동일 | (대기) | — | — |
 | 4.2.1 | 다중선택 | 가입방법·계정 상태 | (대기) | — | — |
 | 4.2.1 | toolbar 우 | `SMS` `이메일`만. 변경·등록 없음 | (대기) | — | — |
