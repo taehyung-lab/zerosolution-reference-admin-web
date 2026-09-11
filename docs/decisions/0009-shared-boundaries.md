@@ -80,7 +80,8 @@ shared는 feature, Router, Query, endpoint, server DTO, permission을 알지 않
 
 **실서버 연결은 confirm의 조건이 아니다.** 이 저장소의 검증 경계는 API 호출 직전이므로 실서버 실패
 비교를 요구하면 어떤 계약도 confirmed가 될 수 없고, 그 정의는 이 단계표를 죽은 칸으로 만든다. 실 API로
-workflow를 실측하는 것은 `완료`, 신규 제품에서 채택까지 한 것은 `이관 검증됨`이며 둘 다 별도 단계다.
+workflow를 실측하는 것은 `완료`, 신규 제품에서 채택까지 한 것은 `이관 검증됨`이며 둘 다 별도 단계다
+([완료 상태](../../scripts/agents/README.md#completion-states)가 어휘를 소유한다).
 
 기계가 증명하는 필요조건(하나라도 거짓이면 confirmed가 아니다):
 
