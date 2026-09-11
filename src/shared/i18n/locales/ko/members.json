@@ -81,7 +81,7 @@
     "previous": "이전",
     "next": "다음",
     "notSearched": "검색해주세요.",
-    "empty": "검색 결과가 없습니다.",
+    "empty": "일치하는 검색결과가 없습니다.",
     "selectPage": "현재 페이지 전체 선택",
     "selectRow": "{{name}} 선택"
   },

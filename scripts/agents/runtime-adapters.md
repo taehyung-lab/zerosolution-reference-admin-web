@@ -21,7 +21,14 @@ handler answers (`preflight.test.mjs` fails when one drifts); a name the matcher
 
 Read-only inspection stays available without preparation: `read`, `cat`, `ls`, `rg`, `grep`, `wc`, `pwd`,
 Git `status`/`diff`/`log`/`show`/`ls-files`/`rev-parse` (including leading `-C <path>` or `-C<path>`),
-`find` limited to read-only predicates, and `sed -n <range>p`. `rtk` and `rtk proxy` wrappers are recognized.
+`find` limited to read-only predicates, `sed -n <range>p`, and the repository's own check scripts — `pnpm lint`,
+`typecheck`, `typecheck:generated`, `test:unit`, `i18n:check`, `contracts:check`, and `vitest run <paths>` through
+`pnpm` or `node node_modules/vitest/vitest.mjs` without options — which are read-only by contract so an independent reviewer can measure without preparing
+(`pnpm verify`/`api:check` regenerate files and stay gated). Test paths must lie under `src/`, `scripts/` or
+`tests/`: `.ai-work/` is writable without preparation, so a test file there would be an unattributed write. A
+node under the user's nvm directory (`$NVM_DIR/versions/node/v<x.y.z>/bin/node`) counts as `node`; no other
+executable path is recognized. Use it for review evidence: `pnpm` runs whatever node is on PATH, and outside
+the declared engine `pnpm test:unit` fails four `src/api/http` tests on a global `localStorage` (2026-09-11). `rtk` and `rtk proxy` wrappers are recognized.
 Git config/alias options, external diff/text conversion and output-to-file options remain gated.
 General Python/Node programs cannot be classified as read-only from their executable name.
 The writing forms of the same
@@ -53,9 +60,26 @@ tool call to the gap between two of the session's calls, which is the fallback o
 post-tool event. The probe is size and mtime, so a same-size rewrite inside one millisecond can be missed;
 that only demotes a path to reported-not-blocking, never the reverse.
 
-Review/stop reconciles those authored paths against the preparation snapshot, even after a commit, and
-rejects out-of-scope or unresolved ones with the correction stated. A session that only ran recognized
-inspection commands received no write capability and owns nothing. Concurrent edits are reported, never
+Review/stop reconciles those authored paths against the preparation snapshot, even after a local commit,
+and rejects out-of-scope or unresolved ones with the correction stated. A session that only ran recognized
+inspection commands received no write capability and owns nothing.
+
+A path whose working copy already equals the remote default branch (`origin/HEAD`) is pulled or merged
+work and leaves the review set. The remote-tracking reflog tells a pull from a push: when `origin/<default>`
+last moved by `update by push` from this checkout, nothing is filtered and the pushed content stays owned.
+That signal is the last reflog entry only: a fetch or pull after the push overwrites it and the pushed
+paths are filtered again, and `refs/remotes/*` is shared by every worktree of the checkout, so a push from
+another worktree switches this one's filter off (over-inclusion, the safe direction). Without `origin/HEAD`,
+an empty reflog, or a Git failure, nothing is filtered either — and nothing is logged, so the filter can be
+off silently.
+
+A subagent reports under its parent's `session_id` with its own `agent_id`; state is keyed by both, so it
+prepares for itself and a read-only reviewer owns nothing of the parent's output (before 2026-09-11 it
+inherited the parent's bracket and authored paths, measured at 18). The parent answers for the result: a
+subagent's authored paths join the parent's review set, so a delegated write is reviewed even when the
+subagent never reaches its own SubagentStop. Two checkpoints can now declare the same path in one checkout;
+`prepare` does not check scopes against each other, so "one final editor per file" is the brief's job, not
+the gate's. Concurrent edits are reported, never
 blocking: they belong to another session, and blocking on them previously left a session with no reachable
 exit. Mention them in the report's limitations; this is not a gate-exclusion field. Re-preparation preserves
 both the baseline and the attribution, so widening scope cannot erase what the session already wrote.

@@ -68,12 +68,6 @@
     "acknowledge": "確認",
     "cancel": "キャンセル"
   },
-  "bulkAction": {
-    "missingSelection": "変更する項目を選択してください。",
-    "confirm": "選択した項目を変更しますか?",
-    "acknowledge": "確認",
-    "cancel": "キャンセル"
-  },
   "formSave": {
     "confirmDescription": "保存しますか?",
     "confirm": "確認",

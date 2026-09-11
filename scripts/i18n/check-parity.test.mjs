@@ -56,6 +56,21 @@ describe('i18n parity CLI', () => {
     expect(result.stderr).toContain('en/common: missing=nested.label extra=extra')
   })
 
+  it('fails on a key repeated inside one object, which JSON.parse would silently collapse', () => {
+    const root = createLocaleRoot({
+      ko: { common: { title: '제목' } },
+      en: { common: { title: 'Title' } },
+      ja: { common: { title: 'タイトル' } },
+    })
+    // Hand-written so the duplicate survives serialization; a quoted "{" inside a value must not confuse the walk.
+    writeFileSync(resolve(root, 'ko/common.json'), '{\n  "title": "제{목",\n  "group": { "a": "1", "b": "\\"a\\": 2" },\n  "group": { "a": "1" },\n  "title": "again"\n}\n')
+
+    const result = runCheck(root)
+
+    expect(result.status).toBe(1)
+    expect(result.stderr).toContain('ko/common: duplicate keys group, title')
+  })
+
   it('fails when a namespace exists outside the canonical locale', () => {
     const root = createLocaleRoot({
       ko: { common: { title: '제목' } },

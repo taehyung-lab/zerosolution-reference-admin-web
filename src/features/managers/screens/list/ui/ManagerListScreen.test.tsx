@@ -79,7 +79,7 @@ describe("manager product search input", () => {
     expect(onCommit).toHaveBeenLastCalledWith(
       expect.objectContaining({ permission: "2" }),
     );
-    await screen.findByText("검색 결과가 없습니다.");
+    await screen.findByText("일치하는 검색결과가 없습니다.");
     await chooseOptionIn("권한", "전체");
     fireEvent.click(screen.getByRole("button", { name: "검색" }));
     expect(
@@ -286,7 +286,7 @@ describe("manager product filter option queries", () => {
     await chooseOptionIn("권한", "Example site permission");
     fireEvent.click(screen.getByRole("button", { name: "검색" }));
     expect(
-      await screen.findByText("검색 결과가 없습니다."),
+      await screen.findByText("일치하는 검색결과가 없습니다."),
     ).toBeInTheDocument();
   });
 });

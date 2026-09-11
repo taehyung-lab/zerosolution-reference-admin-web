@@ -42,7 +42,7 @@
     "result": {
       "pageSize": "View",
       "sort": "Sort",
-      "empty": "No matching search results.",
+      "empty": "No matching results.",
       "pagination": {
         "label": "Board pages",
         "previous": "Previous",

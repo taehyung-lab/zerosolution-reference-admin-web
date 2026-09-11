@@ -107,7 +107,7 @@
     "next": "Next",
     "notSearched": "Enter search criteria, then select Search.",
     "error": "Could not load the list.",
-    "empty": "No search results.",
+    "empty": "No matching results.",
     "retry": "Retry",
     "selectAll": "Select the current page",
     "selectRow": "Select {{id}}"

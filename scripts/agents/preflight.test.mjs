@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { homedir, tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { prepare, checkEdit, recordReview, checkStop, outputSnapshot } from './preflight.mjs'
@@ -368,6 +368,70 @@ describe('repository preflight', () => {
     expect(checkStop(root, 'one', fingerprint)).toMatch(/review/)
     expect(() => recordReview(root, 'one', { ...report, requirements: [] }, fingerprint)).toThrow(/R1/)
   })
+  it('does not own paths that already match the remote default branch, while local commits and dirty paths still need review', () => {
+    const { root } = setup()
+    const remote = mkdtempSync(join(tmpdir(), 'reference-preflight-remote-'))
+    roots.push(remote)
+    const git = (...args) => execFileSync('git', ['-c', 'user.name=t', '-c', 'user.email=t@t', ...args], { cwd: root, stdio: 'ignore' })
+    execFileSync('git', ['init', '--bare', '--initial-branch=main', remote], { stdio: 'ignore' })
+    writeFileSync(join(root, 'outside.txt'), 'upstream text\n')
+    git('checkout', '-B', 'main'); git('add', '-A'); git('commit', '-m', 'baseline')
+    git('remote', 'add', 'origin', remote); git('push', '-u', 'origin', 'main'); git('remote', 'set-head', 'origin', 'main')
+    const snapshot = (dir) => ({ ...fingerprint(dir), 'outside.txt': readFileSync(join(dir, 'outside.txt'), 'utf8') })
+    prepare(root, 'one', '.ai-work/checkpoint.json', snapshot)
+    const bracket = () => expect(hookDecision(root, { session_id: 'one', hook_event_name: 'PreToolUse', tool_name: 'Bash', tool_input: { command: 'git pull' } })).toEqual({})
+    // outside.txt is outside the scope. Moved and committed locally inside a shell bracket, it is still this session's output.
+    bracket()
+    writeFileSync(join(root, 'outside.txt'), 'merged upstream\n')
+    git('add', '-A'); git('commit', '-m', 'merged upstream')
+    expect(checkStop(root, 'one', snapshot)).toMatch(/outside its declared scope/)
+    // Pushing it from this checkout does not settle it: the remote-tracking reflog says `update by push`.
+    git('push', 'origin', 'main')
+    expect(checkStop(root, 'one', snapshot)).toMatch(/outside its declared scope/)
+    // Content that arrived by pull is someone else's merged work, not a write to review.
+    const other = mkdtempSync(join(tmpdir(), 'reference-preflight-other-'))
+    roots.push(other)
+    execFileSync('git', ['clone', '-q', remote, other], { stdio: 'ignore' })
+    writeFileSync(join(other, 'outside.txt'), 'merged by another checkout\n')
+    execFileSync('git', ['-c', 'user.name=o', '-c', 'user.email=o@o', 'commit', '-qam', 'upstream'], { cwd: other, stdio: 'ignore' })
+    execFileSync('git', ['push', '-q', 'origin', 'main'], { cwd: other, stdio: 'ignore' })
+    bracket()
+    git('pull', '-q')
+    expect(checkStop(root, 'one', snapshot)).toBeNull()
+    bracket()
+    writeFileSync(join(root, 'scripts/example.mjs'), 'export const value = 2\n')
+    expect(checkStop(root, 'one', snapshot)).toMatch(/review/)
+    // Without `origin/HEAD` to compare against nothing is filtered.
+    expect(checkStop(root, 'one', snapshot, () => null)).toMatch(/outside its declared scope/)
+  })
+  it('keeps a subagent accountable on its own, not through the parent session it reports under', () => {
+    const { root } = setup()
+    prepare(root, 'one', '.ai-work/checkpoint.json', fingerprint)
+    const write = (extra) => hookDecision(root, { session_id: 'one', hook_event_name: 'PreToolUse', tool_name: 'Write', tool_input: { file_path: join(root, 'scripts/example.mjs') }, ...extra })
+    expect(write({})).toEqual({})
+    // The subagent has not prepared: it may inspect, but it cannot write on the parent's preparation.
+    expect(hookDecision(root, { session_id: 'one', agent_id: 'sub', hook_event_name: 'PreToolUse', tool_name: 'Bash', tool_input: { command: 'git status' } })).toEqual({})
+    expect(write({ agent_id: 'sub' }).hookSpecificOutput.permissionDecisionReason).toMatch(/prepare one\/sub/)
+    // Its stop owes nothing of the parent's output; the parent's stop still does.
+    writeFileSync(join(root, 'scripts/example.mjs'), 'export const value = 2\n')
+    expect(hookDecision(root, { session_id: 'one', agent_id: 'sub', hook_event_name: 'SubagentStop' }, 'Stop')).toEqual({})
+    expect(hookDecision(root, { session_id: 'one', hook_event_name: 'Stop' })).toMatchObject({ decision: 'block' })
+  })
+  it('makes the parent answer for what its subagent wrote', () => {
+    const { root, checkpoint } = setup()
+    prepare(root, 'one', '.ai-work/checkpoint.json', fingerprint)
+    // The parent itself only delegated; its subagent prepared in the same checkout and wrote inside scope.
+    writeFileSync(join(root, '.ai-work/sub.json'), JSON.stringify(checkpoint))
+    prepare(root, 'one/sub', '.ai-work/sub.json', fingerprint)
+    expect(hookDecision(root, { session_id: 'one', agent_id: 'sub', hook_event_name: 'PreToolUse', tool_name: 'Write', tool_input: { file_path: join(root, 'scripts/example.mjs') } })).toEqual({})
+    writeFileSync(join(root, 'scripts/example.mjs'), 'export const value = 2\n')
+    hookDecision(root, { session_id: 'one', agent_id: 'sub', hook_event_name: 'PostToolUse' })
+    expect(checkStop(root, 'one/sub', fingerprint)).toMatch(/review/)
+    expect(checkStop(root, 'one', fingerprint)).toMatch(/review/)
+    // An unrelated session that delegated nothing is not held by it.
+    prepare(root, 'two', '.ai-work/checkpoint.json', fingerprint)
+    expect(checkStop(root, 'two', fingerprint)).toBeNull()
+  })
   it('uses the same deny verdict for Codex, Claude and Copilot native edits', () => {
     const { root } = setup()
     const codex = hookDecision(root, { session_id: 'one', hook_event_name: 'PreToolUse', tool_name: 'apply_patch', tool_input: { command: '*** Begin Patch\n*** Update File: scripts/example.mjs\n@@\n-x\n+y\n*** End Patch' } })
@@ -465,6 +529,11 @@ describe('repository preflight', () => {
       'grep -rn value scripts',
       "find scripts -type f -name '*.mjs'",
       "sed -n 1,40p AGENTS.md",
+      'pnpm lint',
+      'pnpm vitest run scripts/agents',
+      'pnpm vitest run',
+      'node node_modules/vitest/vitest.mjs run scripts/i18n',
+      `${process.env.NVM_DIR ?? `${homedir()}/.nvm`}/versions/node/v24.19.0/bin/node node_modules/vitest/vitest.mjs run src/api`,
     ]) {
       expect(verdict(command), command).toEqual({})
     }
@@ -475,6 +544,17 @@ describe('repository preflight', () => {
       'sed -i s/a/b/ AGENTS.md',
       'sed -n 1p AGENTS.md w out.txt',
       'sed -f script.sed AGENTS.md',
+      'pnpm vitest run -u',
+      'pnpm vitest run .ai-work/probe.test.ts',
+      'pnpm vitest run ../elsewhere/probe.test.ts',
+      `pnpm vitest run ${join(root, '..', 'probe.test.ts')}`,
+      'node node_modules/vitest/vitest.mjs run /tmp/probe.test.ts',
+      'pnpm api:check',
+      'pnpm verify',
+      'pnpm exec vitest run',
+      './evil/bin/node node_modules/vitest/vitest.mjs run src/api',
+      '/tmp/x/bin/node node_modules/vitest/vitest.mjs run src/api',
+      '/tmp/x/.nvm/versions/node/v1.0.0/bin/node node_modules/vitest/vitest.mjs run src/api',
     ]) {
       expect(verdict(command).hookSpecificOutput?.permissionDecision, command).toBe('deny')
     }

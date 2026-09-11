@@ -81,7 +81,7 @@
     "previous": "Previous",
     "next": "Next",
     "notSearched": "Please search.",
-    "empty": "No search results.",
+    "empty": "No matching results.",
     "selectPage": "Select current page",
     "selectRow": "Select {{name}}"
   },

@@ -45,7 +45,11 @@ but is not an allowlisted read-only executable, the denial asks for preparation,
 
 Read-only inspection stays available without preparation: `read`, `cat`, `ls`, `rg`, `grep`, `wc`, `pwd`,
 Git `status`/`diff`/`log`/`show`/`ls-files`/`rev-parse` (including leading `-C <path>` or `-C<path>`),
-`find` limited to read-only predicates, and `sed -n <range>p`. `rtk` and `rtk proxy` wrappers are recognized.
+`find` limited to read-only predicates, `sed -n <range>p`, and the repository's own check scripts — `pnpm lint`,
+`typecheck`, `typecheck:generated`, `test:unit`, `i18n:check`, `contracts:check`, and `vitest run <paths>` through
+`pnpm` or `node node_modules/vitest/vitest.mjs` without options — which are read-only by contract so an independent reviewer can measure without preparing
+(`pnpm verify`/`api:check` regenerate files and stay gated). Test paths must lie under `src/`, `scripts/` or
+`tests/`, and node under the user's nvm directory (`$NVM_DIR/versions/node/v<x.y.z>/bin/node`) counts as `node`. `rtk` and `rtk proxy` wrappers are recognized.
 Git config/alias options, external diff/text conversion and output-to-file options remain gated.
 General Python/Node programs cannot be classified as read-only from their executable name.
 The writing forms of the same
