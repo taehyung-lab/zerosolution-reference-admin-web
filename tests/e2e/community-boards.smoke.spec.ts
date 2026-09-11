@@ -60,6 +60,73 @@ test('@smoke 게시판 목록의 활성 정렬 헤더만 방향을 바꾼다', a
   await expect(header).not.toHaveAttribute('aria-sort', /.*/);
 });
 
+test('@smoke 행 → 조회 → 수정 이동 뒤 저장이 요청 로그까지 간다', async ({ page }) => {
+  const logs: string[] = [];
+  page.on('console', (message) => logs.push(message.text()));
+  await page.goto('/community/boards');
+
+  await page.getByRole('cell', { name: 'Reference Board 1', exact: true }).click();
+
+  await expect(page).toHaveURL(/\/community\/boards\/reference-board-1$/);
+  await expect(page.getByRole('heading', { name: '게시판 조회' })).toBeVisible();
+  await expect(page.getByText('게시판정보')).toBeVisible();
+  await expect(page.getByText('업데이트 내역')).toBeVisible();
+
+  await page.getByRole('button', { name: '수정', exact: true }).click();
+  await expect(page).toHaveURL(/\/community\/boards\/reference-board-1\/edit$/);
+  await expect(page.getByRole('heading', { name: '게시판 수정' })).toBeVisible();
+  await expect(page.getByLabel('게시판명*')).toHaveValue('Reference Board 1');
+
+  await page.getByLabel('게시판명*').fill('Reference Board 1 수정');
+  await page.getByRole('button', { name: '저장', exact: true }).click();
+  await expect(page.getByText('저장하시겠습니까?')).toBeVisible();
+  await page.getByRole('button', { name: '확인', exact: true }).click();
+  await expect
+    .poll(() => logs.filter((line) => line.includes('[시나리오] 게시판 수정')).length)
+    .toBe(1);
+});
+
+test('@smoke 조회의 삭제는 확인 alert 를 거쳐 요청 로그까지 간다', async ({ page }) => {
+  const logs: string[] = [];
+  page.on('console', (message) => logs.push(message.text()));
+  await page.goto('/community/boards/reference-board-1');
+
+  await page.getByRole('button', { name: '삭제', exact: true }).click();
+  await expect(page.getByText('삭제하시겠습니까?')).toBeVisible();
+  expect(logs.filter((line) => line.includes('게시판 삭제'))).toHaveLength(0);
+
+  await page.getByRole('button', { name: '확인', exact: true }).click();
+  await expect
+    .poll(() => logs.filter((line) => line.includes('[시나리오] 게시판 삭제')).length)
+    .toBe(1);
+});
+
+test('@smoke 등록은 검증·저장 확인을 거쳐 요청 로그까지 간다', async ({ page }) => {
+  const logs: string[] = [];
+  page.on('console', (message) => logs.push(message.text()));
+  await page.goto('/community/boards');
+
+  await page.getByRole('button', { name: '등록', exact: true }).click();
+  await expect(page).toHaveURL(/\/community\/boards\/new$/);
+  await expect(page.getByRole('heading', { name: '게시판 등록' })).toBeVisible();
+  await expect(page.getByRole('combobox', { name: '구분' })).toContainText('일반');
+
+  // 미입력 저장은 확인창을 열지 않는다.
+  await page.getByRole('button', { name: '저장', exact: true }).click();
+  await expect(page.getByText('저장하시겠습니까?')).toBeHidden();
+
+  await page.getByLabel('게시판명*').fill('스모크 게시판');
+  await page.getByRole('combobox', { name: '쓰기 권한' }).click();
+  await page.getByRole('option', { name: '운영자' }).click();
+  await page.getByRole('button', { name: '저장', exact: true }).click();
+
+  await expect(page.getByText('저장하시겠습니까?')).toBeVisible();
+  await page.getByRole('button', { name: '확인', exact: true }).click();
+  await expect
+    .poll(() => logs.filter((line) => line.includes('[시나리오] 게시판 등록')).length)
+    .toBe(1);
+});
+
 test('@smoke 일치하는 결과가 없으면 원문 안내 문구를 보여 준다', async ({ page }) => {
   await page.goto('/community/boards');
 

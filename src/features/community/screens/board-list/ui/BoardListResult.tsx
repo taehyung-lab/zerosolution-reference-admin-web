@@ -8,20 +8,25 @@ import { PageSizeControl } from '@/shared/ui/patterns/PageSizeControl';
 import { ResultToolbar } from '@/shared/ui/patterns/ResultToolbar';
 import { ResultTotal } from '@/shared/ui/patterns/ResultTotal';
 import { SortControl } from '@/shared/ui/patterns/SortControl';
+import { Button } from '@/shared/ui/primitives/Button';
 import type { useBoardListResult } from './useBoardListResult';
 
 /**
- * toolbar 우측은 원장 11행의 `등록` 하나뿐이지만 등록 화면 route 가 이 저장소에 없다.
- * 목적지 없는 버튼을 놓으면 구현 누락을 감추므로 slot 을 비워 둔다(차단된 요구사항 R12).
+ * toolbar 우측은 원장 11행의 `등록` 하나뿐이다(일괄변경 없음, 2026-09-10 사용자 확정).
+ * 행 클릭은 원문 51행의 `특정 행 클릭시, 조회 화면으로 이동` 이다. 두 목적지 route 는 caller 가 준다.
  */
 export function BoardListResult({
   data,
   total,
   result,
+  onActivate,
+  onCreate,
 }: {
   readonly data: ListResultData<BoardRow>;
   readonly total: number;
   readonly result: ReturnType<typeof useBoardListResult>;
+  readonly onActivate: (boardId: string) => void;
+  readonly onCreate: () => void;
 }) {
   const { t } = useTranslation('community');
 
@@ -35,6 +40,7 @@ export function BoardListResult({
             <SortControl label={t('board.result.sort')} {...result.sort} />
           </>
         }
+        right={<Button onClick={onCreate}>{t('board.result.create')}</Button>}
       />
       <ListResult
         data={data}
@@ -52,7 +58,12 @@ export function BoardListResult({
           />
         }
       >
-        <DataTable rows={data.rows} columns={result.columns} getRowId={(row) => row.id} />
+        <DataTable
+          rows={data.rows}
+          columns={result.columns}
+          getRowId={(row) => row.id}
+          onRowActivate={(row) => onActivate(row.id)}
+        />
       </ListResult>
     </>
   );

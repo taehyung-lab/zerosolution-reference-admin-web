@@ -4,15 +4,22 @@ import type { BoardListSearch } from '../model/board-list-search';
 import { TestQueryLocaleProvider } from '@/test/query-locale';
 import { BoardListScreen } from './BoardListScreen';
 
-/** route 가 넘기는 것은 sparse search 다. 해소는 화면이 한다. */
+/** route 가 넘기는 것은 sparse search 와 이동 callback 이다. 해소는 화면이 한다. */
 function renderScreen(sparse: BoardListSearch = {}) {
   const onSearchChange = vi.fn();
+  const onActivate = vi.fn();
+  const onCreate = vi.fn();
   render(
     <TestQueryLocaleProvider>
-      <BoardListScreen search={sparse} onSearchChange={onSearchChange} />
+      <BoardListScreen
+        search={sparse}
+        onSearchChange={onSearchChange}
+        onActivate={onActivate}
+        onCreate={onCreate}
+      />
     </TestQueryLocaleProvider>,
   );
-  return onSearchChange;
+  return { onSearchChange, onActivate, onCreate };
 }
 
 describe('BoardListScreen', () => {
@@ -59,7 +66,7 @@ describe('BoardListScreen', () => {
   });
 
   it('활성 정렬 헤더를 누르면 방향만 바뀐 검색으로 나간다', async () => {
-    const onSearchChange = renderScreen();
+    const { onSearchChange } = renderScreen();
     await screen.findByRole('cell', { name: 'Reference Board 1' });
 
     fireEvent.click(screen.getByRole('button', { name: '등록일' }));
@@ -70,7 +77,7 @@ describe('BoardListScreen', () => {
   });
 
   it('검색을 제출하면 입력한 조건이 첫 페이지로 커밋된다', async () => {
-    const onSearchChange = renderScreen();
+    const { onSearchChange } = renderScreen();
     await screen.findByRole('cell', { name: 'Reference Board 1' });
 
     fireEvent.change(screen.getByRole('textbox', { name: '검색어' }), {
@@ -86,7 +93,7 @@ describe('BoardListScreen', () => {
   });
 
   it('초기화는 조건을 비운 URL 로 나가고 idle 표식을 만들지 않는다', async () => {
-    const onSearchChange = renderScreen({ keywords: [{ field: 'name', value: 'Reference' }] });
+    const { onSearchChange } = renderScreen({ keywords: [{ field: 'name', value: 'Reference' }] });
     await screen.findByRole('cell', { name: 'Reference Board 1' });
 
     fireEvent.click(screen.getByRole('button', { name: '초기화' }));
@@ -101,7 +108,7 @@ describe('BoardListScreen', () => {
   });
 
   it('구분에서 일반을 해제하면 상담만 커밋한다 — 빈 배열이 전체다', async () => {
-    const onSearchChange = renderScreen();
+    const { onSearchChange } = renderScreen();
     await screen.findByRole('cell', { name: 'Reference Board 1' });
 
     const group = screen.getByRole('group', { name: '구분' });
@@ -126,7 +133,7 @@ describe('BoardListScreen', () => {
   });
 
   it('권한 쓰기를 고르면 URL 에 남고, 전체로 되돌리면 조건이 사라진다', async () => {
-    const onSearchChange = renderScreen();
+    const { onSearchChange } = renderScreen();
     await screen.findByRole('cell', { name: 'Reference Board 1' });
 
     const group = screen.getByRole('group', { name: '권한' });
@@ -149,8 +156,28 @@ describe('BoardListScreen', () => {
     });
   });
 
+  it('행을 클릭하면 그 게시판의 조회로 나간다 — 원문 51행', async () => {
+    const { onActivate } = renderScreen();
+    const cell = await screen.findByRole('cell', { name: 'Reference Board 5' });
+
+    fireEvent.click(cell);
+
+    expect(onActivate).toHaveBeenCalledWith('reference-board-5');
+  });
+
+  it('toolbar 우측의 등록을 누르면 등록 화면으로 나간다 — 원문 43행', async () => {
+    const { onCreate, onActivate } = renderScreen();
+    await screen.findByRole('cell', { name: 'Reference Board 1' });
+
+    fireEvent.click(screen.getByRole('button', { name: '등록' }));
+
+    expect(onCreate).toHaveBeenCalledTimes(1);
+    // 버튼은 행 안에 없으므로 행 활성화가 함께 발생하지 않는다.
+    expect(onActivate).not.toHaveBeenCalled();
+  });
+
   it('구분 전체를 다시 고르면 조건이 URL 에서 사라진다', async () => {
-    const onSearchChange = renderScreen({ categories: ['COUNSEL'] });
+    const { onSearchChange } = renderScreen({ categories: ['COUNSEL'] });
     await screen.findByRole('cell', { name: 'Reference Board 5' });
 
     const group = screen.getByRole('group', { name: '구분' });

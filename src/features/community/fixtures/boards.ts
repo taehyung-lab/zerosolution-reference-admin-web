@@ -1,4 +1,7 @@
+import { ApiError } from '@/api/error';
 import type {
+  BoardChangeLog,
+  BoardDetail,
   BoardListPage,
   BoardListRequest,
   BoardRow,
@@ -127,11 +130,38 @@ function matches(row: BoardRow, request: BoardListRequest): boolean {
   )
     return false;
   if (request.types?.length && !request.types.includes(row.type)) return false;
-  if (request.categories?.length && !request.categories.includes(row.category)) return false;
+  // 레코드의 구분(3개)이 검색 필터의 구분(2개)보다 넓어 includes 로 좁히지 않는다.
+  if (request.categories?.length && !request.categories.some((value) => value === row.category))
+    return false;
   if (request.usages?.length && !request.usages.includes(row.usage)) return false;
   if (request.writePermission !== undefined && row.writePermission !== request.writePermission) return false;
   if (request.readPermission !== undefined && row.readPermission !== request.readPermission) return false;
   return true;
+}
+
+/**
+ * 업데이트 내역 예시. 열 구성은 공용 3열 archetype 을 따르고 field 코드는 서버 vocabulary 가 아니라
+ * 화면이 이미 아는 이름을 빌린 자리표시자다. 실제 changeLog DTO 는 미확인이다.
+ */
+const changeLogs: Readonly<Record<string, readonly BoardChangeLog[]>> = {
+  'reference-board-1': [
+    {
+      id: 'reference-board-1-log-1',
+      updatedAt: '2026-08-21T02:40:00.000Z',
+      changes: ['name', 'writePermission'],
+      manager: 'Reference Manager',
+    },
+  ],
+};
+
+export function readBoardDetail(boardId: string): Promise<BoardDetail> {
+  const row = boards.find((board) => board.id === boardId);
+  if (row === undefined) {
+    return Promise.reject(
+      new ApiError({ kind: 'not-found', message: `board ${boardId} not found` }),
+    );
+  }
+  return Promise.resolve({ ...row, changeLogs: changeLogs[row.id] ?? [] });
 }
 
 export function readBoardListPage(request: BoardListRequest): Promise<BoardListPage> {

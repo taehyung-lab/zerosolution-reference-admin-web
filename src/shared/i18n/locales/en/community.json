@@ -3,7 +3,37 @@
     "title": "Boards",
     "breadcrumb": {
       "community": "Community",
-      "boards": "Boards"
+      "boards": "Boards",
+      "detail": "View",
+      "create": "Register",
+      "edit": "Edit"
+    },
+    "detail": {
+      "title": "Board details",
+      "section": "Board information",
+      "writePermission": "Write permission",
+      "readPermission": "Read permission",
+      "emptyValue": "-",
+      "history": "Update history",
+      "historyDate": "Updated at",
+      "historyChange": "Change",
+      "historyManager": "Manager",
+      "historyEmpty": "There is no update history.",
+      "historyUnknownField": "An unknown item was changed.",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleteConfirm": "Do you want to delete it?"
+    },
+    "form": {
+      "createTitle": "Register board",
+      "editTitle": "Edit board",
+      "section": "Board information",
+      "selectPlaceholder": "Select",
+      "errors": {
+        "category": "Select a category.",
+        "name": "Enter a board name.",
+        "writePermission": "Select a write permission."
+      }
     },
     "filter": {
       "title": "Search conditions",
@@ -42,6 +72,7 @@
     "result": {
       "pageSize": "View",
       "sort": "Sort",
+      "create": "Register",
       "empty": "No matching results.",
       "pagination": {
         "label": "Board pages",
@@ -74,7 +105,7 @@
     },
     "values": {
       "type": { "GENERAL": "General" },
-      "category": { "GENERAL": "General", "COUNSEL": "Counsel" },
+      "category": { "GENERAL": "General", "COUNSEL": "Counsel", "NOTICE": "Notice" },
       "usage": { "IN_USE": "In use", "NOT_IN_USE": "Not in use" },
       "permission": {
         "INCLUDING_GUEST": "Including guests",

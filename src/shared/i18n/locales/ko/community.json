@@ -3,7 +3,37 @@
     "title": "게시판",
     "breadcrumb": {
       "community": "커뮤니티",
-      "boards": "게시판"
+      "boards": "게시판",
+      "detail": "조회",
+      "create": "등록",
+      "edit": "수정"
+    },
+    "detail": {
+      "title": "게시판 조회",
+      "section": "게시판정보",
+      "writePermission": "쓰기 권한",
+      "readPermission": "읽기 권한",
+      "emptyValue": "-",
+      "history": "업데이트 내역",
+      "historyDate": "업데이트일",
+      "historyChange": "업데이트 사항",
+      "historyManager": "담당자",
+      "historyEmpty": "업데이트 내역이 없습니다.",
+      "historyUnknownField": "알 수 없는 항목이 변경되었습니다.",
+      "edit": "수정",
+      "delete": "삭제",
+      "deleteConfirm": "삭제하시겠습니까?"
+    },
+    "form": {
+      "createTitle": "게시판 등록",
+      "editTitle": "게시판 수정",
+      "section": "게시판정보",
+      "selectPlaceholder": "선택",
+      "errors": {
+        "category": "구분을 선택해주세요.",
+        "name": "게시판명을 입력해주세요.",
+        "writePermission": "쓰기 권한을 선택해주세요."
+      }
     },
     "filter": {
       "title": "검색 조건",
@@ -42,6 +72,7 @@
     "result": {
       "pageSize": "보기",
       "sort": "정렬",
+      "create": "등록",
       "empty": "일치하는 검색결과가 없습니다.",
       "pagination": {
         "label": "게시판 목록 페이지",
@@ -74,7 +105,7 @@
     },
     "values": {
       "type": { "GENERAL": "일반" },
-      "category": { "GENERAL": "일반", "COUNSEL": "상담" },
+      "category": { "GENERAL": "일반", "COUNSEL": "상담", "NOTICE": "공지사항" },
       "usage": { "IN_USE": "사용", "NOT_IN_USE": "사용안함" },
       "permission": {
         "INCLUDING_GUEST": "비회원 포함",
