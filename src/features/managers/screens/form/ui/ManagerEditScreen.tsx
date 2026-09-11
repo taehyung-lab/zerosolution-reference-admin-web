@@ -11,7 +11,7 @@ import { ErrorTrace } from "@/shared/ui/patterns/ErrorTrace";
 import { PageHeader } from "@/shared/ui/patterns/PageHeader";
 import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import { safeErrorKey } from "../../../lib/error-copy";
+import { safeErrorKey } from "@/api/error-copy";
 import { toManagerEditDefaults } from "../model/manager-form-defaults";
 import { toManagerUpdateRequest } from "../model/manager-form-request";
 import {

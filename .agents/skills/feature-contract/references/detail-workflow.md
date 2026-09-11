@@ -42,12 +42,14 @@ Select only the surfaces the current detail uses.
 
 | 파일 | 담는 것 |
 | --- | --- |
+| `<domain>/api/*queries.ts` 의 상세 options | route loader 가 기다리므로 `meta.progress` 를 선언하지 않는다(대기 표면은 `RoutePending`). 목록 options 와 다르다. 현재 이탈: 리허설 운영자 `managerDetailQuery`·`managerEditDetailQuery`(`managers/api/queries.ts`)는 loader 없는 리허설 화면이 쓰므로 `blockingProgress` 를 유지한다 |
 | `<domain>/api/use*Detail.ts` | 위 [Detail ownership](#detail-ownership) 의 options + 실행 훅. `locale` 은 `UiLocale` |
+| `src/routes/_app/<path>/$<id>/index.tsx`(·`edit.tsx`) | `loader: ({ context, params, preload }) => loadRequired(...)` + 화면 mount([router 형태](router.md#형태)). 검사기가 loader 유무를 본다 |
 | `model/*-requests.ts` | 액션의 요청 경계(액션이 있을 때) |
 | `model/*-actions.ts` | 액션 가시성·확인·후속 정책(있을 때) |
 | `model/*-history.ts` | 위 표의 이력 mapper(이력이 있을 때) |
-| `ui/*DetailScreen.tsx` | 헤더·상태 경계·섹션 조립 |
-| `ui/*Section.tsx` | 섹션 하나씩. 현재 공연 상세만 이렇게 나누고 회원·운영자 상세는 Screen 안에 인라인이다 — 섹션이 둘 이상이면 나눈다 |
+| `ui/*DetailScreen.tsx` | 헤더·상태 경계·섹션 조립. 오류 문구는 `safeErrorKey(detail.error?.kind)`(`src/api/error-copy.ts`) 로 종류별 shared 문장 |
+| `ui/*Section.tsx` | 섹션 단위로 정한다: 자기 query·폼·액션을 가진 섹션은 파일로(공연 상세, 소명 처리 폼). 읽기 전용 표시 섹션은 Screen 안 인라인이 기본이고(회원·운영자·게시판 상세), 읽기 전용 섹션이 셋 이상이라 Screen 이 길어지면 파일로 묶어도 된다(소명 상세 `AppealDetailSections.tsx`). 2026-09-11 판정 |
 | `ui/*ActionForm.tsx`·`*ActionDialog.tsx` | 액션 입력(있을 때) |
 
 ## Actions and verification

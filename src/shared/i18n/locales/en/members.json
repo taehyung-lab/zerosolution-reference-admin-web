@@ -26,7 +26,10 @@
     "allTooltip": "View and manage active members.",
     "help": "About all members"
   },
-  "path": {"members": "Members", "active": "Active members"},
+  "path": {
+    "members": "Members",
+    "active": "Active members"
+  },
   "search": "Search",
   "reset": "Reset",
   "filters": {
@@ -151,7 +154,6 @@
     "content": "Counseling notes and outcome",
     "required": "Complete this required field.",
     "invalidDate": "Enter a date and time on or before today.",
-    "confirmDelete": "Delete this record?",
     "empty": "No counseling records.",
     "record": "Counseling by {{name}}",
     "types": {

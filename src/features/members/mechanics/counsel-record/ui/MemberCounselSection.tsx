@@ -49,7 +49,7 @@ export function MemberCounselSection({
       <ConfirmDialog
         open={deletion.state.kind === "confirm"}
         title={shared("alert.title")}
-        description={t("counsel.confirmDelete")}
+        description={shared("deleteConfirm.description")}
         confirmLabel={shared("bulkAction.acknowledge")}
         cancelLabel={shared("bulkAction.cancel")}
         onOpenChange={(open) => {

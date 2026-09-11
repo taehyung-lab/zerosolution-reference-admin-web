@@ -1,7 +1,7 @@
 import { homedir } from 'node:os'
 import { execFileSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
-import { dirname, isAbsolute } from 'node:path'
+import { dirname, isAbsolute, resolve } from 'node:path'
 import { checkEdit, checkStop, localPath, noteWrite, settleWrite } from './preflight.mjs'
 
 function gitToplevel(dir) {
@@ -108,9 +108,21 @@ const NVM_DIR = process.env.NVM_DIR ?? `${homedir()}/.nvm`
 const VERIFY_SCRIPTS = new Set(['lint', 'typecheck', 'typecheck:generated', 'test:unit', 'i18n:check', 'contracts:check'])
 
 /**
+ * A checkout inside this repository (a worktree under `.claude/worktrees/`): it must carry `.git`, so a
+ * `node_modules/<pkg>` with its own `lint` script is not one, and `.ai-work/` (writable without
+ * preparation) never is. Paths are compared lexically; a symlink is not resolved.
+ */
+function insideRepository(root, dir) {
+  try {
+    const local = localPath(root, dir)
+    return !local.startsWith('.ai-work/') && existsSync(resolve(root, local, '.git'))
+  } catch { return false }
+}
+
+/**
  * Test paths a reviewer may run without preparation: inside the repository's own test roots only. `.ai-work/`
  * is writable without preparation, so a test file there run as inspection would be an unattributed write
- * anywhere in the tree; absolute and parent-relative paths are refused for the same reason.
+ * anywhere in the tree; parent-relative paths and paths outside the repository are refused for the same reason.
  */
 function repositoryTestPaths(root, tokens) {
   return tokens.every((token) => {
@@ -143,8 +155,15 @@ function inspection(command, root) {
   // independent reviewer must be able to measure with them without preparing a checkpoint of its own.
   // `pnpm verify`/`api:check` regenerate files and `vitest -u` rewrites snapshots, so they stay gated.
   if (executable === 'pnpm') {
-    if (args.length === 1 && VERIFY_SCRIPTS.has(args[0])) return true
-    return args[0] === 'vitest' && args[1] === 'run' && repositoryTestPaths(root, args.slice(2))
+    // `-C <dir>`/`--dir <dir>` selects a checkout inside this repository (a reviewed worktree), like `git -C`.
+    let rest = args
+    if (rest[0] === '-C' || rest[0] === '--dir') {
+      const dir = rest[1]
+      if (dir === undefined || !insideRepository(root, dir)) return false
+      rest = rest.slice(2)
+    }
+    if (rest.length === 1 && VERIFY_SCRIPTS.has(rest[0])) return true
+    return rest[0] === 'vitest' && rest[1] === 'run' && repositoryTestPaths(root, rest.slice(2))
   }
   if (executable === 'node' && args[0] === 'node_modules/vitest/vitest.mjs' && args[1] === 'run') {
     return repositoryTestPaths(root, args.slice(2))

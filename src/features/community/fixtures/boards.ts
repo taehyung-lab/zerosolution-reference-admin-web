@@ -1,7 +1,12 @@
+import { ApiError } from '@/api/error';
 import type {
+  BoardCategoryItem,
+  BoardChangeLog,
+  BoardDetail,
   BoardListPage,
   BoardListRequest,
   BoardRow,
+  BoardSettings,
   BoardSortKey,
 } from '../model/board';
 
@@ -127,11 +132,108 @@ function matches(row: BoardRow, request: BoardListRequest): boolean {
   )
     return false;
   if (request.types?.length && !request.types.includes(row.type)) return false;
-  if (request.categories?.length && !request.categories.includes(row.category)) return false;
+  // 레코드의 구분(3개)이 검색 필터의 구분(2개)보다 넓어 includes 로 좁히지 않는다.
+  if (request.categories?.length && !request.categories.some((value) => value === row.category))
+    return false;
   if (request.usages?.length && !request.usages.includes(row.usage)) return false;
   if (request.writePermission !== undefined && row.writePermission !== request.writePermission) return false;
   if (request.readPermission !== undefined && row.readPermission !== request.readPermission) return false;
   return true;
+}
+
+/**
+ * 조회·수정 화면의 설정 값 예시 — Figma 9.1.2/9.1.4 frame 이 보여 주는 값(1:1문의·공지사항)을 흉내 낸다.
+ * 목록 행이 가진 값(구분·이름·권한·사용상태)은 행에서 오고, 나머지 설정은 여기 기본값에 행별 차이를 덧씌운다.
+ * 실제 DTO 는 미확인이다.
+ */
+const baseSettings: Omit<BoardSettings, 'type' | 'category' | 'name' | 'write' | 'read' | 'usage'> = {
+  categoryUsage: 'IN_USE',
+  postTitleMode: 'AUTHOR_INPUT',
+  managerTitles: [],
+  html: 'IN_USE',
+  attachment: 'IN_USE',
+  attachmentLimitMb: 1,
+  popup: 'IN_USE',
+  rating: 'NOT_IN_USE',
+  comment: 'IN_USE',
+  secretComment: 'PRIVATE_ONLY',
+  commentNotice: 'EMAIL',
+  viewCountDisplay: 'IN_USE',
+  viewCountDuplicate: 'NOT_IN_USE',
+};
+
+const settingOverrides: Readonly<Record<string, Partial<BoardSettings>>> = {
+  // Figma 9.1.4 수정 frame: 공지사항, 쓰기 운영자·읽기 전체회원, 카테고리 사용안함, 댓글·조회수 표시 사용안함, 10MB.
+  'reference-board-2': {
+    categoryUsage: 'NOT_IN_USE',
+    attachmentLimitMb: 10,
+    comment: 'NOT_IN_USE',
+    viewCountDisplay: 'NOT_IN_USE',
+  },
+  'reference-board-4': {
+    postTitleMode: 'MANAGER_TITLES',
+    managerTitles: ['궁금해요', '건의합니다'],
+    rating: 'LIKE_DISLIKE_AND_RATING',
+  },
+};
+
+/** 회원등급 권한은 등급이 따라온다(Figma cascade). 행의 권한 값에서 설정 모양으로 옮긴다. */
+const permission = (value: BoardRow['writePermission']): BoardSettings['write'] =>
+  value === 'MEMBER_GRADE' ? { permission: value, memberGrade: 'GENERAL_MEMBER' } : { permission: value };
+
+/** Figma 9.1.5.1 팝업의 예시 행. 게시판마다 다르다는 사실만 흉내 낸다. */
+const categories: Readonly<Record<string, readonly BoardCategoryItem[]>> = {
+  'reference-board-1': [
+    { id: 'reference-board-1-category-1', name: '회원가입', usage: 'IN_USE' },
+    { id: 'reference-board-1-category-2', name: '티켓인증', usage: 'IN_USE' },
+    { id: 'reference-board-1-category-3', name: '스케셜콘텐츠', usage: 'IN_USE' },
+  ],
+};
+
+/**
+ * 업데이트 이력 예시 — Figma 9.1.2: `등록` 한 줄과 `수정` + 변경 목록(항목 : 이전 > 이후). field 는 BoardSettings
+ * 의 키이고 값은 화면 어휘 코드다. 실제 changeLog DTO 는 미확인이다.
+ */
+const changeLogs: Readonly<Record<string, readonly BoardChangeLog[]>> = {
+  'reference-board-1': [
+    {
+      id: 'reference-board-1-log-2',
+      updatedAt: '2026-08-21T02:40:00.000Z',
+      kind: 'UPDATE',
+      changes: [
+        { field: 'name', before: 'Reference Board', after: 'Reference Board 1' },
+        { field: 'write', before: 'INCLUDING_GUEST', after: 'MANAGER' },
+        { field: 'html', before: 'NOT_IN_USE', after: 'IN_USE' },
+      ],
+      manager: 'Reference Manager',
+    },
+    {
+      id: 'reference-board-1-log-1',
+      updatedAt: '2026-01-04T00:12:00.000Z',
+      kind: 'CREATE',
+      changes: [],
+      manager: 'Reference Manager',
+    },
+  ],
+};
+
+export function readBoardDetail(boardId: string): Promise<BoardDetail> {
+  const row = boards.find((board) => board.id === boardId);
+  if (row === undefined) {
+    return Promise.reject(
+      new ApiError({ kind: 'not-found', message: `board ${boardId} not found` }),
+    );
+  }
+  const { writePermission, readPermission, ...rest } = row;
+  return Promise.resolve({
+    ...rest,
+    ...baseSettings,
+    write: permission(writePermission),
+    read: permission(readPermission),
+    ...settingOverrides[row.id],
+    categories: categories[row.id] ?? [],
+    changeLogs: changeLogs[row.id] ?? [],
+  });
 }
 
 export function readBoardListPage(request: BoardListRequest): Promise<BoardListPage> {

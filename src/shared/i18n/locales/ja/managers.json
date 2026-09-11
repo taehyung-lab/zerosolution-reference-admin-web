@@ -1,11 +1,16 @@
 {
-  "path": {"settings": "設定", "managers": "運営者", "detail": "照会", "create": "登録", "edit": "修正"},
+  "path": {
+    "settings": "設定",
+    "managers": "運営者",
+    "detail": "照会",
+    "create": "登録",
+    "edit": "修正"
+  },
   "title": "運営者",
   "detailTitle": "運営者照会",
   "detail": {
     "error": "運営者情報を読み込めませんでした。",
     "notFound": "運営者が見つかりません。",
-
     "section": "運営者情報",
     "type": "種別",
     "id": "ID",
@@ -40,7 +45,6 @@
       "false": "いいえ"
     }
   },
-
   "search": "検索",
   "reset": "リセット",
   "filters": {
@@ -115,8 +119,6 @@
   "form": {
     "createTitle": "運営者登録",
     "editTitle": "運営者修正",
-
-
     "section": "運営者情報",
     "type": "種別",
     "permission": "権限",
@@ -172,7 +174,6 @@
     "rejectionReason": "拒否理由",
     "reasonRequired": "拒否理由を入力してください。",
     "delete": "削除",
-    "deleteDescription": "削除しますか？",
     "activate": "有効化",
     "activateDescription": "有効な状態に変更しますか？",
     "deactivate": "無効化",

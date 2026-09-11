@@ -31,7 +31,7 @@ describe("performance detail", () => {
     ).not.toBeInTheDocument();
     expect(screen.getByText("Reference Gate A")).toBeVisible();
     expect(screen.getByText("Reference Area A")).toBeVisible();
-    const history = screen.getByRole("region", { name: "업데이트 이력" });
+    const history = screen.getByRole("region", { name: "업데이트 내역" });
     expect(
       within(history).getByText("안내 도면: - > reference-admission.txt"),
     ).toBeVisible();

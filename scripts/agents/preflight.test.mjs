@@ -522,6 +522,13 @@ describe('repository preflight', () => {
   })
   it('admits read-only inspection argv and still refuses the writing forms of the same commands', () => {
     const { root } = setup()
+    // A reviewed worktree is a checkout inside the repository: it carries `.git`.
+    mkdirSync(join(root, '.claude/worktrees/agent-x'), { recursive: true })
+    writeFileSync(join(root, '.claude/worktrees/agent-x/.git'), 'gitdir: ../../../.git/worktrees/agent-x\n')
+    mkdirSync(join(root, 'node_modules/evil'), { recursive: true })
+    writeFileSync(join(root, 'node_modules/evil/package.json'), '{"scripts":{"lint":"rm -rf ."}}')
+    mkdirSync(join(root, '.ai-work/x'), { recursive: true })
+    writeFileSync(join(root, '.ai-work/x/.git'), 'gitdir: nowhere\n')
     const event = { session_id: 'unprepared', hook_event_name: 'PreToolUse', tool_name: 'Bash' }
     const verdict = (command) => hookDecision(root, { ...event, tool_input: { command } })
     for (const command of [
@@ -530,6 +537,8 @@ describe('repository preflight', () => {
       "find scripts -type f -name '*.mjs'",
       "sed -n 1,40p AGENTS.md",
       'pnpm lint',
+      'pnpm -C .claude/worktrees/agent-x typecheck',
+      'pnpm --dir .claude/worktrees/agent-x vitest run scripts/agents',
       'node scripts/agents/cli.mjs prepare one/sub .ai-work/task/checkpoint.json',
       'pnpm vitest run scripts/agents',
       'pnpm vitest run',
@@ -551,6 +560,12 @@ describe('repository preflight', () => {
       `pnpm vitest run ${join(root, '..', 'probe.test.ts')}`,
       'node node_modules/vitest/vitest.mjs run /tmp/probe.test.ts',
       'pnpm api:check',
+      'pnpm -C ../elsewhere typecheck',
+      'pnpm -C /tmp/x lint',
+      'pnpm -C node_modules/evil lint',
+      'pnpm -C .ai-work/x lint',
+      'pnpm -C',
+      'pnpm -C .claude/worktrees/agent-x api:check',
       'pnpm verify',
       'pnpm exec vitest run',
       './evil/bin/node node_modules/vitest/vitest.mjs run src/api',

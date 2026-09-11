@@ -26,7 +26,10 @@
     "allTooltip": "활성회원을 조회 및 관리합니다.",
     "help": "전체회원 안내"
   },
-  "path": {"members": "회원", "active": "활성회원"},
+  "path": {
+    "members": "회원",
+    "active": "활성회원"
+  },
   "search": "검색",
   "reset": "초기화",
   "filters": {
@@ -151,7 +154,6 @@
     "content": "상담내용 및 처리결과",
     "required": "필수 항목을 입력해주세요.",
     "invalidDate": "오늘 이전 또는 오늘의 날짜와 시간을 입력해주세요.",
-    "confirmDelete": "삭제하시겠습니까?",
     "empty": "등록된 상담이 없습니다.",
     "record": "{{name}} 상담",
     "types": {

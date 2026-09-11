@@ -5,4 +5,6 @@ import type { BoardListRequest } from '../model/board';
 export const communityQueryKeys = {
   boardList: (locale: string, request: BoardListRequest) =>
     [...localizedQueryKey(locale, 'community', 'boards', 'list'), request] as const,
+  boardDetail: (locale: string, boardId: string) =>
+    [...localizedQueryKey(locale, 'community', 'boards', 'detail'), boardId] as const,
 };

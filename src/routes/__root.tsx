@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next'
 import type { AppRouterContext } from '@/app/router/router'
 import { isRequiredNotFoundData } from '@/app/router/required-loader'
 import { NotFoundPage, UnexpectedErrorPage } from '@/app/error-boundary/StatusPage'
-import { ApiError, type ApiErrorKind } from '@/api/error'
+import { ApiError } from '@/api/error'
+import { safeErrorKey } from '@/api/error-copy'
 
 export const Route = createRootRouteWithContext<AppRouterContext>()({
   component: RootLayout,
@@ -26,7 +27,7 @@ export function RootErrorComponent({ error, reset }: ErrorComponentProps) {
   return (
     <>
       <UnexpectedErrorPage
-        description={apiError ? t(rootSafeErrorKey(apiError.kind)) : t('error.unexpected.body')}
+        description={apiError ? t(safeErrorKey(apiError.kind)) : t('error.unexpected.body')}
         error={apiError}
         onRetry={reset}
       />
@@ -37,23 +38,6 @@ export function RootErrorComponent({ error, reset }: ErrorComponentProps) {
       ) : null}
     </>
   )
-}
-
-/** Kinds the unexpected-error page can receive: the incident and not-found kinds returned above. */
-type RootErrorKind = Exclude<ApiErrorKind, 'forbidden' | 'unauthorized' | 'not-found'>
-
-function rootSafeErrorKey(kind: RootErrorKind) {
-  switch (kind) {
-    case 'network': return 'error.kind.network' as const
-    case 'timeout': return 'error.kind.timeout' as const
-    case 'cancelled': return 'error.kind.cancelled' as const
-    case 'business': return 'error.kind.business' as const
-    case 'validation': return 'error.kind.validation' as const
-    case 'conflict': return 'error.kind.conflict' as const
-    case 'rate-limited': return 'error.kind.rateLimited' as const
-    case 'server-error': return 'error.kind.serverError' as const
-    case 'contract': return 'error.kind.contract' as const
-  }
 }
 
 export function RootNotFoundComponent({ data }: Pick<NotFoundRouteProps, 'data'>) {

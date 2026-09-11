@@ -3,7 +3,87 @@
     "title": "Boards",
     "breadcrumb": {
       "community": "Community",
-      "boards": "Boards"
+      "boards": "Boards",
+      "detail": "View",
+      "create": "Register",
+      "edit": "Edit"
+    },
+    "detail": {
+      "title": "Board details",
+      "section": "Basic information",
+      "emptyValue": "-",
+      "megabytes": "{{value}} MB",
+      "history": "Update history",
+      "historyDate": "Updated",
+      "historyChange": "Changes",
+      "historyManager": "Manager",
+      "historyEmpty": "No update history.",
+      "historyCreated": "Registered",
+      "historyUpdated": "Updated",
+      "historyLine": "{{field}} : {{before}} > {{after}}",
+      "historyUnknownField": "An unknown field changed.",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "form": {
+      "createTitle": "Register board",
+      "editTitle": "Edit board",
+      "section": "Basic information",
+      "selectPlaceholder": "Select",
+      "namePlaceholder": "Board name (up to {{max}} characters)",
+      "permission": "Permission",
+      "write": "Write",
+      "read": "Read",
+      "writeMemberGrade": "Write member grade",
+      "readMemberGrade": "Read member grade",
+      "categoryUsage": "Category",
+      "writing": "Writing settings",
+      "postTitleMode": "Post title",
+      "managerTitles": "Titles",
+      "managerTitlePlaceholder": "Title (up to {{max}} characters)",
+      "addTitle": "Add",
+      "removeTitle": "Remove {{title}}",
+      "html": "HTML",
+      "attachment": "Attachments",
+      "attachmentLimitMb": "Attachment size limit",
+      "attachmentLimitHint": "MB (max {{max}}MB)",
+      "popup": "Popup",
+      "feedback": "Feedback settings",
+      "rating": "Rating",
+      "comment": "Comments",
+      "secretComment": "Private comments",
+      "commentNotice": "Comment notifications",
+      "viewCount": "View count settings",
+      "viewCountDisplay": "Display",
+      "viewCountDuplicate": "Count duplicates",
+      "errors": {
+        "category": "Select a category.",
+        "name": "Enter the board name.",
+        "nameLength": "The board name must be 30 characters or fewer.",
+        "writePermission": "Select the write permission.",
+        "readPermission": "Select the read permission.",
+        "memberGrade": "Select the member grade.",
+        "categoryUsage": "Select whether categories are used.",
+        "postTitleMode": "Select how post titles are set.",
+        "managerTitles": "Add at least one title.",
+        "html": "Select whether HTML is used.",
+        "attachment": "Select whether attachments are used.",
+        "attachmentLimitMb": "Enter a size limit between 1 and 10 MB.",
+        "popup": "Select whether the popup is used.",
+        "rating": "Select the rating mode.",
+        "comment": "Select whether comments are used.",
+        "secretComment": "Select the private comment mode.",
+        "commentNotice": "Select the comment notification mode.",
+        "viewCountDisplay": "Select whether the view count is displayed.",
+        "viewCountDuplicate": "Select whether duplicates are counted.",
+        "usage": "Select the usage status.",
+        "managerTitleLength": "Titles must be 300 characters or fewer."
+      },
+      "titleDraft": {
+        "empty": "Enter a title, then press Add.",
+        "duplicate": "This title is already added.",
+        "pending": "Press Add to include the typed title in the save."
+      }
     },
     "filter": {
       "title": "Search conditions",
@@ -29,9 +109,15 @@
         "remove": "Remove {{value}}",
         "chip": "{{field}} : {{value}}"
       },
-      "type": { "label": "Type" },
-      "category": { "label": "Category" },
-      "usage": { "label": "Usage" },
+      "type": {
+        "label": "Type"
+      },
+      "category": {
+        "label": "Category"
+      },
+      "usage": {
+        "label": "Usage"
+      },
       "permission": {
         "label": "Permission",
         "write": "Write",
@@ -42,6 +128,7 @@
     "result": {
       "pageSize": "View",
       "sort": "Sort",
+      "create": "Register",
       "empty": "No matching results.",
       "pagination": {
         "label": "Board pages",
@@ -73,9 +160,18 @@
       "updatedAt": "Last updated date"
     },
     "values": {
-      "type": { "GENERAL": "General" },
-      "category": { "GENERAL": "General", "COUNSEL": "Counsel" },
-      "usage": { "IN_USE": "In use", "NOT_IN_USE": "Not in use" },
+      "type": {
+        "GENERAL": "General"
+      },
+      "category": {
+        "GENERAL": "General",
+        "COUNSEL": "Counsel",
+        "NOTICE": "Notice"
+      },
+      "usage": {
+        "IN_USE": "In use",
+        "NOT_IN_USE": "Not in use"
+      },
       "permission": {
         "INCLUDING_GUEST": "Including guests",
         "ALL_MEMBERS": "All members",
@@ -85,7 +181,50 @@
       "periodType": {
         "registeredAt": "Registered date",
         "updatedAt": "Last updated date"
+      },
+      "memberGrade": {
+        "GENERAL_MEMBER": "Regular member",
+        "SPECIAL_MEMBER": "Special member"
+      },
+      "postTitleMode": {
+        "MANAGER_TITLES": "Titles set by managers",
+        "AUTHOR_INPUT": "Entered by the author",
+        "NOT_IN_USE": "Not used"
+      },
+      "rating": {
+        "NOT_IN_USE": "Not used",
+        "LIKE_DISLIKE": "Like & dislike",
+        "RATING": "Rating",
+        "LIKE_DISLIKE_AND_RATING": "Like & dislike and rating"
+      },
+      "secretComment": {
+        "PUBLIC_ONLY": "Public comments only",
+        "PRIVATE_ONLY": "Private comments only",
+        "PUBLIC_AND_PRIVATE": "Public and private comments"
+      },
+      "commentNotice": {
+        "NOT_IN_USE": "Not used",
+        "EMAIL": "By email",
+        "SMS_SNS": "By SMS/SNS",
+        "EMAIL_OR_SMS_SNS_CHOICE": "Email or SMS/SNS by choice"
       }
+    },
+    "categories": {
+      "open": "Category settings",
+      "title": "Category settings",
+      "heading": "Categories",
+      "add": "Add",
+      "order": "Order",
+      "name": "Category name",
+      "nameFor": "Category name #{{order}}",
+      "namePlaceholder": "Up to {{max}} characters",
+      "usage": "Status",
+      "usageFor": "Status #{{order}}",
+      "remove": "Remove",
+      "removeFor": "Remove category #{{order}}",
+      "close": "Close",
+      "moveUp": "Move item {{order}} up",
+      "moveDown": "Move item {{order}} down"
     }
   }
 }
