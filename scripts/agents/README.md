@@ -9,7 +9,7 @@ Hooks verify routing, declarations and output scope, never policy truth or compr
 
 Classify **grain** then kind before loading path skills. A whole screen, one component, and one
 file-structure request share the loop and differ in entry, truth, and scope. Drill is opt-in
-(the user says 드릴, `work.kind` is `drill`, or this repository's document loop is under test);
+(the user says 드릴, or this repository's document loop is under test — checkpoint `work.kind` stays `workflow` or `infrastructure`, never `drill`);
 an existing route does not force it.
 
 | grain | kind | entry | truth source | scope |

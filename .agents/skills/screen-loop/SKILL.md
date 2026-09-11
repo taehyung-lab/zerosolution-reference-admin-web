@@ -28,12 +28,12 @@ description: Use when a request asks to implement something ("** 구현해주세
 
 알갱이가 안 갈리면 질문하지 말고, 요청 문장에 화면 이름이 있으면 screen, 컴포넌트 이름이면 component, `형태`/`구조`/`폴더`면 structure로 두고 시작 게이트에 적는다.
 
-기본 모드는 **implement**. 드릴은 사용자가 "드릴"이라고 했거나 checkpoint `work.kind`가 `drill`이거나, **이 저장소의 문서 루프를 시험**하라고 한 때만이다. 기존 route만으로 드릴하지 않는다.
+기본 모드는 **implement**. 드릴은 사용자가 "드릴"이라고 했거나 **이 저장소의 문서 루프를 시험**하라고 한 때만이다. 기존 route만으로 드릴하지 않는다. checkpoint `work.kind`는 화면 드릴이면 `workflow`, 문서·게이트만이면 `infrastructure`다. `drill`은 허용된 kind가 아니다(`prepare`가 거부한다).
 
 | 모드 | 조건 | 뜻 |
 | --- | --- | --- |
 | **implement** | 기본. 코드를 만들어 달라는 요청 | 알갱이에 맞는 증거·skill로 설계→구현→검증. 같은 workflow의 형제(`cli bundle <id>` `examples`)가 있으면 N4′를 보조 답지로 쓴다 |
-| **drill** | 사용자 요청 · `work.kind: "drill"` · 문서 루프 시험 | 대상 feature·route 코드를 N3까지 열지 않는다. 문서만으로 설계한 뒤 현재 구현과 비교해 **문서·skill·게이트**만 고친다. 제품 코드는 바꾸지 않는다 |
+| **drill** | 사용자 요청 · 문서 루프 시험 | 대상 feature·route 코드를 N3까지 열지 않는다. 문서만으로 설계한 뒤 현재 구현과 비교해 **문서·skill·게이트**만 고친다. 제품 코드는 바꾸지 않는다 |
 
 게시판·전시 드릴은 route가 없는 implement였고 형제 화면(운영자·회원 목록)을 답지로 대조해 차이 표를 만들었다.
 답지 대조는 drill 전용이 아니다. 알갱이·종류·모드·답지를 시작 게이트 공개에 한 줄로 적는다.
@@ -80,7 +80,7 @@ description: Use when a request asks to implement something ("** 구현해주세
 읽어야 할 **소유자 집합**이고 등급이 아니다.
 
 **나가는 조건(2026-09-11 게시판 드릴 실패로 추가):** 구현할 surface 의 원장 행에서 `Figma 관찰` 열이 화면 구성(항목 집합·순서·
-그룹·초기 상태·활성 조건·버튼)을 **열거하지 않으면** build 를 시작할 수 없다 — 행이 없거나, 셀이 `frame 존재`·`(대기)`·`(미판독)`
+그룹·초기 상태·활성 조건·버튼)을 **열거하지 않으면** implement 를 시작할 수 없다 — 행이 없거나, 셀이 `frame 존재`·`(대기)`·`(미판독)`
 같은 존재 표시만이거나, 항목을 세지 않는 산문만 있는 경우가 모두 해당한다. 근거는 판독 규칙의 [구성은 Figma frame 만이 열거한다](../../../docs/reference/zero-sol/README.md#판독-규칙)
 이고, 그 규칙대로 같은 사실이 어긋나면 여전히 Notion 이 이긴다(위 우선순위 문장과 충돌하지 않는다 — 이 조건은 충돌이 아니라
 **미관찰**을 막는다). frame 을 실측(Figma MCP, 막히면 `aside repl`)해 관찰 열을 채운 뒤 N3 으로 간다. E2(`contract.rows` 비면 진행)와는
