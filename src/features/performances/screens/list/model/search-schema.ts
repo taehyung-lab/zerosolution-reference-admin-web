@@ -73,9 +73,10 @@ export const performanceSearchFields = {
     defaultValue: "registeredAt",
     kind: "view",
   },
+  // 방향 기본값 desc: 원문이 적지 않아 2026-09-11 사용자 확정(판정 문서 질문 3, 목록 공통).
   sortDirection: {
     schema: z.enum(["asc", "desc"]).optional().catch(undefined),
-    defaultValue: undefined,
+    defaultValue: "desc",
     kind: "view",
   },
   page: { schema: optionalPositiveInteger, defaultValue: 1, kind: "view" },

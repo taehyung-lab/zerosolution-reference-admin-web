@@ -116,7 +116,7 @@ describe("performance list pre-request consumer", () => {
         sortType: "registeredAt",
       }),
     );
-    expect(readPage.mock.calls[0]![0].sortDirection).toBeUndefined();
+    expect(readPage.mock.calls[0]![0].sortDirection).toBe("desc");
     expect(within(table).queryByRole("checkbox")).not.toBeInTheDocument();
     expect(within(table).getByText("101")).toBeInTheDocument();
     expect(

@@ -29,7 +29,7 @@
 | 검색어 대상 select + chip | **`KeywordFilterField` composite**(optional `field` slot) | 대상 有 28 / 無 2(통합검색·다국어). `useKeywordDraft<TField extends string \| undefined>`가 두 변형 표현 | 위와 동일 |
 | 중복 키워드 거부 | **보류** (초안 오류 수정) | "중복 키워드 검색 허용 안함"은 회원 공통 상세의 활동정보 검색 1곳뿐. 30 화면 반복은 "다중 키워드 검색 허용" | 회원 공통 구현 시 feature validation으로 시작 |
 | 페이지 크기 옵션 | `standardPageSizeOptions` 유지 | 100~1000 전 화면 동일, 기본 100, 등록 화면 200 | — |
-| 정렬 방향 토글 | **`SortControl`에서 제거(narrow)** | Figma 30 화면 어디에도 방향 컨트롤 없음, 정렬된 컬럼 헤더 아이콘만. Notion 방향 문장 없음 | direction props 제거. 헤더 클릭 토글(`selectManagerSort`)은 feature 유지. 후속(2026-09-02): 헤더 버튼·`aria-sort`·glyph는 `DataTable.meta.sort`가 한 값에서 렌더(접근성 불변식, 인벤토리 12+ table 반복). 정렬 가능 컬럼·방향·전이는 feature `manager-sort.ts` 단일표 |
+| 정렬 방향 토글 | **`SortControl`에서 제거(narrow)** | Figma 30 화면 어디에도 방향 컨트롤 없음, 정렬된 컬럼 헤더 아이콘만. Notion 방향 문장 없음 | direction props 제거. 헤더 클릭 토글(`selectManagerSort`)은 feature 유지. 후속(2026-09-02): 헤더 버튼·`aria-sort`·glyph는 `DataTable.meta.sort`가 한 값에서 렌더(접근성 불변식, 인벤토리 12+ table 반복). 정렬 가능 컬럼·방향·전이는 feature `manager-sort.ts` 단일표(리허설). 제품 목록의 URL→aria 방향 매핑은 `shared/lib/list-sort.ts`(2026-09-11) |
 | `SearchFieldPartition`·`filterPartitionKey/Values` | shared mechanic 적용 | Managers·Members 목록에서 표시 조건 변경 중 draft 보존을 비교 | `src/shared/lib/search-partition.ts`; 필드 분류·기본값·URL commit은 feature 소유(ADR 0009) |
 | Managers 검색 전 표면 | **feature 불일치 수정** | 11.1 검색전 frame: "검색해주세요." + `등록`만. 현재 `ManagerListResult`는 summary·toolbar를 무조건 렌더 | `data.searched`로 summary·toolbar-left 가림. `ListResult`에 mode 넣지 않음 |
 | toolbar 우측 action | slot 유지, 카탈로그 없음 | 화면별 action 집합은 다름. SMS·이메일의 미선택 검증·popup open은 동일 trigger 후보지만 마케팅 정책 gate와 popup 본문은 feature 사실 | trigger는 첫 consumer surface만 provisional, 정책·권한·field·payload는 feature |
@@ -93,7 +93,7 @@
 
 ### 질문 3
 
-3. 정렬 방향을 바꾸는 UI가 있는가(헤더 아이콘 클릭?). 임시 답(2026-09-02): 활성 헤더 클릭이 유일한 방향 전환 UI이고 Select에서 다른 값을 고르면 방향은 유지된다. 남은 질문: 비활성 sortable 헤더에도 아이콘을 보이는지, Figma 아이콘이 방향을 뜻하는지(실측 대기).
+3. 정렬 방향을 바꾸는 UI가 있는가(헤더 아이콘 클릭?). 임시 답(2026-09-02): 활성 헤더 클릭이 유일한 방향 전환 UI이고 Select에서 다른 값을 고르면 방향은 유지된다. **확정(2026-09-11 사용자, 목록 공통): 기본 방향은 `desc`(최신 먼저)이고 활성 컬럼은 첫 렌더부터 방향을 표시한다.** URL 계약이 `sortDirection.defaultValue` 로 선언하고 `headerSortDirection`(`shared/lib/list-sort.ts`)이 aria 어휘로 옮긴다([list-workflow Sorting](../../.agents/skills/feature-contract/references/list-workflow.md#sorting)). 남은 질문: 비활성 sortable 헤더에도 아이콘을 보이는지, Figma 아이콘이 방향을 뜻하는지(실측 대기).
 
 ### 질문 4
 

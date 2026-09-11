@@ -3,6 +3,7 @@
  * 정렬 가능한 컬럼 집합은 URL 정렬 enum과 같은 타입에서 나오므로 보기 정렬 목록과 헤더가 갈라지지 않는다.
  * 방향 표시는 활성 컬럼 하나에만 주고(aria-sort 한 개), 정렬 확정과 URL 전이는 결과 workflow가 소유한다.
  */
+import { headerSortDirection } from "@/shared/lib/list-sort";
 import type { PageRowSelection } from "@/shared/lib/use-page-row-selection";
 import type { DataTableProps } from "@/shared/ui/patterns/DataTable";
 import { selectionColumn } from "@/shared/ui/patterns/selection-column";
@@ -49,12 +50,7 @@ export function buildManagerDirectoryColumns({
       header: t(`scenarioSort.${field}`),
       meta: {
         sort: {
-          direction:
-            sort === field
-              ? direction === "asc"
-                ? ("ascending" as const)
-                : ("descending" as const)
-              : undefined,
+          direction: headerSortDirection({ type: sort, direction }, field),
           onSort: () => onSortChange(field),
         },
       },

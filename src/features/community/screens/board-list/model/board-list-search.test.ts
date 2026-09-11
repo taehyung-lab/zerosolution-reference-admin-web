@@ -43,7 +43,7 @@ describe('board list search contract', () => {
     expect(resolved.page).toBe(1);
     expect(resolved.pageSize).toBe(100);
     expect(resolved.sortType).toBe('registeredAt');
-    expect(resolved.sortDirection).toBeUndefined();
+    expect(resolved.sortDirection).toBe('desc');
     expect(resolved.periodType).toBe('registeredAt');
     expect(resolved.keywords).toEqual([]);
   });
@@ -98,7 +98,7 @@ describe('board list search contract', () => {
       page: 1,
       pageSize: 100,
       sortType: 'registeredAt',
-      sortDirection: undefined,
+      sortDirection: 'desc',
       periodType: 'registeredAt',
       startDateTime: undefined,
       endDateTime: undefined,

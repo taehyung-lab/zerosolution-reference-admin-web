@@ -27,7 +27,8 @@ describe('BoardListScreen', () => {
     renderScreen();
     await screen.findByRole('cell', { name: 'Reference Board 1' });
 
-    const headers = screen.getAllByRole('columnheader').map((cell) => cell.textContent?.trim());
+    // textContent 에는 활성 정렬 헤더의 ▲▼ 글리프가 붙으므로 뺀다.
+    const headers = screen.getAllByRole('columnheader').map((cell) => cell.textContent?.replace(/[▲▼]/g, '').trim());
     expect(headers).toEqual([
       'No.',
       '유형',
@@ -42,6 +43,19 @@ describe('BoardListScreen', () => {
       '최근업데이트일',
     ]);
     expect(within(screen.getByRole('table')).queryByRole('checkbox')).toBeNull();
+  });
+
+  it('첫 렌더에 기본 정렬(등록일 desc)이 헤더 하나에 표시되고 최신 게시판이 첫 행이다', async () => {
+    renderScreen();
+    await screen.findByRole('cell', { name: 'Reference Board 7' });
+
+    const sorted = screen.getAllByRole('columnheader').filter((cell) => cell.hasAttribute('aria-sort'));
+    expect(sorted).toHaveLength(1);
+    expect(sorted[0]).toHaveAttribute('aria-sort', 'descending');
+    expect(sorted[0]).toHaveAccessibleName('등록일');
+    // 기본 방향이 undefined 였을 때는 오름차순(Board 1 먼저)이었다. desc 확정으로 최신 등록(2026-05-21)이 먼저다.
+    const rows = screen.getAllByRole('row').slice(1);
+    expect(within(rows[0]!).getByRole('cell', { name: 'Reference Board 7' })).toBeInTheDocument();
   });
 
   it('활성 정렬 헤더를 누르면 방향만 바뀐 검색으로 나간다', async () => {
