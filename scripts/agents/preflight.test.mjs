@@ -100,6 +100,7 @@ describe('repository preflight', () => {
     expect(at({})).toBe('/repo')
     // A patch names its checkout through its first absolute target, like a Write does through file_path.
     expect(at({ tool_name: 'apply_patch', tool_input: { command: '*** Begin Patch\n*** Update File: /repo/.claude/worktrees/agent/src/a.ts\n@@\n-x\n+y\n*** End Patch' }, cwd: '/repo' })).toBe('/repo/.claude/worktrees/agent')
+    expect(at({ tool_name: 'apply_patch', toolArgs: '*** Begin Patch\n*** Update File: /repo/.claude/worktrees/agent/src/a.ts\n@@\n-x\n+y\n*** End Patch' })).toBe('/repo/.claude/worktrees/agent')
     // A target in a directory that does not exist yet climbs to the nearest existing ancestor before asking git.
     const onlyRoots = (dir) => dir === '/repo' || dir === '/repo/.claude/worktrees/agent'
     expect(hookRoot('/repo', write('/repo/.claude/worktrees/agent/src/new/a.ts'), toplevelOf, onlyRoots)).toBe('/repo/.claude/worktrees/agent')
@@ -255,7 +256,7 @@ describe('repository preflight', () => {
   })
   it('refuses a review that cites a convention section this session never received', () => {
     const { root, checkpoint } = setup()
-    writeFileSync(join(root, 'scripts/notes.md'), '# Owned\n\nA rule.\n\n# Other\n\nAnother rule.\n')
+    writeFileSync(join(root, 'scripts/notes.md'), '# Owned\n\nA rule.\n\n## Nested\n\nA nested rule.\n\n# Other\n\nAnother rule.\n')
     const cited = { ...checkpoint, references: ['AGENTS.md', { file: 'scripts/notes.md', heading: 'Owned' }] }
     writeFileSync(join(root, '.ai-work/checkpoint.json'), JSON.stringify(cited))
     prepare(root, 'one', '.ai-work/checkpoint.json', fingerprint)
@@ -269,6 +270,8 @@ describe('repository preflight', () => {
     // The delivered section, and the whole file that contains it, both count.
     expect(() => recordReview(root, 'one', review([{ file: 'scripts/notes.md', heading: 'Owned' }]), fingerprint)).not.toThrow()
     expect(() => recordReview(root, 'one', review(['AGENTS.md']), fingerprint)).not.toThrow()
+    // A delivered parent heading covers a descendant heading in the same file.
+    expect(() => recordReview(root, 'one', review([{ file: 'scripts/notes.md', heading: 'Nested' }]), fingerprint)).not.toThrow()
     // A sibling section was never delivered, so it cannot be the source of a claim.
     expect(() => recordReview(root, 'one', review([{ file: 'scripts/notes.md', heading: 'Other' }]), fingerprint)).toThrow(/never received|not delivered/)
     // Neither can a document this session was never given.
@@ -437,9 +440,11 @@ describe('repository preflight', () => {
     const codex = hookDecision(root, { session_id: 'one', hook_event_name: 'PreToolUse', tool_name: 'apply_patch', tool_input: { command: '*** Begin Patch\n*** Update File: scripts/example.mjs\n@@\n-x\n+y\n*** End Patch' } })
     const claude = hookDecision(root, { session_id: 'one', hook_event_name: 'PreToolUse', tool_name: 'Edit', tool_input: { file_path: join(root, 'scripts/example.mjs') } })
     const copilot = hookDecision(root, { sessionId: 'one', toolName: 'edit', toolArgs: JSON.stringify({ path: 'scripts/example.mjs' }) }, 'preToolUse')
+    const rawPatch = hookDecision(root, { sessionId: 'one', toolName: 'apply_patch', toolArgs: '*** Begin Patch\n*** Update File: scripts/example.mjs\n@@\n-x\n+y\n*** End Patch' }, 'preToolUse')
     expect(codex.hookSpecificOutput.permissionDecision).toBe('deny')
     expect(claude.hookSpecificOutput.permissionDecision).toBe('deny')
     expect(copilot.permissionDecision).toBe('deny')
+    expect(rawPatch.permissionDecision).toBe('deny')
   })
   it('keeps inspection and checkpoint bootstrap available, but gates arbitrary shell execution', () => {
     const { root } = setup()

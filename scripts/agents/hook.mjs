@@ -12,6 +12,17 @@ function gitToplevel(dir) {
 }
 
 /**
+ * Native edit tools send JSON objects. Some hosts stringify that JSON; apply_patch may send the raw
+ * patch text. JSON.parse on a patch throws and used to exit the hook before scope checks ran.
+ */
+export function parseToolInput(raw) {
+  if (raw && typeof raw === 'object') return raw
+  if (typeof raw !== 'string') return {}
+  if (raw.includes('*** Begin Patch') || /^\*\*\* (?:Add File|Update File|Delete File|Move to): /m.test(raw)) return { patch: raw }
+  try { return JSON.parse(raw) } catch { return {} }
+}
+
+/**
  * The checkout a tool call acts on. The hook command is installed with the launch directory's script
  * path, so a session working in a nested worktree (`.claude/worktrees/<agent>`) used to be judged
  * against the parent checkout: its writes fell outside that tree and attribution was zero (measured
@@ -20,8 +31,7 @@ function gitToplevel(dir) {
  * The edited file's toplevel wins, then the payload `cwd`, then the script's own checkout.
  */
 export function hookRoot(fallback, payload, toplevelOf = gitToplevel, exists = existsSync) {
-  let input = payload?.tool_input ?? payload?.toolArgs ?? {}
-  if (typeof input === 'string') { try { input = JSON.parse(input) } catch { input = {} } }
+  const input = parseToolInput(payload?.tool_input ?? payload?.toolArgs ?? {})
   let file = input?.file_path ?? input?.path
   if (typeof file !== 'string') {
     // Codex edits arrive as a patch; its first absolute target names the checkout.
@@ -232,8 +242,7 @@ export function hookDecision(root, payload, eventOverride) {
   }
   if (event !== 'PreToolUse' && event !== 'preToolUse') return {}
   const name = payload.tool_name ?? payload.toolName
-  let input = payload.tool_input ?? payload.toolArgs ?? {}
-  if (typeof input === 'string') input = JSON.parse(input)
+  const input = parseToolInput(payload.tool_input ?? payload.toolArgs ?? {})
   const targets = []
   if (['Edit', 'Write', 'MultiEdit', 'edit', 'create'].includes(name)) {
     const path = input.file_path ?? input.path

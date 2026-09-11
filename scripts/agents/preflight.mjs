@@ -4,7 +4,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSy
 import { dirname, relative, resolve } from 'node:path'
 import { SEED_BUNDLES } from '../contracts/seed.mjs'
 import { claudeAgentsImportFailure, copilotAgentsPointerFailure } from '../contracts/contracts.mjs'
-import { referenceOf, selectedDocuments } from './document-context.mjs'
+import { referenceOf, referenceCovers, selectedDocuments } from './document-context.mjs'
 import { SURFACE_INDEX, workKind, workflowContext } from './surface-context.mjs'
 
 const hash = (value) => createHash('sha256').update(value).digest('hex')
@@ -280,7 +280,7 @@ export function prepare(root, session, checkpointFile, snapshot = outputSnapshot
 export function checkEdit(root, session, targets) {
   const state = load(root, session)
   // The entry is AGENTS §2 (a screen request reads screen-loop first); the README only owns the checkpoint fields.
-  if (!state) return `Read AGENTS.md §2 first (a screen or shared-contract request starts with screen-loop), then run node scripts/agents/cli.mjs prepare ${session} .ai-work/<task>/checkpoint.json before editing. Checkpoint fields: scripts/agents/README.md#prepare-before-editing.`
+  if (!state) return `Read AGENTS.md §2 first (an implementation request starts with screen-loop), then run node scripts/agents/cli.mjs prepare ${session} .ai-work/<task>/checkpoint.json before editing. Checkpoint fields: scripts/agents/README.md#prepare-before-editing.`
   const { checkpointPath, checkpointHash, documents, checkpoint } = state
   const stale = (file) => `Reference/checkpoint changed: ${file}. Re-run prepare; reassess affected decisions.`
   if (!existsSync(resolve(root, checkpointPath)) || hash(readFileSync(resolve(root, checkpointPath))) !== checkpointHash) return stale(checkpointPath)
@@ -348,10 +348,20 @@ export function recordReview(root, session, report, snapshot = outputSnapshot, u
     }
   }
   // A convention only counts as applied if this session was actually handed it. A whole-file delivery
-  // covers its own headings, matching how preparation treats a full-file selection.
-  const deliveredKeys = new Set(Object.keys(state.rendered ?? {}))
-  const covers = (reference) => deliveredKeys.has(JSON.stringify([reference.file, null])) ||
-    deliveredKeys.has(JSON.stringify([reference.file, reference.heading ?? null]))
+  // covers its own headings, and a delivered parent heading covers descendant headings.
+  const delivered = Object.keys(state.rendered ?? {}).map((key) => {
+    const [file, heading] = JSON.parse(key)
+    return { file, heading: heading ?? undefined }
+  })
+  const covers = (reference) => delivered.some((evidence) =>
+    evidence.file === reference.file && (
+      evidence.heading == null
+      || reference.heading != null && (
+        evidence.heading === reference.heading
+        || referenceCovers(root, evidence, reference)
+      )
+    )
+  )
   for (const item of report.requirements) {
     if (item.status === 'unimplemented') continue
     if (!Array.isArray(item.appliedSections) || !item.appliedSections.length) {

@@ -7,19 +7,23 @@ Hooks verify routing, declarations and output scope, never policy truth or compr
 
 ## Know which entry the request is
 
-A request names either **one screen** ("implement the performance list", or an issue already split per
-screen) or **one shared contract** ("implement this shared component"). The two are not variants of one
-procedure: their truth source, denominator and evidence differ, so decide which entry applies first.
+Classify **grain** then kind before loading path skills. A whole screen, one component, and one
+file-structure request share the loop and differ in entry, truth, and scope. Drill is opt-in
+(the user says 드릴, `work.kind` is `drill`, or this repository's document loop is under test);
+an existing route does not force it.
 
-| | screen entry | shared contract entry |
-| --- | --- | --- |
-| entry command | `context <surface id>` | `bundle <contract id>` |
-| truth source | inventory rows, scenario card, judgment document | the bundle's `skills` sections and `adrs` |
-| denominator | that screen's rows, minus `n/a` and `ref` | none — see below |
-| evidence | scenario observation plus enumerated rows against code | the bundle's `tests` plus every existing consumer still passing |
-| boundary | inner surfaces included or excluded with a reason | `ownership.feature` in the bundle, which shared must not absorb |
-| never | copy another screen's implementation | copy the `examples.doNotCopy` items |
+| grain | kind | entry | truth source | scope |
+| --- | --- | --- | --- | --- |
+| screen | screen | `context <surface id>` | inventory, scenario, judgment | that screen's workflow |
+| slice | screen | `context` of the parent screen | the rows for that surface only | the role's files, not the rest of the screen |
+| component | shared | `bundle <contract id>` | bundle `skills` and `adrs` | `ownership.shared` only |
+| component | feature | parent `context` + feature-contract | consuming screen inventory plus the role section | that component's owner files |
+| structure | — | the role `형태` section + folder-structure-contract | file roles and placement, not product values | the file set the `형태` table names |
+| — | api | api-contract after N0 | snapshot plus owning ADR | transport/query/error paths |
+| mixed | — | one named slice at a time | each grain's source | that slice |
+| — | maintenance | the path skill | the owning document | declared paths |
 
+A screen never copies another screen's implementation. A shared contract never copies `examples.doNotCopy`.
 Walk the **route**, not just the screen, because one route entry can compose another feature and
 the same file name can mean opposite roles in two of them.
 
@@ -63,7 +67,10 @@ These are read-only, available before prepare. `bundle` lists the valid IDs; an 
 reference sections, ADRs, focused tests, ownership split and any scoped consumption examples from the
 existing seed declaration ([example semantics](../contracts/README.md#consumption-examples)). `docs/reference/zero-sol/context.json` is owned by the
 inventory and contains pointers, not copied policies. It connects targets to inventory/scenario
-locations, related inner surfaces, applicable references and existing code paths. Paths are discovery
+locations, related inner surfaces, applicable references and existing code paths. It is not the skill
+set: after grain/kind, load that role's `형태` section from the path skill even when the index omitted
+it. A surface that cites a skill file which has `형태` must include that heading (or the whole file);
+`contracts:check` fails the index otherwise. Paths are discovery
 hints, never code ownership or a folder template. Feature API/model files can serve several surfaces;
 index those consumers rather than forcing an unrelated screen requirement just to satisfy a path match. Unimplemented paths are left empty. New product paths need explicit
 `evidenceGaps` until their own inventory is indexed; replace this product's index on transplant.
@@ -174,6 +181,10 @@ return points — declared maintenance/infrastructure work does not; an API path
 and an app error-boundary path also needs shared-ui-contract.
 For file creation, relocation or ownership changes, also declare/read folder-structure-contract.
 The path-only hook cannot distinguish a behavioral edit from a placement decision; review owns that distinction.
+Publish four design facts with the checkpoint (the gate does not score them): the call flow, the single
+owner of each state, adopt/modify/exclude for each consumed contract, and why any new file or layer
+reduces tracking cost. Missing those facts is not a prepare failure; a reuse, ownership or simplicity
+defect found later returns to that declaration.
 Contract IDs must come from `bundle`, not component/hook names or invented labels:
 
 ```json
@@ -301,13 +312,15 @@ baseline deletion. Unimplemented requirements keep their reason in `evidence`; t
 implementation file. Script/maintenance reviews keep the smaller requirement status/evidence shape;
 all reviews still require top-level `contractReview`, `complexityReview`, `assumptions` and `limitations`.
 When no contract changes apply, say so with the reason; do not omit those fields.
+A reuse, ownership or simplicity defect names the return node (`N3`, `N4`, `E6`) in `contractReview` or
+`complexityReview`. The gate still checks that the fields exist, not that the judgment is right.
 
 A gap must point somewhere. An `unimplemented` or `different` requirement names either `replacement`,
 another requirement ID declared in the same checkpoint, or `blocked`, the condition that stops it.
 Recording neither is rejected, because that would close the task on the gap instead of re-entering the
 loop. Every requirement except `unimplemented` also names the `appliedSections` it followed, and each
 one must appear in what preparation actually delivered to this session; a whole-file delivery covers
-its own headings, so a sibling section nobody prepared cannot become the source of a claim. The check
+its own headings, and a delivered parent heading covers its descendant headings, so a sibling section nobody prepared cannot become the source of a claim. The check
 compares delivery, not comprehension: naming a section is not evidence that its rule was understood.
 
 Reconcile the final output with the original request and the discovered actions, not just each screen's

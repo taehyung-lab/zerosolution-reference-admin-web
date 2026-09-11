@@ -147,20 +147,24 @@ performance consumers have different direction defaults and reset/search policie
 
 ## 형태
 
+목록 역할이 있으면 이 절이 N4 시작점이다. `context.json`이 이 파일을 다른 heading으로만 인용하면 인덱스가 실패하고, 런타임은 형태 heading을 보강한다. 제품 화면 이름을 이 절에 적지 않는다.
+
 목록 화면 하나가 갖는 파일 집합과 역할이다. 규칙을 다 지켜도 이 집합이 없으면 화면마다 모양이 갈린다
 (2026-09-10 게시판 드릴: 검색어 URL 모양·해소 위치·정책 파일·loader 가 형제와 갈렸다). 도메인 이름은 빈칸이다.
-`contracts:check` 는 파일 이름·위치와 route 의 e2e 합류만 대조하고 없는 파일은 이 절을 가리킨다. 나머지 행은 리뷰가 본다.
+표는 세 층이다: **불변**(Query·URL·폼 소유와 전이 의미), **역할이 있을 때 파일**, **대표 소비자 예시**.
+없는 책임을 빈 어댑터로 만들지 않는다. `contracts:check` 는 이름 관례를 따른 목록에서 search·filter·data·policy
+파일의 이름·위치와 route 의 e2e 합류만 대조하고 없는 파일은 이 절을 가리킨다. 나머지 행은 리뷰가 본다.
 
-| 파일 | 역할 |
-| --- | --- |
-| `<domain>/api/*queries.ts` | `queryOptions` 팩토리. `locale` 은 `UiLocale`([i18n](../../shared-ui-contract/references/i18n.md)) |
-| `model/*search*.ts` | URL 필드 선언·기본값·partition·canonical schema·resolver·요청 mapper. 필드 모양은 [list-search-contract 형태](list-search-contract.md#형태) |
-| `model/*-policy.ts` | URL 전이 순수 함수: 보기·정렬 변경은 첫 페이지, 페이지 이동은 나머지 보존, 헤더 정렬 방향 전이 |
-| `model/use*Filter.ts` | `useListFilterDraft` 소비, submit(`preventDefault` → 정책 → `onSearchChange`), reset 목적지 |
-| `model/use*Data.ts` | query options 소비, `ListResultData` 사실과 total·totalPages 파생 |
-| `ui/use*Result.ts` | 컬럼 + `pageSize`·`sort`·`pagination` 컨트롤(위 반복 모양). 전이는 policy 를 부른다 |
-| `ui/*-columns.ts(x)` | 컬럼 정의와 `meta.sort` 매핑 — 방향은 `headerSortDirection`([Sorting](#sorting)) |
-| `ui/*Screen.tsx`·`*Filters.tsx`·`*Result.tsx`(·`*Actions.tsx`) | 조립만. 상태는 위 소유자에 |
+| 파일 | 층 | 역할 |
+| --- | --- | --- |
+| `<domain>/api/*queries.ts` | 불변 | `queryOptions` 팩토리. `locale` 은 `UiLocale`([i18n](../../shared-ui-contract/references/i18n.md)) |
+| `model/*search*.ts` | 불변 | URL 필드 선언·기본값·partition·canonical schema·resolver·요청 mapper. 필드 모양은 [list-search-contract 형태](list-search-contract.md#형태) |
+| `model/*-policy.ts` | 불변 | URL 전이 순수 함수: 보기·정렬 변경은 첫 페이지, 페이지 이동은 나머지 보존, 헤더 정렬 방향 전이 |
+| `model/use*Filter.ts` | 역할 | `useListFilterDraft` 소비, submit(`preventDefault` → 정책 → `onSearchChange`), reset 목적지 |
+| `model/use*Data.ts` | 역할 | query options 소비, `ListResultData` 사실과 total·totalPages 파생 |
+| `ui/use*Result.ts` | 역할 | 컬럼 + `pageSize`·`sort`·`pagination` 컨트롤(위 반복 모양). 전이는 policy 를 부른다 |
+| `ui/*-columns.ts(x)` | 역할 | 컬럼 정의와 `meta.sort` 매핑 — 방향은 `headerSortDirection`([Sorting](#sorting)) |
+| `ui/*Screen.tsx`·`*Filters.tsx`·`*Result.tsx`(·`*Actions.tsx`) | 역할 | 조립만. 상태는 위 소유자에. Actions 는 행 액션이 있을 때만 |
 
 - 같은 도메인의 여러 기록 목록이 한 lifecycle 을 공유하면 `model` 넷은 `mechanics/<name>/model` 로 올라가고 화면은 `ui` 만 갖는다(회원 기록 목록). 검사기는 mechanic 안의 이름을 보지 않는다 — 현재 `record-list` 는 `member-record-data.ts`·`member-record-view.ts` 로 이 표와 이름이 다르다.
 - 해소는 화면 경계에서 한 번(`resolve*Search(search)` 를 Screen 이 호출). route 는 sparse search 를 넘긴다.

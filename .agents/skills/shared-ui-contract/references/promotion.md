@@ -28,7 +28,7 @@ The completion report must answer every admission item, not return only a verdic
 | no resource switch, schema injection, or callback override | required variation and why an opaque generic, pure classifier, `run(values)`, or completion callback does not teach shared domain facts |
 | implementation reduces observed cost or risk | concrete duplication, change cost, or defect evidence |
 
-If any row is unanswered, keep the code feature-local. A verdict such as `feature-local` or `provisional shared` alone is not a completed promotion report.
+If any row is unanswered, keep the code feature-local. A verdict such as `feature-local` or `provisional shared` alone is not a completed promotion report. Implementation-loop N5 treats an unanswered row or a single-caller widening as E6, not as a completed screen.
 
 ## Reference-project lifecycle
 

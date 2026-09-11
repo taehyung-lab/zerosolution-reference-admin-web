@@ -92,9 +92,13 @@ under `.worktrees/` or `.claude/worktrees/`) is linted whole unless its root is 
 exceeded the Node heap. CI runs on a fresh checkout and never has such a tree, so this regression is
 local-only and no CI stage guards it.
 
+The surface index (`docs/reference/zero-sol/context.json`) fails when a surface cites a skill file that has a unique `형태` heading but delivers neither that heading nor the whole file. The index does not name product domains as the skill set; grain and the path skill load `형태` even when other headings were omitted.
+
 `screen-shape.mjs` compares each `screens/<workflow>/` (and `mechanics/<name>/`) with the role shapes
 that the feature-contract references own in their `형태` sections: a role-named file must sit in its
-segment (`ui/` or `model/`; `lib/` and `config/` are left to the placement table), a list screen must
+segment (`ui/` or `model/`; `lib/` and `config/` are left to the placement table). The tables distinguish
+invariants from files that exist only when the role is present; the checker still sees names and
+existence, not whether the missing role was a correct omission. A list screen must
 carry its search, filter, data and policy files unless it imports a mechanic's `model/` (the mechanic's
 own names are not checked), a detail with actions needs its request boundary, a form needs schema plus
 request or mutation, and every list route must appear in an array literal of

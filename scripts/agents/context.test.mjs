@@ -344,6 +344,20 @@ it('recognizes quoted literal searches without admitting executable shell syntax
   for(const command of ["rg a file | sh", 'rg "$(touch x)" file', "rg --p're'=script file", "git diff --out'put'=file", "cat'evil' file", "rg --p\\re=script file", "rg 'unterminated", "sed -n 1p --file=script", 'rg a <(touch x)']) expect(call(command), command).toHaveProperty('hookSpecificOutput.permissionDecision','deny')
 })
 
+it('fails a surface that cites a skill file without its 형태 heading', () => {
+  const { root, write } = fixture()
+  const skill = '.agents/skills/feature-contract/references/list-workflow.md'
+  write(skill, '# List\n\n## Confirm\nA.\n\n## 형태\nFiles.\n')
+  const indexPath = join(root, 'docs/reference/zero-sol/context.json')
+  const index = JSON.parse(readFileSync(indexPath, 'utf8'))
+  index.surfaces[0].references = [{ file: skill, heading: 'Confirm' }]
+  write('docs/reference/zero-sol/context.json', JSON.stringify(index))
+  expect(surfaceIndexFailures(root).join('\n')).toMatch(/performance-list cites .*list-workflow.md without heading 형태/)
+  index.surfaces[0].references = [skill]
+  write('docs/reference/zero-sol/context.json', JSON.stringify(index))
+  expect(surfaceIndexFailures(root).filter((item) => item.includes('형태'))).toEqual([])
+})
+
 it('routes shared feature API paths to an edit consumer without inventing a list requirement', () => {
   const checkpoint = {
     scope: ['src/features/performances/api/'],

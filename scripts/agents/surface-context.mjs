@@ -10,6 +10,37 @@ const inside = (path, prefix) => path === prefix || (prefix.endsWith('/') && pat
 const overlaps = (left, right) => inside(left, right) || inside(right, left)
 const productPath = (path) => ['src/', 'src/app/'].includes(path) || /^src\/(features|routes|app\/shell)\//.test(path)
 const safePath = (path) => text(path) && !path.startsWith('/') && !path.includes('\\') && !path.split('/').some((part) => part === '..' || part === '.')
+const SHAPE_HEADING = '형태'
+
+/** A cited skill file that has a unique `형태` heading must deliver that heading (or the whole file). */
+export function missingShapeHeadingRefs(root, references) {
+  const byFile = new Map()
+  for (const value of references) {
+    const ref = referenceOf(value)
+    const entry = byFile.get(ref.file) ?? { whole: false, headings: new Set() }
+    if (ref.heading === undefined) entry.whole = true
+    else entry.headings.add(ref.heading)
+    byFile.set(ref.file, entry)
+  }
+  const missing = []
+  for (const [file, entry] of byFile) {
+    if (entry.whole || entry.headings.has(SHAPE_HEADING)) continue
+    const path = resolve(root, file)
+    if (!existsSync(path)) continue
+    const titles = readFileSync(path, 'utf8').split('\n')
+      .map((line) => line.match(/^(#{1,6}) +(.+?)\s*#*$/))
+      .filter(Boolean)
+      .map((match) => match[2])
+    if (titles.filter((title) => title === SHAPE_HEADING).length !== 1) continue
+    missing.push({ file, heading: SHAPE_HEADING })
+  }
+  return missing
+}
+
+export function withShapeHeadings(root, references) {
+  const extra = missingShapeHeadingRefs(root, references)
+  return extra.length ? [...references, ...extra] : references
+}
 
 export function readSurfaceIndex(root) {
   if (!existsSync(resolve(root, SURFACE_INDEX))) return { judgment: [], surfaces: [] }
@@ -31,6 +62,9 @@ export function surfaceIndexFailures(root) {
       if (!surface.scenarios.length && !text(surface.gap)) throw new Error(`Scenario or explicit gap required: ${surface.id}`)
       if (!surface.scenarios.every((ref) => referenceOf(ref).file.startsWith('docs/reference/scenarios/'))) throw new Error(`Scenario location required: ${surface.id}`)
       for (const ref of [surface.inventory, ...surface.scenarios, ...surface.references]) readReference(root, ref)
+      for (const miss of missingShapeHeadingRefs(root, surface.references)) {
+        failures.push(`${surface.id} cites ${miss.file} without heading ${miss.heading}`)
+      }
     }
     for (const surface of index.surfaces) {
       for (const id of surface.related) if (!ids.has(id) || id === surface.id) throw new Error(`Dangling related surface: ${surface.id} → ${id}`)
@@ -80,7 +114,7 @@ export function workflowContext(root, checkpoint, paths = checkpoint.scope) {
   for (const surface of included) {
     for (const id of surface.related) if (!chosen.has(id)) throw new Error(`Decide included/excluded inner surface: ${id}`)
   }
-  const references = [...index.judgment, ...included.flatMap((surface) => [surface.inventory, ...surface.scenarios, ...surface.references]), ...gaps.flatMap((gap) => gap.references)]
+  const references = [...index.judgment, ...included.flatMap((surface) => [surface.inventory, ...surface.scenarios, ...withShapeHeadings(root, surface.references)]), ...gaps.flatMap((gap) => gap.references)]
   for (const requirement of checkpoint.requirements) {
     const requirementGaps = gaps.filter((gap) => gap.requirements.includes(requirement.id))
     if (!list(requirement.surfaces) || !requirement.surfaces.every((id) => included.some((surface) => surface.id === id)) || (!requirement.surfaces.length && !requirementGaps.length)) throw new Error(`Requirement ${requirement.id} needs included surfaces or its own evidence gap`)
@@ -111,7 +145,7 @@ export function describeContext(root, id) {
         note: 'These rows are what has been observed and recorded so far, not the screen\'s full specification. They are the denominator of what this task must cover; covering all of them is not completeness, and a surface absent from this list is found at the source rather than inferred to not exist. Scenario cards own verification, and pointer says where to look, never that the work is done or missing.',
       }
     : { rows: [], note: `Not migrated: ${surface.inventory} declares no row id for ${surface.id}. Read the section table itself; an empty list is not an empty screen.` }
-  return JSON.stringify({ ...surface, contract, judgment: index.judgment, related: surface.related.map((related) => {
+  return JSON.stringify({ ...surface, references: withShapeHeadings(root, surface.references), contract, judgment: index.judgment, related: surface.related.map((related) => {
     const target = index.surfaces.find((item) => item.id === related)
     return { id: related, title: target?.title, instruction: 'Explicitly include or exclude with a reason.' }
   }), note: 'Paths route evidence; they never assign code ownership or prescribe new product architecture. Feature API/model modules can serve several surfaces. Group entries require manual decomposition of their inner surfaces. Read linked facts; this is not a product specification.' }, null, 2) + '\n'
@@ -122,7 +156,7 @@ export function contextReport(root, { summary = false } = {}) {
   const index = readSurfaceIndex(root)
   const direct = new Set(index.judgment.map(ref => referenceOf(ref).file))
   const surfaces = index.surfaces.map(surface => {
-    const refs = [...index.judgment, surface.inventory, ...surface.scenarios, ...surface.references]
+    const refs = [...index.judgment, surface.inventory, ...surface.scenarios, ...withShapeHeadings(root, surface.references)]
     refs.forEach(ref => direct.add(referenceOf(ref).file))
     const documents = selectedDocuments(root, refs)
     return {

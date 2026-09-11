@@ -43,6 +43,7 @@ Select only the surfaces the current form uses.
 ## 형태
 
 등록·수정 한 쌍이 `screens/form/` 하나를 쓴다. 파일 집합만 적는다. 각 역할의 규칙은 위 [Form ownership](#form-ownership) 이 소유한다.
+「있을 때」행은 그 책임이 있을 때만 파일을 만든다. 공유 필드가 없으면 공유 `Form` 파일을 만들지 않는다.
 
 | 파일 | 담는 것 |
 | --- | --- |
