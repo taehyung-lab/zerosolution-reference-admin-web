@@ -27,6 +27,10 @@ function fixture() {
   ] }))
   const checkpoint = {
     scope: ['src/features/performances/screens/list/'],
+    grain: 'screen',
+    entry: 'performance-list',
+    mode: 'implement',
+    design: { flow: 'search to query', ownership: 'URL and Query', reuse: 'exclude ResourcePage', simplicity: 'role files only' },
     requirements: [{ id: 'R1', text: 'Implement list.', surfaces: ['performance-list'], sources: [{ file: inventory, heading: 'List' }], contracts: [], contractReason: 'No new shared behavior in this test.' }],
     references: ['AGENTS.md', '.agents/skills/feature-contract/SKILL.md', '.agents/skills/screen-loop/SKILL.md'], contracts: [], unresolved: [],
     surfaces: [{ id: 'performance-list', decision: 'include' }, { id: 'performance-venue', decision: 'exclude', reason: 'Result-only change.' }],
@@ -42,6 +46,14 @@ it('delivers the actual selected surface evidence without requiring hand-copied 
   expect(output).toContain('No selection column.')
   expect(output).toContain('Entry loads; reset clears.')
   expect(output).not.toContain('Section-owned save.')
+})
+it('rejects a workflow checkpoint that omits grain, entry, mode or design', () => {
+  const { checkpoint, run } = fixture()
+  delete checkpoint.grain
+  expect(() => run()).toThrow(/grain/)
+  checkpoint.grain = 'screen'
+  delete checkpoint.design
+  expect(() => run()).toThrow(/design/)
 })
 it('names the screen loop first when a default screen build omits it from references', () => {
   const { checkpoint, run } = fixture()

@@ -85,6 +85,23 @@ export function workKind(checkpoint) {
   return kind
 }
 
+const LOOP_GRAINS = ['screen', 'slice', 'component', 'structure']
+const LOOP_MODES = ['implement', 'drill']
+
+/** Workflow implement/drill must name grain, entry, mode and the four design facts. Other kinds skip this. */
+export function loopDeclarationFailures(checkpoint) {
+  if (workKind(checkpoint) !== 'workflow') return []
+  const failures = []
+  if (!LOOP_GRAINS.includes(checkpoint.grain)) failures.push('Declare checkpoint.grain (screen|slice|component|structure)')
+  if (!text(checkpoint.entry)) failures.push('Declare checkpoint.entry (context id, bundle id, or role 형태 path)')
+  if (!LOOP_MODES.includes(checkpoint.mode)) failures.push('Declare checkpoint.mode (implement|drill)')
+  const design = checkpoint.design
+  if (!design || typeof design !== 'object' || !text(design.flow) || !text(design.ownership) || !text(design.reuse) || !text(design.simplicity)) {
+    failures.push('Declare checkpoint.design.flow, ownership, reuse and simplicity')
+  }
+  return failures
+}
+
 export function workflowContext(root, checkpoint, paths = checkpoint.scope) {
   if (workKind(checkpoint) !== 'workflow') return { references: [], included: [], indexed: false }
   const index = readSurfaceIndex(root)

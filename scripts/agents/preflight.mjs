@@ -5,7 +5,7 @@ import { dirname, relative, resolve } from 'node:path'
 import { SEED_BUNDLES } from '../contracts/seed.mjs'
 import { claudeAgentsImportFailure, copilotAgentsPointerFailure } from '../contracts/contracts.mjs'
 import { referenceOf, referenceCovers, selectedDocuments } from './document-context.mjs'
-import { SURFACE_INDEX, workKind, workflowContext } from './surface-context.mjs'
+import { SURFACE_INDEX, workKind, workflowContext, loopDeclarationFailures } from './surface-context.mjs'
 
 const hash = (value) => createHash('sha256').update(value).digest('hex')
 const readJson = (file) => JSON.parse(readFileSync(file, 'utf8'))
@@ -216,6 +216,8 @@ export function prepare(root, session, checkpointFile, snapshot = outputSnapshot
   if (!Array.isArray(contracts) || !contracts.every((item) => SEED_BUNDLES.some((bundle) => bundle.id === item.id) && ['adopt', 'modify', 'exclude'].includes(item.decision) && text(item.reason))) throw new Error('Declare known seed bundle decisions and reasons; discover IDs with node scripts/agents/cli.mjs bundle (contracts may be empty when none apply)')
   if (new Set(contracts.map((item) => item.id)).size !== contracts.length) throw new Error('Duplicate contract decisions')
   if (!Array.isArray(unresolved) || !unresolved.every((item) => text(item.question) && Array.isArray(item.paths) && item.paths.length > 0 && item.paths.every((path) => text(path) && within(path, scope)))) throw new Error('Unresolved questions must name affected paths inside scope')
+  const loopFail = loopDeclarationFailures(checkpoint)[0]
+  if (loopFail) throw new Error(loopFail)
   const context = workflowContext(root, checkpoint)
   const bundleRefs = contracts.flatMap(({ id }) => {
     const bundle = SEED_BUNDLES.find((candidate) => candidate.id === id)

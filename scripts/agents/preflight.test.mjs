@@ -27,6 +27,12 @@ function setup() {
   return { root, checkpoint }
 }
 const fingerprint = (root) => ({ 'scripts/example.mjs': readFileSync(join(root, 'scripts/example.mjs'), 'utf8') })
+const loop = {
+  grain: 'structure',
+  entry: 'scripts/',
+  mode: 'implement',
+  design: { flow: 'script', ownership: 'file', reuse: 'exclude', simplicity: 'one owner' },
+}
 afterEach(() => { for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true }) })
 
 describe('repository preflight', () => {
@@ -232,7 +238,7 @@ describe('repository preflight', () => {
     const { root, checkpoint } = setup()
     // `unimplemented` skips the per-requirement file check, so the claim check is what accounts for writes.
     const flow = {
-      ...checkpoint, work: { kind: 'workflow' }, surfaces: [],
+      ...checkpoint, ...loop, work: { kind: 'workflow' }, surfaces: [],
       requirements: [{ ...checkpoint.requirements[0], surfaces: [], sources: ['user'], contracts: [], contractReason: 'No seed bundle applies.' }],
       evidenceGaps: [{ paths: ['scripts/'], requirements: ['R1'], reason: 'Unindexed fixture surface.', references: ['AGENTS.md'] }],
     }
@@ -321,6 +327,9 @@ describe('repository preflight', () => {
     }
     const feature = {
       ...checkpoint,
+      ...loop,
+      grain: 'screen',
+      entry: 'members-list',
       scope: ['src/features/members/screens/list/'],
       references: ['AGENTS.md', '.agents/skills/feature-contract/SKILL.md', '.agents/skills/screen-loop/SKILL.md'],
     }

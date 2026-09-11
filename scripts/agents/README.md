@@ -8,9 +8,10 @@ Hooks verify routing, declarations and output scope, never policy truth or compr
 ## Know which entry the request is
 
 Classify **grain** then kind before loading path skills. A whole screen, one component, and one
-file-structure request share the loop and differ in entry, truth, and scope. Drill is opt-in
-(the user says 드릴, or this repository's document loop is under test — checkpoint `work.kind` stays `workflow` or `infrastructure`, never `drill`);
-an existing route does not force it.
+file-structure request share the loop and differ in entry, truth, and scope. Put `grain`, `entry`,
+and `mode` on the workflow checkpoint — `prepare` rejects if they are missing. Drill is `mode`, not
+`work.kind` (opt-in: the user says 드릴, or this repository's document loop is under test).
+An existing route does not force drill.
 
 | grain | kind | entry | truth source | scope |
 | --- | --- | --- | --- | --- |
@@ -181,10 +182,10 @@ return points — declared maintenance/infrastructure work does not; an API path
 and an app error-boundary path also needs shared-ui-contract.
 For file creation, relocation or ownership changes, also declare/read folder-structure-contract.
 The path-only hook cannot distinguish a behavioral edit from a placement decision; review owns that distinction.
-Publish four design facts with the checkpoint (the gate does not score them): the call flow, the single
-owner of each state, adopt/modify/exclude for each consumed contract, and why any new file or layer
-reduces tracking cost. Missing those facts is not a prepare failure; a reuse, ownership or simplicity
-defect found later returns to that declaration.
+A workflow checkpoint must declare `grain` (`screen|slice|component|structure`), `entry` (context id,
+bundle id, or role `형태` path), `mode` (`implement|drill`), and `design.flow` / `ownership` / `reuse` /
+`simplicity`. `prepare` rejects the task if any is missing. It still does not score the *quality* of
+those sentences; a reuse, ownership or simplicity defect found later returns to N3.
 Contract IDs must come from `bundle`, not component/hook names or invented labels:
 
 ```json
