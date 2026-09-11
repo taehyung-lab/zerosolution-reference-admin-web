@@ -1,0 +1,90 @@
+{
+  "board": {
+    "title": "게시판",
+    "breadcrumb": {
+      "community": "커뮤니티",
+      "boards": "게시판"
+    },
+    "filter": {
+      "title": "검색 조건",
+      "collapse": "검색 조건 접기",
+      "expand": "검색 조건 펼치기",
+      "submit": "검색",
+      "reset": "초기화",
+      "all": "전체",
+      "period": {
+        "label": "기간",
+        "criterion": "기간 기준",
+        "presetGroup": "기간 빠른 선택",
+        "from": "시작일",
+        "to": "종료일",
+        "calendar": "달력 열기"
+      },
+      "keyword": {
+        "label": "검색어",
+        "field": "검색 대상",
+        "name": "게시판명",
+        "input": "검색어",
+        "add": "추가",
+        "remove": "검색어 삭제",
+        "chip": "{{field}} : {{value}}"
+      },
+      "type": { "label": "유형" },
+      "category": { "label": "구분" },
+      "usage": { "label": "사용상태" },
+      "permission": {
+        "write": "권한 쓰기",
+        "read": "권한 읽기",
+        "any": "전체"
+      }
+    },
+    "result": {
+      "pageSize": "보기",
+      "sort": "정렬",
+      "empty": "일치하는 검색결과가 없습니다.",
+      "pagination": {
+        "label": "페이지 이동",
+        "previous": "이전",
+        "next": "다음"
+      }
+    },
+    "sort": {
+      "registeredAt": "등록일",
+      "updatedAt": "최근업데이트일",
+      "type": "유형",
+      "category": "구분",
+      "name": "게시판명",
+      "permission": "권한",
+      "postCount": "게시물수"
+    },
+    "columns": {
+      "no": "No.",
+      "type": "유형",
+      "category": "구분",
+      "name": "게시판명",
+      "writePermission": "쓰기",
+      "readPermission": "읽기",
+      "postCount": "게시물수",
+      "posts": "게시물",
+      "postsView": "조회",
+      "usage": "사용상태",
+      "registeredAt": "등록일",
+      "updatedAt": "최근업데이트일"
+    },
+    "values": {
+      "type": { "GENERAL": "일반" },
+      "category": { "GENERAL": "일반", "COUNSEL": "상담" },
+      "usage": { "IN_USE": "사용", "NOT_IN_USE": "사용안함" },
+      "permission": {
+        "INCLUDING_GUEST": "비회원 포함",
+        "ALL_MEMBERS": "전체회원",
+        "MEMBER_GRADE": "회원등급",
+        "MANAGER": "운영자"
+      },
+      "periodType": {
+        "registeredAt": "등록일",
+        "updatedAt": "최근업데이트일"
+      }
+    }
+  }
+}

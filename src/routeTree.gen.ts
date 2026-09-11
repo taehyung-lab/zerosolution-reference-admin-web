@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as AppCommunityBoardsRouteImport } from './routes/_app/community/boards'
 import { Route as AppManagersIndexRouteImport } from './routes/_app/managers/index'
 import { Route as AppManagersNewRouteImport } from './routes/_app/managers/new'
 import { Route as AppMembersAccessRouteImport } from './routes/_app/members/access'
@@ -45,6 +46,11 @@ const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AppCommunityBoardsRoute = AppCommunityBoardsRouteImport.update({
+  id: '/community/boards',
+  path: '/community/boards',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppManagersIndexRoute = AppManagersIndexRouteImport.update({
   id: '/managers/',
@@ -151,6 +157,7 @@ const AppPerformancesPerformanceIdIndexRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/community/boards': typeof AppCommunityBoardsRoute
   '/managers/new': typeof AppManagersNewRoute
   '/members/access': typeof AppMembersAccessRoute
   '/members/counsel': typeof AppMembersCounselRoute
@@ -174,6 +181,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/community/boards': typeof AppCommunityBoardsRoute
   '/managers/new': typeof AppManagersNewRoute
   '/members/access': typeof AppMembersAccessRoute
   '/members/counsel': typeof AppMembersCounselRoute
@@ -199,6 +207,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
+  '/_app/community/boards': typeof AppCommunityBoardsRoute
   '/_app/managers/new': typeof AppManagersNewRoute
   '/_app/members/access': typeof AppMembersAccessRoute
   '/_app/members/counsel': typeof AppMembersCounselRoute
@@ -224,6 +233,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/community/boards'
     | '/managers/new'
     | '/members/access'
     | '/members/counsel'
@@ -247,6 +257,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
+    | '/community/boards'
     | '/managers/new'
     | '/members/access'
     | '/members/counsel'
@@ -271,6 +282,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_app'
     | '/login'
+    | '/_app/community/boards'
     | '/_app/managers/new'
     | '/_app/members/access'
     | '/_app/members/counsel'
@@ -320,6 +332,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_app/community/boards': {
+      id: '/_app/community/boards'
+      path: '/community/boards'
+      fullPath: '/community/boards'
+      preLoaderRoute: typeof AppCommunityBoardsRouteImport
+      parentRoute: typeof AppRoute
     }
     '/_app/managers/': {
       id: '/_app/managers/'
@@ -458,6 +477,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
+  AppCommunityBoardsRoute: typeof AppCommunityBoardsRoute
   AppManagersNewRoute: typeof AppManagersNewRoute
   AppMembersAccessRoute: typeof AppMembersAccessRoute
   AppMembersCounselRoute: typeof AppMembersCounselRoute
@@ -480,6 +500,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppCommunityBoardsRoute: AppCommunityBoardsRoute,
   AppManagersNewRoute: AppManagersNewRoute,
   AppMembersAccessRoute: AppMembersAccessRoute,
   AppMembersCounselRoute: AppMembersCounselRoute,

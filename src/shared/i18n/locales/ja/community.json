@@ -1,0 +1,90 @@
+{
+  "board": {
+    "title": "掲示板",
+    "breadcrumb": {
+      "community": "コミュニティ",
+      "boards": "掲示板"
+    },
+    "filter": {
+      "title": "検索条件",
+      "collapse": "検索条件を折りたたむ",
+      "expand": "検索条件を展開する",
+      "submit": "検索",
+      "reset": "初期化",
+      "all": "すべて",
+      "period": {
+        "label": "期間",
+        "criterion": "期間の基準",
+        "presetGroup": "期間クイック選択",
+        "from": "開始日",
+        "to": "終了日",
+        "calendar": "カレンダーを開く"
+      },
+      "keyword": {
+        "label": "検索語",
+        "field": "検索対象",
+        "name": "掲示板名",
+        "input": "検索語",
+        "add": "追加",
+        "remove": "検索語を削除",
+        "chip": "{{field}} : {{value}}"
+      },
+      "type": { "label": "タイプ" },
+      "category": { "label": "区分" },
+      "usage": { "label": "使用状態" },
+      "permission": {
+        "write": "権限 書き込み",
+        "read": "権限 読み取り",
+        "any": "すべて"
+      }
+    },
+    "result": {
+      "pageSize": "表示",
+      "sort": "並び替え",
+      "empty": "一致する検索結果がありません。",
+      "pagination": {
+        "label": "ページ移動",
+        "previous": "前へ",
+        "next": "次へ"
+      }
+    },
+    "sort": {
+      "registeredAt": "登録日",
+      "updatedAt": "最終更新日",
+      "type": "タイプ",
+      "category": "区分",
+      "name": "掲示板名",
+      "permission": "権限",
+      "postCount": "投稿数"
+    },
+    "columns": {
+      "no": "No.",
+      "type": "タイプ",
+      "category": "区分",
+      "name": "掲示板名",
+      "writePermission": "書き込み",
+      "readPermission": "読み取り",
+      "postCount": "投稿数",
+      "posts": "投稿",
+      "postsView": "照会",
+      "usage": "使用状態",
+      "registeredAt": "登録日",
+      "updatedAt": "最終更新日"
+    },
+    "values": {
+      "type": { "GENERAL": "一般" },
+      "category": { "GENERAL": "一般", "COUNSEL": "相談" },
+      "usage": { "IN_USE": "使用", "NOT_IN_USE": "使用しない" },
+      "permission": {
+        "INCLUDING_GUEST": "非会員を含む",
+        "ALL_MEMBERS": "全会員",
+        "MEMBER_GRADE": "会員等級",
+        "MANAGER": "運営者"
+      },
+      "periodType": {
+        "registeredAt": "登録日",
+        "updatedAt": "最終更新日"
+      }
+    }
+  }
+}

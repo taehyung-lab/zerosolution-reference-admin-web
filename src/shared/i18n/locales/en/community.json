@@ -1,0 +1,90 @@
+{
+  "board": {
+    "title": "Boards",
+    "breadcrumb": {
+      "community": "Community",
+      "boards": "Boards"
+    },
+    "filter": {
+      "title": "Search conditions",
+      "collapse": "Collapse search conditions",
+      "expand": "Expand search conditions",
+      "submit": "Search",
+      "reset": "Reset",
+      "all": "All",
+      "period": {
+        "label": "Period",
+        "criterion": "Period basis",
+        "presetGroup": "Quick period",
+        "from": "Start date",
+        "to": "End date",
+        "calendar": "Open calendar"
+      },
+      "keyword": {
+        "label": "Keyword",
+        "field": "Search target",
+        "name": "Board name",
+        "input": "Keyword",
+        "add": "Add",
+        "remove": "Remove keyword",
+        "chip": "{{field}} : {{value}}"
+      },
+      "type": { "label": "Type" },
+      "category": { "label": "Category" },
+      "usage": { "label": "Usage" },
+      "permission": {
+        "write": "Write permission",
+        "read": "Read permission",
+        "any": "All"
+      }
+    },
+    "result": {
+      "pageSize": "View",
+      "sort": "Sort",
+      "empty": "No matching search results.",
+      "pagination": {
+        "label": "Pagination",
+        "previous": "Previous",
+        "next": "Next"
+      }
+    },
+    "sort": {
+      "registeredAt": "Registered date",
+      "updatedAt": "Last updated date",
+      "type": "Type",
+      "category": "Category",
+      "name": "Board name",
+      "permission": "Permission",
+      "postCount": "Posts"
+    },
+    "columns": {
+      "no": "No.",
+      "type": "Type",
+      "category": "Category",
+      "name": "Board name",
+      "writePermission": "Write",
+      "readPermission": "Read",
+      "postCount": "Posts",
+      "posts": "Post list",
+      "postsView": "View",
+      "usage": "Usage",
+      "registeredAt": "Registered date",
+      "updatedAt": "Last updated date"
+    },
+    "values": {
+      "type": { "GENERAL": "General" },
+      "category": { "GENERAL": "General", "COUNSEL": "Counsel" },
+      "usage": { "IN_USE": "In use", "NOT_IN_USE": "Not in use" },
+      "permission": {
+        "INCLUDING_GUEST": "Including guests",
+        "ALL_MEMBERS": "All members",
+        "MEMBER_GRADE": "Member grade",
+        "MANAGER": "Manager"
+      },
+      "periodType": {
+        "registeredAt": "Registered date",
+        "updatedAt": "Last updated date"
+      }
+    }
+  }
+}
