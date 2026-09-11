@@ -3,7 +3,37 @@
     "title": "掲示板",
     "breadcrumb": {
       "community": "コミュニティ",
-      "boards": "掲示板"
+      "boards": "掲示板",
+      "detail": "照会",
+      "create": "登録",
+      "edit": "修正"
+    },
+    "detail": {
+      "title": "掲示板照会",
+      "section": "掲示板情報",
+      "writePermission": "書き込み権限",
+      "readPermission": "読み取り権限",
+      "emptyValue": "-",
+      "history": "更新履歴",
+      "historyDate": "更新日",
+      "historyChange": "更新内容",
+      "historyManager": "担当者",
+      "historyEmpty": "更新履歴はありません。",
+      "historyUnknownField": "不明な項目が変更されました。",
+      "edit": "修正",
+      "delete": "削除",
+      "deleteConfirm": "削除しますか？"
+    },
+    "form": {
+      "createTitle": "掲示板登録",
+      "editTitle": "掲示板修正",
+      "section": "掲示板情報",
+      "selectPlaceholder": "選択",
+      "errors": {
+        "category": "区分を選択してください。",
+        "name": "掲示板名を入力してください。",
+        "writePermission": "書き込み権限を選択してください。"
+      }
     },
     "filter": {
       "title": "検索条件",
@@ -42,6 +72,7 @@
     "result": {
       "pageSize": "表示",
       "sort": "並び替え",
+      "create": "登録",
       "empty": "一致する検索結果がありません。",
       "pagination": {
         "label": "掲示板一覧のページ",
@@ -74,7 +105,7 @@
     },
     "values": {
       "type": { "GENERAL": "一般" },
-      "category": { "GENERAL": "一般", "COUNSEL": "相談" },
+      "category": { "GENERAL": "一般", "COUNSEL": "相談", "NOTICE": "お知らせ" },
       "usage": { "IN_USE": "使用", "NOT_IN_USE": "使用しない" },
       "permission": {
         "INCLUDING_GUEST": "非会員を含む",

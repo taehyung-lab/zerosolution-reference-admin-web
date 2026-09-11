@@ -16,9 +16,13 @@ import { useBoardListResult } from './useBoardListResult';
 export function BoardListScreen({
   search: sparse,
   onSearchChange,
+  onActivate,
+  onCreate,
 }: {
   readonly search: BoardListSearch;
   readonly onSearchChange: (next: BoardListSearch) => void;
+  readonly onActivate: (boardId: string) => void;
+  readonly onCreate: () => void;
 }) {
   const { t } = useTranslation('community');
   const search = resolveBoardListSearch(sparse);
@@ -38,6 +42,8 @@ export function BoardListScreen({
         data={{ rows, searched, isPending, isFetching, isError, trace, retry }}
         total={total}
         result={result}
+        onActivate={onActivate}
+        onCreate={onCreate}
       />
     </section>
   );
