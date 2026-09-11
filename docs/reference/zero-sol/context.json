@@ -791,7 +791,10 @@
       "scenarios": [
         "docs/reference/scenarios/exhibition-promotion-community.md"
       ],
-      "paths": [],
+      "paths": [
+        "src/features/community/",
+        "src/routes/_app/community/"
+      ],
       "references": [
         ".agents/skills/feature-contract/references/table-composition.md",
         {
@@ -825,6 +828,22 @@
         {
           "file": "docs/reference/zero-sol-figma-analysis.md",
           "heading": "질문 18"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 23"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 24"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 25"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "질문 26"
         },
         {
           "file": "docs/reference/zero-sol-figma-analysis.md",
