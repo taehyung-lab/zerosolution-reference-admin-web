@@ -103,7 +103,7 @@ description: Use when a request asks to implement one screen or one shared contr
 
 - 게이트는 선언·범위·인용을 검사한다. 2026-09-10 게시판 드릴 3회에서 요구사항 본문을 제품 사실과 반대로 쓴 것, 다른 화면의 컬럼을 넣은 것, 날조한 enum을 요구사항에 제대로 붙인 것이 `prepare`·`review`·lint·test를 전부 통과했다. N6의 독립 검토가 판단 내용을 보는 유일한 검사다.
 - `prepare`가 이 스킬을 필수 참조로 요구하는 것은 기본 workflow의 `src/features`·`src/routes` 범위(화면 진입)뿐이다. 공용 계약 진입(`src/shared`)은 AGENTS §2 첫 행이 라우팅하고 게이트는 강제하지 않는다.
-- 화면 형태 검사(`scripts/contracts/screen-shape.mjs`)는 파일 이름·위치·존재와 목록 route 의 e2e 배열 합류만 본다. 보지 않는 것: 이름 관례(`*Filters.tsx`·`use*Result.ts`·`*DetailScreen.tsx`·`*CreateScreen.tsx`)를 따르지 않는 화면(역할이 없어 무검사), 한 디렉터리의 두 스택, mechanic 위임 뒤 그 mechanic 의 실제 파일, URL 필드 이름·값 모양, `locale` 타입. 그 다섯은 N4′ 표와 리뷰가 본다.
+- 화면 형태 검사(`scripts/contracts/screen-shape.mjs`)는 파일 이름·위치·존재, 목록 route 의 e2e 배열 합류, 그리고 소스 두 가지(`$param` route 의 `loader`, columns 파일의 aria 어휘 리터럴·`headerSortDirection` import)만 본다. 보지 않는 것: 이름 관례(`*Filters.tsx`·`use*Result.ts`·`*DetailScreen.tsx`·`*CreateScreen.tsx`)를 따르지 않는 화면(역할이 없어 무검사), 한 디렉터리의 두 스택, mechanic 위임 뒤 그 mechanic 의 실제 파일, URL 필드 이름·값 모양, `locale` 타입. 그 다섯은 N4′ 표와 리뷰가 본다.
 - 도구가 원문을 잘라 낼 수 있다. 읽는 방법은 [runtime-adapters.md](../../../scripts/agents/runtime-adapters.md)가 소유한다.
 - 형제 화면의 제품 값을 근거 없이 가져오지 않고, 답지 사실을 규칙으로 승격하지 않고, 원장에 없는 문구·상태·권한·기본값을 추측하지 않는다. 구조는 형태 절이 정하고 검사기가 본다. 이 절차는 설명 없이 진행하기 위한 것이지 사용자 질문을 대신하는 것이 아니다.
 - 읽기 비용: 화면에 있는 역할의 형태 절만 읽으면 구조를 시작할 수 있다(목록이면 목록·URL 필드·route 세 절, 2026-09-10 실측 약 5.4KB). 그 앞에 AGENTS §2 가 요구하는 SKILL 전체 읽기(feature·folder-structure·이 문서, 약 33KB)가 있으므로 형태 절은 Read 의 offset 으로 절만 읽는다. 검사 실패 문구가 읽을 절을 지목하므로 다른 절을 미리 열지 않는다.

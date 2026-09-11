@@ -1,7 +1,7 @@
 /** 제품 화면의 임시 응답 공급 경계다. 리허설 API enum과 제품 상태를 임의로 대응시키지 않는다. */
 import { ApiError } from "@/api/error";
 import { localizedQueryKey } from "@/api/query-key";
-import { blockingProgress, inlineProgress } from "@/api/query-meta";
+import { inlineProgress } from "@/api/query-meta";
 import { queryOptions } from "@tanstack/react-query";
 import {
   readManagerDirectoryPermissionOptions,
@@ -33,7 +33,6 @@ export function managerDirectoryDetailQuery(locale: string, id: string) {
           });
         return record;
       }),
-    ...blockingProgress,
   });
 }
 /** 유형 옵션은 선행 조건이 없어 목록 필터와 등록·수정 폼이 같은 캐시를 쓴다. */

@@ -7,10 +7,14 @@ import { MessageComposerDialog } from "@/features/messaging/screens/compose/ui/M
 import { DetailStateBoundary } from "@/shared/ui/patterns/DetailStateBoundary";
 import { PageHeader } from "@/shared/ui/patterns/PageHeader";
 import { Button } from "@/shared/ui/primitives/Button";
+import { loadRequired } from "@/app/router/required-loader";
+import { managerDirectoryDetailQuery } from "@/features/managers/api/directory-queries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/_app/managers/$managerId/")({
+  loader: ({ context, params, preload }) =>
+    loadRequired(context.queryClient, managerDirectoryDetailQuery(context.locale, params.managerId), { preload }),
   component: ManagerDetailRoute,
 });
 

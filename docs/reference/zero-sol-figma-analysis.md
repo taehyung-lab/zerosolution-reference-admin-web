@@ -95,6 +95,10 @@
 
 3. 정렬 방향을 바꾸는 UI가 있는가(헤더 아이콘 클릭?). 임시 답(2026-09-02): 활성 헤더 클릭이 유일한 방향 전환 UI이고 Select에서 다른 값을 고르면 방향은 유지된다. **확정(2026-09-11 사용자, 목록 공통): 기본 방향은 `desc`(최신 먼저)이고 활성 컬럼은 첫 렌더부터 방향을 표시한다.** URL 계약이 `sortDirection.defaultValue` 로 선언하고 `headerSortDirection`(`shared/lib/list-sort.ts`)이 aria 어휘로 옮긴다([list-workflow Sorting](../../.agents/skills/feature-contract/references/list-workflow.md#sorting)). 남은 질문: 비활성 sortable 헤더에도 아이콘을 보이는지, Figma 아이콘이 방향을 뜻하는지(실측 대기).
 
+### 접근권한 오류 페이지
+
+2026-09-11 사용자 결정·이탈 기록. Figma 1.4.3(01-common.md 1.4 공통화면 행)은 전체 회색 화면 + 문장 + `이전 화면으로 이동` 하나다. 이전 구현의 `AlertDialog` 는 그 frame 의 이탈이었고 `AccessDeniedPage`(전면 커버, Radix modal) 로 맞췄다. 사용자 지시("오류·404·권한없음 페이지를 잘 꾸민다")로 frame 에 없는 것을 둘 더했다: 상태 숫자 `403` 폴리오와 강조색 `#E4002B`(Swiss Red, Figma 변수 아님 — app 경계 페이지에서만 쓰며 토큰 승격은 primitives 가 결정). 404·그 외 오류 페이지는 Figma frame 이 없어 같은 구성으로 설계했다. 1.4 행의 미확인 "뒤로가기 대상"은 답이 없어 추론으로 채웠다: 히스토리가 있으면 `history.back()`, 없으면(직접 진입) 홈 링크 — 확정되면 원장 셀을 갱신한다.
+
 ### 질문 4
 
 4. 중복 키워드의 동일성(대상 포함·대소문자·공백) — 회원 공통 구현 시.
@@ -309,7 +313,7 @@ DOM 관련 3건은 2026-09-05 현재 코드를 직접 재대조해 아래 변경
 
 | 조회 종류 | 표면 | 근거·구현 |
 | --- | --- | --- |
-| 화면 진입 목록 결과·상세·수정 조회 (primary) | 전역 `BlockingProgress` "로딩중" | Figma 1.4.1. observed·pending·명시적 `blockingProgress` |
+| 화면 진입 목록 결과 (primary) | 전역 `BlockingProgress` "로딩중" | Figma 1.4.1. observed·pending·명시적 `blockingProgress`. 상세·수정 조회는 route loader 가 기다리고 `RoutePending` 이 대기 표면(2026-09-11) |
 | 검색·정렬·필터·페이지 등 mounted content GET | 기존 결과 유지 + 결과 영역 `aria-busy`, overlay 없음 | `contentProgress` + `keepPreviousData`; 요청 시간으로 blocking 승격하지 않음 |
 | 옵션·lookup (select 선택지) | 필드 inline 상태만, overlay 없음. route loader + preload intent로 warm | `inlineProgress` meta(`api/query-meta.ts`), Managers 3 option query·new/edit loader |
 | mutation (저장) | 전역 "등록중" + 시작 버튼 pending | Figma 1.4.2, `FormSubmitButton pending` |

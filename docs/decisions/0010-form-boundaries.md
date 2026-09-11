@@ -110,7 +110,7 @@ primary Query만 `blocking`, 이미 마운트된 화면의 검색·정렬·필�
 **옵션·lookup 조회는 overlay를 열지 않는다(2026-09-02).** select 선택지 같은 보조 데이터는 `meta.progress: 'inline'`
 (`src/api/query-meta.ts`의 `inlineProgress`)을 선언해 shell predicate에서 제외되고, 필드 자체의 inline 상태
 (`AsyncFieldBoundary`·disabled select)가 로딩을 표현한다. route loader가 진입·preload intent 시 옵션을 warm 해
-대부분 필드가 마운트되기 전에 준비된다. overlay는 **화면 진입 primary data**(searched URL의 최초 목록 결과·상세·수정 조회)와 mutation만 덮고,
+대부분 필드가 마운트되기 전에 준비된다. overlay는 **화면 진입 primary data**(searched URL의 최초 목록 결과; 상세·수정 조회는 2026-09-11 이후 route loader 가 기다려 overlay 대상이 아니다)와 mutation만 덮고,
 mutation을 시작한 버튼은 자기 pending 상태(`FormSubmitButton pending`)도 함께 보인다. 다운로드·일괄 작업이 overlay를
 여는지는 Figma에 frame이 없어 미확인이며 버튼 pending만으로 시작한다.
 

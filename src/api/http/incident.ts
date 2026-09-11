@@ -29,6 +29,11 @@ export type Incident =
     }
   | {
       readonly type: 'forbidden'
+      /**
+       * `route-loader`: a navigation's required query was refused. The query has no observer yet, so
+       * the boundary would otherwise ignore it like a preload; the loader republishes with this mark.
+       */
+      readonly origin?: 'route-loader' | undefined
       readonly status?: number | undefined
       readonly code?: string | undefined
       readonly requestId?: string | undefined

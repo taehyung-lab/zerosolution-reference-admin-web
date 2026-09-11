@@ -1,5 +1,7 @@
 {
-  "pageHeader": { "breadcrumb": "현재 위치" },
+  "pageHeader": {
+    "breadcrumb": "현재 위치"
+  },
   "error": {
     "kind": {
       "network": "네트워크 연결을 확인한 뒤 다시 시도해 주세요.",
@@ -33,7 +35,11 @@
       "retry": "다시 시도",
       "home": "홈으로 이동"
     },
-    "notFound": "페이지를 찾을 수 없습니다."
+    "notFound": "페이지를 찾을 수 없습니다.",
+    "notFoundPage": {
+      "title": "찾을 수 없습니다",
+      "back": "이전 화면으로 이동"
+    }
   },
   "asyncField": {
     "loading": "옵션을 불러오는 중입니다.",

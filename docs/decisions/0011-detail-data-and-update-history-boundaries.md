@@ -105,3 +105,7 @@ generated (HTTP 함수·DTO)
 - `useDetailQuery` 가 Router·permission·domain mode 인자를 요구하게 될 때(demotion 신호)
 
 재검토는 투표가 아니라 실제 diff, focused test, 브라우저 실측으로 판정한다.
+
+## 후속 (2026-09-11)
+
+- 상세·수정 route 가 `loader` 에서 같은 query options 를 `loadRequired`(`src/app/router/required-loader.ts`) 로 기다린다. `not-found` 는 Router `notFound({ data: { kind: 'record' } })` 로 `_app` 의 notFound 페이지(셸 유지), 403·401 은 `IncidentBoundary`(loader 가 `origin: 'route-loader'` 로 재발행, error 컴포넌트는 null), 그 외는 `_app` 의 error 페이지. 위 판정(`useDetailQuery` → `DetailStateBoundary`)은 진입 이후 전이(refetch 실패·삭제)에만 적용된다. 사용자 확정. 소유자는 [router.md](../../.agents/skills/feature-contract/references/router.md#loader-and-preload).

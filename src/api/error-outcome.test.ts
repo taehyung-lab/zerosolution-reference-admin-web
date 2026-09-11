@@ -43,4 +43,10 @@ describe('operation context + ApiError kind outcome', () => {
     'routes %s failures to root',
     (context) => expect(resolveErrorOutcome(context, 'contract')).toBe('root'),
   )
+
+  it('keeps a route loader session or access failure with the incident boundary', () => {
+    expect(resolveErrorOutcome('route-loader', 'forbidden')).toBe('incident')
+    expect(resolveErrorOutcome('route-loader', 'unauthorized')).toBe('incident')
+    expect(resolveErrorOutcome('route-loader', 'not-found')).toBe('root')
+  })
 })

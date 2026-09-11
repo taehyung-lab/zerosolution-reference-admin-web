@@ -38,6 +38,7 @@ import {
   readDeclaredPaths,
 } from './api-surface.mjs'
 import {
+  detailRouteLoaderFailures,
   listRouteCoverageFailures,
   resolvedShapeExceptionFailures,
   screenShapeFailures,
@@ -128,6 +129,7 @@ failures.push(...transplantSentinelFailures(documents))
 // 화면 형태: 역할별 reference 의 형태 절이 정한 파일 집합·위치와, 목록 route 의 계약 e2e 합류.
 failures.push(...screenShapeFailures(process.cwd()))
 failures.push(...listRouteCoverageFailures(process.cwd()))
+failures.push(...detailRouteLoaderFailures(process.cwd()))
 failures.push(...resolvedShapeExceptionFailures(process.cwd()))
 notes.push(...screenShapeNotices(process.cwd()))
 

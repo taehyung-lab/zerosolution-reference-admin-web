@@ -2,10 +2,14 @@ import { useMemberDetail } from "@/features/members/api/useMemberDetail";
 import { requestMemberEdit } from "@/features/members/screens/form/model/member-form-requests";
 import { MemberEditScreen } from "@/features/members/screens/form/ui/MemberEditScreen";
 import { DetailStateBoundary } from "@/shared/ui/patterns/DetailStateBoundary";
+import { loadRequired } from "@/app/router/required-loader";
+import { memberDetailQuery } from "@/features/members/api/detail-queries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/_app/members/$memberId/edit")({
+  loader: ({ context, params, preload }) =>
+    loadRequired(context.queryClient, memberDetailQuery(context.locale, params.memberId), { preload }),
   component: MemberEditRoute,
 });
 
@@ -21,7 +25,7 @@ function MemberEditRoute() {
         state={query.state}
         labels={{
           error: shared("error.unexpected.body"),
-          notFound: shared("error.notFound"),
+          notFound: shared("error.kind.notFound"),
         }}
         retryLabel={shared("error.unexpected.retry")}
         onRetry={() => {

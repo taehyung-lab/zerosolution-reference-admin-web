@@ -10,7 +10,7 @@
 | 1.3 Alert | confirm dialog | 제목 "알림" + 문장 1개 + `확인`(primary)·`취소`. 삭제 확인·화면 이동·선택 변경·상태 변경·저장 확인 5종을 렌더와 레이어로 확인 | (대기) | — | `ConfirmDialog`류 |
 | 1.3 Alert | complete dialog | `확인`만: 삭제 완료·변경 완료·저장 완료. 세션 초기화 alert 별도 | (대기) | 자동 닫힘 여부 | — |
 | 1.4 공통화면 | blocking overlay | 1.4.1 로딩중 · 1.4.2 등록중 — 전체 화면 overlay(레이어 이름, 기존 원장 실측) | (대기) | — | `BlockingProgress` |
-| 1.4 공통화면 | 권한 오류 | 전체 회색 화면 "접근권한이 없습니다. 이전 화면으로 이동하세요." + `이전 화면으로 이동` 버튼 | (대기) | 뒤로가기 대상 | `IncidentBoundary` |
+| 1.4 공통화면 | 권한 오류 | 전체 회색 화면 "접근권한이 없습니다. 이전 화면으로 이동하세요." + `이전 화면으로 이동` 버튼 | (대기) | 뒤로가기 대상 | `IncidentBoundary` → `AccessDeniedPage`(`app/error-boundary/StatusPage.tsx`) |
 | 1.4 공통화면 (`177:5616`) | 세션종료 팝업 | 제목 `세션종료 안내`, 30분 미사용 후 자동 로그아웃 예정 안내, `로그아웃까지 남은 시간 60초`와 연장 확인 | (대기) | Figma 60초와 Notion 5분 카운트가 같은 시점을 뜻하는지 | — |
 
 ## 1.3 Alert · 1.4 공통화면 frame별 카피 (2026-08-31 원장에서 이관, 실측값)
@@ -36,7 +36,7 @@
 | --- | --- | --- |
 | `1.4.1 로딩중` | 전체 화면 회색 overlay, spinner, `데이터를 불러오는 중입니다. 잠시만 기다려 주세요.` | app-wide pending first-fetch 표면 |
 | `1.4.2 등록중` | 동일 표면, `등록 중입니다. 잠시만 기다려 주세요.` | app-wide mutation 표면; 수정도 임시 재사용 |
-| `1.4.3 접근권한 오류` | `접근권한이 없습니다. 이전 화면으로 이동하세요.` / `이전 화면으로 이동` | app incident이며 이번 구현 범위 밖 |
+| `1.4.3 접근권한 오류` | `접근권한이 없습니다. 이전 화면으로 이동하세요.` / `이전 화면으로 이동` | app incident. 판정·이탈은 [판정 문서](../zero-sol-figma-analysis.md#접근권한-오류-페이지) |
 | `1.4.4 팝업-세션종료 알림` | 작은 dialog; 30분 미사용 안내와 남은 시간 60초 | session boundary이며 이번 구현 범위 밖 |
 
 ## Notion 요점 (원문: [notion/01-common.md](notion/01-common.md), [notion/99-cross-screen.md](notion/99-cross-screen.md))

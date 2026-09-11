@@ -1,6 +1,7 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { createRouter, RouterProvider, type RouterHistory } from '@tanstack/react-router'
 import { routeTree } from '@/routeTree.gen'
+import { RoutePending } from './RoutePending'
 import { useLocale } from '@/shared/i18n/locale-context'
 import { DEFAULT_UI_LOCALE, type UiLocale } from '@/shared/i18n/locale'
 
@@ -21,6 +22,8 @@ export function createAppRouter({ queryClient, history }: CreateAppRouterOptions
     history,
     defaultPreload: 'intent',
     defaultPreloadStaleTime: 0,
+    // Detail/edit loaders await their record; the observerless query cannot open BlockingProgress.
+    defaultPendingComponent: RoutePending,
     scrollRestoration: true,
   })
 }

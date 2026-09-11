@@ -8,9 +8,13 @@ import { requestMessageSend } from "@/features/messaging/screens/compose/model/m
 import { useMessageComposer } from "@/features/messaging/screens/compose/model/useMessageComposer";
 import { MessageComposerDialog } from "@/features/messaging/screens/compose/ui/MessageComposerDialog";
 import { DetailStateBoundary } from "@/shared/ui/patterns/DetailStateBoundary";
+import { loadRequired } from "@/app/router/required-loader";
+import { appealDetailQuery } from "@/features/members/api/detail-queries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 export const Route = createFileRoute("/_app/members/appeals/$appealId")({
+  loader: ({ context, params, preload }) =>
+    loadRequired(context.queryClient, appealDetailQuery(context.locale, params.appealId), { preload }),
   component: AppealRoute,
 });
 function AppealRoute() {
@@ -35,7 +39,7 @@ function AppealRoute() {
         state={query.state}
         labels={{
           error: shared("error.unexpected.body"),
-          notFound: shared("error.notFound"),
+          notFound: shared("error.kind.notFound"),
         }}
         retryLabel={shared("error.unexpected.retry")}
         onRetry={() => {

@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import {
+  detailRouteLoaderFailures,
   listRouteCoverageFailures,
   resolvedShapeExceptionFailures,
   screenRoles,
@@ -162,5 +163,17 @@ describe('screen shape', () => {
     expect(resolvedShapeExceptionFailures(closed, exceptions)).toEqual([expect.stringMatching(/예외 해소됨 — SHAPE_EXCEPTIONS 에서 지운다/)])
     const gone = fixture({})
     expect(resolvedShapeExceptionFailures(gone, exceptions)).toEqual([expect.stringMatching(/화면이 없다 — SHAPE_EXCEPTIONS 에서 지운다/)])
+  })
+  it('requires every $param route leaf to await its record in a loader', () => {
+    const root = fixture({
+      'src/routes/_app/things/$thingId/index.tsx': 'export const Route = createFileRoute("/_app/things/$thingId/")({ component: Detail })',
+      'src/routes/_app/things/$thingId/edit.tsx': 'export const Route = createFileRoute("/_app/things/$thingId/edit")({ loader: ({ context, params }) => loadRequired(context.queryClient, thingDetailQuery(context.locale, params.thingId)), component: Edit })',
+      'src/routes/_app/things/$thingId/route.tsx': 'export const Route = createFileRoute("/_app/things/$thingId")({ component: Layout })',
+      'src/routes/_app/things/$thingId/index.test.tsx': 'it("no loader here", () => {})',
+      'src/routes/_app/things/new.tsx': 'export const Route = createFileRoute("/_app/things/new")({ component: Create })',
+    })
+    expect(detailRouteLoaderFailures(root)).toEqual([
+      expect.stringMatching(/things\/\$thingId\/index\.tsx 에 loader 가 없다 → loadRequired.*router\.md#형태/),
+    ])
   })
 })
