@@ -24,7 +24,8 @@ export function useBoardListResult(
       t,
       search,
       offset: (search.page - 1) * search.pageSize,
-      onHeaderSort: (sort: BoardSortKey) => onSearchChange(toHeaderSortSearch(search, sort)),
+      onHeaderSort: (sortType: BoardSortKey) =>
+        onSearchChange(toHeaderSortSearch(search, sortType)),
     }),
     pageSize: {
       value: search.pageSize,
@@ -32,9 +33,9 @@ export function useBoardListResult(
       onValueChange: (pageSize: number) => onSearchChange(toPageSizeSearch(search, pageSize)),
     },
     sort: {
-      value: search.sort,
+      value: search.sortType,
       options: boardSortKeys.map((value) => ({ value, label: t(`board.sort.${value}`) })),
-      onValueChange: (sort: BoardSortKey) => onSearchChange(toSortSearch(search, sort)),
+      onValueChange: (sortType: BoardSortKey) => onSearchChange(toSortSearch(search, sortType)),
     },
     pagination: {
       page: search.page,

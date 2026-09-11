@@ -48,9 +48,14 @@ export type BoardSortKey = (typeof boardSortKeys)[number];
 
 export type BoardSortDirection = 'asc' | 'desc';
 
-/** 검색어 대상은 게시판명 하나다(원문 37행). */
+/** 검색어 대상은 게시판명 하나다(원문 37행). 대상이 하나여도 축을 가진 값으로 다룬다. */
 export const boardKeywordFields = ['name'] as const;
 export type BoardKeywordField = (typeof boardKeywordFields)[number];
+
+export interface BoardKeyword {
+  readonly field: BoardKeywordField;
+  readonly value: string;
+}
 
 export interface BoardRow {
   readonly id: string;
@@ -69,12 +74,12 @@ export interface BoardRow {
 export interface BoardListRequest {
   readonly page: number;
   readonly pageSize: number;
-  readonly sort: BoardSortKey;
+  readonly sortType: BoardSortKey;
   readonly sortDirection?: BoardSortDirection;
   readonly periodType: BoardPeriodType;
   readonly startDateTime?: string;
   readonly endDateTime?: string;
-  readonly names?: readonly string[];
+  readonly keywords?: readonly BoardKeyword[];
   readonly types?: readonly BoardType[];
   readonly categories?: readonly BoardCategory[];
   readonly usages?: readonly BoardUsage[];

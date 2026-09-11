@@ -15,10 +15,10 @@
       "period": {
         "label": "기간",
         "criterion": "기간 기준",
-        "presetGroup": "기간 빠른 선택",
+        "presetGroup": "기간 선택",
         "from": "시작일",
         "to": "종료일",
-        "calendar": "달력 열기"
+        "calendar": "달력"
       },
       "keyword": {
         "label": "검색어",
@@ -26,15 +26,16 @@
         "name": "게시판명",
         "input": "검색어",
         "add": "추가",
-        "remove": "검색어 삭제",
+        "remove": "{{value}} 삭제",
         "chip": "{{field}} : {{value}}"
       },
       "type": { "label": "유형" },
       "category": { "label": "구분" },
       "usage": { "label": "사용상태" },
       "permission": {
-        "write": "권한 쓰기",
-        "read": "권한 읽기",
+        "label": "권한",
+        "write": "쓰기",
+        "read": "읽기",
         "any": "전체"
       }
     },
@@ -43,7 +44,7 @@
       "sort": "정렬",
       "empty": "일치하는 검색결과가 없습니다.",
       "pagination": {
-        "label": "페이지 이동",
+        "label": "게시판 목록 페이지",
         "previous": "이전",
         "next": "다음"
       }

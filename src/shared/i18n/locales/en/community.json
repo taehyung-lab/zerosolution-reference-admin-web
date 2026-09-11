@@ -15,10 +15,10 @@
       "period": {
         "label": "Period",
         "criterion": "Period basis",
-        "presetGroup": "Quick period",
+        "presetGroup": "Date range",
         "from": "Start date",
         "to": "End date",
-        "calendar": "Open calendar"
+        "calendar": "Calendar"
       },
       "keyword": {
         "label": "Keyword",
@@ -26,15 +26,16 @@
         "name": "Board name",
         "input": "Keyword",
         "add": "Add",
-        "remove": "Remove keyword",
+        "remove": "Remove {{value}}",
         "chip": "{{field}} : {{value}}"
       },
       "type": { "label": "Type" },
       "category": { "label": "Category" },
       "usage": { "label": "Usage" },
       "permission": {
-        "write": "Write permission",
-        "read": "Read permission",
+        "label": "Permission",
+        "write": "Write",
+        "read": "Read",
         "any": "All"
       }
     },
@@ -43,7 +44,7 @@
       "sort": "Sort",
       "empty": "No matching search results.",
       "pagination": {
-        "label": "Pagination",
+        "label": "Board pages",
         "previous": "Previous",
         "next": "Next"
       }

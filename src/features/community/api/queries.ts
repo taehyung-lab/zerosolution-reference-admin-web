@@ -1,4 +1,5 @@
 import { queryOptions } from '@tanstack/react-query';
+import type { UiLocale } from '@/shared/i18n/locale';
 import { communityQueryKeys } from './keys';
 import { readBoardListPage } from '../fixtures/boards';
 import type { BoardListPage, BoardListRequest } from '../model/board';
@@ -10,7 +11,7 @@ import type { BoardListPage, BoardListRequest } from '../model/board';
  * 확정되면 여기서 생성된 operation 을 호출하고 fixtures 를 지운다. 요청 입력과 캐시 키는 화면이
  * 해소한 같은 값이므로 그때도 바뀌지 않는다.
  */
-export function boardListQueryOptions(locale: string, request: BoardListRequest) {
+export function boardListQueryOptions(locale: UiLocale, request: BoardListRequest) {
   return queryOptions<BoardListPage>({
     queryKey: communityQueryKeys.boardList(locale, request),
     queryFn: () => readBoardListPage(request),

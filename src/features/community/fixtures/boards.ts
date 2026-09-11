@@ -13,10 +13,10 @@ import type {
  */
 const boards: readonly BoardRow[] = [
   {
-    id: 'board-notice',
+    id: 'reference-board-1',
     type: 'GENERAL',
     category: 'GENERAL',
-    name: '공지사항',
+    name: 'Reference Board 1',
     writePermission: 'MANAGER',
     readPermission: 'INCLUDING_GUEST',
     postCount: 128,
@@ -25,10 +25,10 @@ const boards: readonly BoardRow[] = [
     updatedAt: '2026-08-21T02:40:00.000Z',
   },
   {
-    id: 'board-faq',
+    id: 'reference-board-2',
     type: 'GENERAL',
     category: 'GENERAL',
-    name: '자주 묻는 질문',
+    name: 'Reference Board 2',
     writePermission: 'MANAGER',
     readPermission: 'INCLUDING_GUEST',
     postCount: 64,
@@ -37,10 +37,10 @@ const boards: readonly BoardRow[] = [
     updatedAt: '2026-07-02T23:10:00.000Z',
   },
   {
-    id: 'board-review',
+    id: 'reference-board-3',
     type: 'GENERAL',
     category: 'GENERAL',
-    name: '관람 후기',
+    name: 'Reference Board 3',
     writePermission: 'ALL_MEMBERS',
     readPermission: 'INCLUDING_GUEST',
     postCount: 1042,
@@ -49,10 +49,10 @@ const boards: readonly BoardRow[] = [
     updatedAt: '2026-09-01T08:15:00.000Z',
   },
   {
-    id: 'board-special',
+    id: 'reference-board-4',
     type: 'GENERAL',
     category: 'GENERAL',
-    name: '스페셜 콘텐츠',
+    name: 'Reference Board 4',
     writePermission: 'MEMBER_GRADE',
     readPermission: 'MEMBER_GRADE',
     postCount: 37,
@@ -61,10 +61,10 @@ const boards: readonly BoardRow[] = [
     updatedAt: '2026-05-27T05:45:00.000Z',
   },
   {
-    id: 'board-inquiry',
+    id: 'reference-board-5',
     type: 'GENERAL',
     category: 'COUNSEL',
-    name: '1:1 문의',
+    name: 'Reference Board 5',
     writePermission: 'ALL_MEMBERS',
     readPermission: 'MANAGER',
     postCount: 583,
@@ -73,10 +73,10 @@ const boards: readonly BoardRow[] = [
     updatedAt: '2026-09-05T11:05:00.000Z',
   },
   {
-    id: 'board-refund',
+    id: 'reference-board-6',
     type: 'GENERAL',
     category: 'COUNSEL',
-    name: '환불 상담',
+    name: 'Reference Board 6',
     writePermission: 'ALL_MEMBERS',
     readPermission: 'MANAGER',
     postCount: 91,
@@ -85,10 +85,10 @@ const boards: readonly BoardRow[] = [
     updatedAt: '2026-08-30T13:35:00.000Z',
   },
   {
-    id: 'board-partner',
+    id: 'reference-board-7',
     type: 'GENERAL',
     category: 'COUNSEL',
-    name: '제휴 문의',
+    name: 'Reference Board 7',
     writePermission: 'INCLUDING_GUEST',
     readPermission: 'MANAGER',
     postCount: 12,
@@ -121,7 +121,11 @@ function matches(row: BoardRow, request: BoardListRequest): boolean {
   const instant = request.periodType === 'registeredAt' ? row.registeredAt : row.updatedAt;
   if (request.startDateTime !== undefined && instant < request.startDateTime) return false;
   if (request.endDateTime !== undefined && instant > request.endDateTime) return false;
-  if (request.names?.length && !request.names.some((value) => row.name.includes(value))) return false;
+  if (
+    request.keywords?.length &&
+    !request.keywords.some(({ field, value }) => row[field].includes(value))
+  )
+    return false;
   if (request.types?.length && !request.types.includes(row.type)) return false;
   if (request.categories?.length && !request.categories.includes(row.category)) return false;
   if (request.usages?.length && !request.usages.includes(row.usage)) return false;
@@ -134,8 +138,8 @@ export function readBoardListPage(request: BoardListRequest): Promise<BoardListP
   const filtered = boards.filter((row) => matches(row, request));
   const descending = request.sortDirection === 'desc';
   const sorted = [...filtered].sort((left, right) => {
-    const a = sortValue(left, request.sort);
-    const b = sortValue(right, request.sort);
+    const a = sortValue(left, request.sortType);
+    const b = sortValue(right, request.sortType);
     const order = a === b ? 0 : a < b ? -1 : 1;
     return descending ? -order : order;
   });

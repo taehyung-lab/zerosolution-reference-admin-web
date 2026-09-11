@@ -16,7 +16,7 @@ export function useBoardListFilter(
   const inputs = useListFilterDraft({
     search,
     partition: boardListSearchContract.partition,
-    keywords: search.names.map((value) => ({ field: boardKeywordFields[0], value })),
+    keywords: search.keywords,
     initialKeywordField: boardKeywordFields[0],
   });
 

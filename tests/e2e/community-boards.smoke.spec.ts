@@ -1,5 +1,18 @@
 import { expect, test } from '@playwright/test';
 
+test('@smoke LNB 커뮤니티를 누르면 게시판 목록으로 이동한다', async ({ page }) => {
+  await page.goto('/managers');
+
+  await page
+    .getByRole('navigation')
+    .getByRole('link', { name: '커뮤니티', exact: true })
+    .click();
+
+  await expect(page).toHaveURL(/\/community\/boards$/);
+  await expect(page.getByRole('heading', { name: '게시판', exact: true })).toBeVisible();
+  await expect(page.getByRole('table')).toBeVisible();
+});
+
 test('@smoke 게시판 목록은 진입 즉시 조회하고 초기화 뒤에도 결과를 유지한다', async ({ page }) => {
   await page.goto('/community/boards');
 
@@ -12,12 +25,12 @@ test('@smoke 게시판 목록은 진입 즉시 조회하고 초기화 뒤에도 
   await expect(page.getByRole('option')).toHaveText(['등록일', '최근업데이트일']);
   await page.keyboard.press('Escape');
 
-  await page.getByRole('textbox', { name: '검색어', exact: true }).fill('상담');
+  await page.getByRole('textbox', { name: '검색어', exact: true }).fill('Board 5');
   await page
     .getByRole('form', { name: '검색 조건', exact: true })
     .getByRole('button', { name: '검색', exact: true })
     .click();
-  await expect(page).toHaveURL(/names=/);
+  await expect(page).toHaveURL(/keywords/);
   await expect(page.getByText('검색결과 : 1')).toBeVisible();
 
   await page.getByRole('button', { name: '초기화', exact: true }).click();
@@ -48,7 +61,7 @@ test('@smoke 게시판 목록의 활성 정렬 헤더만 방향을 바꾼다', a
 test('@smoke 일치하는 결과가 없으면 원문 안내 문구를 보여 준다', async ({ page }) => {
   await page.goto('/community/boards');
 
-  await page.getByRole('textbox', { name: '검색어', exact: true }).fill('없는게시판');
+  await page.getByRole('textbox', { name: '검색어', exact: true }).fill('No Such Board');
   await page
     .getByRole('form', { name: '검색 조건', exact: true })
     .getByRole('button', { name: '검색', exact: true })

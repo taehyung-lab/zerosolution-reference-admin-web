@@ -20,6 +20,9 @@ import type { useBoardListFilter } from '../model/useBoardListFilter';
 /** 검색 영역의 "전체"(조건 없음)를 뜻하는 UI 전용 값. URL·요청에는 나가지 않는다. */
 const ANY_PERMISSION = 'ANY';
 
+const toPermission = (value: string | null): BoardPermission | undefined =>
+  value === null || value === ANY_PERMISSION ? undefined : (value as BoardPermission);
+
 export function BoardListFilters({
   filter,
 }: {
@@ -133,38 +136,28 @@ export function BoardListFilters({
           />
         )}
       </FilterField>
-      <FilterField label={t('board.filter.permission.write')}>
-        {({ labelId }) => (
-          <Select
-            aria-labelledby={labelId}
-            className="w-64"
-            options={permissionOptions}
-            value={draft.writePermission ?? ANY_PERMISSION}
-            onValueChange={(value) =>
-              patchDraft({
-                writePermission:
-                  value === null || value === ANY_PERMISSION
-                    ? undefined
-                    : (value as BoardPermission),
-              })}
-          />
-        )}
-      </FilterField>
-      <FilterField label={t('board.filter.permission.read')}>
-        {({ labelId }) => (
-          <Select
-            aria-labelledby={labelId}
-            className="w-64"
-            options={permissionOptions}
-            value={draft.readPermission ?? ANY_PERMISSION}
-            onValueChange={(value) =>
-              patchDraft({
-                readPermission:
-                  value === null || value === ANY_PERMISSION
-                    ? undefined
-                    : (value as BoardPermission),
-              })}
-          />
+      {/* 원문 41행의 `권한 > 쓰기·읽기`. 한 이름 아래 형제 컨트롤이라 group 하나로 묶고
+          자식 라벨은 원문의 낱말을 그대로 쓴다(합성 라벨을 만들지 않는다). */}
+      <FilterField label={t('board.filter.permission.label')} group>
+        {() => (
+          <>
+            <Select
+              aria-label={t('board.filter.permission.write')}
+              className="w-64"
+              options={permissionOptions}
+              value={draft.writePermission ?? ANY_PERMISSION}
+              onValueChange={(value) =>
+                patchDraft({ writePermission: toPermission(value) })}
+            />
+            <Select
+              aria-label={t('board.filter.permission.read')}
+              className="w-64"
+              options={permissionOptions}
+              value={draft.readPermission ?? ANY_PERMISSION}
+              onValueChange={(value) =>
+                patchDraft({ readPermission: toPermission(value) })}
+            />
+          </>
         )}
       </FilterField>
     </FilterPanel>

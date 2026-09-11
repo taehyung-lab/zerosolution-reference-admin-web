@@ -1,4 +1,4 @@
-import type { BoardSortKey } from '@/features/community/model/board';
+import type { BoardKeywordField, BoardSortKey } from '@/features/community/model/board';
 import { boardListCanonicalSchema } from './board-list-search';
 import type { BoardListSearch, ResolvedBoardListSearch } from './board-list-search';
 import type { KeywordFilterItem } from '@/shared/lib/use-keyword-draft';
@@ -26,9 +26,9 @@ export function toPageSizeSearch(
 
 export function toSortSearch(
   search: ResolvedBoardListSearch,
-  sort: BoardSortKey,
+  sortType: BoardSortKey,
 ): BoardListSearch {
-  return commit({ ...search, sort, page: 1 });
+  return commit({ ...search, sortType, page: 1 });
 }
 
 export function toPageSearch(
@@ -41,12 +41,12 @@ export function toPageSearch(
 /** 활성 컬럼은 방향을 뒤집고, 다른 컬럼은 오름차순부터 시작한다. */
 export function toHeaderSortSearch(
   search: ResolvedBoardListSearch,
-  sort: BoardSortKey,
+  sortType: BoardSortKey,
 ): BoardListSearch {
-  const active = search.sort === sort;
+  const active = search.sortType === sortType;
   return commit({
     ...search,
-    sort,
+    sortType,
     sortDirection: active && search.sortDirection === 'asc' ? 'desc' : 'asc',
     page: 1,
   });
@@ -58,14 +58,14 @@ export function toSubmittedSearch(
   input: {
     readonly filters: Partial<ResolvedBoardListSearch>;
     readonly range: UtcPeriodRange;
-    readonly keywords: readonly KeywordFilterItem<'name'>[];
+    readonly keywords: readonly KeywordFilterItem<BoardKeywordField>[];
   },
 ): BoardListSearch {
   return commit({
     ...search,
     ...input.filters,
     ...input.range,
-    names: input.keywords.map((item) => item.value),
+    keywords: input.keywords,
     page: 1,
   });
 }

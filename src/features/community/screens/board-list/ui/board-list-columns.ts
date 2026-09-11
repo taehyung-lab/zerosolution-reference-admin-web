@@ -13,7 +13,7 @@ function sortDirectionFor(
   search: ResolvedBoardListSearch,
   key: BoardSortKey,
 ): DataTableSortDirection | undefined {
-  if (search.sort !== key || search.sortDirection === undefined) return undefined;
+  if (search.sortType !== key || search.sortDirection === undefined) return undefined;
   return search.sortDirection === 'asc' ? 'ascending' : 'descending';
 }
 /**

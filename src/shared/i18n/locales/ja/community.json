@@ -15,10 +15,10 @@
       "period": {
         "label": "期間",
         "criterion": "期間の基準",
-        "presetGroup": "期間クイック選択",
+        "presetGroup": "期間選択",
         "from": "開始日",
         "to": "終了日",
-        "calendar": "カレンダーを開く"
+        "calendar": "カレンダー"
       },
       "keyword": {
         "label": "検索語",
@@ -26,15 +26,16 @@
         "name": "掲示板名",
         "input": "検索語",
         "add": "追加",
-        "remove": "検索語を削除",
+        "remove": "{{value}}を削除",
         "chip": "{{field}} : {{value}}"
       },
       "type": { "label": "タイプ" },
       "category": { "label": "区分" },
       "usage": { "label": "使用状態" },
       "permission": {
-        "write": "権限 書き込み",
-        "read": "権限 読み取り",
+        "label": "権限",
+        "write": "書き込み",
+        "read": "読み取り",
         "any": "すべて"
       }
     },
@@ -43,7 +44,7 @@
       "sort": "並び替え",
       "empty": "一致する検索結果がありません。",
       "pagination": {
-        "label": "ページ移動",
+        "label": "掲示板一覧のページ",
         "previous": "前へ",
         "next": "次へ"
       }

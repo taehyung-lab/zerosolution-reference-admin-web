@@ -21,7 +21,7 @@ describe('board list URL policy', () => {
   it('returns to the first page when the sort field changes and keeps the direction', () => {
     const next = toSortSearch({ ...search, sortDirection: 'desc' }, 'name');
     expect(next.page).toBeUndefined();
-    expect(next.sort).toBe('name');
+    expect(next.sortType).toBe('name');
     expect(next.sortDirection).toBe('desc');
   });
 
@@ -29,7 +29,7 @@ describe('board list URL policy', () => {
     const next = toPageSearch(search, 5);
     expect(next.page).toBe(5);
     expect(next.categories).toEqual(['COUNSEL']);
-    expect(next.sort).toBeUndefined();
+    expect(next.sortType).toBeUndefined();
   });
 
   it('flips the active header and starts another column ascending', () => {
@@ -40,7 +40,7 @@ describe('board list URL policy', () => {
     expect(flipped.sortDirection).toBe('desc');
 
     const other = toHeaderSortSearch({ ...search, sortDirection: 'desc' }, 'postCount');
-    expect(other.sort).toBe('postCount');
+    expect(other.sortType).toBe('postCount');
     expect(other.sortDirection).toBe('asc');
   });
 
@@ -48,8 +48,11 @@ describe('board list URL policy', () => {
     const next = toSubmittedSearch(search, {
       filters: { periodType: 'updatedAt', categories: [] },
       range: {},
-      keywords: [{ field: 'name', value: '공지' }],
+      keywords: [{ field: 'name', value: 'Reference' }],
     });
-    expect(next).toEqual({ periodType: 'updatedAt', names: ['공지'] });
+    expect(next).toEqual({
+      periodType: 'updatedAt',
+      keywords: [{ field: 'name', value: 'Reference' }],
+    });
   });
 });
