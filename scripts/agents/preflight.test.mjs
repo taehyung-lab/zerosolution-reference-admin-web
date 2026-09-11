@@ -530,6 +530,7 @@ describe('repository preflight', () => {
       "find scripts -type f -name '*.mjs'",
       "sed -n 1,40p AGENTS.md",
       'pnpm lint',
+      'node scripts/agents/cli.mjs prepare one/sub .ai-work/task/checkpoint.json',
       'pnpm vitest run scripts/agents',
       'pnpm vitest run',
       'node node_modules/vitest/vitest.mjs run scripts/i18n',

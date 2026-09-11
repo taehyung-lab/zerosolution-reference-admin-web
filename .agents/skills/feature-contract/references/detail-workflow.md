@@ -15,6 +15,7 @@ Read this file for an ID-backed detail screen, detail state, sections, actions, 
 
 A detail or edit-load screen composes `DetailStateBoundary` for `ready | error | notFound` with `PageHeader` outside. The state decision is not written in the screen: the feature hook returns `useDetailQuery(options)` from `src/api/required-query.ts`, whose pure `resolveRequiredQueryOutcome` fixes the priority `incident → not-found → usable data → pending → local error → settled-without-data` ([ADR 0011](../../../../docs/decisions/0011-detail-data-and-update-history-boundaries.md)). The feature supplies safe copy, retry, trace, and content.
 
+- Entry is the route's: the detail/edit route awaits the same query options in `loader` through `loadRequired` ([router.md](router.md#loader-and-preload)), so a missing record renders the `_app` not-found page, a 403/401 goes to `IncidentBoundary` (cover / login), any other entry failure renders the `_app` error page, and the screen never mounts. `DetailStateBoundary` therefore handles only what happens after entry — a refetch that fails, a record deleted meanwhile (2026-09-11 user decision).
 - Session/permission failures are `delegated`: no local error surface, the incident boundary owns them even when cached data exists.
 - A fresh `not-found` wins over cached data; any other failure keeps already-loaded data `ready`.
 - Pending and delegated render as `ready` without content because app-wide progress and the incident boundary own them.

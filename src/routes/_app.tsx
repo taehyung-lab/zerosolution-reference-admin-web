@@ -1,4 +1,6 @@
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect, type ErrorComponentProps, type NotFoundRouteProps } from "@tanstack/react-router";
+import type { ReactNode } from "react";
+import { RootErrorComponent, RootNotFoundComponent } from "./__root";
 import { readAccessToken } from "@/api/http/credential";
 import { AppShell } from "@/app/shell/AppShell";
 import { UnsavedChangesProvider } from '@/shared/ui/form/UnsavedChangesGuard';
@@ -15,14 +17,39 @@ export const Route = createFileRoute("/_app")({
     }
   },
   component: AppLayout,
+  // A record 404 or a failed loader inside the app keeps the shell (LNB, header); root stays shell-less.
+  notFoundComponent: AppNotFound,
+  errorComponent: AppError,
 });
+
+function AppFrame({ children }: { readonly children: ReactNode }) {
+  return (
+    <UnsavedChangesProvider>
+      <AppShell>{children}</AppShell>
+    </UnsavedChangesProvider>
+  );
+}
 
 function AppLayout() {
   return (
-    <UnsavedChangesProvider>
-      <AppShell>
-        <Outlet />
-      </AppShell>
-    </UnsavedChangesProvider>
+    <AppFrame>
+      <Outlet />
+    </AppFrame>
+  );
+}
+
+function AppNotFound(props: NotFoundRouteProps) {
+  return (
+    <AppFrame>
+      <RootNotFoundComponent {...props} />
+    </AppFrame>
+  );
+}
+
+function AppError(props: ErrorComponentProps) {
+  return (
+    <AppFrame>
+      <RootErrorComponent {...props} />
+    </AppFrame>
   );
 }

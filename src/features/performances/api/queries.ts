@@ -1,5 +1,5 @@
 import { localizedQueryKey } from "@/api/query-key";
-import { blockingProgress, inlineProgress } from "@/api/query-meta";
+import { inlineProgress } from "@/api/query-meta";
 import { readPerformanceDetail } from "../fixtures/performance-details";
 import type { UiLocale } from "@/shared/i18n/locale";
 import { queryOptions } from "@tanstack/react-query";
@@ -13,7 +13,6 @@ export function performanceDetailQuery(locale: UiLocale, id: string) {
   return queryOptions({
     queryKey: localizedQueryKey(locale, "performances", "detail", id),
     queryFn: () => readPerformanceDetail(id),
-    ...blockingProgress,
   });
 }
 

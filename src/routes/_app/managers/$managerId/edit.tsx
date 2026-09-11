@@ -3,9 +3,13 @@ import { toManagerEditDefaults } from "@/features/managers/screens/form/model/ma
 import { requestManagerEdit } from "@/features/managers/screens/form/model/manager-form-requests";
 import { ManagerEditInputScreen } from "@/features/managers/screens/form/ui/ManagerInputScreens";
 import { DetailStateBoundary } from "@/shared/ui/patterns/DetailStateBoundary";
+import { loadRequired } from "@/app/router/required-loader";
+import { managerDirectoryDetailQuery } from "@/features/managers/api/directory-queries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 export const Route = createFileRoute("/_app/managers/$managerId/edit")({
+  loader: ({ context, params, preload }) =>
+    loadRequired(context.queryClient, managerDirectoryDetailQuery(context.locale, params.managerId), { preload }),
   component: ManagerEditRoute,
 });
 function ManagerEditRoute() {

@@ -23,7 +23,8 @@ createRoot(rootElement).render(
         IncidentBoundary의 만료·권한 handler를 AuthProvider/route guard와 함께 연결한다. */}
       <IncidentBoundary
         onLoginRequired={() => { void router.navigate({ to: '/login' }) }}
-        onGoBack={() => { window.history.back() }}
+        // 직접 진입(히스토리 없음)에서 뒤로가기는 아무 일도 하지 않으므로 홈으로 떨어뜨린다.
+        onGoBack={() => { if (router.history.canGoBack()) router.history.back(); else void router.navigate({ to: '/' }) }}
       >
         <AppRouterProvider router={router} />
       </IncidentBoundary>

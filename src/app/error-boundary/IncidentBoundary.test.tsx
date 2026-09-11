@@ -1,6 +1,7 @@
 import { act, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClient, QueryClientProvider, useMutation, useQuery } from '@tanstack/react-query'
+import { createQueryClient } from '@/app/providers/AppProviders'
 import { LocaleProvider } from '@/app/providers/LocaleProvider'
 import { ApiError } from '@/api/error'
 import {
@@ -102,7 +103,7 @@ describe('IncidentBoundary', () => {
     expect(onLoginRequired).toHaveBeenCalledTimes(2)
   })
 
-  it('shows the confirmed access modal and moves back only after acknowledgement', async () => {
+  it('covers the screen with the Figma 1.4.3 access page for a navigation refusal and moves back only after acknowledgement', async () => {
     const onGoBack = vi.fn()
     renderBoundary(
       <IncidentBoundary onLoginRequired={vi.fn()} onGoBack={onGoBack}>
@@ -110,16 +111,55 @@ describe('IncidentBoundary', () => {
       </IncidentBoundary>,
     )
 
-    act(() => publishIncident({ type: 'forbidden', status: 403 }))
+    // `loadRequired` republishes a route loader's 403 with this origin; the query has no observer yet.
+    act(() => publishIncident({ type: 'forbidden', origin: 'route-loader', status: 403 }))
 
-    await waitFor(() => expect(screen.getByRole('dialog')).toHaveTextContent('접근권한이 없습니다. 이전 화면으로 이동하세요.'))
+    const cover = await screen.findByRole('alertdialog', { name: '접근권한 오류' })
+    expect(cover).toHaveTextContent('접근권한이 없습니다. 이전 화면으로 이동하세요.')
+    expect(screen.getByRole('button', { name: '이전 화면으로 이동' })).toHaveFocus()
     expect(onGoBack).not.toHaveBeenCalled()
     screen.getByRole('button', { name: '이전 화면으로 이동' }).click()
     expect(onGoBack).toHaveBeenCalledOnce()
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument())
   })
 
-  it('ignores a forbidden error from an observerless prefetch', async () => {
-    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  it('shows the cover for a refused query a mounted screen observes, even on its first failure', async () => {
+    const queryClient = createQueryClient()
+    const error = new ApiError({ kind: 'forbidden', message: 'raw', status: 403 })
+    // The transport publishes before Query records the rejection, exactly like the axios interceptor.
+    function Screen({ started }: { readonly started: boolean }) {
+      useQuery({ queryKey: ['observed-forbidden'], enabled: started, queryFn: () => { publishIncident({ type: 'forbidden', status: 403, error }); return Promise.reject(error) } })
+      return <span>screen</span>
+    }
+    const tree = (started: boolean) => (
+      <QueryClientProvider client={queryClient}><LocaleProvider>
+        <IncidentBoundary onLoginRequired={vi.fn()} onGoBack={vi.fn()}><Screen started={started} /></IncidentBoundary>
+      </LocaleProvider></QueryClientProvider>
+    )
+    // The boundary is mounted (and subscribed) before any screen starts a request, as in the app.
+    const { rerender } = render(tree(false))
+    rerender(tree(true))
+    expect(await screen.findByRole('alertdialog', { name: '접근권한 오류' })).toBeInTheDocument()
+  })
+
+  it('covers the screen when a mutation is refused — a user action always has a surface', async () => {
+    const queryClient = createQueryClient()
+    const error = new ApiError({ kind: 'forbidden', message: 'raw', status: 403 })
+    function Screen() {
+      const mutation = useMutation({ mutationFn: () => { publishIncident({ type: 'forbidden', status: 403, error }); return Promise.reject(error) } })
+      return <button type="button" onClick={() => mutation.mutate()}>save</button>
+    }
+    render(
+      <QueryClientProvider client={queryClient}><LocaleProvider>
+        <IncidentBoundary onLoginRequired={vi.fn()} onGoBack={vi.fn()}><Screen /></IncidentBoundary>
+      </LocaleProvider></QueryClientProvider>,
+    )
+    screen.getByRole('button', { name: 'save' }).click()
+    expect(await screen.findByRole('alertdialog', { name: '접근권한 오류' })).toBeInTheDocument()
+  })
+
+  it('stays silent for a forbidden error nobody observes (preload, warming) — fail closed', async () => {
+    const queryClient = createQueryClient()
     render(
       <QueryClientProvider client={queryClient}><LocaleProvider>
         <IncidentBoundary onLoginRequired={vi.fn()} onGoBack={vi.fn()}><span>child</span></IncidentBoundary>
@@ -134,8 +174,10 @@ describe('IncidentBoundary', () => {
         return Promise.reject(error)
       },
     }).catch(() => undefined)
+    // An incident whose error matches no cached query at all is ignored as well.
+    act(() => publishIncident({ type: 'forbidden', status: 403, error: new ApiError({ kind: 'forbidden', message: 'raw', status: 403 }) }))
     await new Promise((resolve) => setTimeout(resolve, 10))
 
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
   })
 })

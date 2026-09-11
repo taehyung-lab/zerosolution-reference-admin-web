@@ -2,9 +2,13 @@ import { requestMemberActivityDelete } from "@/features/members/screens/detail/m
 import { useWithdrawnDetail } from "@/features/members/api/useWithdrawnDetail";
 import { WithdrawnMemberDetailScreen } from "@/features/members/screens/withdrawn/ui/WithdrawnMemberDetailScreen";
 import { DetailStateBoundary } from "@/shared/ui/patterns/DetailStateBoundary";
+import { loadRequired } from "@/app/router/required-loader";
+import { withdrawnDetailQuery } from "@/features/members/api/detail-queries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 export const Route = createFileRoute("/_app/members/withdrawn/$memberId")({
+  loader: ({ context, params, preload }) =>
+    loadRequired(context.queryClient, withdrawnDetailQuery(context.locale, params.memberId), { preload }),
   component: WithdrawnDetailRoute,
 });
 function WithdrawnDetailRoute() {
@@ -18,7 +22,7 @@ function WithdrawnDetailRoute() {
         state={query.state}
         labels={{
           error: shared("error.unexpected.body"),
-          notFound: shared("error.notFound"),
+          notFound: shared("error.kind.notFound"),
         }}
         retryLabel={shared("error.unexpected.retry")}
         onRetry={() => {

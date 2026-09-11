@@ -11,6 +11,7 @@ import { basename, join, relative, resolve } from 'node:path'
  * 보지 않는다. mechanic 위임은 그 mechanic 이 실제로 그 역할을 갖는지 확인하지 않는다.
  */
 export const SHAPE_SECTIONS = {
+  detailRoute: '.agents/skills/feature-contract/references/router.md#형태',
   sorting: '.agents/skills/feature-contract/references/list-workflow.md#sorting',
   list: '.agents/skills/feature-contract/references/list-workflow.md#형태',
   detail: '.agents/skills/feature-contract/references/detail-workflow.md#형태',
@@ -221,6 +222,30 @@ export function listRouteCoverageFailures(root, specFile = 'tests/e2e/search-con
     const path = route[1].replace(/^\/_app/, '').replace(/\/$/, '') || '/'
     if (!covered.has(path)) {
       failures.push(`목록 route ${path} (src/routes/_app/${file}) 가 ${specFile} 의 경로 배열에 없다 → ${SHAPE_SECTIONS.list}`)
+    }
+  }
+  return failures
+}
+
+/**
+ * A route leaf under `src/routes/_app` with a `$param` segment mounts a record (detail, edit). It
+ * awaits that record in `loader` (`loadRequired`), so a missing ID is a route not-found and a 403 is
+ * the access cover (2026-09-11 user decision). `route.tsx` layouts are not leaves; test files never
+ * reach here (`listFiles` drops them). A list route under a `$param` (a child tab) would be a false
+ * positive — none exists today; add it to DETAIL_ROUTE_EXCEPTIONS with the reason when one appears.
+ */
+export const DETAIL_ROUTE_EXCEPTIONS = [] // { file: 'src/routes/_app/<path>.tsx', until: '<해소 조건>' }
+
+export function detailRouteLoaderFailures(root) {
+  const routesDir = resolve(root, 'src/routes/_app')
+  if (!existsSync(routesDir)) return []
+  const failures = []
+  for (const file of listFiles(routesDir)) {
+    if (!/\.tsx$/.test(file) || !file.includes('$') || /(^|\/)route\.tsx$/.test(file)) continue
+    if (DETAIL_ROUTE_EXCEPTIONS.some((item) => item.file === `src/routes/_app/${file}`)) continue
+    const source = withoutComments(readFileSync(join(routesDir, file), 'utf8'))
+    if (!/\bloader\s*:/.test(source)) {
+      failures.push(`상세 route src/routes/_app/${file} 에 loader 가 없다 → loadRequired 로 레코드를 기다린다, ${SHAPE_SECTIONS.detailRoute}`)
     }
   }
   return failures

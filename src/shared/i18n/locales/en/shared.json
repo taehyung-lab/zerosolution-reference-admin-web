@@ -1,5 +1,7 @@
 {
-  "pageHeader": { "breadcrumb": "Breadcrumb" },
+  "pageHeader": {
+    "breadcrumb": "Breadcrumb"
+  },
   "error": {
     "kind": {
       "network": "Check your network connection and try again.",
@@ -33,7 +35,11 @@
       "retry": "Try again",
       "home": "Go home"
     },
-    "notFound": "Page not found."
+    "notFound": "Page not found.",
+    "notFoundPage": {
+      "title": "Not found",
+      "back": "Go back"
+    }
   },
   "asyncField": {
     "loading": "Loading options.",

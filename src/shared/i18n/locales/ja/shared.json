@@ -1,5 +1,7 @@
 {
-  "pageHeader": { "breadcrumb": "現在の位置" },
+  "pageHeader": {
+    "breadcrumb": "現在の位置"
+  },
   "error": {
     "kind": {
       "network": "ネットワーク接続を確認して、もう一度お試しください。",
@@ -33,7 +35,11 @@
       "retry": "再試行",
       "home": "ホームへ移動"
     },
-    "notFound": "ページが見つかりません。"
+    "notFound": "ページが見つかりません。",
+    "notFoundPage": {
+      "title": "見つかりません",
+      "back": "前の画面へ移動"
+    }
   },
   "asyncField": {
     "loading": "オプションを読み込み中です。",

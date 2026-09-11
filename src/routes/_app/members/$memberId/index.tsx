@@ -11,12 +11,16 @@ import { requestMessageSend } from "@/features/messaging/screens/compose/model/m
 import { useMessageComposer } from "@/features/messaging/screens/compose/model/useMessageComposer";
 import { MessageComposerDialog } from "@/features/messaging/screens/compose/ui/MessageComposerDialog";
 import { DetailStateBoundary } from "@/shared/ui/patterns/DetailStateBoundary";
+import { loadRequired } from "@/app/router/required-loader";
+import { memberDetailQuery } from "@/features/members/api/detail-queries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { MemberActivitySearch } from "../../../../features/members/model/member-activity";
 
 export const Route = createFileRoute("/_app/members/$memberId/")({
+  loader: ({ context, params, preload }) =>
+    loadRequired(context.queryClient, memberDetailQuery(context.locale, params.memberId), { preload }),
   component: MemberDetailRoute,
 });
 
@@ -48,7 +52,7 @@ function MemberDetailRoute() {
         state={query.state}
         labels={{
           error: shared("error.unexpected.body"),
-          notFound: shared("error.notFound"),
+          notFound: shared("error.kind.notFound"),
         }}
         retryLabel={shared("error.unexpected.retry")}
         onRetry={() => {

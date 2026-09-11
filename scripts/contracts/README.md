@@ -98,7 +98,7 @@ segment (`ui/` or `model/`; `lib/` and `config/` are left to the placement table
 carry its search, filter, data and policy files unless it imports a mechanic's `model/` (the mechanic's
 own names are not checked), a detail with actions needs its request boundary, a form needs schema plus
 request or mutation, and every list route must appear in an array literal of
-`tests/e2e/search-contract.spec.ts`. It reads names and existence only — a screen that ignores the
+`tests/e2e/search-contract.spec.ts`; a `$param` route leaf must declare a `loader`, and a list `*-columns` file may not write the aria-sort vocabulary by hand (both read the file's source with comments stripped). Otherwise it reads names and existence only — a screen that ignores the
 naming convention is invisible to it, two stacks in one directory are not told apart, and URL field
 names, value shapes and `locale` types are review's job. A failure names the section to read. Screens
 that predate a shape are listed in `SHAPE_EXCEPTIONS` with the condition that closes them and reported

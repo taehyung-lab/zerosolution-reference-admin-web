@@ -155,8 +155,9 @@ function inspection(command, root) {
     if (args[1] === 'sweep') return args.length === 2
     if (['context', 'bundle'].includes(args[1])) return args.length === 2 ||
       (args.length === 3 && /^[a-z0-9-]+$/.test(args[2]))
+    // A subagent's session id is `<parent>/<agent>` (sessionOf), so the id may carry one `/`.
     return args.length === 4 && ['prepare', 'review'].includes(args[1]) &&
-      /^[\w-]+$/.test(args[2]) && /^\.ai-work\/[\w./-]+\.json$/.test(args[3])
+      /^[\w-]+(?:\/[\w-]+)?$/.test(args[2]) && /^\.ai-work\/[\w./-]+\.json$/.test(args[3])
   }
   if (executable !== 'git') return false
   // Directory selection changes where inspection runs, not which operation it performs.

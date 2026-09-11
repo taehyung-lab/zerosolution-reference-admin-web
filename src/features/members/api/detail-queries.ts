@@ -34,7 +34,6 @@ export function memberDetailQuery(locale: string, id: string) {
     queryKey: localizedQueryKey(locale, "members", "detail", id),
     queryFn: () =>
       Promise.resolve().then(() => required(findMemberFixture(id))),
-    ...blockingProgress,
   });
 }
 export function withdrawnDetailQuery(locale: string, id: string) {
@@ -44,7 +43,6 @@ export function withdrawnDetailQuery(locale: string, id: string) {
       Promise.resolve().then(() =>
         required(memberRecordFixtures().withdrawn.find((row) => row.id === id)),
       ),
-    ...blockingProgress,
   });
 }
 export function appealDetailQuery(locale: string, id: string) {
@@ -52,7 +50,6 @@ export function appealDetailQuery(locale: string, id: string) {
     queryKey: localizedQueryKey(locale, "members", "appeal-detail", id),
     queryFn: () =>
       Promise.resolve().then(() => required(appealDetailFixture(id))),
-    ...blockingProgress,
   });
 }
 /** 상세 안의 페이지 목록이다. 상세 진입은 memberDetailQuery가 막으므로 탭·검색·페이지 요청은 content로 둔다. */

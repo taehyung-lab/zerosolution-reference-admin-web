@@ -7,6 +7,7 @@ Read this file only for a shadcn-style copied component, Radix primitive, Tailwi
 - Add only the primitive and variants the current screen uses; do not install or prebuild a component catalog.
 - A primitive receives visible content, controlled values, and callbacks. It knows no feature, server DTO, Query, Router, permission, or mutation. Copy arrives as props; `Calendar` alone reads the `shared` namespace for its navigation labels and locale.
 - Accessibility or design-token invariants justify a source-owned primitive at first real use; they do not justify a shared workflow or page pattern.
+- `ModalCover` (2026-09-11, first use: the access-denied cover, Figma 1.4.3): a full-screen Radix modal surface — focus inside, document behind inert and aria-hidden, Escape/outside inert, stacked above dialogs and `BlockingProgress`. It owns no copy and no reason to open; the caller mounts and unmounts it.
 - Keep the public contract domain-neutral and preserve native semantics instead of recreating them with generic elements.
 - React 19: a primitive receives `ref` as an ordinary prop; do not add `forwardRef` wrappers.
 

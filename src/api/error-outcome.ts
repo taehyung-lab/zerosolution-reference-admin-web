@@ -26,6 +26,9 @@ export function resolveErrorOutcome(
   context: ErrorOperationContext,
   kind: ApiErrorKind,
 ): ErrorOutcome {
+  // A route loader's session/access failure is still the incident boundary's (login redirect, access cover);
+  // the route's error component renders nothing for it. Everything else at these contexts is a root page.
+  if (context === 'route-loader' && (kind === 'unauthorized' || kind === 'forbidden')) return 'incident'
   if (context === 'route-not-found' || context === 'render' || context === 'route-loader' || context === 'fatal') {
     return 'root'
   }
