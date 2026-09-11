@@ -30,6 +30,11 @@ Every route whose screen renders selects backed by option queries (list filters,
 
 Loaders read `context.locale`; components read `useLocale().locale`. The app-level Router provider projects locale changes into the existing Router context and never recreates the Router.
 
+## 형태
+
+목록 route 본문의 요소는 넷이다: `validateSearch: <sparse schema>`, `beforeLoad: canonicalSearchGuard(<schema>)`, 선택지 query 가 있을 때만 위 [Loader and preload](#loader-and-preload) 의 예열, 그리고 `component` 가 `<XScreen search={Route.useSearch()} onSearchChange={(next) => void navigate({ search: () => next })} onActivate={...} />` 를 mount 한다. 다른 feature 의 다이얼로그를 함께 조립하는 것은 위 [Thin route](#thin-route) 가 허용하는 배선이다. 파일 배치는 [Route file layout](#route-file-layout) 이 정한다.
+**목록 자체의 query 는 진입 즉시 조회 화면이어도 loader 에서 await 하지 않는다** — 진입 progress 는 `src/api/list-query.ts` 가, 이후 전이는 `contentProgress` 가 소유하며 `loaderDeps` 로 검색을 loader 에 묶으면 정렬·페이지마다 loader 가 다시 돈다. 해소(`resolve*Search`)는 route 가 아니라 화면이 한다.
+
 ## Guards
 
 `beforeLoad` handles session or permission facts already present in router context and applies redirect policy. When entry permission must be fetched, the loader awaits the shared permission query options; `beforeLoad` does not start a second query path. If a reusable guard option is spread into a route, a route-local `beforeLoad` must compose it explicitly instead of overwriting it. Product permission codes and redirect policy are never inferred.

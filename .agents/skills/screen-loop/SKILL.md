@@ -31,10 +31,10 @@ description: Use when a request asks to implement one screen or one shared contr
 | **N1 진입** | `cli context <id>` / `cli bundle <id>` ([문맥 찾기](../../../scripts/agents/README.md#find-the-task-context)) | id가 해석됐고 내부 surface 목록이 나왔다 | E0 · E1 |
 | **N2 증거** | 아래 [증거 순서](#n2-증거-순서와-소유자-집합) | surface별 `확정 / 미확인 / 충돌`이 갈렸고, 필요한 **소유자 집합**이 checkpoint `references`에 전부 들어갔다. `(대기)`·`(미판독)` 셀은 [원문 관찰](../../../scripts/agents/README.md#find-the-task-context) 절대로 원문을 봤거나 미확인으로 남겼다 | E3 · E4 · E8 |
 | **N3 설계 선언** | [준비 절차](../../../scripts/agents/README.md#prepare-before-editing) | `prepare` 통과. `unresolved[].paths`가 **답이 오면 만들 파일**로 좁혀져 있고, scope에 번역 파일·navigation·i18n resources처럼 화면이 끝까지 필요로 하는 경로가 들어 있다 | E7 |
-| **N4 구현** | 해당 skill reference, 배치는 [folder-structure-contract](../folder-structure-contract/SKILL.md) | 미확인 밖 요구사항 전부에 코드와 **소유자 옆 테스트**가 있다 | E6 |
-| **N5 검증** | [리뷰 절차](../../../scripts/agents/README.md#review-the-actual-output), [시나리오 상태](../feature-contract/references/mutation-actions.md#시나리오-상태와-관찰-범위) | 요구사항별 증거가 실측으로 있다. 이 저장소의 상한은 [AGENTS §4](../../../AGENTS.md#4-완료-증거)가 정한다 | E5 |
+| **N4 구현** | surface 별 역할 reference 의 **형태 절**([목록](../feature-contract/references/list-workflow.md#형태)·[URL 필드](../feature-contract/references/list-search-contract.md#형태)·[route](../feature-contract/references/router.md#형태)·[상세](../feature-contract/references/detail-workflow.md#형태)·[폼](../feature-contract/references/form-workflow.md#형태)), 배치는 [folder-structure-contract](../folder-structure-contract/SKILL.md) | 화면에 있는 역할의 형태 절이 정한 파일 집합·URL 모양·route 본문으로 시작했고, 미확인 밖 요구사항 전부에 코드와 **소유자 옆 테스트**가 있다. `contracts:check` 의 화면 형태 검사가 통과한다 | E6 |
+| **N5 검증** | [리뷰 절차](../../../scripts/agents/README.md#review-the-actual-output), [완료 상태](../../../scripts/agents/README.md#completion-states), [관찰 범위](../feature-contract/references/mutation-actions.md#시나리오-상태와-관찰-범위) | 요구사항별 증거가 실측으로 있다. 이 저장소의 상한은 완료 상태 절이 정한다 | E5 |
 | **N6 판정** | `cli review` + [AGENTS §5](../../../AGENTS.md#5-실행협업-모델) 독립 검토 | review 통과. 게이트·루트·공용 계약을 바꿨거나 N5′를 거쳤으면 다른 모델이 diff와 정본을 열어 동의·반박·놓친 것을 냈다 | 반박이 맞으면 해당 노드로 |
-| **N4′ 답지 대조** | 이 문서 [답지 대조](#답지-대조) | 파일 단위 대조표와 "배달된 문서만으로 도달 가능했나" 열이 채워졌다 | — |
+| **N4′ 답지 대조** | 이 문서 [답지 대조](#답지-대조) | 형태 절에서 벗어난 곳과 그 이유, 그리고 형태 절이 정하지 않아 답지에서 가져온 것이 표로 남았다 | — |
 | **N5′ 차이 반영** | 이 문서 [차이 라우팅 표](#차이-라우팅-표) | 차이마다 소유자 반영(같은 작업) 또는 사용자 질문으로 갈렸다 | 소유자 없음 → 보고만 |
 
 순서 — drill: N0 N1 N2 N3 **N4′ N5′** 그다음 반영할 것마다 N4 N5 N6. build: N0 N1 N2 N3 N4 (형제 답지가 있으면 N4′ N5′) N5 N6.
@@ -68,8 +68,9 @@ description: Use when a request asks to implement one screen or one shared contr
 
 ## 답지 대조
 
-- **N3까지 대상 화면의 `src/features/<domain>`·`src/routes/_app/<domain>`을 열지 않는다.** `context`의 `paths`와 `bundle`의 `examples`는 답지 위치이므로 대조 전에는 읽지 않는다. 저장소에 이를 관찰하는 장치는 없다 — 열었으면 보고서 첫머리에 "오염"으로 적는다. 오염된 일치는 "문서가 그리로 데려갔다"의 증거가 아니다.
-- **N4′**: 파일 단위 표 — `답지 파일 | 내 설계 | 일치·다름·없음 | 배달된 문서만으로 도달 가능했나(있다·약함·없다 + 근거 절)`. 그 아래 세 목록: 답지에 있고 내게 없는 것(테스트 파일 포함), 내게 있고 답지에 없는 것, **답지끼리 다른 것**(드리프트 — 정렬 select 방향, `resetKey`가 운영자·회원 목록에서 서로 달랐다).
+- **형태는 형태 절에서, 제품 값은 원장·원문에서.** 구조(파일 집합·URL 모양·route 본문·훅 반환 모양)는 N4 에서 역할별 형태 절을 읽고 그대로 시작한다. 형제 화면은 형태 절이 아직 정하지 않은 구조를 잡는 보조다. 금지되는 것은 형제의 **제품 값**(옵션·문구·권한·기본값·컬럼 집합)을 근거 없이 가져오는 것이다.
+- **drill 모드는 N3까지 대상 화면의 `src/features/<domain>`·`src/routes/_app/<domain>`을 열지 않는다.** 대상 코드는 답지이므로 설계 선언 뒤에 연다. 저장소에 이를 관찰하는 장치는 없다 — 열었으면 보고서 첫머리에 "오염"으로 적는다.
+- **N4′**: 표 두 개. ① 형태 절과의 차이 — `형태 절 항목 | 내 구현 | 같음·다름 | 다르면 이유`(이유 없는 다름은 고친다). ② 답지에서 가져온 것 — `답지 파일 | 가져온 구조 | 형태 절에 없어서인가`. "예"인 항목은 그 형태 절에 추가할 후보이고 N5′ 라우팅 표의 "skill 문장 없음" 행으로 간다. 답지끼리 다른 것(드리프트)도 여기 적는다.
 - **N5′**: 아래 표로 소유자를 정하고 같은 작업에서 고친다. 반영 대상 파일을 checkpoint `scope`에 넣고 재준비한다. 제품 미확인만 사용자 질문으로 남기고 그 경로는 `unresolved`로 막는다. 소유자가 없는 차이는 새 정본을 만들지 말고 보고서에 남긴다.
 - **산출물**: `.ai-work/YYYY-MM-DD-NN-drill-<id>/`에 `checkpoint.json`, `observations.md`, `DRILL.md`(절: 진입·배달 / 설계·prepare / 답지 대조 / 차이·반영 / 미확인 / 검증 yes·no). 보고서는 기록이고 **반영된 diff가 산출물**이다. 답지에서 얻은 사실을 원장·skill에 옮길 때는 답지가 아니라 원문·확정 답을 근거로 적는다.
 
@@ -81,6 +82,7 @@ description: Use when a request asks to implement one screen or one shared contr
 | 표 ↔ 산문 ↔ 판정 문서 충돌 | 판정 문서 §5 + 원장 셀 | 판독 규칙 적용 후 채택 결과를 셀에 기록. 답 없으면 질문 |
 | 제품 사실 부재 | 판정 문서 §5 | 사용자 질문, 해당 경로 `unresolved` |
 | skill 문장 없음·모호 (배치 분리 근거, 테스트 의무 등) | 해당 skill reference | 규칙 문장 추가. 도메인 이름 소비자 표는 만들지 않는다 |
+| 형태 절이 정하지 않은 구조(파일·URL·route·훅 모양) | 그 역할 reference 의 `형태` 절 + `scripts/contracts/screen-shape.mjs` | 형태 절에 행 추가, 기계가 볼 수 있으면 검사기에도 |
 | 답지끼리 드리프트 | 공용 semantics면 [ADR 0009](../../../docs/decisions/0009-shared-boundaries.md)·shared-ui-contract, feature 정책이면 그 화면 | 판정 후 한쪽 수정. 독립 검토 |
 | 게이트 사각 | `scripts/agents/` + `preflight.test.mjs` | 장치로만 막는다. 못 잡는 종류는 아래에 한계로 적는다. 독립 검토 필수 |
 | 도구·런타임 | [runtime-adapters.md](../../../scripts/agents/runtime-adapters.md) 또는 저장소 밖 | 보고만 |
@@ -89,5 +91,7 @@ description: Use when a request asks to implement one screen or one shared contr
 
 - 게이트는 선언·범위·인용을 검사한다. 2026-09-10 게시판 드릴 3회에서 요구사항 본문을 제품 사실과 반대로 쓴 것, 다른 화면의 컬럼을 넣은 것, 날조한 enum을 요구사항에 제대로 붙인 것이 `prepare`·`review`·lint·test를 전부 통과했다. N6의 독립 검토가 판단 내용을 보는 유일한 검사다.
 - `prepare`가 이 스킬을 필수 참조로 요구하는 것은 기본 workflow의 `src/features`·`src/routes` 범위(화면 진입)뿐이다. 공용 계약 진입(`src/shared`)은 AGENTS §2 첫 행이 라우팅하고 게이트는 강제하지 않는다.
+- 화면 형태 검사(`scripts/contracts/screen-shape.mjs`)는 파일 이름·위치·존재와 목록 route 의 e2e 배열 합류만 본다. 보지 않는 것: 이름 관례(`*Filters.tsx`·`use*Result.ts`·`*DetailScreen.tsx`·`*CreateScreen.tsx`)를 따르지 않는 화면(역할이 없어 무검사), 한 디렉터리의 두 스택, mechanic 위임 뒤 그 mechanic 의 실제 파일, URL 필드 이름·값 모양, `locale` 타입. 그 다섯은 N4′ 표와 리뷰가 본다.
 - 도구가 원문을 잘라 낼 수 있다. 읽는 방법은 [runtime-adapters.md](../../../scripts/agents/runtime-adapters.md)가 소유한다.
-- 다른 화면 구현을 복사하지 않고, 답지 사실을 규칙으로 승격하지 않고, 원장에 없는 문구·상태·권한·기본값을 추측하지 않는다. 이 절차는 설명 없이 진행하기 위한 것이지 사용자 질문을 대신하는 것이 아니다.
+- 형제 화면의 제품 값을 근거 없이 가져오지 않고, 답지 사실을 규칙으로 승격하지 않고, 원장에 없는 문구·상태·권한·기본값을 추측하지 않는다. 구조는 형태 절이 정하고 검사기가 본다. 이 절차는 설명 없이 진행하기 위한 것이지 사용자 질문을 대신하는 것이 아니다.
+- 읽기 비용: 화면에 있는 역할의 형태 절만 읽으면 구조를 시작할 수 있다(목록이면 목록·URL 필드·route 세 절, 2026-09-10 실측 약 5.4KB). 그 앞에 AGENTS §2 가 요구하는 SKILL 전체 읽기(feature·folder-structure·이 문서, 약 33KB)가 있으므로 형태 절은 Read 의 offset 으로 절만 읽는다. 검사 실패 문구가 읽을 절을 지목하므로 다른 절을 미리 열지 않는다.

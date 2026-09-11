@@ -28,6 +28,23 @@ const contract = defineSearchFields(fields);
 [shared-values.md](../../shared-ui-contract/references/shared-values.md#search-field-declarations-and-codecs)가 소유한다.
 허용 pageSize와 enum은 caller가 선택하며 리허설 API의 양의 정수 pageSize를 제품 선택 목록으로 제한하지 않는다.
 
+### 형태
+
+새 제품 목록의 URL 필드 이름과 값 모양이다. 회원·공연 목록이 이 모양이고, 아래 "현재 이탈"이 그 밖이다.
+새 화면은 이 표를 따르고 이탈을 늘리지 않는다. `contracts:check` 는 이 표를 보지 않는다 — 리뷰가 본다.
+
+| 필드 | 모양 |
+| --- | --- |
+| `page`, `pageSize` | 양의 정수. 제품 목록의 `pageSize` 는 `standardPageSizeOptions` 중 하나(리허설 계약은 위 서술대로 양의 정수 유지). kind `view` |
+| `sortType`, `sortDirection` | feature 의 정렬 키 enum, `'asc' \| 'desc'`(aria 어휘 `ascending/descending` 은 컬럼에서 변환). kind `view` |
+| `periodType`, `startDateTime`, `endDateTime` | 기간 기준 enum, UTC instant 두 개. kind `filter` |
+| `keywords` | `{ field, value }[]` — 검색 대상이 하나여도 이 모양이다. 축이 없는 `string[]` 을 만들지 않는다. kind `filter` |
+| 다중선택 | `string[]`(enum 항목), 빈 배열 = 전체. kind `filter` |
+| 단일 선택 | enum 값 또는 `undefined`(전체·조건 없음) |
+| `searched` | 표식이 있는 화면만. 극성과 수명은 [list-workflow 상태 절](list-workflow.md#state-and-url-lifecycle)이 정한다 |
+
+현재 이탈(2026-09-10 3차 검토 실측): 제품 운영자 목록은 `sort`/`direction`(`manager-list-search.ts`)과 `permission` 기본값 `""`(위 "중복 정리" 표가 확정)를 쓴다 — 표에 맞추는 것은 별도 작업이다. 리허설 운영자의 `{keywordType, keyword}`·`ASC/DESC` 는 서버 어휘라 그대로 둔다.
+
 ### 기본값의 세 가지 역할
 
 | 역할 | 위치와 동작 |

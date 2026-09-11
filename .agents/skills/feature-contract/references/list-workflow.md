@@ -142,3 +142,29 @@ Columns and selection remain feature-owned; absent selection/actions need no dum
 Use `ResultTotal` for a single result count instead of returning identical summaryGroups from each hook.
 Do not build a factory around schema, navigation or header-sort transitions: member, manager and
 performance consumers have different direction defaults and reset/search policies.
+
+## 형태
+
+목록 화면 하나가 갖는 파일 집합과 역할이다. 규칙을 다 지켜도 이 집합이 없으면 화면마다 모양이 갈린다
+(2026-09-10 게시판 드릴: 검색어 URL 모양·해소 위치·정책 파일·loader 가 형제와 갈렸다). 도메인 이름은 빈칸이다.
+`contracts:check` 는 파일 이름·위치와 route 의 e2e 합류만 대조하고 없는 파일은 이 절을 가리킨다. 나머지 행은 리뷰가 본다.
+
+| 파일 | 역할 |
+| --- | --- |
+| `<domain>/api/*queries.ts` | `queryOptions` 팩토리. `locale` 은 `UiLocale`([i18n](../../shared-ui-contract/references/i18n.md)) |
+| `model/*search*.ts` | URL 필드 선언·기본값·partition·canonical schema·resolver·요청 mapper. 필드 모양은 [list-search-contract 형태](list-search-contract.md#형태) |
+| `model/*-policy.ts` | URL 전이 순수 함수: 보기·정렬 변경은 첫 페이지, 페이지 이동은 나머지 보존, 헤더 정렬 방향 전이 |
+| `model/use*Filter.ts` | `useListFilterDraft` 소비, submit(`preventDefault` → 정책 → `onSearchChange`), reset 목적지 |
+| `model/use*Data.ts` | query options 소비, `ListResultData` 사실과 total·totalPages 파생 |
+| `ui/use*Result.ts` | 컬럼 + `pageSize`·`sort`·`pagination` 컨트롤(위 반복 모양). 전이는 policy 를 부른다 |
+| `ui/*-columns.ts(x)` | 컬럼 정의와 `meta.sort` 매핑 |
+| `ui/*Screen.tsx`·`*Filters.tsx`·`*Result.tsx`(·`*Actions.tsx`) | 조립만. 상태는 위 소유자에 |
+
+- 같은 도메인의 여러 기록 목록이 한 lifecycle 을 공유하면 `model` 넷은 `mechanics/<name>/model` 로 올라가고 화면은 `ui` 만 갖는다(회원 기록 목록). 검사기는 mechanic 안의 이름을 보지 않는다 — 현재 `record-list` 는 `member-record-data.ts`·`member-record-view.ts` 로 이 표와 이름이 다르다.
+- 해소는 화면 경계에서 한 번(`resolve*Search(search)` 를 Screen 이 호출). route 는 sparse search 를 넘긴다.
+- 한 이름 아래 형제 컨트롤(권한의 쓰기·읽기)은 `FilterField group` 하나이고 자식 라벨은 원문의 낱말이다. 합성 라벨("권한 쓰기")을 만들지 않는다.
+- fixture 행은 예시임이 드러나는 이름을 쓰고 `TRANSPLANT_PENDING_<ID>` 를 단다.
+- route 는 [router 형태](router.md#형태)를 따른다.
+- 테스트는 소유자 옆에 최소 셋 — search(복구·partition·mapper), policy(전이), Screen(진입·검색·초기화·정렬) — 이고, route 는 `tests/e2e/search-contract.spec.ts` 경로 배열에 들어간다. 화면별 smoke 는 그것을 대신하지 못한다.
+
+현재 이탈(2026-09-10 3차 검토 실측): policy 파일은 회원 목록만 갖는다. 공연 목록은 인라인 전이로 `SHAPE_EXCEPTIONS` 에 등록됐고, 제품 운영자 스택(`useManagerDirectoryResult`)도 인라인인데 같은 디렉터리의 리허설 `manager-list-policy.ts` 때문에 검사기가 구분하지 못한다. 둘 다 policy 파일로 분리하는 것이 해소 조건이다.

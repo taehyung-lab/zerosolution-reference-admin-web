@@ -3,7 +3,7 @@ import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { execFileSync } from 'node:child_process'
-import { prepare, checkEdit, recordReview, checkStop } from './preflight.mjs'
+import { prepare, checkEdit, recordReview, checkStop, outputSnapshot } from './preflight.mjs'
 import { hookDecision } from './hook.mjs'
 
 const roots = []
@@ -83,6 +83,21 @@ describe('repository preflight', () => {
     expect(checkEdit(root, 'one', ['scripts/blocked.mjs'])).toMatch(/Which wire value/)
     writeFileSync(join(root, 'AGENTS.md'), 'Contract changed')
     expect(checkEdit(root, 'one', ['scripts/example.mjs'])).toMatch(/changed/)
+  })
+  it('snapshots only files when git lists a nested worktree directory as a path', () => {
+    const { root } = setup()
+    // A nested repository (what an agent worktree under .claude/worktrees/ looks like to the parent)
+    // is listed by `git ls-files --others` as a single directory path.
+    mkdirSync(join(root, 'nested'), { recursive: true })
+    execFileSync('git', ['init'], { cwd: join(root, 'nested'), stdio: 'ignore' })
+    writeFileSync(join(root, 'nested/inner.txt'), 'inner')
+    // The real snapshot is what the Stop hook reads; the nested path is present and snapshots as null
+    // rather than throwing EISDIR (the second independent review measured that prepare/checkEdit alone
+    // never reach this snapshot, so it is asserted directly).
+    const snapshot = outputSnapshot(root)
+    expect(Object.keys(snapshot).some((path) => path.startsWith('nested'))).toBe(true)
+    expect(Object.entries(snapshot).filter(([path]) => path.startsWith('nested')).every(([, value]) => value === null)).toBe(true)
+    expect(snapshot['scripts/example.mjs']).toEqual(expect.any(String))
   })
   it('names the screen loop first when a default screen build declares no skill', () => {
     const { root, checkpoint } = setup()

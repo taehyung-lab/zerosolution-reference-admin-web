@@ -41,10 +41,15 @@ function trackedPaths(root) {
 }
 
 // Include untracked source and deletions; ignored build artifacts and session notes are excluded by Git.
+// Git lists a nested checkout (an agent worktree created inside the repository) as one directory path;
+// reading it as a file threw EISDIR and killed the Stop hook on 2026-09-10. A directory snapshots as
+// null, the same as an absent file, so the union in changedPaths still sees a file replaced by one.
 export function outputSnapshot(root) {
-  return Object.fromEntries(trackedPaths(root).map((path) => [
-    path, existsSync(resolve(root, path)) ? hash(readFileSync(resolve(root, path))) : null,
-  ]))
+  return Object.fromEntries(trackedPaths(root).map((path) => [path, fileHash(resolve(root, path))]))
+}
+
+function fileHash(path) {
+  try { return statSync(path).isFile() ? hash(readFileSync(path)) : null } catch { return null }
 }
 
 /**
@@ -57,7 +62,7 @@ function traceSnapshot(root) {
   return Object.fromEntries(trackedPaths(root).map((path) => {
     try {
       const stats = statSync(resolve(root, path))
-      return [path, `${stats.size}:${stats.mtimeMs}`]
+      return [path, stats.isFile() ? `${stats.size}:${stats.mtimeMs}` : null]
     } catch { return [path, null] }
   }))
 }

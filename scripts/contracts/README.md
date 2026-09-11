@@ -82,8 +82,27 @@ copies the complete declared documents and computes the same code/test closure.
 
 `package.json` owns the actual verify stages and fail-fast order. `contracts:check` compares the CI
 stage set and README projection with that declaration, and checks local links, commands, runtime root
-pointers, document-size notices and transplant sentinels. Remote OpenAPI drift and real-server login
-belong to explicit network jobs; do not hide them in the local entry point.
+pointers, document-size notices and transplant sentinels. A link's `#anchor` is compared with the
+target's headings slugged as GitHub renders them (link text, not URL; underscores kept; fenced code
+ignored); setext headings and HTML anchors are not recognized. Remote OpenAPI drift and real-server
+login belong to explicit network jobs; do not hide them in the local entry point.
+
+The ESLint ignore list is root-anchored, so a second checkout inside the repository (an agent worktree
+under `.worktrees/` or `.claude/worktrees/`) is linted whole unless its root is listed; on 2026-09-10 that
+exceeded the Node heap. CI runs on a fresh checkout and never has such a tree, so this regression is
+local-only and no CI stage guards it.
+
+`screen-shape.mjs` compares each `screens/<workflow>/` (and `mechanics/<name>/`) with the role shapes
+that the feature-contract references own in their `형태` sections: a role-named file must sit in its
+segment (`ui/` or `model/`; `lib/` and `config/` are left to the placement table), a list screen must
+carry its search, filter, data and policy files unless it imports a mechanic's `model/` (the mechanic's
+own names are not checked), a detail with actions needs its request boundary, a form needs schema plus
+request or mutation, and every list route must appear in an array literal of
+`tests/e2e/search-contract.spec.ts`. It reads names and existence only — a screen that ignores the
+naming convention is invisible to it, two stacks in one directory are not told apart, and URL field
+names, value shapes and `locale` types are review's job. A failure names the section to read. Screens
+that predate a shape are listed in `SHAPE_EXCEPTIONS` with the condition that closes them and reported
+as notices; a closed gap still listed, or a vanished screen, is a failure, so the list only shrinks.
 
 Document notices cover nested `docs/` and `.agents/` Markdown too, including Notion ledgers.
 `contracts.mjs` owns the advisory thresholds: 200 lines and 24 KiB (a triage baseline near the

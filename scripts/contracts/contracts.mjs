@@ -141,21 +141,63 @@ export function pnpmCommandFailures(files, scripts) {
   return failures
 }
 
-/** 로컬 Markdown link 의 대상 파일이 실재하는지 확인한다. 외부 URL 과 앵커는 대상이 아니다. */
+/**
+ * Markdown heading 의 GitHub 식 anchor. 소문자, 백틱 제거, 글자·숫자·공백·하이픈 외 문자 제거, 공백 → 하이픈,
+ * 같은 slug 가 반복되면 `-1`, `-2`. 코드 fence 안의 `#` 줄은 heading 이 아니다.
+ */
+export function headingAnchors(markdown) {
+  const seen = new Map()
+  const anchors = new Set()
+  let fence = null
+  for (const line of markdown.split('\n')) {
+    const opening = /^\s*(```|~~~)/.exec(line)
+    if (opening && fence === null) { fence = opening[1]; continue }
+    if (opening && opening[1] === fence) { fence = null; continue }
+    if (fence !== null) continue
+    const heading = /^#{1,6}\s+(.*?)\s*#*\s*$/.exec(line)
+    if (!heading) continue
+    // GitHub slugs the rendered text: an inline link or image contributes its text, never its URL.
+    const rendered = heading[1].replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
+    const base = rendered.toLowerCase().replace(/[^\p{L}\p{N}\p{M}_\s-]/gu, '').trim().replace(/\s/g, '-')
+    const count = seen.get(base) ?? 0
+    seen.set(base, count + 1)
+    anchors.add(count === 0 ? base : `${base}-${count}`)
+  }
+  return anchors
+}
+
+function decodedAnchor(anchor) {
+  try { return decodeURIComponent(anchor).toLowerCase() } catch { return anchor.toLowerCase() }
+}
+
+/**
+ * 로컬 Markdown link 의 대상 파일과 `#앵커` 가 실재하는지 확인한다. 외부 URL 은 대상이 아니다.
+ * 2026-09-10 까지 앵커를 보지 않아 루트가 깊은 절을 11곳 가리키면서도 절 제목 변경을 잡을 수 없었다.
+ */
 export function readLocalLinkFailures(files) {
   const failures = []
+  const anchorCache = new Map()
+  const anchorsOf = (absolute) => {
+    if (!anchorCache.has(absolute)) anchorCache.set(absolute, headingAnchors(readFileSync(absolute, 'utf8')))
+    return anchorCache.get(absolute)
+  }
   for (const file of files) {
     const lines = readFileSync(resolve(file), 'utf8').split('\n')
     lines.forEach((line, index) => {
       for (const [, target] of line.matchAll(/\[[^\]]*\]\(([^)\s]+)\)/g)) {
-        if (/^(https?:|mailto:|#)/.test(target)) continue
-        const path = target.split('#')[0]
-        if (path === '') continue
-        const absolute = path.startsWith('/')
-          ? resolve(`.${path}`)
-          : resolve(dirname(resolve(file)), path)
-        if (existsSync(absolute)) continue
-        failures.push(`${file}:${index + 1}: link 대상 없음 → ${target}`)
+        if (/^(https?:|mailto:)/.test(target)) continue
+        const [path, anchor] = target.split('#')
+        const absolute = path === ''
+          ? resolve(file)
+          : path.startsWith('/') ? resolve(`.${path}`) : resolve(dirname(resolve(file)), path)
+        if (!existsSync(absolute)) {
+          failures.push(`${file}:${index + 1}: link 대상 없음 → ${target}`)
+          continue
+        }
+        if (anchor === undefined || !absolute.endsWith('.md')) continue
+        if (!anchorsOf(absolute).has(decodedAnchor(anchor))) {
+          failures.push(`${file}:${index + 1}: link 앵커 없음 → ${target}`)
+        }
       }
     })
   }

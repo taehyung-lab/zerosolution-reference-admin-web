@@ -1,6 +1,7 @@
 # Repository preflight and review
 
-Owner: these scripts execute the observable preparation/review parts of `AGENTS.md`.
+Owner: these scripts execute the observable preparation/review parts of `AGENTS.md`, and this file owns
+the review vocabulary (completion states), the delegation brief and the session handoff conventions.
 Product facts stay in the inventory and scenarios; shared decisions stay in skills/ADRs.
 Hooks verify routing, declarations and output scope, never policy truth or comprehension.
 
@@ -248,6 +249,24 @@ review with the reason and replacement ID. Evidence links may be refined. This p
 not authorization for a scope change. A new runtime session must receive the original requirements and
 recorded changes in its handoff; session-local state cannot recover another session's request history.
 
+## Completion states
+
+Screen work in this repository is reported in four states, in this order and with no fifth word:
+**시나리오 확정됨 → 시나리오 구현 완료 → 완료 → 이관 검증됨**. When a claim needs more nuance, split it into
+what was observed here and what the target product still has to judge.
+
+- **시나리오 확정됨** — every interaction of the screen is written down in the issue to the business
+  request function it ends in and the Korean log line that proves the call, and compared with the
+  inventory section. Which surfaces and transitions that comparison must cover is owned by [mutation-actions.md](../../.agents/skills/feature-contract/references/mutation-actions.md#시나리오-상태와-관찰-범위).
+- **시나리오 구현 완료** — the implemented, API-disconnected actions were pressed in a browser to their
+  final confirmation, the business request function was called and its log observed, and internal
+  transitions were confirmed by real URL and screen state. This is the highest state reachable here:
+  there is no real API, so evidence stops at request-function reach and internal URL/state.
+- **완료**, **이관 검증됨** — real API success and adoption in the target product. Judged only there.
+
+CSS and the real-server connection are outside screen work in this repository; the evidence is inventory
+comparison, not design comparison.
+
 ## Review the actual output
 
 Compare the diff with every requirement and its evidence: target and inner-surface coverage, existing
@@ -303,9 +322,10 @@ Paths this session did not write are listed as reported-not-blocking; name them 
 
 ## Put a delegation brief in a file only when it must outlive the message
 
-AGENTS §5 owns what a brief contains — goal, scope, owned files, prohibitions, expected evidence — and
-sends the condition for making it a file here. Keep the brief in the dispatch message by default. Write it
-to `.ai-work/<task>/` instead only when one of these holds, and say which:
+A brief states the goal, the scope, the owned files, the prohibitions and the expected evidence, and it
+never hands over authority: one owner keeps the final edit of any shared file or design decision. Keep
+the brief in the dispatch message by default. Write it to `.ai-work/<task>/` instead only when one of
+these holds, and say which:
 
 - another agent or session must read it **verbatim**, so paraphrasing in a message would change the task
 - it carries quoted requirements or measured output that a message would truncate
@@ -313,6 +333,12 @@ to `.ai-work/<task>/` instead only when one of these holds, and say which:
 
 A brief file is a task artifact, so it follows the naming and expiry below and is never the completion
 report. It also never widens authority: it repeats the scope the checkpoint already declares.
+
+## Hand off to another session
+
+A handoff is a prompt the next session can use as written: the paths, the requirement IDs with their
+recorded changes, the attempts that failed and why, and the first action to take. It does not replace
+the completion report that AGENTS §4 requires, and it never widens the scope the checkpoint declares.
 
 ## Name and expire workspace artifacts
 
