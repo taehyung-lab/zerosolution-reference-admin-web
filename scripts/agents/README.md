@@ -159,6 +159,9 @@ Disclosure, approval and copy/style-only scope follow AGENTS' start gate. The fi
 
 Keep the task checkpoint under `.ai-work/`. The native hook supplies the runtime session ID when
 preparation is missing. Use that ID with `prepare`; do not invent a second ID for an active runtime.
+Session state lives in the checkout you edit: run `node scripts/agents/cli.mjs prepare …` with that
+checkout as the working directory (a nested worktree has its own `.ai-work/agent-checks`), because the
+hook judges each edit against the checkout the edited file belongs to.
 A script-only task needs numbered requirements, scope, references, contracts and unresolved as before.
 A workflow task also links each requirement to included surfaces, sources and contract decisions.
 Applicable SKILL files follow the actual paths in AGENTS §2; default (undeclared `work`) work on a

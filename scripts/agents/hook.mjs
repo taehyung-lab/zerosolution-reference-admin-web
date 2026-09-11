@@ -1,4 +1,51 @@
+import { execFileSync } from 'node:child_process'
+import { existsSync } from 'node:fs'
+import { dirname, isAbsolute } from 'node:path'
 import { checkEdit, checkStop, localPath, noteWrite, settleWrite } from './preflight.mjs'
+
+function gitToplevel(dir) {
+  try {
+    const top = execFileSync('git', ['-C', dir, 'rev-parse', '--show-toplevel'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim()
+    return top || null
+  } catch { return null }
+}
+
+/**
+ * The checkout a tool call acts on. The hook command is installed with the launch directory's script
+ * path, so a session working in a nested worktree (`.claude/worktrees/<agent>`) used to be judged
+ * against the parent checkout: its writes fell outside that tree and attribution was zero (measured
+ * 2026-09-10: the worktree state kept wrote:false, authored:0); the session reported that native edits
+ * were denied as out of scope and it wrote through the shell instead.
+ * The edited file's toplevel wins, then the payload `cwd`, then the script's own checkout.
+ */
+export function hookRoot(fallback, payload, toplevelOf = gitToplevel, exists = existsSync) {
+  let input = payload?.tool_input ?? payload?.toolArgs ?? {}
+  if (typeof input === 'string') { try { input = JSON.parse(input) } catch { input = {} } }
+  let file = input?.file_path ?? input?.path
+  if (typeof file !== 'string') {
+    // Codex edits arrive as a patch; its first absolute target names the checkout.
+    const patch = input?.command ?? input?.patch ?? input?.input
+    const target = typeof patch === 'string' ? /^\*\*\* (?:Add File|Update File|Delete File|Move to): (\/.+)$/m.exec(patch) : null
+    file = target?.[1]
+  }
+  const candidates = [
+    typeof file === 'string' && isAbsolute(file) ? existingAncestor(dirname(file), exists) : null,
+    typeof payload?.cwd === 'string' && isAbsolute(payload.cwd) ? payload.cwd : null,
+  ]
+  for (const dir of candidates) {
+    if (dir === null) continue
+    const top = toplevelOf(dir)
+    if (top) return top
+  }
+  return fallback
+}
+
+/** A new task directory or feature folder does not exist yet; git must be asked from the nearest ancestor that does. */
+function existingAncestor(dir, exists) {
+  let current = dir
+  while (!exists(current) && dirname(current) !== current) current = dirname(current)
+  return current
+}
 
 /** `find` writes through these; every other leading-dash token must be a read-only predicate. */
 const READ_ONLY_FIND = new Set([

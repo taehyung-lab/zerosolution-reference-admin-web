@@ -4,7 +4,8 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { prepare, checkEdit, recordReview, checkStop, outputSnapshot } from './preflight.mjs'
-import { hookDecision } from './hook.mjs'
+import { hookDecision, hookRoot } from './hook.mjs'
+import { realpathSync } from 'node:fs'
 
 const roots = []
 function setup() {
@@ -83,6 +84,44 @@ describe('repository preflight', () => {
     expect(checkEdit(root, 'one', ['scripts/blocked.mjs'])).toMatch(/Which wire value/)
     writeFileSync(join(root, 'AGENTS.md'), 'Contract changed')
     expect(checkEdit(root, 'one', ['scripts/example.mjs'])).toMatch(/changed/)
+  })
+  it('judges a tool call against the checkout it acts on: edited file, then cwd, then the script checkout', () => {
+    const toplevelOf = (dir) => (dir.startsWith('/repo/.claude/worktrees/agent') ? '/repo/.claude/worktrees/agent' : dir.startsWith('/repo') ? '/repo' : null)
+    const exists = () => true
+    const at = (payload) => hookRoot('/repo', payload, toplevelOf, exists)
+    const write = (file_path) => ({ tool_name: 'Write', tool_input: { file_path }, cwd: '/repo' })
+    expect(at(write('/repo/.claude/worktrees/agent/src/a.ts'))).toBe('/repo/.claude/worktrees/agent')
+    expect(at(write('/repo/src/a.ts'))).toBe('/repo')
+    // A relative file path cannot pick a checkout, so the payload cwd decides.
+    expect(at({ tool_name: 'Write', tool_input: { file_path: 'src/a.ts' }, cwd: '/repo/.claude/worktrees/agent' })).toBe('/repo/.claude/worktrees/agent')
+    // Codex sends tool input as a JSON string; a Bash call has no file at all.
+    expect(at({ toolName: 'create', toolArgs: JSON.stringify({ path: '/repo/.claude/worktrees/agent/x' }) })).toBe('/repo/.claude/worktrees/agent')
+    expect(at({ tool_name: 'Bash', tool_input: { command: 'ls' }, cwd: '/elsewhere' })).toBe('/repo')
+    expect(at({})).toBe('/repo')
+    // A patch names its checkout through its first absolute target, like a Write does through file_path.
+    expect(at({ tool_name: 'apply_patch', tool_input: { command: '*** Begin Patch\n*** Update File: /repo/.claude/worktrees/agent/src/a.ts\n@@\n-x\n+y\n*** End Patch' }, cwd: '/repo' })).toBe('/repo/.claude/worktrees/agent')
+    // A target in a directory that does not exist yet climbs to the nearest existing ancestor before asking git.
+    const onlyRoots = (dir) => dir === '/repo' || dir === '/repo/.claude/worktrees/agent'
+    expect(hookRoot('/repo', write('/repo/.claude/worktrees/agent/src/new/a.ts'), toplevelOf, onlyRoots)).toBe('/repo/.claude/worktrees/agent')
+  })
+  it('asks git from the nearest existing ancestor when the edited file is in a directory that does not exist yet', () => {
+    const { root } = setup()
+    mkdirSync(join(root, '.claude/worktrees/agent'), { recursive: true })
+    execFileSync('git', ['init'], { cwd: join(root, '.claude/worktrees/agent'), stdio: 'ignore' })
+    const nested = realpathSync(join(root, '.claude/worktrees/agent'))
+    // The first bootstrap write of a session creates .ai-work/<task>/checkpoint.json; the folder is new.
+    expect(hookRoot(root, { tool_name: 'Write', tool_input: { file_path: join(nested, '.ai-work/2026-09-11-01-task/checkpoint.json') }, cwd: root })).toBe(nested)
+    expect(hookRoot(root, { tool_name: 'Write', tool_input: { file_path: join(nested, 'src/features/newthing/model/a.ts') }, cwd: root })).toBe(nested)
+  })
+  it('resolves a nested git worktree as its own checkout with the real git', () => {
+    const { root } = setup()
+    mkdirSync(join(root, '.claude/worktrees/agent'), { recursive: true })
+    execFileSync('git', ['init'], { cwd: join(root, '.claude/worktrees/agent'), stdio: 'ignore' })
+    writeFileSync(join(root, '.claude/worktrees/agent/inner.txt'), 'inner')
+    const nested = realpathSync(join(root, '.claude/worktrees/agent'))
+    expect(hookRoot(root, { tool_name: 'Write', tool_input: { file_path: join(nested, 'inner.txt') } })).toBe(nested)
+    expect(hookRoot(root, { tool_name: 'Bash', tool_input: { command: 'ls' }, cwd: nested })).toBe(nested)
+    expect(hookRoot(root, { tool_name: 'Write', tool_input: { file_path: join(root, 'scripts/example.mjs') } })).toBe(realpathSync(root))
   })
   it('snapshots only files when git lists a nested worktree directory as a path', () => {
     const { root } = setup()

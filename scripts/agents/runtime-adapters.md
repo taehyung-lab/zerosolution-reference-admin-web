@@ -64,7 +64,18 @@ prefer one writing session or an isolated worktree. A worktree that a runtime cr
 checkout (Claude Code uses `.claude/worktrees/`) is listed by the parent's `git ls-files --others` as one
 directory path; until 2026-09-10 the snapshot read it as a file and the Stop hook died with EISDIR, and
 `eslint .` walked the second tree too. Register such roots in `.gitignore` and the ESLint ignores; the
-snapshot now treats a directory entry as absent. Unsupported MCP/custom write
+snapshot now treats a directory entry as absent. The hook also judges each call against the checkout
+it acts on — the edited file's (or patch target's) git toplevel, else the payload `cwd`, else the
+script's own checkout — so a native edit inside a nested worktree is gated by that worktree's
+`.ai-work/agent-checks` state. State is per checkout: prepare from inside the worktree with its own
+relative `scripts/agents/cli.mjs`, not the parent's. A shell write is still attributed by `cwd` only,
+so a session whose `cwd` is the parent and whose shell writes into the worktree is attributed nothing
+there. Stop and SubagentStop reconcile both the acted-on checkout and the script's checkout, since one
+session can hold state in each. Before 2026-09-10 the worktree session was judged against the parent
+checkout: the worktree's state recorded `wrote:false, authored:0` (measured) and the session reported
+that native edits were denied as out of scope and it wrote through the shell instead (its own report,
+not re-measured). Editing `hook.mjs` while sessions run is itself a hazard: a half-applied edit made
+every gated tool call fail for about a minute on 2026-09-11 until the file was repaired through the shell. Unsupported MCP/custom write
 tools and interactive shell continuations are not a complete interception boundary. Review and Git/CI remain
 necessary; do not describe this as a sandbox.
 No transcript, prompt, secret or global agent configuration is read or modified by these scripts.
