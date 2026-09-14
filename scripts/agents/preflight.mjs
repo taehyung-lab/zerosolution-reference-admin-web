@@ -442,7 +442,9 @@ function unitEvidenceFailure(root, state) {
     if (receiptError) return `Reviewed unit ${id}: ${receiptError}`
     const ids = state.checkpoint.units.find(unit => unit.id === id).requirementIds
     const requirements = state.checkpoint.requirements.filter(item => ids.includes(item.id))
-    if (JSON.stringify(requirements) !== JSON.stringify(review.requirements) || Object.entries({ ...review.documents, ...review.files }).some(([file, digest]) => fileHash(resolve(root, file)) !== digest)) return `Reviewed unit ${id} or its evidence changed; re-prepare and review that unit before completion.`
+    const changed = Object.entries({ ...review.documents, ...review.files }).filter(([file, digest]) => fileHash(resolve(root, file)) !== digest).map(([file]) => file)
+    const requirementsChanged = JSON.stringify(requirements) !== JSON.stringify(review.requirements)
+    if (requirementsChanged || changed.length) return `Reviewed unit ${id} changed: ${[...(requirementsChanged ? ['requirement definitions'] : []), ...changed].join(', ')}. Inspect these changes, repair the affected requirement/design/implementation/evidence, then re-prepare and review that unit; repeating a final message does not repair it.`
   }
   return null
 }
@@ -600,7 +602,7 @@ export function recordReview(root, session, report, snapshot = outputSnapshot, u
     documents: Object.fromEntries(Object.keys(state.documents).map(file => [file, fileHash(resolve(root, file))])),
     files: Object.fromEntries([...new Set([...claimed, ...mine.filter(path => within(path, state.checkpoint.scope))])].map(file => [file, fileHash(resolve(root, file))])),
   }
-  save(root, session, { ...state, review, unitReviews })
+  save(root, session, { ...state, review, unitReviews, failedReview: null, stopFailure: null })
   return external
 }
 
@@ -613,7 +615,7 @@ export function reviewContext(root, session, snapshot = outputSnapshot, unsettle
   const peek = entry => entry.trace ? { ...entry, authored: [...new Set([...(entry.authored ?? []), ...changedPaths(entry.trace, traceSnapshot(root))])] } : entry
   const changes = partitionChanges(peek(state), current, unsettled(root), delegated(root, session).map(peek), otherSessionClaims(root, session))
   const active = activePaths(state.checkpoint, changes.mine)
-  return { ...changes, active, fingerprint: fingerprintOf(active, current) }
+  return { ...changes, active, fingerprint: fingerprintOf(active, current), stopFailure: state.stopFailure ?? null }
 }
 
 export function reviewFingerprint(root, session, snapshot = outputSnapshot, unsettled = unsettledPaths) {
@@ -641,8 +643,47 @@ export function checkStop(root, session, snapshot = outputSnapshot, unsettled = 
   if (!mine.length) return null
   const stale = reconcileOutput(root, session, state, mine, external)
   if (stale) return stale
+  if (state.failedReview?.fingerprint === fingerprintOf(activePaths(state.checkpoint, mine), current)) {
+    return `Review check failed (exit ${state.failedReview.exitCode}). Read ${state.failedReview.stdout} and ${state.failedReview.stderr}; receipt: ${state.failedReview.artifact}. Repair the reported cause, run its focused check, then rerun review. Do not repeat the completion message or claim completion.${externalNote(external)}`
+  }
   if (state.review?.fingerprint === fingerprintOf(activePaths(state.checkpoint, mine), current)) {
     return receiptFailure(root, state.review.checks ?? [], state.review.fingerprint, independentReviewRequired(state.checkpoint))
   }
   return `Review this session's ${mine.length} changed path(s) against requirements, evidence, shared ownership and complexity; fix unsupported assumptions. Run node scripts/agents/cli.mjs review ${session} .ai-work/<task>/review.json. Record blocked items honestly; do not claim completion from this check alone.${externalNote(external)}`
+}
+
+export function recordFailedReview(root, session, receipt) {
+  const state = load(root, session)
+  if (state) save(root, session, { ...state, failedReview: receipt })
+}
+
+// Stop controls whether the agent can end a turn, not whether the work is certified.
+// Keep the underlying failure intact; repeating it without new evidence cannot repair it.
+export function stopDecision(root, session, snapshot = outputSnapshot) {
+  let current
+  const cachedSnapshot = () => current ??= snapshot(root)
+  const reason = checkStop(root, session, cachedSnapshot)
+  const state = load(root, session)
+  if (!reason) {
+    if (state?.stopFailure) save(root, session, { ...state, stopFailure: null })
+    return {}
+  }
+  cachedSnapshot()
+  const paths = new Set([
+    ...(state.authored ?? []), ...Object.keys(state.documents ?? {}), state.checkpointPath,
+    ...delegated(root, session).flatMap(child => child.authored ?? []),
+    ...Object.values(state.unitReviews ?? {}).flatMap(review => Object.keys({ ...review.documents, ...review.files })),
+  ])
+  // Receipts get new IDs/timestamps and test timing output on every retry. Those are not repairs.
+  const failed = state.failedReview
+  let cause = reason.split(' Reported, not blocking:')[0]
+  if (failed) for (const field of ['artifact', 'stdout', 'stderr']) cause = cause.replaceAll(failed[field], field)
+  const failureIdentity = failed && [failed.fingerprint, failed.command, failed.exitCode, failed.error]
+  const signature = hash(JSON.stringify([cause, [...paths].sort().map(path => [path, Object.hasOwn(current, path) ? current[path] : fileHash(resolve(root, path))]), state.review, state.unitReviews, failureIdentity]))
+  if (state.stopFailure?.signature === signature) {
+    save(root, session, { ...state, stopFailure: { signature, reason, released: true } })
+    return {}
+  }
+  save(root, session, { ...state, stopFailure: { signature, reason } })
+  return { decision: 'block', reason: `${reason} Return to the failing work now. Respect an explicit user stop request. If blocked by missing authority or external facts, report the exact blocker; do not claim completion.` }
 }

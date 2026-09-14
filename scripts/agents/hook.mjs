@@ -2,7 +2,7 @@ import { homedir } from 'node:os'
 import { execFileSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { dirname, isAbsolute, resolve } from 'node:path'
-import { checkEdit, checkStop, localPath, noteWrite, settleWrite } from './preflight.mjs'
+import { checkEdit, stopDecision, localPath, noteWrite, settleWrite } from './preflight.mjs'
 
 function gitToplevel(dir) {
   try {
@@ -235,8 +235,7 @@ export function hookDecision(root, payload, eventOverride) {
     ? { permissionDecision: 'deny', permissionDecisionReason: reason }
     : { hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: 'deny', permissionDecisionReason: reason } }
   if (event === 'Stop' || event === 'agentStop') {
-    const reason = checkStop(root, session)
-    return reason ? { decision: 'block', reason } : {}
+    return stopDecision(root, session)
   }
   // Closes the write bracket so only what moved during the call is attributed to this session.
   if (event === 'PostToolUse' || event === 'postToolUse' || event === 'agentPostTool') {

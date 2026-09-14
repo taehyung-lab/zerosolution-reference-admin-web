@@ -51,6 +51,18 @@ weaken the genuine out-of-scope check.
 
 ## Recorded interception and attribution
 
+Stop failures return to repair, not another completion message. A failed review command keeps its
+receipt in the existing session state; the next Stop names the actual stdout/stderr to inspect,
+repair and verify before rerunning review. Stale unit evidence names the changed files or requirements.
+The same failure with unchanged authored files, selected documents, checkpoint and review state
+blocks only once. Subsequent Stop permits ending the turn, while `checkStop` still reports the failure
+and no successful review is recorded. `review-context` exposes the unrepaired reason and whether Stop
+released the turn. A retry receipt's ID, timestamp or timing output does not count as a new failure:
+the check command, exit/error and source fingerprint identify the failed attempt. Changes to the
+accountable inputs rearm the block. Multiple checkout roots are checked only until a block is shown.
+This bounds a stuck
+conversation; it does not run repairs itself or certify completion. Report unresolved causes explicitly.
+
 **All preparation, scope, write-bracket and receipt rules below apply to recorded sessions and their
 descendants.** The inspection recognizer remains necessary to avoid attributing concurrent changes to
 a read-only call; it is not dead code after ordinary mode was introduced.

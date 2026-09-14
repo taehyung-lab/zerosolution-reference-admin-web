@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { prepare, prepareHistory, recordReview, reviewContext, localPath } from './preflight.mjs'
+import { prepare, prepareHistory, recordReview, recordFailedReview, reviewContext, localPath } from './preflight.mjs'
 import { runReviewCommand } from './review-checks.mjs'
 import { hookDecision, hookRoot } from './hook.mjs'
 import { describeContext, contextReport } from './surface-context.mjs'
@@ -43,7 +43,10 @@ try {
     const run = args => {
       const receipt = runReviewCommand(root, fingerprint, args)
       checks.push(receipt)
-      if (receipt.exitCode !== 0 || receipt.error) throw new Error(`Review check failed; actual output and exit recorded in ${receipt.artifact}`)
+      if (receipt.exitCode !== 0 || receipt.error) {
+        recordFailedReview(root, sessionOrEvent, receipt)
+        throw new Error(`Review check failed; read ${receipt.stdout} and ${receipt.stderr}, repair the cause, then rerun review. Receipt: ${receipt.artifact}`)
+      }
     }
     // Declaration checks stay repository-wide; code checks follow this session's own writes so that a
     // concurrent session's unfinished work cannot fail, or silently pass, this review.
@@ -63,9 +66,11 @@ try {
     const actedOn = hookRoot(root, payload)
     if (sessionOrEvent === 'Stop' || payload.hook_event_name === 'Stop' || payload.hook_event_name === 'SubagentStop') {
       // A session can hold state in two checkouts (a parent and a nested worktree); Stop reconciles both.
-      const blocked = [...new Set([actedOn, root])]
-        .map((candidate) => hookDecision(candidate, payload, 'Stop'))
-        .find((decision) => decision.decision === 'block')
+      let blocked
+      for (const candidate of new Set([actedOn, root])) {
+        const decision = hookDecision(candidate, payload, 'Stop')
+        if (decision.decision === 'block') { blocked = decision; break }
+      }
       process.stdout.write(JSON.stringify(blocked ?? {}))
     } else {
       process.stdout.write(JSON.stringify(hookDecision(actedOn, payload, sessionOrEvent)))

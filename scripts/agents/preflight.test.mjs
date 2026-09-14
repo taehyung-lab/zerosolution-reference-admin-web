@@ -1,9 +1,10 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { cpSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { homedir, tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { execFileSync } from 'node:child_process'
-import { prepare, prepareHistory, checkEdit, reviewContext, reviewFingerprint, checkStop, outputSnapshot, exportDriftFailure } from './preflight.mjs'
+import { prepare, prepareHistory, checkEdit, reviewContext, reviewFingerprint, checkStop, outputSnapshot, exportDriftFailure, recordFailedReview, stopDecision } from './preflight.mjs'
+import { runReviewCommand } from './review-checks.mjs'
 import { recordFixtureReview as recordReview } from './review-test-helper.mjs'
 import { hookDecision, hookRoot } from './hook.mjs'
 import { realpathSync } from 'node:fs'
@@ -39,6 +40,84 @@ const loop = {
 afterEach(() => { for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true }) })
 
 describe('repository preflight', () => {
+  it('blocks Stop once per unchanged failure without recording a successful review, and rearms after edits', () => {
+    const { root } = setup()
+    prepare(root, 'one', '.ai-work/checkpoint.json')
+    hookDecision(root, { session_id: 'one', hook_event_name: 'PreToolUse', tool_name: 'Write', tool_input: { file_path: join(root, 'scripts/example.mjs') } })
+    writeFileSync(join(root, 'scripts/example.mjs'), 'export const value = 2\n')
+    const stop = () => hookDecision(root, { session_id: 'one', hook_event_name: 'Stop' })
+    expect(stop()).toMatchObject({ decision: 'block', reason: expect.stringMatching(/repair|fix/i) })
+    expect(stop()).toEqual({})
+    expect(checkStop(root, 'one')).toMatch(/review/i)
+    writeFileSync(join(root, 'scripts/example.mjs'), 'export const value = 3\n')
+    expect(stop()).toMatchObject({ decision: 'block' })
+    expect(stop()).toEqual({})
+    writeFileSync(join(root, 'AGENTS.md'), 'Changed evidence')
+    expect(stop()).toMatchObject({ decision: 'block' })
+    expect(hookDecision(root, { session_id: 'ordinary', hook_event_name: 'Stop' })).toEqual({})
+  })
+  it('routes Stop to the actual failed check, then clears the failure only after a successful review', () => {
+    const { root } = setup()
+    prepare(root, 'one', '.ai-work/checkpoint.json')
+    hookDecision(root, { session_id: 'one', hook_event_name: 'PreToolUse', tool_name: 'Write', tool_input: { file_path: join(root, 'scripts/example.mjs') } })
+    writeFileSync(join(root, 'scripts/example.mjs'), 'export const value = 2\n')
+    const receipt = runReviewCommand(root, reviewFingerprint(root, 'one'), ['-e', 'console.error("actual failing assertion"); process.exit(1)'])
+    recordFailedReview(root, 'one', receipt)
+    expect(checkStop(root, 'one')).toContain(receipt.stderr)
+    expect(checkStop(root, 'one')).toContain('Repair the reported cause')
+    expect(stopDecision(root, 'one')).toMatchObject({ decision: 'block' })
+    const retry = runReviewCommand(root, reviewFingerprint(root, 'one'), ['-e', 'console.error("actual failing assertion"); process.exit(1)'])
+    expect(retry.artifact).not.toBe(receipt.artifact)
+    recordFailedReview(root, 'one', retry)
+    expect(stopDecision(root, 'one')).toEqual({})
+    expect(reviewContext(root, 'one').stopFailure).toMatchObject({ released: true, reason: expect.stringContaining(retry.stderr) })
+    recordReview(root, 'one', {
+      requirements: [{ id: 'R1', status: 'implemented', evidence: 'Focused value test passed.', appliedSections: ['AGENTS.md'], files: ['scripts/example.mjs'] }],
+      contractReview: 'No shared candidate.', complexityReview: 'One value.', assumptions: [], limitations: [],
+    })
+    expect(checkStop(root, 'one')).toBeNull()
+    writeFileSync(join(root, 'scripts/example.mjs'), 'export const value = 3\n')
+    expect(checkStop(root, 'one')).not.toContain(receipt.stderr)
+    expect(hookDecision(root, { session_id: 'one', hook_event_name: 'Stop' })).toMatchObject({ decision: 'block' })
+  })
+  it('rearms for an in-scope reference but ignores unrelated foreign edits and hashes the tree once', () => {
+    const { root, checkpoint } = setup()
+    writeFileSync(join(root, 'scripts/contract.md'), '# Contract\nOriginal rule.\n')
+    checkpoint.references.push('scripts/contract.md')
+    writeFileSync(join(root, '.ai-work/checkpoint.json'), JSON.stringify(checkpoint))
+    prepare(root, 'one', '.ai-work/checkpoint.json')
+    hookDecision(root, { session_id: 'one', hook_event_name: 'PreToolUse', tool_name: 'Write', tool_input: { file_path: join(root, 'scripts/example.mjs') } })
+    writeFileSync(join(root, 'scripts/example.mjs'), 'export const value = 2\n')
+    hookDecision(root, { session_id: 'one', hook_event_name: 'PostToolUse' })
+    let snapshots = 0
+    expect(stopDecision(root, 'one', () => { snapshots++; return outputSnapshot(root) })).toMatchObject({ decision: 'block' })
+    expect(snapshots).toBe(1)
+    writeFileSync(join(root, 'scripts/unrelated.mjs'), 'foreign edit')
+    expect(stopDecision(root, 'one')).toEqual({})
+    const reason = checkStop(root, 'one')
+    writeFileSync(join(root, 'scripts/contract.md'), '# Contract\nChanged rule.\n')
+    expect(checkStop(root, 'one').split(' Reported, not blocking:')[0]).toBe(reason.split(' Reported, not blocking:')[0])
+    expect(stopDecision(root, 'one')).toMatchObject({ decision: 'block' })
+  })
+  it('CLI shows each checkout block before consuming its repeated-stop allowance', () => {
+    const { root } = setup()
+    const { root: target } = setup()
+    cpSync(import.meta.dirname, join(root, 'scripts/agents'), { recursive: true })
+    cpSync(join(import.meta.dirname, '../contracts'), join(root, 'scripts/contracts'), { recursive: true })
+    for (const directory of [root, target]) {
+      prepare(directory, 'two-roots', '.ai-work/checkpoint.json')
+      hookDecision(directory, { session_id: 'two-roots', hook_event_name: 'PreToolUse', tool_name: 'Write', tool_input: { file_path: join(directory, 'scripts/example.mjs') } })
+      writeFileSync(join(directory, 'scripts/example.mjs'), 'export const value = 2\n')
+      hookDecision(directory, { session_id: 'two-roots', hook_event_name: 'PostToolUse' })
+    }
+    const stop = () => JSON.parse(execFileSync(process.execPath, [join(root, 'scripts/agents/cli.mjs'), 'hook', 'Stop'], { input: JSON.stringify({ session_id: 'two-roots', hook_event_name: 'Stop', cwd: target }), encoding: 'utf8' }))
+    expect(stop()).toMatchObject({ decision: 'block' })
+    expect(reviewContext(root, 'two-roots').stopFailure).toBeNull()
+    expect(stop()).toMatchObject({ decision: 'block' })
+    expect(stop()).toEqual({})
+    expect(checkStop(root, 'two-roots')).toMatch(/review/i)
+    expect(checkStop(target, 'two-roots')).toMatch(/review/i)
+  })
   it('does not let root or skill prose clear a checkpoint product question', () => {
     const { root, checkpoint } = setup()
     checkpoint.unresolved = [{ question: 'Which server value?', paths: ['scripts/example.mjs'], resolution: { status: 'resolved', evidence: 'Claimed answer.', sources: ['AGENTS.md'] } }]
