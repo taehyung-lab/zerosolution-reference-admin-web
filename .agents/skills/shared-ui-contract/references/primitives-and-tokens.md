@@ -32,7 +32,7 @@ Which primitive a feature may use directly: `Button`, `Input`, `Checkbox`, `Badg
 
 `Tabs.tsx` provides `Tabs(value, onValueChange)`, `TabsList`, `TabsTrigger(value)` and
 `TabsContent(value)`. Radix owns tab/tabpanel linkage and roving keyboard focus; the wrappers add tokens.
-The first consumer is the performance detail's read-only language panel. The feature owns the selected
+The first consumer is a detail screen's read-only language panel. The feature owns the selected
 language, labels, initial value and whether it belongs in local state or URL; a locale tab is not a UI-locale switch.
 Inactive content unmounts by default. A caller requiring retained panels explicitly passes `forceMount` to
 `TabsContent`; inactive retained panels stay hidden. This option does not decide form-value preservation.

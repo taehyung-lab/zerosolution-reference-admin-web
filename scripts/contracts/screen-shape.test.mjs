@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import {
   detailRouteLoaderFailures,
   listRouteCoverageFailures,
+  listRouteCoverageNotices,
   resolvedShapeExceptionFailures,
   screenRoles,
   screenShapeFailures,
@@ -149,6 +150,10 @@ describe('screen shape', () => {
       'tests/e2e/search-contract.spec.ts': '',
     })
     expect(listRouteCoverageFailures(child)).toHaveLength(1)
+    const noSpec = fixture({ ...list(), 'src/routes/_app/things/index.tsx': route })
+    expect(listRouteCoverageFailures(noSpec)).toEqual([])
+    expect(listRouteCoverageNotices(noSpec)).toEqual([expect.stringMatching(/search-contract\.spec\.ts 가 없다/)])
+    expect(listRouteCoverageNotices(covered)).toEqual([])
   })
 
   it('reports an open exception as a notice, a closed one and a vanished screen as failures', () => {

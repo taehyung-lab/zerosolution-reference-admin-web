@@ -200,6 +200,14 @@ function quotedPathsInArrays(source) {
   return paths
 }
 
+/** Spec 부재는 실패가 아니라 notice. 대상 저장소는 그 파일을 두거나 합류 규칙을 다시 선언한다. */
+export function listRouteCoverageNotices(root, specFile = 'tests/e2e/search-contract.spec.ts') {
+  const routesDir = resolve(root, 'src/routes/_app')
+  const specPath = resolve(root, specFile)
+  if (!existsSync(routesDir) || existsSync(specPath)) return []
+  return [`목록 route 합류 검사 생략: ${specFile} 가 없다. 목록 route가 있으면 그 파일을 두거나 합류 규칙을 다시 선언한다 → ${SHAPE_SECTIONS.list}`]
+}
+
 /**
  * 목록 route 는 저장소가 소유한 목록 계약 e2e(`tests/e2e/search-contract.spec.ts`)의 경로 배열에 들어간다.
  * 화면별 smoke 는 그 스위트를 대신하지 못한다. 목록 route 판정은 화면 쪽 사실로 한다: mount 하는 화면의

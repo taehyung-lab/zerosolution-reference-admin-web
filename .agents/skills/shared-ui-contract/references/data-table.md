@@ -6,7 +6,7 @@ Read this file only for the shared `DataTable` public contract, rendering, heade
 
 `selectionColumn({ selection, pageLabel, rowLabel, isSelectable? })` builds only the header/row checkboxes.
 It consumes `PageRowSelection`; labels and eligibility come from the feature. It adds no state or DataTable prop.
-Member and manager columns share this rendering; columns and sort/URL policy remain with their callers.
+Lists with row selection share this rendering; columns and sort/URL policy remain with their callers.
 
 ## Public contract
 

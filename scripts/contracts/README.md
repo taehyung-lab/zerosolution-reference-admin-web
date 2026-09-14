@@ -41,6 +41,9 @@ only:
 - the local import closure of each code root and of each declared focused test;
 - that every declared file, heading and marker actually exists;
 - that no two bundles own the same code root;
+- that each bundle's declared export names (`SEED_BUNDLE_EXPORTS`) match the code-root `export` set; a
+  session that changes that set must also carry a `modify` decision for the bundle, which
+  [review](../agents/README.md#review-the-actual-output) enforces against the set recorded at prepare;
 - that the materialized seed is closed — no file in it imports something outside it;
 - that no feature, route, generated or domain-translation file leaked into the seed.
 
@@ -72,6 +75,10 @@ means bootstrap is not complete.
 skills, the ADRs a skill names, version-pin ADRs to compare against the target, the product inventory,
 gates, configuration, the test harness, the i18n runtime, and app shell copy to merge. Entries under
 `templates` are merged into the target, not copied over it.
+
+`--mode target` skips `SHAPE_EXCEPTIONS` (source-product list-screen debt). If
+`tests/e2e/search-contract.spec.ts` is absent, list-route join is a notice rather than a silent pass;
+the target keeps that spec or restates the join rule. Do not copy this product's spec as a substitute.
 
 The agent context index under the product inventory travels as product-specific reference material,
 not a shared candidate. Rebuild its evidence/path connections from the target product before claiming
@@ -107,6 +114,18 @@ naming convention is invisible to it, two stacks in one directory are not told a
 names, value shapes and `locale` types are review's job. A failure names the section to read. Screens
 that predate a shape are listed in `SHAPE_EXCEPTIONS` with the condition that closes them and reported
 as notices; a closed gap still listed, or a vanished screen, is a failure, so the list only shrinks.
+
+Skill rule text is product-free. `productNameNotices` scans `.agents/skills/**/*.md` for this product's
+domain nouns, `Manager*`/`Member*`-style identifiers and `src/features/<dir>/` paths
+(`PRODUCT_DOMAIN_TERMS` in `contracts.mjs`; replace the vocabulary on transplant) and reports each line
+as a notice, except inside the section of any heading that contains `이 저장소의 관찰` (up to the next
+heading of the same or higher level), where this repository's observations, current deviations and
+consumer tables live and which a new project empties; the convention is one such `##` section at the end
+of a reference. Heading text is scanned; `#` inside a code fence is not a heading. A rule that needs a
+product name to be understood is not yet a rule; the notice is where that rewrite starts. Zero is the
+target, and a remaining line needs a stated reason in review. It is a notice, not a failure, because the
+vocabulary is substring and generic-word matching (`운영자`, `전시`, `manager` as a field name) and the
+false positives are a reviewer's call.
 
 Document notices cover nested `docs/` and `.agents/` Markdown too, including Notion ledgers.
 `contracts.mjs` owns the advisory thresholds: 200 lines and 24 KiB (a triage baseline near the

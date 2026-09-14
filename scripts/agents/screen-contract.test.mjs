@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { pointerState, rowsForSurface, screenRows, summarize } from './screen-contract.mjs'
+import { pointerState, renderRows, rowsForSurface, screenRows, summarize } from './screen-contract.mjs'
 
 const roots = []
 const HEADER = '| id | 종류 | 화면 | surface | Figma 관찰 | Notion 동작·정책 | 미확인 | 현재 코드 |\n| --- | --- | --- | --- | --- | --- | --- | --- |\n'
@@ -34,19 +34,29 @@ describe('screen contract rows', () => {
     // The blank-id row and the whole table without an id column contribute nothing.
     expect(rows.map((row) => row.id)).toEqual(['demo.table'])
     expect(rows[0].kind).toBe('열거')
+    // A row can be handed over as written: its own header, a separator, the raw line.
+    expect(renderRows(rows).split('\n')).toEqual([
+      '| id | 종류 | 화면 | surface | Figma 관찰 | Notion 동작·정책 | 미확인 | 현재 코드 |',
+      '| --- | --- | --- | --- | --- | --- | --- | --- |',
+      '| `demo.table` | 열거 | 1.1 | table | 컬럼 A·B | (대기) | — | `DemoTable.tsx` |',
+    ])
+    expect(renderRows([])).toBe('')
   })
   it('derives the unresolved state from three columns, not the 미확인 column alone', () => {
     const root = setup(
       `${HEADER}| \`demo.confirmed\` | 서술 | 1.1 | a | 관찰됨 | 정책 확정 | — | \`DemoTable.tsx\` |\n` +
-      '| `demo.stated` | 서술 | 1.1 | b | 관찰됨 | 정책 확정 | 서버 식별자 (`Q7`) | `DemoTable.tsx` |\n' +
+      '| `demo.stated` | 서술 | 1.1 | b | 관찰됨 | 정책 확정 | 서버 식별자 (`Q7`), 정렬([질문 3](../x.md#질문-3)) | `DemoTable.tsx` |\n' +
       '| `demo.unread` | 서술 | 1.1 | c | 상세 (미판독) | 정책 확정 | — | `DemoTable.tsx` |\n' +
-      '| `demo.nopolicy` | 서술 | 1.1 | d | 관찰됨 | (대기) | — | `DemoTable.tsx` |\n',
+      '| `demo.nopolicy` | 서술 | 1.1 | d | 관찰됨 | (대기) | — | `DemoTable.tsx` |\n' +
+      '| `demo.frameonly` | 서술 | 1.1 | e | 조회·등록 frame 존재 | 정책 확정 | — | `DemoTable.tsx` |\n',
     )
     const rows = screenRows(root, 'docs/demo.md')
     const byId = Object.fromEntries(rows.map((row) => [row.id, row]))
     expect(byId['demo.confirmed'].unresolved).toBeNull()
-    expect(byId['demo.stated'].unresolved).toBe('서버 식별자 (`Q7`)')
-    expect(byId['demo.stated'].questions).toEqual(['7'])
+    // A cell that only says the frame exists enumerates no composition, so the row is not implementation evidence.
+    expect(byId['demo.frameonly'].unresolved).toBe('Figma 구성 미열거')
+    expect(byId['demo.stated'].unresolved).toBe('서버 식별자 (`Q7`), 정렬([질문 3](../x.md#질문-3))')
+    expect(byId['demo.stated'].questions).toEqual(['7', '3'])
     // A row whose 미확인 cell is empty is still unresolved when the observation or policy is pending.
     expect(byId['demo.unread'].unresolved).toBe('Figma 관찰 미판독')
     expect(byId['demo.nopolicy'].unresolved).toBe('Notion 정책 미수집')
@@ -69,10 +79,13 @@ describe('screen contract rows', () => {
       '| `demo.fragment` | 열거 | 1.1 | b | 관찰 | 정책 | — | `features/demo/` |\n' +
       '| `demo.stale` | 열거 | 1.1 | c | 관찰 | 정책 | — | `GoneScreen.tsx` |\n' +
       '| `demo.words` | 열거 | 1.1 | d | 관찰 | 정책 | — | `DemoTable` |\n' +
-      '| `demo.empty` | 열거 | 1.1 | e | 관찰 | 정책 | — | — |\n',
+      '| `demo.empty` | 열거 | 1.1 | e | 관찰 | 정책 | — | — |\n' +
+      '| `demo.route` | 열거 | 1.1 | f | 관찰 | 정책 | — | `DemoTable.tsx`(→ `/demo/new`) |\n',
     )
     const byId = Object.fromEntries(screenRows(root, 'docs/demo.md').map((row) => [row.id, row]))
     expect(pointerState(root, byId['demo.present'])).toBe('present')
+    // A navigation target beside the file is a URL, not a second path to resolve.
+    expect(pointerState(root, byId['demo.route'])).toBe('present')
     // A path fragment is how a reader writes it, so it must resolve rather than read as stale.
     expect(pointerState(root, byId['demo.fragment'])).toBe('present')
     expect(pointerState(root, byId['demo.stale'])).toBe('stale')

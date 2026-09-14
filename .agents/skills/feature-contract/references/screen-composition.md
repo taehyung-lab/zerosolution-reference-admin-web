@@ -6,11 +6,12 @@ Read this file for a new ordinary screen skeleton or app-shell/navigation metada
 
 Routes and feature screens compose visible parts explicitly. Repeated JSX is acceptable; do not replace it with `ResourcePage`, a page-controller hook, or a universal config/screen descriptor. A shared pattern owns layout and interaction mechanics only. Fields, columns, copy, permissions, queries, mutations, and workflow decisions stay in the feature.
 
-Member record lists reuse `MemberRecordResult` for their identical toolbar/count/table/pagination assembly;
-columns, sort options, search gating and row actions remain explicit caller inputs. This feature-owned
-composition has no resource mode, query, endpoint or schema descriptor.
+Sibling lists inside one feature may reuse one feature-owned result component for an identical
+toolbar/count/table/pagination assembly; columns, sort options, search gating and row actions remain
+explicit caller inputs, and the composition has no resource mode, query, endpoint or schema descriptor
+(current example: [이 저장소의 관찰](#이-저장소의-관찰)).
 
-Within one feature, screens with the same workflow may share an explicit screen and a small typed definition for actual field/column differences (active members). If state transitions, selection, actions or query gates differ, keep separate screen/filter/result assembly and reuse the repeated mechanics. Props alone are not a reason to combine hooks; a pure feature-local transition is enough when only the sort/page update repeats.
+Within one feature, screens with the same workflow may share an explicit screen and a small typed definition for actual field/column differences. If state transitions, selection, actions or query gates differ, keep separate screen/filter/result assembly and reuse the repeated mechanics. Props alone are not a reason to combine hooks; a pure feature-local transition is enough when only the sort/page update repeats.
 
 Inspect only the confirmed product screens and adjacent workflows needed to identify the current screen and genuine shared candidates. Choose one representative workflow; do not implement a catalog. Figma repetition is evidence only when semantics, state transitions, and failure behavior match. Promotion decisions use `shared-ui-contract` and ADR 0009.
 
@@ -45,7 +46,7 @@ Screen의 props는 조회/URL/업무 연결과 표시 책임을 분리하는 경
 
 조회·옵션·mock 책임은 [query-cache.md](../../api-contract/references/query-cache.md#서버-연결-전후의-책임),
 공용 승격은 [logic-promotion.md](../../shared-ui-contract/references/logic-promotion.md#실제-api에서도-남는-중복인가),
-등록·수정·메시지 등 최종 callback의 완료 증거는 [mutation-actions.md](mutation-actions.md#api-연결-전-시나리오-요청)를 따른다.
+등록·수정·발송 등 최종 callback의 완료 증거는 [mutation-actions.md](mutation-actions.md#api-연결-전-시나리오-요청)를 따른다.
 대표 화면 하나의 적용을 다른 route와 팝업의 적용 완료로 간주하지 않는다.
 
 ## Never
@@ -53,3 +54,10 @@ Screen의 props는 조회/URL/업무 연결과 표시 책임을 분리하는 경
 - Shared screen shells or schema/config-driven universal pages
 - Feature-to-feature imports for permission or navigation catalogs
 - Screen-specific copy, permissions, Query, or mutations inside shared UI
+
+## 이 저장소의 관찰
+
+규칙이 아니라 이 저장소 화면에서 위 규칙을 적용한 기록이다. 신규 프로젝트는 이 절을 비우고 자기 화면으로 다시 채운다.
+
+- feature 소유 결과 컴포넌트 재사용: 회원 기록 목록들이 `MemberRecordResult` 를 공유한다.
+- 같은 workflow 의 변형이 한 화면과 작은 타입 정의를 공유하는 예: 활성 회원 전체·일반·불량.

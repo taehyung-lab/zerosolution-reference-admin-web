@@ -4,7 +4,7 @@ Read this file only for `RadioGroup`/`RadioGroupItem`, `FormRadioGroupField`, or
 
 ## Which control
 
-- Mutually exclusive choices all visible at once (기간 preset 전체·1년 전·…, SMS/이메일 발송의 회원 유형 APP 회원/운영자): `RadioGroup`.
+- Mutually exclusive choices all visible at once (period presets, a recipient-type choice on a send form): `RadioGroup`.
 - More than a handful of choices, or a value the design shows as a dropdown: `Select`.
 
 ## Data the caller passes

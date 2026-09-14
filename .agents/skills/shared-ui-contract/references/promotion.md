@@ -32,7 +32,7 @@ If any row is unanswered, keep the code feature-local. A verdict such as `featur
 
 ## Reference-project lifecycle
 
-A bootstrap contract remains provisional until a second real workflow validates the same semantics, lifecycle, and failure behavior. Manager is a consumer, not the owner or sufficient confirmation.
+A bootstrap contract remains provisional until a second real workflow validates the same semantics, lifecycle, and failure behavior. The first consumer is a consumer, not the owner or sufficient confirmation.
 
 For each candidate:
 
@@ -42,7 +42,7 @@ For each candidate:
 4. compare the next real consumer
 5. confirm, narrow, or demote from observed differences
 
-Do not count rehearsal endpoints or a second visual instance as another implementation consumer. Keep current list-candidate status in ADR 0009 and form status in ADR 0010; this reference owns the decision procedure, not inventories or last-green reports.
+Do not count an isolated non-product endpoint or a second visual instance as another implementation consumer. Keep current list-candidate status in ADR 0009 and form status in ADR 0010; this reference owns the decision procedure, not inventories or last-green reports.
 
 When the request itself names a shared contract rather than a screen, the same procedure applies from the
 other direction. The bundle's focused tests are the contract, so completeness is those tests plus every

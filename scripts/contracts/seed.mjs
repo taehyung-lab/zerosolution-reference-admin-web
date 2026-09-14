@@ -4,7 +4,7 @@ import { dirname, relative, resolve } from 'node:path'
 const location = (file, heading, marker) => ({ file, heading, marker })
 
 /**
- * 사람은 채택 후보의 public 진입점, 규범 문장, 결정 행, focused test와 소유권만 선언한다.
+ * 사람은 채택 후보의 public 진입점, 그 진입점의 export 이름, 규범 문장, 결정 행, focused test와 소유권만 선언한다.
  * 실제 반출 파일은 이 진입점들의 local import closure를 매번 계산해 얻는다.
  * code root는 bundle 하나가 소유한다. focused test는 증거이므로 여러 bundle이 같은 파일을 가리킬 수 있다.
  * 설정·게이트·harness처럼 채택 후보가 아닌 이관 재료는 아래 TRANSPLANT_MANIFEST가 따로 소유한다.
@@ -551,6 +551,97 @@ export const SEED_BUNDLES = [
     },
   },
 ]
+
+/**
+ * code root 가 내보내는 이름. 집합이 바뀌면 이 표와 함께 고친다. 소비자가 그 이름을 호출하는지는 보지 않는다.
+ * 해시는 읽히지 않으므로 이름을 적는다.
+ */
+export const SEED_BUNDLE_EXPORTS = {
+  'ascii-triplet': ['hasRepeatedOrSequentialAsciiTriplet'],
+  confirmation: ['BulkActionDialogs', 'SelectionAlert', 'useConfirmation', 'useSelectionGate'],
+  'contact-masking': ['maskEmail', 'maskPhone'],
+  'list-result': ['ListResult', 'ListResultCopy', 'ListResultData', 'ListResultState', 'ResultSummary', 'ResultSummaryGroup', 'ResultSummaryItem', 'ResultToolbar', 'ResultTotal'],
+  'detail-state-boundary': ['DetailStateBoundary'],
+  'detail-query': ['DetailQueryResult', 'DetailState', 'RequiredQueryFacts', 'RequiredQueryOutcome', 'resolveRequiredQueryOutcome', 'toDetailState', 'useDetailQuery'],
+  'update-history': ['UpdateHistory', 'UpdateHistoryEntry'],
+  'blocking-progress': ['ApiQueryMeta', 'BlockingProgress', 'QueryProgress', 'blockingProgress', 'contentProgress', 'inlineProgress'],
+  'form-sections-and-adapters': ['FieldControlProps', 'FieldForm', 'FormCancelButton', 'FormCheckboxField', 'FormComboboxField', 'FormDateField', 'FormDateRangeField', 'FormDateRangeValue', 'FormErrorOutcome', 'FormField', 'FormFileField', 'FormFileValue', 'FormMultiSelectField', 'FormPermissionTreeField', 'FormRadioGroupField', 'FormSelectField', 'FormSubmitButton', 'FormTextField', 'SaveStage', 'formFieldControlId', 'useFormSections', 'useSaveForm'],
+  'draft-commit': ['useDraftCommit', 'useListFilterDraft'],
+  'period-draft': ['DisplayDateRange', 'PeriodDraft', 'PeriodPreset', 'PeriodValue', 'UtcPeriodRange', 'createPeriodDraft', 'usePeriodDraft'],
+  'search-partition': ['FilterFieldKeys', 'Resolved', 'SearchFieldKind', 'SearchFieldPartition', 'SearchParser', 'canonicalizeRouteSearch', 'defineSearchFields', 'filterPartitionKey', 'filterPartitionValues', 'nonEmptyArray', 'normalizeClosedInstantRange', 'omitSearchDefaults', 'optionalInstant', 'optionalPositiveInteger', 'recoverArray', 'recoverArrayItems', 'resolveSearchDefaults', 'toTotalPages'],
+  'list-query': ['ListQueryResult', 'useListQuery'],
+  'list-config': ['standardPageSizeOptions', 'standardPeriodPresetValues', 'usePeriodPresetLabels', 'usePeriodPresets'],
+  'keyword-draft': ['KeywordDraft', 'KeywordFilterItem', 'createKeywordDraft', 'useKeywordDraft'],
+  'transport-auth': ['ACCESS_TOKEN_STORAGE_KEY', 'ApiError', 'ApiErrorKind', 'ApiFieldError', 'ErrorOperationContext', 'ErrorOutcome', 'LOGIN_ID_STORAGE_KEY', 'UnwrapEnvelope', 'applyCredentialChangeFromStorage', 'clearAccessToken', 'client', 'customInstance', 'isFeatureError', 'isPreAuthPath', 'readAccessToken', 'readCredentialGeneration', 'readLoginId', 'readReissuedAccessToken', 'readResponseHeader', 'registerReissueTokenReader', 'resolveErrorOutcome', 'setAccessToken', 'setLoginId'],
+  'filter-surface': ['AsyncFieldBoundary', 'AsyncFieldState', 'FilterField', 'FilterFieldIds', 'FilterPanel', 'KeywordFilterField', 'PeriodFilterField'],
+  'inline-search-select': ['InlineSearchSelect'],
+  'data-table': ['DataTable', 'DataTableColumnMeta', 'DataTableColumnSort', 'DataTableProps', 'DataTableSortDirection', 'selectionColumn'],
+  'table-navigation': ['PageSizeControl', 'Pagination', 'SortControl'],
+  'page-header': ['PageHeader'],
+  'section-card': ['SectionCard'],
+  'detail-field': ['DetailField'],
+}
+
+/**
+ * code root 의 줄 시작 `export` 이름만. re-export 별칭의 바깥 이름. `export default X` 는 `X`(익명이면 `default`).
+ * 읽지 않는 것: `export * from`(2026-09-11 실측 `src/shared`·`src/api` 에 0건), 그리고 이름이 같은 채로
+ * 넓어진 props·인자 타입. 이름 집합이 같으면 drift 가 아니므로 optional prop 하나 늘리는 E6 는 리뷰가 본다.
+ */
+export function readExportedNames(source) {
+  const names = new Set()
+  for (const [, name] of source.matchAll(/^export default (?:(?:async )?function\*? |class )?(\w+)?/gm)) names.add(name ?? 'default')
+  for (const [, name] of source.matchAll(/^export (?:async )?function (\w+)/gm)) names.add(name)
+  for (const [, name] of source.matchAll(/^export (?:const|class|type|interface|enum) (\w+)/gm)) names.add(name)
+  for (const [, body] of source.matchAll(/^export (?:type |async )?\{([^}]+)\}/gm)) {
+    for (const part of body.split(',')) {
+      const cleaned = part.replace(/\btype\b/g, ' ').trim()
+      if (!cleaned) continue
+      const bits = cleaned.split(/\s+as\s+/)
+      const name = (bits[bits.length - 1] ?? '').replace(/\W.*$/, '').trim()
+      if (name) names.add(name)
+    }
+  }
+  return [...names].sort()
+}
+
+export function collectBundleExportNames(bundle, root = process.cwd(), read = (file) => readFileSync(resolve(root, file), 'utf8')) {
+  const names = new Set()
+  for (const file of bundle.code ?? []) {
+    if (!existsSync(resolve(root, file))) continue
+    for (const name of readExportedNames(read(file))) names.add(name)
+  }
+  return [...names].sort()
+}
+
+/** What the code roots export right now, per bundle — the review compares this, not the declaration table. */
+export function currentBundleExportNames(root = process.cwd(), bundles = SEED_BUNDLES) {
+  return Object.fromEntries(bundles.map((bundle) => [bundle.id, collectBundleExportNames(bundle, root)]))
+}
+
+/** 선언한 public API 집합과 code root 가 어긋나면 실패. 호출 그래프는 보지 않는다. */
+export function findBundleExportDrift(bundles = SEED_BUNDLES, declared = SEED_BUNDLE_EXPORTS) {
+  const failures = []
+  const ids = new Set(bundles.map((bundle) => bundle.id))
+  for (const bundle of bundles) {
+    const listed = declared[bundle.id]
+    if (!Array.isArray(listed) || listed.length === 0) {
+      failures.push(`seed bundle ${bundle.id}: SEED_BUNDLE_EXPORTS 가 없다`)
+      continue
+    }
+    if (new Set(listed).size !== listed.length) failures.push(`seed bundle ${bundle.id}: SEED_BUNDLE_EXPORTS 중복`)
+    const actual = collectBundleExportNames(bundle)
+    const declaredSet = new Set(listed)
+    const actualSet = new Set(actual)
+    const missing = actual.filter((name) => !declaredSet.has(name))
+    const extra = listed.filter((name) => !actualSet.has(name))
+    if (missing.length) failures.push(`seed bundle ${bundle.id}: 미선언 export ${missing.join(', ')} — SEED_BUNDLE_EXPORTS 를 갱신한다`)
+    if (extra.length) failures.push(`seed bundle ${bundle.id}: 코드에 없는 export ${extra.join(', ')} — SEED_BUNDLE_EXPORTS 를 갱신한다`)
+  }
+  for (const id of Object.keys(declared).sort()) {
+    if (!ids.has(id)) failures.push(`SEED_BUNDLE_EXPORTS 고아 id: ${id}`)
+  }
+  return failures.sort()
+}
 
 const SOURCE_EXTENSIONS = ['.ts', '.tsx']
 const ASSET_EXTENSIONS = ['.json']

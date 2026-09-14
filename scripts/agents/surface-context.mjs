@@ -1,7 +1,8 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { dirname, relative, resolve } from 'node:path'
 import { readReference, referenceCovers, referenceOf, selectedDocuments } from './document-context.mjs'
-import { pointerState, rowsForSurface, summarize } from './screen-contract.mjs'
+import { pointerState, renderRows, rowsForSurface, summarize } from './screen-contract.mjs'
+import { SEED_BUNDLES } from '../contracts/seed.mjs'
 
 export const SURFACE_INDEX = 'docs/reference/zero-sol/context.json'
 const text = (value) => typeof value === 'string' && value.trim().length > 0
@@ -85,16 +86,56 @@ export function workKind(checkpoint) {
   return kind
 }
 
-const LOOP_GRAINS = ['screen', 'slice', 'component', 'structure']
-const LOOP_MODES = ['implement', 'drill']
+export const LOOP_GRAINS = ['screen', 'slice', 'component', 'logic', 'structure']
+export const LOOP_MODES = ['implement', 'drill']
+/** Grains that name one part of a screen; their scope is that part's files, never the screen directory. */
+const PARTIAL_GRAINS = ['slice', 'component', 'logic']
+const SHARED_GRAINS = ['component', 'logic']
+const sharedPath = (path) => /^src\/shared\//.test(path)
+/**
+ * Directory scopes at or above one screen: `src/`, `src/features/`, a domain, its `screens/` or
+ * `mechanics/` segment, one screen, and any route directory. Scope directories always end in `/`
+ * (prepare normalizes them), so a file path never matches.
+ */
+const WHOLE_SCREEN_SCOPE = /^src\/(?:(?:features(?:\/[^/]+(?:\/(?:screens|mechanics)(?:\/[^/]+)?)?)?|routes(?:\/[^/]+)*)\/)?$/
 
-/** Workflow implement/drill must name grain, entry, mode and the four design facts. Other kinds skip this. */
+/**
+ * Workflow always. A `src/shared` scope with no `work.kind` also, whatever `mode` says: the exemption
+ * for a one-line primitive fix is the declared `work.kind` with its reason, never an omitted field —
+ * a gate that fires only for sessions that already know the loop misses exactly the ones that do not.
+ * `work: { reason }` without a kind is still no kind.
+ */
+export function loopApplies(checkpoint) {
+  if (workKind(checkpoint) === 'workflow') return true
+  return checkpoint.work?.kind === undefined && checkpoint.scope.some(sharedPath)
+}
+
+/** Gate code, root instruction and skill scopes: AGENTS §5 requires an independent review of these. */
+const GATE_SCOPE = /^(?:scripts\/(?:agents|contracts)\/|\.agents\/skills\/|AGENTS\.md$|eslint\.config\.js$)/
+export function independentReviewRequired(checkpoint) {
+  return loopApplies(checkpoint) || checkpoint.scope.some((path) => GATE_SCOPE.test(path))
+}
+
+/** Presence of grain, entry, mode and the four design facts, plus the grain–scope shape. Content is N5·N6. */
 export function loopDeclarationFailures(checkpoint) {
-  if (workKind(checkpoint) !== 'workflow') return []
+  if (!loopApplies(checkpoint)) return []
   const failures = []
-  if (!LOOP_GRAINS.includes(checkpoint.grain)) failures.push('Declare checkpoint.grain (screen|slice|component|structure)')
+  const shared = workKind(checkpoint) !== 'workflow'
+  if (shared && !LOOP_MODES.includes(checkpoint.mode)) {
+    failures.push('A src/shared scope declares checkpoint.mode (implement|drill), or work.kind maintenance|infrastructure with a reason')
+  } else if (!LOOP_MODES.includes(checkpoint.mode)) {
+    failures.push('Declare checkpoint.mode (implement|drill)')
+  }
+  if (shared && !SHARED_GRAINS.includes(checkpoint.grain)) {
+    failures.push('Shared implement/drill declares checkpoint.grain component|logic (entry is a bundle id)')
+  } else if (!LOOP_GRAINS.includes(checkpoint.grain)) {
+    failures.push(`Declare checkpoint.grain (${LOOP_GRAINS.join('|')})`)
+  }
   if (!text(checkpoint.entry)) failures.push('Declare checkpoint.entry (context id, bundle id, or role 형태 path)')
-  if (!LOOP_MODES.includes(checkpoint.mode)) failures.push('Declare checkpoint.mode (implement|drill)')
+  if (PARTIAL_GRAINS.includes(checkpoint.grain)) {
+    const whole = checkpoint.scope.filter((path) => WHOLE_SCREEN_SCOPE.test(path))
+    if (whole.length) failures.push(`grain ${checkpoint.grain} names one part of a screen, so its scope is that part's files, not a screen directory: ${whole.join(', ')}`)
+  }
   const design = checkpoint.design
   if (!design || typeof design !== 'object' || !text(design.flow) || !text(design.ownership) || !text(design.reuse) || !text(design.simplicity)) {
     failures.push('Declare checkpoint.design.flow, ownership, reuse and simplicity')
@@ -102,8 +143,32 @@ export function loopDeclarationFailures(checkpoint) {
   return failures
 }
 
+const shapeHeadingCount = (root, file) => {
+  const path = resolve(root, file)
+  if (!existsSync(path)) return 0
+  return readFileSync(path, 'utf8').split('\n')
+    .map((line) => line.match(/^(#{1,6}) +(.+?)\s*#*$/))
+    .filter((match) => match && match[2] === SHAPE_HEADING).length
+}
+
+/**
+ * `entry` must resolve to something the loop can open: a context surface id, a seed bundle id, a
+ * reference `file#형태` whose heading exists, or (structure/logic) an existing repository path. Runs after
+ * `workflowContext`, so a screen whose paths are uncovered is reported as such before its entry is judged.
+ */
+export function entryResolutionFailure(root, checkpoint) {
+  if (!loopApplies(checkpoint) || !text(checkpoint.entry)) return null
+  const entry = checkpoint.entry.trim()
+  if (readSurfaceIndex(root).surfaces.some((surface) => surface.id === entry)) return null
+  if (SEED_BUNDLES.some((bundle) => bundle.id === entry)) return null
+  const [file, heading] = entry.split('#')
+  if (heading === SHAPE_HEADING && safePath(file) && shapeHeadingCount(root, file) === 1) return null
+  if (['structure', 'logic'].includes(checkpoint.grain) && heading === undefined && safePath(file) && existsSync(resolve(root, file))) return null
+  return `checkpoint.entry "${entry}" resolves to no context surface id, seed bundle id, <reference>#형태 heading, or existing path (structure|logic). Run node scripts/agents/cli.mjs context / bundle.`
+}
+
 export function workflowContext(root, checkpoint, paths = checkpoint.scope) {
-  if (workKind(checkpoint) !== 'workflow') return { references: [], included: [], indexed: false }
+  if (workKind(checkpoint) !== 'workflow') return { references: [], included: [], indexed: false, rowDelivery: { skip: new Set(), documents: [] } }
   const index = readSurfaceIndex(root)
   const decisions = checkpoint.surfaces ?? []
   const gaps = checkpoint.evidenceGaps ?? []
@@ -121,6 +186,16 @@ export function workflowContext(root, checkpoint, paths = checkpoint.scope) {
     if (!list(gap.requirements) || !gap.requirements.length || new Set(gap.requirements).size !== gap.requirements.length || !gap.requirements.every((id) => checkpoint.requirements.some((requirement) => requirement.id === id))) throw new Error('Evidence gaps need existing requirement IDs')
   }
   if (checkpoint.stage === 'settled' && (gaps.length || included.some((surface) => surface.gap))) throw new Error('A settled workflow cannot have evidence gaps')
+  if (checkpoint.stage === 'settled') {
+    // Settled means the next task can read this screen by machine: its inventory table carries `id` rows.
+    // A group whose rows are promoted under its inner surfaces (`member-list.*` under `members`) passes
+    // through an included inner surface that has rows.
+    const promoted = new Set(included.filter((surface) => rowsForSurface(root, surface).length > 0).map((surface) => surface.id))
+    const unpromoted = included
+      .filter((surface) => !promoted.has(surface.id) && !(surface.coverage === 'group' && surface.related.some((id) => promoted.has(id))))
+      .map((surface) => surface.id)
+    if (unpromoted.length) throw new Error(`A settled workflow needs promoted inventory rows (an id column) for: ${unpromoted.join(', ')}. Promote the section table before settling.`)
+  }
   for (const path of paths.filter(productPath)) {
     const known = index.surfaces.filter((surface) => surface.paths.some((prefix) => overlaps(path, prefix)))
     if (known.length) {
@@ -142,7 +217,48 @@ export function workflowContext(root, checkpoint, paths = checkpoint.scope) {
     references.push(...requirement.sources.filter((source) => source !== 'user'))
   }
   for (const surface of included) if (!checkpoint.requirements.some((requirement) => requirement.surfaces.includes(surface.id))) throw new Error(`Included surface needs a requirement: ${surface.id}`)
-  return { references, included, indexed: existsSync(resolve(root, SURFACE_INDEX)) }
+  return { references, included, indexed: existsSync(resolve(root, SURFACE_INDEX)), rowDelivery: sliceRowDelivery(root, checkpoint, included) }
+}
+
+/**
+ * A slice reads the rows it covers, not the screen's whole inventory file. When an included surface has
+ * promoted rows, the slice checkpoint names them in `rows` (ids from `context <id>`); those rows are
+ * delivered as one small table and the inventory file itself is not. An unpromoted surface still gets
+ * the whole section (there is nothing narrower to hand over), so promotion is what makes a slice cheap.
+ */
+export function sliceRowDelivery(root, checkpoint, included) {
+  const none = { skip: new Set(), documents: [] }
+  if (checkpoint.grain !== 'slice') {
+    if (checkpoint.rows !== undefined) throw new Error('checkpoint.rows belongs to grain slice; a screen receives its whole inventory section')
+    return none
+  }
+  const promoted = included.map((surface) => ({ surface, rows: rowsForSurface(root, surface) })).filter((entry) => entry.rows.length)
+  if (!promoted.length) return none
+  const wanted = checkpoint.rows
+  if (!list(wanted) || !wanted.length || !wanted.every(text)) {
+    throw new Error(`A slice on a promoted screen names the inventory rows it covers in checkpoint.rows (ids from node scripts/agents/cli.mjs context <id>): ${promoted.flatMap((entry) => entry.rows.map((row) => row.id)).join(', ')}`)
+  }
+  const known = new Map(promoted.flatMap((entry) => entry.rows.map((row) => [row.id, { row, file: referenceOf(entry.surface.inventory).file }])))
+  const unknown = wanted.filter((id) => !known.has(id))
+  if (unknown.length) throw new Error(`checkpoint.rows names rows no included surface has: ${unknown.join(', ')}`)
+  const byFile = new Map()
+  for (const id of wanted) {
+    const { row, file } = known.get(id)
+    if (!byFile.has(file)) byFile.set(file, [])
+    byFile.get(file).push(row)
+  }
+  const documents = [...byFile].map(([file, rows]) => {
+    const heading = `rows: ${rows.map((row) => row.id).join(', ')}`
+    return { file, heading, key: JSON.stringify([file, heading]), content: readFileSync(resolve(root, file), 'utf8'), selected: renderRows(rows) }
+  })
+  // Skip exactly the inventory references of the promoted surfaces, and only when no included unpromoted
+  // surface reads its section through the same reference; other references into the same file (a heading
+  // the checkpoint lists, another surface's section) are still delivered.
+  const promotedIds = new Set(promoted.map((entry) => entry.surface.id))
+  const refKey = (value) => { const ref = referenceOf(value); return JSON.stringify([ref.file, ref.heading ?? null]) }
+  const sharedByUnpromoted = new Set(included.filter((surface) => !promotedIds.has(surface.id)).map((surface) => refKey(surface.inventory)))
+  const skip = new Set(promoted.map((entry) => refKey(entry.surface.inventory)).filter((key) => !sharedByUnpromoted.has(key)))
+  return { skip, documents }
 }
 
 export function describeContext(root, id) {

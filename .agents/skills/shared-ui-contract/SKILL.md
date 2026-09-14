@@ -5,6 +5,8 @@ description: Use when adding or changing shared Radix and Tailwind UI, DataTable
 
 # Shared UI Contract
 
+구현 요청이면 이 문서로 오기 전에 [screen-loop](../screen-loop/SKILL.md) N0에서 `grain`·`entry`·`mode`를 적었는지 본다. 공용 컴포넌트 구현은 `grain` component, `entry`는 bundle id.
+
 Share stable behavior, not a guessed resource framework. Source-owned UI remains replaceable only when it has no domain, API, router, cache, permission, or workflow knowledge.
 
 ## Read only what applies
