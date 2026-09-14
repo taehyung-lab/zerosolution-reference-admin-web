@@ -2,7 +2,7 @@ import { fireEvent, render, screen, within } from '@testing-library/react'
 import { I18nextProvider } from 'react-i18next'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { i18n } from '@/shared/i18n/i18n'
-import { useUnsavedChangesGuard } from './UnsavedChangesGuard'
+import { UnsavedChangesProvider, useUnsavedChangesGuard } from './UnsavedChangesGuard'
 
 const proceed = vi.fn()
 const reset = vi.fn()
@@ -35,7 +35,9 @@ function Harness({ when }: { readonly when: boolean }) {
 
 const ui = (when: boolean) => (
   <I18nextProvider i18n={i18n}>
-    <Harness when={when} />
+    <UnsavedChangesProvider>
+      <Harness when={when} />
+    </UnsavedChangesProvider>
   </I18nextProvider>
 )
 
@@ -50,6 +52,15 @@ beforeEach(() => {
 })
 
 describe('useUnsavedChangesGuard', () => {
+  it('requires the app-level provider', () => {
+    expect(() =>
+      render(
+        <I18nextProvider i18n={i18n}>
+          <Harness when={false} />
+        </I18nextProvider>,
+      ),
+    ).toThrow('UnsavedChangesProvider')
+  })
   it('scopes local dismissal to its form without disabling the page blocker', () => {
     render(ui(true))
     fireEvent.click(screen.getByRole('button', { name: 'close clean section' }))

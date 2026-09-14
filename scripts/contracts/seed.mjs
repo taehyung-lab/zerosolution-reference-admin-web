@@ -1,5 +1,6 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { dirname, relative, resolve } from 'node:path'
+import { PRODUCT_POINTER, productPaths } from './product-paths.mjs'
 
 const location = (file, heading, marker) => ({ file, heading, marker })
 
@@ -166,9 +167,12 @@ export const SEED_BUNDLES = [
       'src/shared/ui/form/FormDateRangeField.tsx',
       'src/shared/ui/form/FormPermissionTreeField.tsx',
       'src/shared/ui/form/FormFileField.tsx',
+      'src/shared/ui/form/FormArrayField.tsx',
       'src/shared/ui/form/FormSubmitButton.tsx',
       'src/shared/ui/form/FormCancelButton.tsx',
+      'src/shared/ui/form/UnsavedChangesGuard.tsx',
       'src/shared/ui/form/useSaveForm.tsx',
+      'src/shared/ui/patterns/SortableList.tsx',
     ],
     skills: [
       location(
@@ -203,9 +207,12 @@ export const SEED_BUNDLES = [
       'src/shared/ui/form/FormSelectField.test.tsx',
       'src/shared/ui/form/FormDateRangeField.test.tsx',
       'src/shared/ui/form/FormFileField.test.tsx',
+      'src/shared/ui/form/FormArrayField.test.tsx',
       'src/shared/ui/form/FormActionButtons.test.tsx',
       'src/shared/ui/form/UnsavedChangesGuard.test.tsx',
       'src/shared/ui/form/UnsavedChangesGuard.integration.test.tsx',
+      'src/shared/ui/form/UnsavedChangesGuard.router.test.tsx',
+      'src/shared/ui/patterns/SortableList.test.tsx',
       'src/shared/ui/patterns/dialogs.test.tsx',
     ],
     ownership: {
@@ -565,7 +572,7 @@ export const SEED_BUNDLE_EXPORTS = {
   'detail-query': ['DetailQueryResult', 'DetailState', 'RequiredQueryFacts', 'RequiredQueryOutcome', 'resolveRequiredQueryOutcome', 'toDetailState', 'useDetailQuery'],
   'update-history': ['UpdateHistory', 'UpdateHistoryEntry'],
   'blocking-progress': ['ApiQueryMeta', 'BlockingProgress', 'QueryProgress', 'blockingProgress', 'contentProgress', 'inlineProgress'],
-  'form-sections-and-adapters': ['FieldControlProps', 'FieldForm', 'FormCancelButton', 'FormCheckboxField', 'FormComboboxField', 'FormDateField', 'FormDateRangeField', 'FormDateRangeValue', 'FormErrorOutcome', 'FormField', 'FormFileField', 'FormFileValue', 'FormMultiSelectField', 'FormPermissionTreeField', 'FormRadioGroupField', 'FormSelectField', 'FormSubmitButton', 'FormTextField', 'SaveStage', 'formFieldControlId', 'useFormSections', 'useSaveForm'],
+  'form-sections-and-adapters': ['FieldControlProps', 'FieldForm', 'FormArrayField', 'FormArrayFieldApi', 'FormCancelButton', 'FormCheckboxField', 'FormComboboxField', 'FormDateField', 'FormDateRangeField', 'FormDateRangeValue', 'FormErrorOutcome', 'FormField', 'FormFileField', 'FormFileValue', 'FormMultiSelectField', 'FormPermissionTreeField', 'FormRadioGroupField', 'FormSelectField', 'FormSubmitButton', 'FormTextField', 'SaveStage', 'SortableItemId', 'SortableList', 'SortableListItemProps', 'UnsavedChangesProvider', 'formFieldControlId', 'useFormSections', 'useSaveForm', 'useUnsavedChangesGuard'],
   'draft-commit': ['useDraftCommit', 'useListFilterDraft'],
   'period-draft': ['DisplayDateRange', 'PeriodDraft', 'PeriodPreset', 'PeriodValue', 'UtcPeriodRange', 'createPeriodDraft', 'usePeriodDraft'],
   'search-partition': ['FilterFieldKeys', 'Resolved', 'SearchFieldKind', 'SearchFieldPartition', 'SearchParser', 'canonicalizeRouteSearch', 'defineSearchFields', 'filterPartitionKey', 'filterPartitionValues', 'nonEmptyArray', 'normalizeClosedInstantRange', 'omitSearchDefaults', 'optionalInstant', 'optionalPositiveInteger', 'recoverArray', 'recoverArrayItems', 'resolveSearchDefaults', 'toTotalPages'],
@@ -652,6 +659,11 @@ function isSourceFile(path) {
 
 function relativeToProject(path) {
   return relative(resolve('.'), resolve(path))
+}
+
+/** 다른 checkout(이관 source)을 root 로 읽을 때의 저장소 상대 경로. `relativeToProject` 는 map 콜백으로 쓰여 인자를 늘리지 않는다. */
+function relativeToRoot(path, root) {
+  return relative(resolve(root), resolve(root, path)).split('\\').join('/')
 }
 
 export function resolveLocalSpecifier(fromFile, specifier) {
@@ -874,9 +886,15 @@ export function findBundleClosureLeaks(bundles = SEED_BUNDLES) {
 
 /**
  * 채택 후보가 아닌 이관 재료. 코드 closure로 계산되지 않는 skill 전체·skill이 이름으로 가리키는 ADR(`adrs`)·
- * 대상 버전과 대조해야 하는 핀 ADR(`conditional`)·같은 제품의 인벤토리(`inventory`)·게이트·설정·test harness·스타일 배선과,
+ * 대상 버전과 대조해야 하는 핀 ADR(`conditional`)·게이트·설정·test harness·스타일 배선과,
  * 계약이 아니라 런타임인 i18n core(`core`)·같은 제품의 app shell 카피(`app`, 대상과 병합)를 사람이 명시한다.
  * 디렉터리는 반출 시 재귀로 펼친다. `templates`는 복사가 아니라 대상과 병합할 파일이다.
+ * `entrypoints`는 각 런타임이 AGENTS.md 로 들어오는 루트 포인터, `runtime`은 게이트를 실제로 부르는 hook 설정이다.
+ * 대상에 없으면 복사하고 있으면 병합 대상으로 보고한다.
+ *
+ * 이 제품의 활성 원장(인벤토리·판정·시나리오·색인)은 기본 이관 재료가 아니다(docs/design/2026-09-14-reference-document-loop-redesign.md §8). 다른 제품의
+ * 기본값이 될 수 없으므로 `productLedgerManifest` 로 명시 요청할 때만 나가고, 기본 stage 는 대상 포인터 경로에
+ * 빈 원장 뼈대를 만든다.
  */
 export const TRANSPLANT_MANIFEST = {
   skills: [
@@ -886,16 +904,24 @@ export const TRANSPLANT_MANIFEST = {
     '.agents/skills/feature-contract',
     '.agents/skills/shared-ui-contract',
   ],
+  // 여기 있는 skill 전체와 `gates` 의 `eslint.config.js` 가 이름으로 가리키는 결정. 선택한 bundle 과 무관하게
+  // 함께 나가야 그 문장들이 대상에서 끊기지 않는다(`0009` 는 `0011`·`0012` 를 다시 가리킨다).
   adrs: [
     'docs/decisions/0003-datetime-utc.md',
     'docs/decisions/0005-locale-query-key.md',
+    'docs/decisions/0006-auth-token-storage.md',
     'docs/decisions/0008-primitive-implementation-selection.md',
+    'docs/decisions/0009-shared-boundaries.md',
+    'docs/decisions/0010-form-boundaries.md',
+    'docs/decisions/0011-detail-data-and-update-history-boundaries.md',
+    'docs/decisions/0012-list-filter-draft-composition.md',
   ],
   conditional: [
     'docs/decisions/0002-typescript-version-pin.md',
     'docs/decisions/0004-runtime-version-pin.md',
   ],
-  inventory: ['docs/reference'],
+  entrypoints: ['CLAUDE.md', '.github/copilot-instructions.md'],
+  runtime: ['.claude/settings.json', '.codex/hooks.json', '.github/hooks/reference.json'],
   gates: [
     'eslint.config.js',
     'scripts/gates',
@@ -911,6 +937,8 @@ export const TRANSPLANT_MANIFEST = {
     'tsconfig.base.json',
     'tsconfig.app.json',
     'tsconfig.node.json',
+    // `tsconfig.json` 이 project reference 로 가리킨다. 빠지면 대상에서 tsconfig 로드 자체가 실패한다(실측).
+    'tsconfig.e2e.json',
     'vitest.config.ts',
     'vite.config.ts',
     'playwright.config.ts',
@@ -921,6 +949,8 @@ export const TRANSPLANT_MANIFEST = {
   ],
   harness: ['src/test', 'src/styles.css'],
   core: [
+    // The negative-control harness copies ApiError into its isolated type-aware lint workspace.
+    'src/api/error.ts',
     'src/shared/i18n/i18n.ts',
     'src/shared/i18n/locale.ts',
     'src/shared/i18n/locale-context.tsx',
@@ -934,17 +964,26 @@ export const TRANSPLANT_MANIFEST = {
     'src/shared/i18n/locales/en/app.json',
     'src/shared/i18n/locales/ja/app.json',
   ],
-  templates: ['package.json', '.codex/hooks.json', '.claude/settings.json', '.github/hooks/reference.json'],
+  templates: ['package.json'],
 }
 
-function expandManifestEntry(entry) {
-  const absolute = resolve(entry)
+/**
+ * 명시 요청(`--with-ledger`)에만 나가는 활성 원장: 제품 포인터와 그것이 가리키는 인벤토리·판정·시나리오·색인.
+ * 포인터에서 파생하므로 경로를 여기 다시 적지 않는다.
+ */
+export function productLedgerManifest(root = process.cwd()) {
+  const paths = productPaths(root)
+  return { ledger: [...new Set([PRODUCT_POINTER, paths.inventory, paths.judgment, paths.scenarios, paths.index])] }
+}
+
+function expandManifestEntry(entry, root = process.cwd()) {
+  const absolute = resolve(root, entry)
   if (!existsSync(absolute)) return []
   const stat = statSync(absolute)
-  if (stat.isFile() || stat.isSymbolicLink()) return [relativeToProject(absolute)]
+  if (stat.isFile() || stat.isSymbolicLink()) return [relativeToRoot(absolute, root)]
   return readdirSync(absolute, { recursive: true, withFileTypes: true })
     .filter((item) => item.isFile() || item.isSymbolicLink())
-    .map((item) => relativeToProject(resolve(item.parentPath, item.name)))
+    .map((item) => relativeToRoot(resolve(item.parentPath, item.name), root))
 }
 
 /** manifest의 모든 항목이 실존해야 한다. 값의 타당성은 사람이 판단한다. */
@@ -963,17 +1002,20 @@ export function validateTransplantManifest(manifest = TRANSPLANT_MANIFEST) {
 }
 
 /** manifest를 실제 파일 목록으로 펼친다(디렉터리 재귀). */
-export function listTransplantManifestFiles(manifest = TRANSPLANT_MANIFEST) {
-  return [...new Set(Object.values(manifest).flat().flatMap(expandManifestEntry))].sort()
+export function listTransplantManifestFiles(manifest = TRANSPLANT_MANIFEST, root = process.cwd()) {
+  return [...new Set(Object.values(manifest).flat().flatMap((entry) => expandManifestEntry(entry, root)))].sort()
 }
 
 /**
  * seed closure에 들어오면 안 되는 것. feature 코드·리허설 생성물·도메인 번역은 제품 사실이 아니다(ADR 0009 채택 경계).
  */
 export const FORBIDDEN_SEED_PATTERNS = [
+  /^scripts\/agents\/reference-product\.test\.mjs$/,
   /^src\/features\//,
   /^src\/routes\//,
   /^src\/api\/generated\//,
+  // 업무군 workflow 테스트는 feature 화면을 import 하는 제품 테스트다. harness(`src/test`) 디렉터리에 살지만 seed 가 아니다.
+  /^src\/test\/workflows\//,
   /\/locales\/[a-z]{2}\/(?!shared\.json$|auth\.json$|app\.json$)[^/]+\.json$/,
 ]
 

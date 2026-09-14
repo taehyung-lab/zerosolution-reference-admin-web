@@ -102,6 +102,13 @@
   "formSection": {
     "errors": "エラー{{count}}件"
   },
+  "sortable": {
+    "instructions": "並び順を変更するにはスペースキーを押し、矢印キーで移動してからもう一度スペースキーを押します。キャンセルするにはEscapeキーを押します。",
+    "pickedUp": "{{item}}を持ち上げました。現在{{position}}番目です。",
+    "moved": "{{item}}を{{position}}番目に移動しました。",
+    "dropped": "{{item}}を{{position}}番目に置きました。",
+    "cancelled": "{{item}}の並び替えをキャンセルしました。"
+  },
   "formError": {
     "rejectedByServer": "サーバーで使用できない値です。",
     "validation": "入力した値を保存できません。",

@@ -223,6 +223,8 @@
       "remove": "削除",
       "removeFor": "{{order}}番目のカテゴリーを削除",
       "close": "閉じる",
+      "required": "カテゴリー名を入力してください。",
+      "move": "{{order}}番の順序を移動",
       "moveUp": "{{order}}番を上へ",
       "moveDown": "{{order}}番を下へ"
     }

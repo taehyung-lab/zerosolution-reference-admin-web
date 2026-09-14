@@ -1,4 +1,5 @@
 import { TestLocaleProvider } from "@/test/locale";
+import { UnsavedChangesProvider } from "@/shared/ui/form/UnsavedChangesGuard";
 import {
   fireEvent,
   render,
@@ -22,13 +23,13 @@ describe("appeal detail surface ownership", () => {
     const onSave = vi.fn();
     render(
       <TestLocaleProvider>
-        <AppealDetailScreen
+        <UnsavedChangesProvider><AppealDetailScreen
           record={record}
           memberHref="/members/example-flagged"
           onSave={onSave}
           onNotify={onNotify}
           onMessage={vi.fn()}
-        />
+        /></UnsavedChangesProvider>
       </TestLocaleProvider>,
     );
     fireEvent.change(screen.getByRole("textbox", { name: "담당자 의견" }), {
@@ -54,9 +55,9 @@ describe("appeal detail surface ownership", () => {
       "보존할 처리 초안",
     );
     fireEvent.click(screen.getByRole("button", { name: "취소" }));
-    expect(
-      screen.queryByRole("dialog", { name: "알림" }),
-    ).not.toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "알림" })).toHaveTextContent("입력을 취소하시겠습니까?");
+    expect(screen.getByDisplayValue("보존할 처리 초안")).toBeInTheDocument();
+    fireEvent.click(within(screen.getByRole("dialog", { name: "알림" })).getByRole("button", { name: "확인" }));
     await waitFor(() =>
       expect(screen.getByRole("textbox", { name: "담당자 의견" })).toHaveValue(
         record.processing.opinion,

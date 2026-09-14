@@ -2,7 +2,7 @@ import { homedir } from 'node:os'
 import { execFileSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { dirname, isAbsolute, resolve } from 'node:path'
-import { checkEdit, checkStop, localPath, noteWrite, settleWrite } from './preflight.mjs'
+import { checkEdit, stopDecision, localPath, noteWrite, settleWrite } from './preflight.mjs'
 
 function gitToplevel(dir) {
   try {
@@ -141,6 +141,7 @@ function repositoryTestPaths(root, tokens) {
   })
 }
 
+// Recorded sessions use this to avoid opening a write bracket for inspection; ordinary sessions create no trace.
 function inspection(command, root) {
   const words = literalArguments(command)
   if (!Array.isArray(words) || !words.length) return false
@@ -154,7 +155,7 @@ function inspection(command, root) {
   if (/^v\d+\.\d+\.\d+$/.test(words[0].replace(`${NVM_DIR}/versions/node/`, '').replace(/\/bin\/node$/, ''))) words[0] = 'node'
   const [executable, ...args] = words
   // `grep` and `wc` have no write option, so their argv needs no allowlist; `find` and `sed` do.
-  if (['read', 'cat', 'ls', 'rg', 'grep', 'wc', 'pwd'].includes(executable)) return true
+  if (['read', 'cat', 'head', 'tail', 'ls', 'rg', 'grep', 'wc', 'pwd'].includes(executable)) return true
   if (executable === 'find') {
     return args.every((token) => !token.startsWith('-') || READ_ONLY_FIND.has(token))
   }
@@ -175,10 +176,12 @@ function inspection(command, root) {
     if (rest.length === 1 && VERIFY_SCRIPTS.has(rest[0])) return true
     return rest[0] === 'vitest' && rest[1] === 'run' && repositoryTestPaths(root, rest.slice(2))
   }
+  if (executable === 'node' && args.length === 1 && args[0] === 'scripts/contracts/check.mjs') return true
   if (executable === 'node' && args[0] === 'node_modules/vitest/vitest.mjs' && args[1] === 'run') {
     return repositoryTestPaths(root, args.slice(2))
   }
   if (executable === 'node' && args[0] === 'scripts/agents/cli.mjs') {
+    if (args[1] === 'review-context') return args.length === 3 && /^[\w-]+(?:\/[\w-]+)*$/.test(args[2])
     if (args[1] === 'context-report') return args.length === 2 || (args.length === 3 && args[2] === '--summary')
     // Classification reads the workspace; `--apply` deletes, so it stays behind preparation.
     if (args[1] === 'sweep') return args.length === 2
@@ -232,8 +235,7 @@ export function hookDecision(root, payload, eventOverride) {
     ? { permissionDecision: 'deny', permissionDecisionReason: reason }
     : { hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: 'deny', permissionDecisionReason: reason } }
   if (event === 'Stop' || event === 'agentStop') {
-    const reason = checkStop(root, session)
-    return reason ? { decision: 'block', reason } : {}
+    return stopDecision(root, session)
   }
   // Closes the write bracket so only what moved during the call is attributed to this session.
   if (event === 'PostToolUse' || event === 'postToolUse' || event === 'agentPostTool') {
@@ -257,7 +259,7 @@ export function hookDecision(root, payload, eventOverride) {
     const command = input.command ?? input.cmd ?? ''
     if (inspection(command, root)) return {}
     const reason = checkEdit(root, session, [])
-    // A general shell call may write anywhere, so the session becomes accountable for the tree.
+    // A recorded general shell call may write anywhere; noteWrite is a no-op in ordinary mode.
     if (!reason) noteWrite(root, session)
     return reason ? deny(`${recognitionNote(command)}${reason}`) : {}
   } else {

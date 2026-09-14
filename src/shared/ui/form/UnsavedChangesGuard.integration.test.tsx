@@ -7,7 +7,7 @@ import { i18n } from '@/shared/i18n/i18n';
 import { describe, expect, it } from 'vitest';
 import { Dialog } from '../primitives/Dialog';
 import { FormTextField } from './FormTextField';
-import { useUnsavedChangesGuard } from './UnsavedChangesGuard';
+import { UnsavedChangesProvider, useUnsavedChangesGuard } from './UnsavedChangesGuard';
 
 function Editor({ onClose }: { readonly onClose: () => void }) {
   const form = useForm({ defaultValues: { content: '' }, validationLogic: revalidateLogic() });
@@ -31,7 +31,7 @@ function Page() {
 }
 
 function renderPage() {
-  const root = createRootRoute({ component: Outlet });
+  const root = createRootRoute({ component: () => <UnsavedChangesProvider><Outlet /></UnsavedChangesProvider> });
   const editor = createRoute({ getParentRoute: () => root, path: '/editor', component: Page });
   const done = createRoute({ getParentRoute: () => root, path: '/done', component: () => <h1>done</h1> });
   const router = createRouter({

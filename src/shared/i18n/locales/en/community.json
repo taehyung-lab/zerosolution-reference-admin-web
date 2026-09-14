@@ -223,6 +223,8 @@
       "remove": "Remove",
       "removeFor": "Remove category #{{order}}",
       "close": "Close",
+      "required": "Enter a category name.",
+      "move": "Move item {{order}}",
       "moveUp": "Move item {{order}} up",
       "moveDown": "Move item {{order}} down"
     }

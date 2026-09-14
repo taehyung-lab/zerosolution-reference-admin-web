@@ -7,7 +7,7 @@ export const TASK_RETENTION_DAYS = 7
 export const STATE_RETENTION_DAYS = 30
 
 /** Runtime workspaces and the manual archive: a script or a person owns their lifetime, not age. */
-const PINNED = new Set([STATE_DIRECTORY, 'gates', 'archive', 'transplant-stage'])
+const PINNED = new Set([STATE_DIRECTORY, 'agent-attempts', 'agent-receipts', 'gates', 'archive', 'transplant-stage'])
 /** `YYYY-MM-DD-NN-slug`. The date is the entry's own claim, so `touch` cannot postpone expiry. */
 const NAMED = /^(\d{4}-\d{2}-\d{2})-\d{2}-[a-z0-9][a-z0-9-]*$/
 const KEEP_UNTIL = /^\d{4}-\d{2}-\d{2}$/
@@ -19,7 +19,7 @@ const days = (from, now) => Math.floor((now - from) / DAY)
  * A session that was granted a write capability and never recorded a review still owes that
  * reconciliation. Deleting its state silently disarms Stop, so age never expires it.
  */
-const owesReview = (state) => state.wrote === true && !state.review
+const owesReview = (state) => state.wrote === true && !state.review || state.checkpoint?.units?.some(unit => !state.unitReviews?.[unit.id])
 
 function readStates(root) {
   const directory = resolve(root, WORKSPACE, STATE_DIRECTORY)

@@ -5,7 +5,7 @@ description: Use when a request asks to implement something ("** 구현해주세
 
 # Screen Loop
 
-한 문장 구현 요청의 **노드·간선·복귀**만 소유한다. 증거 순위는 [원장](../../../docs/reference/zero-sol/README.md), 파일 집합은 역할 **형태** 절, 준비·리뷰 필드는 [준비 절차](../../../scripts/agents/README.md#prepare-before-editing).
+한 문장 구현 요청의 **노드·간선·복귀**만 소유한다. 제품 증거의 진입점은 [제품 포인터](../../../docs/reference/product.json)다. 그 파일의 `inventory`에서 원장과 증거 순위를, `judgment`에서 판정을, `scenarios`에서 상태 전이를, `index`에서 요청의 context를 찾는다. 신규 프로젝트는 자기 제품의 정본 경로로 이 포인터를 설정한다. 아래 원장 링크는 현재 체크아웃의 참조이며, 원본 제품 이름이나 형제 화면을 새 제품의 기준으로 삼지 않는다. 파일 집합은 역할 **형태** 절, 준비·리뷰 필드는 [준비 절차](../../../scripts/agents/README.md#prepare-before-editing)가 소유한다.
 
 ## 알갱이
 
@@ -65,7 +65,7 @@ description: Use when a request asks to implement something ("** 구현해주세
 | **E7** | `prepare`는 통과했는데 구현 파일이 훅에 막힌다 | N3. `unresolved[].paths`가 화면 전체를 덮었다. 답이 만들 파일로 좁힌다 |
 | **E8** | 원문에만 있는 요구를 발견한다 | N2로 요구사항 추가 + N5′로 원장 행 추가 |
 
-각 간선을 만든 실측 사건은 [이 저장소의 관찰](#이-저장소의-관찰)에 있다. 실측 없는 간선은 넣지 않는다.
+각 간선을 만든 실측 사건은 [이 저장소의 관찰](references/observations.md)에 있다. 실측 없는 간선은 넣지 않는다.
 
 ## 답지 대조
 
@@ -92,7 +92,7 @@ description: Use when a request asks to implement something ("** 구현해주세
 
 ## 한계
 
-- 게이트는 선언·범위·인용·형태를 검사한다. 2026-09-10 드릴 3회에서 요구사항 본문을 제품 사실과 반대로 쓴 것, 다른 화면의 컬럼을 넣은 것, 날조한 enum을 요구사항에 제대로 붙인 것이 `prepare`·`review`·lint·test를 전부 통과했다. 그래서 N6의 독립 검토 기록(`independentReview`)을 review 게이트가 요구한다. 기록의 존재를 볼 뿐 검토의 질은 보지 못한다.
+- 게이트는 선언·범위·인용·형태를 검사한다. 실제 드릴의 실행 범위와 통과한 잘못된 선언은 [관찰 기록](references/observations.md)이 소유한다. 선언 검사만으로 의미적 타당성을 증명할 수 없으므로 N6의 독립 검토 기록(`independentReview`)을 review 게이트가 요구한다. 기록의 존재를 볼 뿐 검토의 질은 보지 못한다.
 - `prepare`가 이 스킬을 필수 참조로 요구하는 것은 `work.kind`가 없거나 `workflow`인 `src/features`·`src/routes`·`src/shared` 범위다. `src/api`와 선언된 maintenance/infrastructure는 강제하지 않는다.
 - 공용 API 확대(E6)는 bundle code root의 export **이름 집합** 변화만 게이트가 잡는다(prepare 시점 코드 ↔ review 시점 코드, `contracts[] modify` 필요). 같은 이름의 props·인자가 넓어지는 것은 N5·N6이 본다.
 - `independentReview` 기록은 implement/drill 전부와 게이트·루트·스킬 scope(`scripts/agents`·`scripts/contracts`·`.agents/skills`·`AGENTS.md`)에 요구된다. 기록의 존재를 볼 뿐 검토자가 실제로 다른 컨텍스트였는지는 못 본다.
@@ -105,32 +105,4 @@ description: Use when a request asks to implement something ("** 구현해주세
 
 ## 이 저장소의 관찰
 
-규칙이 아니라 위 간선·한계를 만든 이 저장소의 실측 사건이다. 신규 프로젝트는 이 절을 비우고 자기 드릴로 다시 채운다.
-
-| 간선 | 실측 |
-| --- | --- |
-| E0 | 2026-09-10 색인 23개에 `공연 등록`이 없다 |
-| E1 | `context managers` 실패, `settings` group 아래 |
-| E2 | 2026-09-10 시점 23 surface 중 1개만 승격; 게시판 표는 `id` 열이 없어 항상 비었다(2026-09-11 승격) |
-| E3 | 공연 상세 언어 탭(#72), 게시판 일괄변경 표↔산문(#83·#85) |
-| E4 | 이름이 비슷한 필터 컴포넌트가 리허설 소유, 같은 파일명이 폴더마다 역할 반대 |
-| E5 | 게이트 코드 |
-| E6 | 한 소비자 필요로 공용을 넓히는 것이 가장 흔한 실패 |
-| E7 | 게시판 드릴 1회차, 구현 대상 전부 거부 |
-| E8 | 게시판 `게시물 조회 버튼 → 해당 게시판의 게시물만` |
-
-한계 절의 "2026-09-10 드릴 3회"는 게시판 목록 드릴 B·C·D 다.
-
-### 드릴 기록 (요청 한 문장 → 도달 상태)
-
-영상 식으로 말하면 입력·기대 출력 쌍이다. 새 드릴을 돌리면 한 행을 더한다. N3 까지만 돈 드릴은 `설계 선언`까지로 적는다.
-
-| 날짜 | 요청 한 문장 | grain·entry·mode | 도달 | 발동 간선 | 배달 | tool call | 고친 소유자 |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 2026-09-13 | 공연 등록 화면 구현해주세요 | screen · `form-workflow.md#형태`(색인 없음) · drill | 설계 선언(prepare 1회 통과). 원장이 이 admin 에 공연 자체 등록을 적지 않아 "무엇을 가리키는가" 질문으로 정지 | E0, E2, E7 예고 | 19 선택 / 112KB | README 진입 표(E0 뒤 entry), 이 문서 E0 행, zero-sol README `frame-index` 문장, 시나리오 카드 "등록/수정 폼" 대상 |
-| 2026-09-13 | 게시판 목록 필터만 구현해주세요 | slice · `community`(group) · drill | 설계 선언(prepare 통과, rows 4행 배달). Stop 훅이 동시 세션의 편집 두 파일을 이 세션 저작으로 귀속해 12회 차단 | E1 | 40 선택 / 155KB | 게이트: 다른 세션의 bracket 도 잡은 그 세션 scope 안 경로는 그 세션 것으로 보고, 제외한 contract 의 절은 배달하지 않음. 이 문서 E1 행 |
-| 2026-09-13 | useListFilterDraft 에 초기화 뒤 첫 필드로 포커스를 되돌리는 옵션 추가해주세요 | logic · `draft-commit` · drill | 설계 선언(prepare 1회 통과). 승격 심사 네 항목에 답해 E6 → feature-local 또는 FilterPanel, 훅 경로 unresolved | E6 | 12 선택 / 70KB | 이 문서 drill 규칙(공용 대상은 bundle code·tests 를 닫는다), README `cli` 경로 형식 |
-
-선택 수·바이트·간선·차단 횟수는 각 세션의 보고에서 옮긴 값이다. 세 디렉터리에 `checkpoint.json`·`observations.md`는 있지만 `DRILL.md`는 없고(N3 에서 멈춘 드릴이라 답지 대조 절이 없다), prepare 출력 원문은 slice 드릴의 observations.md 에만 있다. 다음 드릴부터 prepare 의 `Context:` 줄을 observations.md 에 그대로 붙인다.
-
-세 드릴 모두 문서에 답이 있는 것을 다시 묻지 않았고, 제품 사실이 없는 곳에서 멈췄다. 화면 드릴이 읽은 양(112KB)과 slice 가 읽은 양(155KB)이 뒤집힌 것은 group 진입이 판정 문서 질문 절·시나리오 카드·`table-composition.md` 전체를 배달하기 때문이다. 다음 축소 대상은 색인의 surface reference 다.
+사건·수치·원본 위치는 [기존 관찰 기록](references/observations.md)이 소유한다. 이관 시 이 기록은 빈 관찰 shell로 대체하며, 원본 제품 사실을 새 프로젝트의 운영 근거로 옮기지 않는다.

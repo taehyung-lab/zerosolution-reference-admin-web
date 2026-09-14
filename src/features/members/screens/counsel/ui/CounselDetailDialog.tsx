@@ -63,7 +63,7 @@ export function CounselDetailDialog({
         title={t("secondary.counsel")}
         closeLabel={shared("formAction.cancel")}
         onOpenChange={(open) => {
-          if (!open) guard.close(onClose, { when: false });
+          if (!open) guard.close(onClose);
         }}
       >
         <h2>{t("secondary.fields.content")}</h2>

@@ -146,7 +146,7 @@ export function ManagerActionForm({
       <Dialog
         open
         onOpenChange={(open) => {
-          if (!open) guard.close(onClose, { when: false });
+          if (!open) guard.close(onClose);
         }}
         title={t(`actions.${action}`)}
         description={t(`actions.${action}Description`)}
@@ -210,7 +210,7 @@ export function ManagerActionForm({
             </Button>
             <Button
               type="button"
-              onClick={() => guard.close(onClose, { when: false })}
+              onClick={() => guard.close(onClose)}
             >
               {shared("formAction.cancel")}
             </Button>

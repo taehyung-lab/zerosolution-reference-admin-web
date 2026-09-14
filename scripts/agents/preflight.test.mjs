@@ -1,9 +1,11 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { cpSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { homedir, tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { execFileSync } from 'node:child_process'
-import { prepare, checkEdit, recordReview, checkStop, outputSnapshot, exportDriftFailure, REVIEW_EXAMPLE_SENTENCES } from './preflight.mjs'
+import { prepare, prepareHistory, checkEdit, reviewContext, reviewFingerprint, checkStop, outputSnapshot, exportDriftFailure, recordFailedReview, stopDecision } from './preflight.mjs'
+import { runReviewCommand } from './review-checks.mjs'
+import { recordFixtureReview as recordReview } from './review-test-helper.mjs'
 import { hookDecision, hookRoot } from './hook.mjs'
 import { realpathSync } from 'node:fs'
 
@@ -13,6 +15,8 @@ function setup() {
   roots.push(root)
   mkdirSync(join(root, '.ai-work'), { recursive: true })
   mkdirSync(join(root, 'scripts'), { recursive: true })
+  mkdirSync(join(root, 'scripts/contracts'), { recursive: true })
+  writeFileSync(join(root, 'scripts/contracts/check.mjs'), 'console.log("fixture contract passed")\n')
   // Attribution enumerates the tree through Git, so the fixture needs a repository to be measured in.
   writeFileSync(join(root, '.gitignore'), '.ai-work/\n')
   execFileSync('git', ['init'], { cwd: root, stdio: 'ignore' })
@@ -36,6 +40,264 @@ const loop = {
 afterEach(() => { for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true }) })
 
 describe('repository preflight', () => {
+  it('blocks Stop once per unchanged failure without recording a successful review, and rearms after edits', () => {
+    const { root } = setup()
+    prepare(root, 'one', '.ai-work/checkpoint.json')
+    hookDecision(root, { session_id: 'one', hook_event_name: 'PreToolUse', tool_name: 'Write', tool_input: { file_path: join(root, 'scripts/example.mjs') } })
+    writeFileSync(join(root, 'scripts/example.mjs'), 'export const value = 2\n')
+    const stop = () => hookDecision(root, { session_id: 'one', hook_event_name: 'Stop' })
+    expect(stop()).toMatchObject({ decision: 'block', reason: expect.stringMatching(/repair|fix/i) })
+    expect(stop()).toEqual({})
+    expect(checkStop(root, 'one')).toMatch(/review/i)
+    writeFileSync(join(root, 'scripts/example.mjs'), 'export const value = 3\n')
+    expect(stop()).toMatchObject({ decision: 'block' })
+    expect(stop()).toEqual({})
+    writeFileSync(join(root, 'AGENTS.md'), 'Changed evidence')
+    expect(stop()).toMatchObject({ decision: 'block' })
+    expect(hookDecision(root, { session_id: 'ordinary', hook_event_name: 'Stop' })).toEqual({})
+  })
+  it('routes Stop to the actual failed check, then clears the failure only after a successful review', () => {
+    const { root } = setup()
+    prepare(root, 'one', '.ai-work/checkpoint.json')
+    hookDecision(root, { session_id: 'one', hook_event_name: 'PreToolUse', tool_name: 'Write', tool_input: { file_path: join(root, 'scripts/example.mjs') } })
+    writeFileSync(join(root, 'scripts/example.mjs'), 'export const value = 2\n')
+    const receipt = runReviewCommand(root, reviewFingerprint(root, 'one'), ['-e', 'console.error("actual failing assertion"); process.exit(1)'])
+    recordFailedReview(root, 'one', receipt)
+    expect(checkStop(root, 'one')).toContain(receipt.stderr)
+    expect(checkStop(root, 'one')).toContain('Repair the reported cause')
+    expect(stopDecision(root, 'one')).toMatchObject({ decision: 'block' })
+    const retry = runReviewCommand(root, reviewFingerprint(root, 'one'), ['-e', 'console.error("actual failing assertion"); process.exit(1)'])
+    expect(retry.artifact).not.toBe(receipt.artifact)
+    recordFailedReview(root, 'one', retry)
+    expect(stopDecision(root, 'one')).toEqual({})
+    expect(reviewContext(root, 'one').stopFailure).toMatchObject({ released: true, reason: expect.stringContaining(retry.stderr) })
+    recordReview(root, 'one', {
+      requirements: [{ id: 'R1', status: 'implemented', evidence: 'Focused value test passed.', appliedSections: ['AGENTS.md'], files: ['scripts/example.mjs'] }],
+      contractReview: 'No shared candidate.', complexityReview: 'One value.', assumptions: [], limitations: [],
+    })
+    expect(checkStop(root, 'one')).toBeNull()
+    writeFileSync(join(root, 'scripts/example.mjs'), 'export const value = 3\n')
+    expect(checkStop(root, 'one')).not.toContain(receipt.stderr)
+    expect(hookDecision(root, { session_id: 'one', hook_event_name: 'Stop' })).toMatchObject({ decision: 'block' })
+  })
+  it('rearms for an in-scope reference but ignores unrelated foreign edits and hashes the tree once', () => {
+    const { root, checkpoint } = setup()
+    writeFileSync(join(root, 'scripts/contract.md'), '# Contract\nOriginal rule.\n')
+    checkpoint.references.push('scripts/contract.md')
+    writeFileSync(join(root, '.ai-work/checkpoint.json'), JSON.stringify(checkpoint))
+    prepare(root, 'one', '.ai-work/checkpoint.json')
+    hookDecision(root, { session_id: 'one', hook_event_name: 'PreToolUse', tool_name: 'Write', tool_input: { file_path: join(root, 'scripts/example.mjs') } })
+    writeFileSync(join(root, 'scripts/example.mjs'), 'export const value = 2\n')
+    hookDecision(root, { session_id: 'one', hook_event_name: 'PostToolUse' })
+    let snapshots = 0
+    expect(stopDecision(root, 'one', () => { snapshots++; return outputSnapshot(root) })).toMatchObject({ decision: 'block' })
+    expect(snapshots).toBe(1)
+    writeFileSync(join(root, 'scripts/unrelated.mjs'), 'foreign edit')
+    expect(stopDecision(root, 'one')).toEqual({})
+    const reason = checkStop(root, 'one')
+    writeFileSync(join(root, 'scripts/contract.md'), '# Contract\nChanged rule.\n')
+    expect(checkStop(root, 'one').split(' Reported, not blocking:')[0]).toBe(reason.split(' Reported, not blocking:')[0])
+    expect(stopDecision(root, 'one')).toMatchObject({ decision: 'block' })
+  })
+  it('CLI shows each checkout block before consuming its repeated-stop allowance', () => {
+    const { root } = setup()
+    const { root: target } = setup()
+    cpSync(import.meta.dirname, join(root, 'scripts/agents'), { recursive: true })
+    cpSync(join(import.meta.dirname, '../contracts'), join(root, 'scripts/contracts'), { recursive: true })
+    for (const directory of [root, target]) {
+      prepare(directory, 'two-roots', '.ai-work/checkpoint.json')
+      hookDecision(directory, { session_id: 'two-roots', hook_event_name: 'PreToolUse', tool_name: 'Write', tool_input: { file_path: join(directory, 'scripts/example.mjs') } })
+      writeFileSync(join(directory, 'scripts/example.mjs'), 'export const value = 2\n')
+      hookDecision(directory, { session_id: 'two-roots', hook_event_name: 'PostToolUse' })
+    }
+    const stop = () => JSON.parse(execFileSync(process.execPath, [join(root, 'scripts/agents/cli.mjs'), 'hook', 'Stop'], { input: JSON.stringify({ session_id: 'two-roots', hook_event_name: 'Stop', cwd: target }), encoding: 'utf8' }))
+    expect(stop()).toMatchObject({ decision: 'block' })
+    expect(reviewContext(root, 'two-roots').stopFailure).toBeNull()
+    expect(stop()).toMatchObject({ decision: 'block' })
+    expect(stop()).toEqual({})
+    expect(checkStop(root, 'two-roots')).toMatch(/review/i)
+    expect(checkStop(target, 'two-roots')).toMatch(/review/i)
+  })
+  it('does not let root or skill prose clear a checkpoint product question', () => {
+    const { root, checkpoint } = setup()
+    checkpoint.unresolved = [{ question: 'Which server value?', paths: ['scripts/example.mjs'], resolution: { status: 'resolved', evidence: 'Claimed answer.', sources: ['AGENTS.md'] } }]
+    const run = () => { writeFileSync(join(root, '.ai-work/checkpoint.json'), JSON.stringify(checkpoint)); return prepare(root, 'unknown', '.ai-work/checkpoint.json') }
+    expect(run).toThrow(/product evidence/)
+    checkpoint.unresolved[0].resolution.sources = ['.agents/skills/screen-loop/SKILL.md']
+    expect(run).toThrow(/product evidence/)
+    mkdirSync(join(root, 'docs/reference/product'), { recursive: true })
+    writeFileSync(join(root, 'docs/reference/product/confirmed.md'), '# Confirmed\nServer value is 2.\n')
+    checkpoint.unresolved[0].resolution.sources = ['docs/reference/product/confirmed.md']
+    expect(run).not.toThrow()
+  })
+  it('recorded descendants: lets an unprepared reviewer run the exact repository contracts check', () => {
+    const { root } = setup()
+    prepare(root, 'recorded', '.ai-work/checkpoint.json', fingerprint)
+    const decide = command => hookDecision(root, { session_id: 'recorded/child', hook_event_name: 'PreToolUse', tool_name: 'Bash', tool_input: { command } })
+    expect(decide('node scripts/contracts/check.mjs')).toEqual({})
+    expect(decide('node scripts/contracts/check.mjs --write').hookSpecificOutput.permissionDecision).toBe('deny')
+  })
+  it('keeps future-unit unknowns until their recorded resolution and blocks only affected edits', () => {
+    const { root, checkpoint } = setup()
+    checkpoint.requirements.push({ id: 'R2', text: 'Second module.' })
+    checkpoint.units = [{ id: 'one', requirementIds: ['R1'], scope: ['scripts/'] }, { id: 'two', requirementIds: ['R2'], scope: ['other/'] }]
+    checkpoint.currentUnit = 'one'
+    checkpoint.unresolved = [{ question: 'Which server value?', paths: ['other/second.mjs'] }]
+    const run = () => { writeFileSync(join(root, '.ai-work/checkpoint.json'), JSON.stringify(checkpoint)); return prepare(root, 'unknowns', '.ai-work/checkpoint.json') }
+    expect(run).not.toThrow()
+    const question = checkpoint.unresolved[0]
+    checkpoint.unresolved = []
+    expect(run).toThrow(/Preserve unresolved/)
+    checkpoint.unresolved = [question]
+    checkpoint.currentUnit = 'two'
+    checkpoint.scope = ['other/']
+    run()
+    expect(checkEdit(root, 'unknowns', ['other/second.mjs'])).toMatch(/Which server value/)
+    question.resolution = { status: 'resolved', evidence: 'User confirmed value 2.', sources: ['user'] }
+    expect(run).not.toThrow()
+    expect(checkEdit(root, 'unknowns', ['other/second.mjs'])).toBeNull()
+  })
+  it('validates future scopes immediately and permits active scope refinement without changing unit membership', () => {
+    const { root, checkpoint } = setup()
+    checkpoint.requirements.push({ id: 'R2', text: 'Second module.' })
+    checkpoint.units = [{ id: 'one', requirementIds: ['R1'], scope: ['scripts/'] }, { id: 'two', requirementIds: ['R2'], scope: ['./other/second.mjs'] }]
+    checkpoint.currentUnit = 'one'
+    const run = () => { writeFileSync(join(root, '.ai-work/checkpoint.json'), JSON.stringify(checkpoint)); return prepare(root, 'scopes', '.ai-work/checkpoint.json') }
+    expect(run).toThrow(/unit.*scope|scope.*unit/i)
+    checkpoint.units[1].scope = ['other/second.mjs']
+    run()
+    checkpoint.units[0] = { scope: ['scripts/', 'docs/policy.md'], requirementIds: ['R1'], id: 'one' }
+    checkpoint.scope = checkpoint.units[0].scope
+    expect(run).not.toThrow()
+    checkpoint.units[1].scope = ['other/renamed.mjs']
+    expect(run).toThrow(/Preserve unit two/)
+  })
+  it('lets a fresh reviewer inspect a running author without closing the author write bracket', () => {
+    const { root } = setup()
+    prepare(root, 'author', '.ai-work/checkpoint.json')
+    hookDecision(root, { session_id: 'author', hook_event_name: 'PreToolUse', tool_name: 'Bash', tool_input: { command: 'node build.mjs' } })
+    writeFileSync(join(root, 'scripts/example.mjs'), 'export const value = 2\n')
+    expect(hookDecision(root, { session_id: 'reviewer', hook_event_name: 'PreToolUse', tool_name: 'Bash', tool_input: { command: 'node scripts/agents/cli.mjs review-context author' } })).toEqual({})
+    expect(reviewContext(root, 'author').mine).toEqual(['scripts/example.mjs'])
+    writeFileSync(join(root, 'scripts/second.mjs'), 'export const second = 2\n')
+    expect(reviewContext(root, 'author').mine).toEqual(['scripts/example.mjs', 'scripts/second.mjs'])
+  })
+  it('invalidates a read-only unit review when the implementation it claims changes', () => {
+    const { root, checkpoint } = setup()
+    checkpoint.units = [{ id: 'existing', requirementIds: ['R1'], scope: checkpoint.scope }]
+    checkpoint.currentUnit = 'existing'
+    writeFileSync(join(root, '.ai-work/checkpoint.json'), JSON.stringify(checkpoint))
+    prepare(root, 'readonly', '.ai-work/checkpoint.json')
+    recordReview(root, 'readonly', {
+      requirements: [{ id: 'R1', status: 'implemented', evidence: 'Existing constant already satisfies request.', files: ['scripts/example.mjs'], appliedSections: ['AGENTS.md'] }],
+      contractReview: 'One owner.', complexityReview: 'No change required.', assumptions: [], limitations: [],
+    })
+    expect(checkStop(root, 'readonly')).toBeNull()
+    writeFileSync(join(root, 'scripts/example.mjs'), 'export const value = 9\n')
+    expect(checkStop(root, 'readonly')).toMatch(/unit existing.*changed/i)
+  })
+  it('keeps rejected preparation attempts without replacing the last valid checkpoint', () => {
+    const { root, checkpoint } = setup()
+    prepare(root, 'history', '.ai-work/checkpoint.json', fingerprint)
+    writeFileSync(join(root, '.ai-work/bad.json'), JSON.stringify({ ...checkpoint, requirements: [] }))
+    expect(() => prepare(root, 'history', '.ai-work/bad.json', fingerprint)).toThrow(/requirements/)
+    expect(checkEdit(root, 'history', ['scripts/example.mjs'])).toBeNull()
+    expect(prepareHistory(root, 'history').map(attempt => attempt.outcome)).toEqual(['accepted', 'rejected'])
+    expect(prepareHistory(root, 'history')[1].error).toMatch(/requirements/)
+  })
+  it('reviews mixed-request units separately without losing the remaining request or permitting future edits', () => {
+    const { root, checkpoint } = setup()
+    writeFileSync(join(root, 'scripts/first.md'), 'First-unit policy.')
+    checkpoint.references.push('scripts/first.md')
+    writeFileSync(join(root, 'scripts/second.mjs'), 'export const next = 1\n')
+    checkpoint.requirements.push({ id: 'R2', text: 'Change the second script.' })
+    checkpoint.units = [
+      { id: 'first', requirementIds: ['R1'], scope: ['scripts/example.mjs'] },
+      { id: 'second', requirementIds: ['R2'], scope: ['scripts/second.mjs'] },
+    ]
+    checkpoint.currentUnit = 'first'
+    checkpoint.scope = checkpoint.units[0].scope
+    const run = () => {
+      writeFileSync(join(root, '.ai-work/checkpoint.json'), JSON.stringify(checkpoint))
+      return prepare(root, 'units', '.ai-work/checkpoint.json')
+    }
+    const review = (id, file) => ({
+      requirements: [{ id, status: 'implemented', files: [file], evidence: 'Executed the changed script.', appliedSections: ['AGENTS.md'] }],
+      contractReview: 'No shared contract changed.', complexityReview: 'One constant per script.', assumptions: [], limitations: [],
+    })
+    run()
+    expect(checkStop(root, 'units')).toMatch(/pending.*first.*second/i)
+    expect(checkEdit(root, 'units', ['scripts/second.mjs'])).toMatch(/scope/)
+    hookDecision(root, { session_id: 'units', hook_event_name: 'PreToolUse', tool_name: 'Write', tool_input: { file_path: join(root, 'scripts/example.mjs') } })
+    writeFileSync(join(root, 'scripts/example.mjs'), 'export const value = 2\n')
+    expect(() => recordReview(root, 'units', review('R1', 'scripts/example.mjs'))).not.toThrow()
+    expect(checkStop(root, 'units')).toMatch(/pending.*second/i)
+    checkpoint.currentUnit = 'second'
+    checkpoint.scope = checkpoint.units[1].scope
+    checkpoint.references = ['AGENTS.md']
+    expect(run).not.toThrow()
+    hookDecision(root, { session_id: 'units', hook_event_name: 'PreToolUse', tool_name: 'Write', tool_input: { file_path: join(root, 'scripts/second.mjs') } })
+    writeFileSync(join(root, 'scripts/second.mjs'), 'export const next = 2\n')
+    expect(() => recordReview(root, 'units', review('R2', 'scripts/second.mjs'))).not.toThrow()
+    expect(checkStop(root, 'units')).toBeNull()
+    writeFileSync(join(root, 'AGENTS.md'), 'New ownership rule.')
+    expect(checkStop(root, 'units')).toMatch(/changed/i)
+    writeFileSync(join(root, 'AGENTS.md'), 'Read the contract. Do not guess policy.')
+    writeFileSync(join(root, 'scripts/first.md'), 'Changed first-unit policy.')
+    expect(checkStop(root, 'units')).toMatch(/unit first.*changed/i)
+    writeFileSync(join(root, 'scripts/first.md'), 'First-unit policy.')
+    writeFileSync(join(root, 'scripts/example.mjs'), 'export const value = 3\n')
+    expect(checkStop(root, 'units')).toMatch(/unit first.*changed/i)
+    writeFileSync(join(root, 'AGENTS.md'), 'New rule shared by both units.')
+    checkpoint.currentUnit = 'first'
+    checkpoint.scope = checkpoint.units[0].scope
+    run()
+    expect(() => recordReview(root, 'units', review('R1', 'scripts/example.mjs'))).not.toThrow()
+    checkpoint.currentUnit = 'second'
+    checkpoint.scope = checkpoint.units[1].scope
+    run()
+    expect(() => recordReview(root, 'units', review('R2', 'scripts/second.mjs'))).not.toThrow()
+    expect(checkStop(root, 'units')).toBeNull()
+    checkpoint.units[0].requirementIds = ['R2']
+    expect(run).toThrow(/unit|requirement/i)
+  })
+  it('can review both pending units after a shell wrote their already-declared paths', () => {
+    const { root, checkpoint } = setup()
+    checkpoint.requirements.push({ id: 'R2', text: 'Implement a second script.' })
+    checkpoint.units = [{ id: 'one', requirementIds: ['R1'], scope: ['scripts/example.mjs'] }, { id: 'two', requirementIds: ['R2'], scope: ['scripts/second.mjs'] }]
+    checkpoint.currentUnit = 'one'
+    checkpoint.scope = checkpoint.units[0].scope
+    writeFileSync(join(root, '.ai-work/checkpoint.json'), JSON.stringify(checkpoint))
+    prepare(root, 'recover', '.ai-work/checkpoint.json')
+    hookDecision(root, { session_id: 'recover', hook_event_name: 'PreToolUse', tool_name: 'Bash', tool_input: { command: 'node build.mjs' } })
+    writeFileSync(join(root, 'scripts/example.mjs'), 'export const value = 2\n')
+    writeFileSync(join(root, 'scripts/second.mjs'), 'export const next = 2\n')
+    for (const [id, unit, file] of [['R1', 'one', 'scripts/example.mjs'], ['R2', 'two', 'scripts/second.mjs']]) {
+      checkpoint.currentUnit = unit
+      checkpoint.scope = checkpoint.units.find(item => item.id === unit).scope
+      writeFileSync(join(root, '.ai-work/checkpoint.json'), JSON.stringify(checkpoint))
+      prepare(root, 'recover', '.ai-work/checkpoint.json')
+      expect(() => recordReview(root, 'recover', { requirements: [{ id, status: 'implemented', evidence: 'Checked script.', files: [file], appliedSections: ['AGENTS.md'] }], contractReview: 'Local values.', complexityReview: 'One module each.', assumptions: [], limitations: ['Shell edited both declared units before individual review.'] })).not.toThrow()
+    }
+    expect(checkStop(root, 'recover')).toBeNull()
+  })
+  it('requires maintenance writes to belong to a requirement without requiring workflow verification', () => {
+    const { root, checkpoint } = setup()
+    checkpoint.work = { kind: 'maintenance', reason: 'Correct a constant without changing the workflow.' }
+    writeFileSync(join(root, '.ai-work/checkpoint.json'), JSON.stringify(checkpoint))
+    prepare(root, 'one', '.ai-work/checkpoint.json', fingerprint)
+    hookDecision(root, { session_id: 'one', hook_event_name: 'PreToolUse', tool_name: 'Write', tool_input: { file_path: join(root, 'scripts/example.mjs') } })
+    writeFileSync(join(root, 'scripts/example.mjs'), 'export const value = 2\n')
+    const report = {
+      requirements: [{ id: 'R1', status: 'implemented', evidence: 'Compared the corrected constant.', appliedSections: ['AGENTS.md'] }],
+      contractReview: 'The constant has the same owner.', complexityReview: 'No new layer.', assumptions: [], limitations: [],
+    }
+    expect(() => recordReview(root, 'one', report, fingerprint)).toThrow(/no requirement claims/)
+    report.requirements[0].files = ['scripts/example.mjs']
+    expect(() => recordReview(root, 'one', report, fingerprint)).not.toThrow()
+    report.requirements[0].files = ['scripts/missing.mjs']
+    expect(() => recordReview(root, 'one', report, fingerprint)).toThrow(/files must exist/)
+  })
   it('keeps requirement identity across re-preparation while allowing additions and evidence changes', () => {
     const { root, checkpoint } = setup()
     const run = () => {
@@ -60,8 +322,8 @@ describe('repository preflight', () => {
     const codex = read('.codex/hooks.json').hooks;
     const claude = read('.claude/settings.json').hooks;
     const copilot = read('.github/hooks/reference.json').hooks;
-    const snake = { session_id: 'adapter-command-negative-control', tool_name: 'Write', tool_input: { file_path: 'src/example.ts' } };
-    const camel = { sessionId: 'adapter-command-negative-control', toolName: 'create', toolArgs: { path: 'src/example.ts' } };
+    const snake = { session_id: 'adapter-command-ordinary', tool_name: 'Write', tool_input: { file_path: 'src/example.ts' } };
+    const camel = { sessionId: 'adapter-command-ordinary', toolName: 'create', toolArgs: { path: 'src/example.ts' } };
     const cases = [
       [codex.PreToolUse[0].hooks[0].command, snake, false],
       [claude.PreToolUse[0].hooks[0].command, snake, false],
@@ -71,15 +333,29 @@ describe('repository preflight', () => {
       const result = JSON.parse(execFileSync('/bin/sh', ['-c', command], {
         input: JSON.stringify(payload), encoding: 'utf8', env: { ...process.env, CLAUDE_PROJECT_DIR: process.cwd() },
       }));
-      expect(native ? result.permissionDecision : result.hookSpecificOutput.permissionDecision).toBe('deny');
+      expect(result).toEqual({});
+      const malformed = JSON.parse(execFileSync('/bin/sh', ['-c', command], {
+        input: JSON.stringify({ ...payload, tool_input: {}, toolArgs: {} }), encoding: 'utf8', env: { ...process.env, CLAUDE_PROJECT_DIR: process.cwd() },
+      }));
+      expect(native ? malformed.permissionDecision : malformed.hookSpecificOutput.permissionDecision).toBe('deny');
     }
   });
-  it('blocks an unprepared session and delivers current reference text when prepared', () => {
+  it('allows ordinary work without creating audit artifacts and activates checks only after prepare', () => {
     const { root } = setup()
-    expect(checkEdit(root, 'one', ['scripts/example.mjs'])).toMatch(/prepare/)
-    expect(prepare(root, 'one', '.ai-work/checkpoint.json', fingerprint)).toContain('Do not guess policy')
+    const before = readdirSync(join(root, '.ai-work'))
+    const event = { session_id: 'one', tool_name: 'Write', tool_input: { file_path: join(root, 'scripts/example.mjs') } }
+    expect(hookDecision(root, { ...event, hook_event_name: 'PreToolUse' })).toEqual({})
+    writeFileSync(join(root, 'scripts/example.mjs'), 'export const value = 2\n')
+    expect(hookDecision(root, { ...event, hook_event_name: 'PostToolUse' })).toEqual({})
+    expect(checkStop(root, 'one')).toBeNull()
+    expect(readdirSync(join(root, '.ai-work'))).toEqual(before)
+    const delivered = prepare(root, 'one', '.ai-work/checkpoint.json', fingerprint)
+    expect(delivered).toContain('Do not guess policy')
+    expect(delivered).toMatch(/Pre-existing changes[^]*scripts\/example.mjs/)
     expect(checkEdit(root, 'one', ['scripts/example.mjs'])).toBeNull()
-    expect(checkEdit(root, 'two', ['scripts/example.mjs'])).toMatch(/prepare/)
+    expect(checkEdit(root, 'one', ['outside.mjs'])).toMatch(/scope/)
+    expect(checkEdit(root, 'two', ['scripts/example.mjs'])).toBeNull()
+    expect(checkEdit(root, 'one/child/grandchild', ['scripts/example.mjs'])).toMatch(/prepare/)
   })
   it('blocks out-of-scope edits, unresolved policy and stale reference contents', () => {
     const { root, checkpoint } = setup()
@@ -221,7 +497,7 @@ describe('repository preflight', () => {
     const gap = (extra) => ({
       ...base,
       requirements: [
-        { id: 'R1', status: 'different', evidence: 'Implemented as a narrower constant.', appliedSections: ['AGENTS.md'], ...extra },
+        { id: 'R1', status: 'different', evidence: 'Implemented as a narrower constant.', appliedSections: ['AGENTS.md'], files: ['scripts/example.mjs'], ...extra },
         { id: 'R2', status: 'implemented', evidence: 'Covered.', appliedSections: ['AGENTS.md'] },
       ],
     })
@@ -242,26 +518,29 @@ describe('repository preflight', () => {
     expect(exportDriftFailure(baseline, widened, [])).toMatch(/data-table.*"modify"/)
     expect(exportDriftFailure(baseline, widened, [{ id: 'data-table', decision: 'adopt', reason: 'x' }])).toMatch(/data-table/)
     expect(exportDriftFailure(baseline, widened, [{ id: 'data-table', decision: 'modify', reason: 'Row expander for two consumers.' }])).toBeNull()
+    // A concurrent bundle change is not this session’s public API edit.
+    expect(exportDriftFailure(baseline, widened, [], ['scripts/agents/hook.mjs'])).toBeNull()
+    expect(exportDriftFailure(baseline, widened, [], ['src/shared/ui/patterns/DataTable.tsx'])).toMatch(/data-table/)
     // A bundle that appears or disappears is a contract change too.
     expect(exportDriftFailure(baseline, { ...baseline, 'new-bundle': ['Thing'] }, [])).toMatch(/new-bundle/)
     // A session prepared before this check has no baseline and is not judged retroactively.
     expect(exportDriftFailure(undefined, widened, [])).toBeNull()
-  })
-  it('refuses every review sentence the README shows as an example, so the doc and the gate cannot drift apart', () => {
-    const readme = readFileSync(join(process.cwd(), 'scripts/agents/README.md'), 'utf8')
-    const shown = [...readme.matchAll(/"(?:contractReview|complexityReview)": "([^"]+)"/g)].map((match) => match[1])
-    expect(shown.length).toBeGreaterThan(0)
-    for (const sentence of shown) expect(REVIEW_EXAMPLE_SENTENCES, sentence).toContain(sentence)
   })
   it('requires an independent review record for a gate, root or skill scope even outside the loop', () => {
     const { root, checkpoint } = setup()
     mkdirSync(join(root, 'scripts/agents'), { recursive: true })
     writeFileSync(join(root, 'scripts/agents/gate.mjs'), 'export const gate = 1\n')
     writeFileSync(join(root, '.ai-work/checkpoint.json'), JSON.stringify({ ...checkpoint, scope: ['scripts/agents/gate.mjs'], work: { kind: 'infrastructure', reason: 'Gate wiring.' } }))
-    prepare(root, 'one', '.ai-work/checkpoint.json', fingerprint)
-    const report = { requirements: [{ id: 'R1', status: 'implemented', evidence: 'Gate test passed.', appliedSections: ['AGENTS.md'] }], contractReview: 'No bundle.', complexityReview: 'One predicate.', assumptions: [], limitations: [] }
-    expect(() => recordReview(root, 'one', report, fingerprint)).toThrow(/independentReview/)
-    expect(() => recordReview(root, 'one', { ...report, independentReview: { reviewer: 'second model', revision: 'abc', findings: ['none'] } }, fingerprint)).not.toThrow()
+    prepare(root, 'one', '.ai-work/checkpoint.json')
+    hookDecision(root, { session_id: 'one', hook_event_name: 'PreToolUse', tool_name: 'Write', tool_input: { file_path: join(root, 'scripts/agents/gate.mjs') } })
+    writeFileSync(join(root, 'scripts/agents/gate.mjs'), 'export const gate = 2\n')
+    const report = { requirements: [{ id: 'R1', status: 'implemented', evidence: 'Gate test passed.', files: ['scripts/agents/gate.mjs'], appliedSections: ['AGENTS.md'], verification: [{ method: 'Gate fixture assertion', result: 'passed' }] }], contractReview: 'No bundle.', complexityReview: 'One predicate.', assumptions: [], limitations: [] }
+    expect(() => recordReview(root, 'one', report)).toThrow(/independentReview/)
+    const independentReview = { reviewer: 'second model', revision: 'abc', fingerprint: reviewFingerprint(root, 'one'), findings: ['none'] }
+    expect(() => recordReview(root, 'one', { ...report, independentReview }, undefined, undefined, [])).toThrow(/executed contracts check receipt/)
+    expect(() => recordReview(root, 'one', { ...report, independentReview })).not.toThrow()
+    writeFileSync(join(root, 'scripts/agents/gate.mjs'), 'export const gate = 42\n')
+    expect(() => recordReview(root, 'one', { ...report, independentReview })).toThrow(/independent.*fingerprint/i)
   })
   it('refuses a review that leaves a written path unclaimed by any requirement', () => {
     const { root, checkpoint } = setup()
@@ -275,12 +554,13 @@ describe('repository preflight', () => {
     prepare(root, 'one', '.ai-work/checkpoint.json', fingerprint)
     hookDecision(root, { session_id: 'one', hook_event_name: 'PreToolUse', tool_name: 'Bash', tool_input: { command: 'node build.mjs' } })
     writeFileSync(join(root, 'scripts/example.mjs'), 'export const value = 5\n')
-    const base = { contractReview: 'No contract changed.', complexityReview: 'One constant.', assumptions: [], limitations: [], independentReview: { reviewer: 'second model', revision: 'fixture', findings: [] } }
+    const base = { contractReview: 'No contract changed.', complexityReview: 'One constant.', assumptions: [], limitations: [], independentReview: { reviewer: 'second model', revision: 'fixture', fingerprint: reviewFingerprint(root, 'one', fingerprint), findings: [] } }
     const report = (requirement) => ({ ...base, requirements: [{ id: 'R1', evidence: 'Reported.', ...requirement }] })
     // Negative: the write happened and nothing accounts for it.
     expect(() => recordReview(root, 'one', report({ status: 'unimplemented', blocked: 'Waiting on the wire value.' }), fingerprint))
       .toThrow(/wrote paths no requirement claims/)
     // Naming an unrelated file does not account for it either.
+    writeFileSync(join(root, 'scripts/other.mjs'), 'export const other = 1\n')
     expect(() => recordReview(root, 'one', report({ status: 'unimplemented', blocked: 'Waiting.', files: ['scripts/other.mjs'] }), fingerprint))
       .toThrow(/scripts\/example\.mjs/)
     // Positive: the requirement that the write serves names it, with the evidence that status already requires.
@@ -298,7 +578,7 @@ describe('repository preflight', () => {
     hookDecision(root, { session_id: 'one', hook_event_name: 'PreToolUse', tool_name: 'Bash', tool_input: { command: 'node build.mjs' } })
     writeFileSync(join(root, 'scripts/example.mjs'), 'export const value = 5\n')
     const review = (appliedSections) => ({
-      requirements: [{ id: 'R1', status: 'implemented', evidence: 'Done.', appliedSections }],
+      requirements: [{ id: 'R1', status: 'implemented', evidence: 'Done.', appliedSections, files: ['scripts/example.mjs'] }],
       contractReview: 'No contract changed.', complexityReview: 'One constant.',
       assumptions: [], limitations: [],
     })
@@ -366,6 +646,7 @@ describe('repository preflight', () => {
     writeFileSync(join(root, '.ai-work/checkpoint.json'), JSON.stringify(feature))
     expect(() => prepare(root, 'one', '.ai-work/checkpoint.json', fingerprint)).toThrow(/Uncovered/)
     feature.work = { kind: 'infrastructure', reason: 'Change API type plumbing without changing screen workflow.' }
+    delete feature.mode
     writeFileSync(join(root, '.ai-work/checkpoint.json'), JSON.stringify(feature))
     expect(() => prepare(root, 'one', '.ai-work/checkpoint.json', fingerprint)).not.toThrow()
     expect(checkEdit(root, 'one', ['src/features/members/screens/list/ui/screen.tsx'])).toBeNull()
@@ -398,7 +679,7 @@ describe('repository preflight', () => {
     writeFileSync(join(root, 'scripts/example.mjs'), 'export const value = 2\n')
     expect(checkStop(root, 'one', fingerprint)).toMatch(/review/)
     const report = {
-      requirements: [{ id: 'R1', status: 'implemented', evidence: 'Focused value test passed.', appliedSections: ['AGENTS.md'] }],
+      requirements: [{ id: 'R1', status: 'implemented', evidence: 'Focused value test passed.', appliedSections: ['AGENTS.md'], files: ['scripts/example.mjs'] }],
       contractReview: 'No shared candidate applies to this script.',
       complexityReview: 'One constant; no wrapper or domain switch.',
       assumptions: [], limitations: ['No browser scope.'],
@@ -473,29 +754,32 @@ describe('repository preflight', () => {
     prepare(root, 'two', '.ai-work/checkpoint.json', fingerprint)
     expect(checkStop(root, 'two', fingerprint)).toBeNull()
   })
-  it('uses the same deny verdict for Codex, Claude and Copilot native edits', () => {
+  it('recorded descendants: uses the same deny verdict for Codex, Claude and Copilot native edits', () => {
     const { root } = setup()
-    const codex = hookDecision(root, { session_id: 'one', hook_event_name: 'PreToolUse', tool_name: 'apply_patch', tool_input: { command: '*** Begin Patch\n*** Update File: scripts/example.mjs\n@@\n-x\n+y\n*** End Patch' } })
-    const claude = hookDecision(root, { session_id: 'one', hook_event_name: 'PreToolUse', tool_name: 'Edit', tool_input: { file_path: join(root, 'scripts/example.mjs') } })
-    const copilot = hookDecision(root, { sessionId: 'one', toolName: 'edit', toolArgs: JSON.stringify({ path: 'scripts/example.mjs' }) }, 'preToolUse')
-    const rawPatch = hookDecision(root, { sessionId: 'one', toolName: 'apply_patch', toolArgs: '*** Begin Patch\n*** Update File: scripts/example.mjs\n@@\n-x\n+y\n*** End Patch' }, 'preToolUse')
+    prepare(root, 'recorded', '.ai-work/checkpoint.json', fingerprint)
+    const codex = hookDecision(root, { session_id: 'recorded/child', hook_event_name: 'PreToolUse', tool_name: 'apply_patch', tool_input: { command: '*** Begin Patch\n*** Update File: scripts/example.mjs\n@@\n-x\n+y\n*** End Patch' } })
+    const claude = hookDecision(root, { session_id: 'recorded/child', hook_event_name: 'PreToolUse', tool_name: 'Edit', tool_input: { file_path: join(root, 'scripts/example.mjs') } })
+    const copilot = hookDecision(root, { sessionId: 'recorded/child', toolName: 'edit', toolArgs: JSON.stringify({ path: 'scripts/example.mjs' }) }, 'preToolUse')
+    const rawPatch = hookDecision(root, { sessionId: 'recorded/child', toolName: 'apply_patch', toolArgs: '*** Begin Patch\n*** Update File: scripts/example.mjs\n@@\n-x\n+y\n*** End Patch' }, 'preToolUse')
     expect(codex.hookSpecificOutput.permissionDecision).toBe('deny')
     expect(claude.hookSpecificOutput.permissionDecision).toBe('deny')
     expect(copilot.permissionDecision).toBe('deny')
     expect(rawPatch.permissionDecision).toBe('deny')
   })
-  it('keeps inspection and checkpoint bootstrap available, but gates arbitrary shell execution', () => {
+  it('recorded descendants: keeps inspection and checkpoint bootstrap available, but gates arbitrary shell execution', () => {
     const { root } = setup()
-    const event = { session_id: 'one', hook_event_name: 'PreToolUse', tool_name: 'Bash' }
+    prepare(root, 'recorded', '.ai-work/checkpoint.json', fingerprint)
+    const event = { session_id: 'recorded/child', hook_event_name: 'PreToolUse', tool_name: 'Bash' }
     expect(hookDecision(root, { ...event, tool_input: { command: 'rtk read AGENTS.md' } })).toEqual({})
     expect(hookDecision(root, { ...event, tool_input: { command: 'python3 change.py' } }).hookSpecificOutput.permissionDecision).toBe('deny')
     expect(hookDecision(root, { ...event, tool_name: 'Write', tool_input: { file_path: '.ai-work/checkpoint.json' } })).toEqual({})
     expect(hookDecision(root, { ...event, tool_input: { command: 'rtk read AGENTS.md; python3 change.py' } }).hookSpecificOutput.permissionDecision).toBe('deny')
     expect(hookDecision(root, { ...event, tool_input: { command: 'git diff --output=scripts/example.mjs' } }).hookSpecificOutput.permissionDecision).toBe('deny')
   })
-  it('names the operator that stopped read-only recognition instead of only asking for preparation', () => {
+  it('recorded descendants: names the operator that stopped read-only recognition instead of only asking for preparation', () => {
     const { root } = setup()
-    const event = { session_id: 'unprepared', hook_event_name: 'PreToolUse', tool_name: 'Bash' }
+    prepare(root, 'recorded', '.ai-work/checkpoint.json', fingerprint)
+    const event = { session_id: 'recorded/child', hook_event_name: 'PreToolUse', tool_name: 'Bash' }
     const reason = (command) => hookDecision(root, { ...event, tool_input: { command } })
       .hookSpecificOutput.permissionDecisionReason
     // The cause is the pipe, not a missing preparation, so the denial must say so first.
@@ -595,7 +879,12 @@ describe('repository preflight', () => {
     const { root } = setup()
     prepare(root, 'one', '.ai-work/checkpoint.json', fingerprint)
     const event = { session_id: 'one', hook_event_name: 'PreToolUse', tool_name: 'Bash' }
-    expect(hookDecision(root, { ...event, tool_input: { command: 'wc -c AGENTS.md' } })).toEqual({})
+    for (const command of ['wc -c AGENTS.md', 'head -n 5 AGENTS.md', 'tail -n 5 AGENTS.md']) {
+      expect(hookDecision(root, { ...event, tool_input: { command } })).toEqual({})
+    }
+    const states = readdirSync(join(root, '.ai-work/agent-checks')).map(file => JSON.parse(readFileSync(join(root, '.ai-work/agent-checks', file), 'utf8')))
+    expect(states).toHaveLength(1)
+    expect(states.every(state => !state.wrote && !state.trace)).toBe(true)
     writeFileSync(join(root, 'scripts/example.mjs'), 'export const value = 9\n')
     expect(checkStop(root, 'one', fingerprint)).toBeNull()
     const report = {
@@ -605,8 +894,9 @@ describe('repository preflight', () => {
     }
     expect(() => recordReview(root, 'one', report, fingerprint)).not.toThrow()
   })
-  it('admits read-only inspection argv and still refuses the writing forms of the same commands', () => {
+  it('recorded descendants: admits read-only inspection argv and still refuses the writing forms of the same commands', () => {
     const { root } = setup()
+    prepare(root, 'recorded', '.ai-work/checkpoint.json', fingerprint)
     // A reviewed worktree is a checkout inside the repository: it carries `.git`.
     mkdirSync(join(root, '.claude/worktrees/agent-x'), { recursive: true })
     writeFileSync(join(root, '.claude/worktrees/agent-x/.git'), 'gitdir: ../../../.git/worktrees/agent-x\n')
@@ -614,10 +904,13 @@ describe('repository preflight', () => {
     writeFileSync(join(root, 'node_modules/evil/package.json'), '{"scripts":{"lint":"rm -rf ."}}')
     mkdirSync(join(root, '.ai-work/x'), { recursive: true })
     writeFileSync(join(root, '.ai-work/x/.git'), 'gitdir: nowhere\n')
-    const event = { session_id: 'unprepared', hook_event_name: 'PreToolUse', tool_name: 'Bash' }
+    const event = { session_id: 'recorded/child', hook_event_name: 'PreToolUse', tool_name: 'Bash' }
     const verdict = (command) => hookDecision(root, { ...event, tool_input: { command } })
     for (const command of [
       'wc -c AGENTS.md',
+      'head -n 5 AGENTS.md',
+      'tail -n 5 AGENTS.md',
+      'rtk proxy head -n 5 AGENTS.md',
       'grep -rn value scripts',
       "find scripts -type f -name '*.mjs'",
       "sed -n 1,40p AGENTS.md",
@@ -633,6 +926,9 @@ describe('repository preflight', () => {
       expect(verdict(command), command).toEqual({})
     }
     for (const command of [
+      'head -n 5 AGENTS.md > scripts/copy.md',
+      'tail -n 5 AGENTS.md; touch scripts/copy.md',
+      'git branch new-branch',
       'find scripts -type f -delete',
       'find scripts -name *.mjs -exec rm {} ;',
       'find scripts -fprint out.txt',
@@ -677,9 +973,10 @@ describe('repository preflight', () => {
     writeFileSync(join(root, 'scripts/example.mjs'), 'export const value = 10\n')
     expect(checkStop(root, 'one', fingerprint)).toBeNull()
   })
-  it('keeps Git writes, execution options and incomplete directory arguments behind preparation', () => {
+  it('recorded descendants: keeps Git writes, execution options and incomplete directory arguments behind preparation', () => {
     const { root } = setup()
-    const event = { session_id: 'unprepared', hook_event_name: 'PreToolUse', tool_name: 'Bash' }
+    prepare(root, 'recorded', '.ai-work/checkpoint.json', fingerprint)
+    const event = { session_id: 'recorded/child', hook_event_name: 'PreToolUse', tool_name: 'Bash' }
     for (const command of [
       'git -C ../dt-admin-web reset --hard',
       'git -C ../dt-admin-web diff --output=out.patch',
@@ -695,9 +992,10 @@ describe('repository preflight', () => {
       expect(hookDecision(root, { ...event, tool_input: { command } }).hookSpecificOutput?.permissionDecision, command).toBe('deny')
     }
   })
-  it('admits orchestration RPC without preparation and still gates the calls that touch the checkout', () => {
+  it('recorded descendants: admits orchestration RPC without preparation and still gates the calls that touch the checkout', () => {
     const { root } = setup()
-    const event = { session_id: 'unprepared', hook_event_name: 'PreToolUse', tool_name: 'Bash' }
+    prepare(root, 'recorded', '.ai-work/checkpoint.json', fingerprint)
+    const event = { session_id: 'recorded/child', hook_event_name: 'PreToolUse', tool_name: 'Bash' }
     const verdict = (command) => hookDecision(root, { ...event, tool_input: { command } })
     for (const command of [
       'orca orchestration send --type worker_done --subject done --body "read-only review complete"',

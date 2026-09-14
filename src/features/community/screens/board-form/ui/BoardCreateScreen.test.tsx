@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { TestLocaleProvider } from '@/test/locale';
+import { UnsavedChangesProvider } from '@/shared/ui/form/UnsavedChangesGuard';
 import { BoardCreateScreen } from './BoardCreateScreen';
 
 let guardDisabled = true;
@@ -20,7 +21,9 @@ function setup() {
   const onCancel = vi.fn();
   render(
     <TestLocaleProvider>
-      <BoardCreateScreen onConfirm={onConfirm} onCancel={onCancel} />
+      <UnsavedChangesProvider>
+        <BoardCreateScreen onConfirm={onConfirm} onCancel={onCancel} />
+      </UnsavedChangesProvider>
     </TestLocaleProvider>,
   );
   return { onConfirm, onCancel };

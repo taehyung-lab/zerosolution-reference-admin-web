@@ -13,7 +13,7 @@ One use stays feature-local. Two uses are compared. A third stable use starts re
 
 Figma repetition counts only when semantics, state transitions, and failure behavior are legible and match. It may establish a documented contract before three code uses; it does not automatically authorize a component. Visual similarity and anticipated reuse are not evidence.
 
-A whole-product inventory (`docs/reference/zero-sol/`) is a third evidence type: Figma frames prove UI composition and static states, Notion Feature sentences prove behavior and policy. An identical sentence repeated across domains strengthens a provisional contract, but it never replaces the second code consumer. An inventory-only candidate may be recorded in the judgment document and `primitives-and-tokens.md` with its evidence and feature-owned boundary, but it is not a named API or implementation commitment.
+The target inventory located through `docs/reference/product.json` is a third evidence type: Figma frames prove UI composition and static states, Notion Feature sentences prove behavior and policy. An identical sentence repeated across domains strengthens a provisional contract, but it never replaces the second code consumer. An inventory-only candidate may be recorded in the judgment document and `primitives-and-tokens.md` with its evidence and feature-owned boundary, but it is not a named API or implementation commitment.
 
 A pattern may own confirmed product-generic status or action copy in the `shared` namespace when that wording
 is part of the pattern's interaction contract. For example, `ListResult` owns shared error/retry/trace labels,

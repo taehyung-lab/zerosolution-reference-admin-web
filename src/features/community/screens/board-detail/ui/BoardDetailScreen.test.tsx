@@ -1,7 +1,35 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { TestQueryLocaleProvider } from '@/test/query-locale';
+import { UnsavedChangesProvider } from '@/shared/ui/form/UnsavedChangesGuard';
 import { BoardDetailScreen } from './BoardDetailScreen';
+
+vi.hoisted(() => {
+  globalThis.ResizeObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  }
+  globalThis.IntersectionObserver = class {
+    readonly root = null
+    readonly rootMargin = ''
+    readonly thresholds = []
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+    takeRecords() { return [] }
+  }
+  Object.defineProperty(Document.prototype, 'getAnimations', { configurable: true, value: () => [] })
+  Object.defineProperty(Element.prototype, 'getAnimations', { configurable: true, value: () => [] })
+  Object.defineProperty(window, 'matchMedia', {
+    configurable: true,
+    value: () => ({ matches: false, addEventListener() {}, removeEventListener() {} }),
+  })
+});
+
+vi.mock('@tanstack/react-router', () => ({
+  useBlocker: () => ({ status: 'idle' }),
+}));
 
 function renderScreen(boardId = 'reference-board-1') {
   const onEdit = vi.fn();
@@ -9,7 +37,9 @@ function renderScreen(boardId = 'reference-board-1') {
   const onSaveCategories = vi.fn();
   render(
     <TestQueryLocaleProvider>
-      <BoardDetailScreen boardId={boardId} onEdit={onEdit} onDelete={onDelete} onSaveCategories={onSaveCategories} />
+      <UnsavedChangesProvider>
+        <BoardDetailScreen boardId={boardId} onEdit={onEdit} onDelete={onDelete} onSaveCategories={onSaveCategories} />
+      </UnsavedChangesProvider>
     </TestQueryLocaleProvider>,
   );
   return { onEdit, onDelete, onSaveCategories };
@@ -84,38 +114,42 @@ describe('BoardDetailScreen (Figma 9.1.2)', () => {
     expect(within(dialog).getByRole('button', { name: '저장' })).toBeDisabled();
     fireEvent.change(first, { target: { value: '이벤트' } });
     fireEvent.click(within(dialog).getByRole('button', { name: '4번 카테고리 삭제' }));
+    await waitFor(() => expect(within(dialog).getByRole('button', { name: '저장' })).toBeEnabled());
     fireEvent.click(within(dialog).getByRole('button', { name: '저장' }));
 
-    expect(onSaveCategories).toHaveBeenCalledWith({
+    await waitFor(() => expect(onSaveCategories).toHaveBeenCalledWith({
       boardId: 'reference-board-1',
       categories: [
         expect.objectContaining({ name: '이벤트', usage: 'IN_USE' }),
         expect.objectContaining({ name: '회원가입' }),
         expect.objectContaining({ name: '티켓인증' }),
       ],
-    });
+    }));
     expect(screen.queryByRole('dialog', { name: '카테고리 설정' })).toBeNull();
   });
 
-  it('카테고리 순서는 드래그 없이도 위/아래 버튼으로 바꿀 수 있고 ✕ 는 취소와 다른 이름이다', async () => {
-    const { onSaveCategories } = renderScreen();
+  it('카테고리 순서는 접근 가능한 DnD 핸들로 바꾸고 마지막 행의 삭제는 숨긴다', async () => {
+    renderScreen();
     await screen.findByText('Reference Board 1');
 
     fireEvent.click(screen.getByRole('button', { name: '카테고리 설정' }));
     const dialog = await screen.findByRole('dialog', { name: '카테고리 설정' });
     expect(within(dialog).getByRole('button', { name: '닫기' })).toBeInTheDocument();
-    expect(within(dialog).getByRole('button', { name: '1번 위로' })).toBeDisabled();
-    fireEvent.click(within(dialog).getByRole('button', { name: '2번 위로' }));
-    fireEvent.click(within(dialog).getByRole('button', { name: '저장' }));
+    expect(within(dialog).getByRole('button', { name: '1번 순서 이동' })).toHaveAttribute('aria-roledescription', 'draggable');
+    expect(within(dialog).queryByRole('button', { name: '1번 위로' })).toBeNull();
+    fireEvent.click(within(dialog).getByRole('button', { name: '3번 카테고리 삭제' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: '2번 카테고리 삭제' }));
+    expect(within(dialog).queryByRole('button', { name: /카테고리 삭제/ })).toBeNull();
+  });
 
-    expect(onSaveCategories).toHaveBeenCalledWith({
-      boardId: 'reference-board-1',
-      categories: [
-        expect.objectContaining({ name: '티켓인증' }),
-        expect.objectContaining({ name: '회원가입' }),
-        expect.objectContaining({ name: '스케셜콘텐츠' }),
-      ],
-    });
+  it('카테고리를 수정하고 취소하면 버리기 확인을 거친다', async () => {
+    renderScreen();
+    await screen.findByText('Reference Board 1');
+    fireEvent.click(screen.getByRole('button', { name: '카테고리 설정' }));
+    const dialog = await screen.findByRole('dialog', { name: '카테고리 설정' });
+    fireEvent.change(within(dialog).getByRole('textbox', { name: '1번 카테고리명' }), { target: { value: '변경' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: '취소' }));
+    expect(await screen.findByRole('dialog', { name: '알림' })).toHaveTextContent('입력을 취소하시겠습니까?');
   });
 
   it('수정 버튼은 그 게시판의 수정 화면으로 나간다', async () => {

@@ -87,7 +87,7 @@ function MessageForm({
         )}
         closeLabel={t("messages.close")}
         onOpenChange={(open) => {
-          if (!open) guard.close(onClose, { when: false });
+          if (!open) guard.close(onClose);
         }}
       >
         <form
@@ -175,7 +175,7 @@ function MessageForm({
           <Button type="submit">{t("messages.send")}</Button>
           <Button
             type="button"
-            onClick={() => guard.close(onClose, { when: false })}
+            onClick={() => guard.close(onClose)}
           >
             {t("messages.cancel")}
           </Button>

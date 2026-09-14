@@ -88,6 +88,33 @@ test('@smoke 행 → 조회 → 수정 이동 뒤 저장이 요청 로그까지 
     .toBe(1);
 });
 
+test('@smoke 카테고리 설정은 키보드 드래그로 순서를 바꾸고 dirty 닫기를 보호한다', async ({ page }) => {
+  await page.goto('/community/boards/reference-board-1');
+  await page.getByRole('button', { name: '카테고리 설정' }).click();
+
+  const dialog = page.getByRole('dialog', { name: '카테고리 설정' });
+  const firstName = dialog.getByRole('textbox', { name: '1번 카테고리명' });
+  const secondName = dialog.getByRole('textbox', { name: '2번 카테고리명' });
+  await expect(firstName).toHaveValue('회원가입');
+  await expect(secondName).toHaveValue('티켓인증');
+
+  const handle = dialog.getByRole('button', { name: '1번 순서 이동' });
+  await handle.focus();
+  await page.keyboard.press('Space');
+  await expect(page.getByRole('status')).toContainText('회원가입 항목을 들었습니다.');
+  await expect(page.getByRole('status')).not.toContainText('reference-board-1-category-1');
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('Space');
+  await expect(dialog.getByRole('textbox', { name: '1번 카테고리명' })).toHaveValue('티켓인증');
+  await expect(dialog.getByRole('textbox', { name: '2번 카테고리명' })).toHaveValue('회원가입');
+
+  await dialog.getByRole('button', { name: '닫기' }).click();
+  const alert = page.getByRole('dialog', { name: '알림' });
+  await expect(alert).toContainText('취소할 경우 입력된 정보는 모두 삭제됩니다.');
+  await alert.getByRole('button', { name: '취소' }).click();
+  await expect(dialog).toBeVisible();
+});
+
 test('@smoke 조회의 삭제는 확인 alert 를 거쳐 요청 로그까지 간다', async ({ page }) => {
   const logs: string[] = [];
   page.on('console', (message) => logs.push(message.text()));

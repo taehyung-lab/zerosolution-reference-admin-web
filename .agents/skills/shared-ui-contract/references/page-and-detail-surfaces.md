@@ -11,7 +11,7 @@ Read this file only for `PageHeader`, `DetailField`, `DetailStateBoundary`, `Upd
 | `EmptyState` | `children` | a bordered placeholder box | any role or live semantics — the host adds `role="alert"`/`status` when the content is an outcome, not a static hint |
 
 - A detail composes `PageHeader` **outside** `DetailStateBoundary` so the title stays visible in error states; `SectionCard` and `DetailField` go inside (see [disclosure-sections.md](disclosure-sections.md)). Since the route loader awaits the record ([router.md](../../feature-contract/references/router.md#loader-and-preload)), the boundary's `error`/`notFound` states occur only after entry (its `notFound` label is the record sentence `error.kind.notFound`); entry failures are route pages.
-- The 2-column `dl` grid (`grid md:grid-cols-2`) is written by the feature around `DetailField`s; the product shows it on every detail but the pairing per row is domain order.
+- The feature owns the enclosing `dl` layout and field order according to the measured target design; `DetailField` does not prescribe a column count or domain order.
 
 - `UpdateHistory` entries are already localized, safe strings. The feature mapper (`to*HistoryEntries(logs, t)`) never passes raw server field codes, secrets, or JSON; shared renders lines only.
 

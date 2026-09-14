@@ -1,13 +1,21 @@
-# Repository preflight and review
+# Repository preparation and recorded review
 
-Owner: these scripts execute the observable preparation/review parts of `AGENTS.md`, and this file owns
-the review vocabulary (completion states), the delegation brief and the session handoff conventions.
-Product facts stay in the inventory and scenarios; shared decisions stay in skills/ADRs.
-Hooks verify routing, declarations and output scope, never policy truth or comprehension.
+일반 작업의 실행 정본은 AGENTS와 screen-loop다. 요구사항·설계·검증 결과는 대화에 남기며,
+checkpoint·review·QA 파일을 만들기 위해 이 안내 전체를 읽지 않는다.
+
+이 문서는 문맥 탐색 도구와 **선택한 기록 절차**의 필드·명령·검사 범위를 소유한다.
+아래 checkpoint·prepare·review·receipt 의무는 명시적으로 `prepare`한 세션에만 적용된다.
+기록 세션의 하위 작업은 별도 준비 없이 일반 모드로 우회할 수 없다. 일반 모드에서는
+hook이 범위·미확인·독립 검토 기록을 강제하지 않으며, AGENTS의 판단·검증·안전 의무는 그대로다.
+
+기록 절차는 드릴·감사·재현이 필요한 경우 작업 전에 시작한다. 중간에 시작하면 그 이전 변경은
+baseline에 포함되어 해당 receipt의 검토 대상이 아니다. 최초 prepare가 기존 scope 내 변경을
+표시하며, 이전 변경은 별도로 검토해야 한다. 동시 쓰기가 있는 공유 트리 대신 분리된 워크트리를 쓴다.
+자세한 귀속 한계는 [runtime-adapters.md](runtime-adapters.md)가 소유한다.
 
 ## Know which entry the request is
 
-Classify **grain** then kind before loading path skills. A whole screen, one component, one hook or
+In the recorded protocol, classify **grain** then kind before loading path skills. A whole screen, one component, one hook or
 utility, and one file-structure request share the loop and differ in entry, truth, and scope. Put
 `grain`, `entry`, and `mode` on the workflow checkpoint — `prepare` rejects if they are missing. Drill is
 `mode`, not `work.kind` (opt-in: the user says 드릴, or this repository's document loop is under test).
@@ -17,7 +25,7 @@ An existing route does not force drill. A `src/shared` scope is in the loop unle
 | grain | kind | entry | truth source | scope |
 | --- | --- | --- | --- | --- |
 | screen | screen | `context <surface id>`; a screen the index lacks (E0) enters through its outer role's `<reference>#형태` with `surfaces: []` and an `evidenceGaps` observation | inventory, scenario, judgment | that screen's workflow |
-| slice | screen | `context` of the parent screen + `rows: [<row ids>]` when the screen is promoted | the rows for that surface only — `prepare` delivers exactly those rows in place of the inventory section; the surface's other references still arrive | the role's files, not the rest of the screen |
+| slice | screen | `context` of the parent screen + `rows: [<row ids>]` when the screen is promoted | those rows as one small table, plus the parent policies the index names in that surface's `parentReferences`; without `parentReferences` the whole inventory section still arrives beside the rows, because a row table cannot tell which surrounding prose is relevant. The surface's other references still arrive | the role's files, not the rest of the screen |
 | component | shared | `bundle <contract id>` | bundle `skills` and `adrs` | `ownership.shared` only |
 | component | feature | parent `context` + feature-contract | consuming screen inventory plus the role section | that component's owner files |
 | logic | shared | `bundle <contract id>` + logic-promotion | bundle `tests` are the contract | the mechanic or pure utility's files under `src/shared/lib` |
@@ -25,7 +33,7 @@ An existing route does not force drill. A `src/shared` scope is in the loop unle
 | structure | — | the role `형태` section + folder-structure-contract | file roles and placement, not product values | the file set the `형태` table names |
 | (화면 grain) | feature API | 그 화면의 `context` | 해당 화면 inventory | `src/features/*/api` — 화면 workflow의 일부라 grain이 필요하다 |
 | — | api (`src/api`) | api-contract (`work.kind` infrastructure) | snapshot plus owning ADR | transport/query/error. grain 없음 |
-| mixed | — | one named slice at a time | each grain's source | that slice |
+| mixed | — | every requirement ID in the first checkpoint, split into `units[]`; one `currentUnit` at a time enters through its own grain's row above | each unit's grain source; a future unit's surfaces and sources are checked when that unit becomes current | `scope` equals the current unit's scope; edits in another unit's scope are denied until that unit is prepared |
 | — | maintenance | the path skill | the owning document | declared paths |
 
 A screen never copies another screen's implementation. A shared contract never copies `examples.doNotCopy`.
@@ -38,51 +46,38 @@ For a screen/workflow task, first read AGENTS and the applicable skill, then dis
 
 ```sh
 node scripts/agents/cli.mjs context
-node scripts/agents/cli.mjs context performance-list
+node scripts/agents/cli.mjs context <surface-id>
 node scripts/agents/cli.mjs context-report
 node scripts/agents/cli.mjs context-report --summary
 node scripts/agents/cli.mjs bundle
-node scripts/agents/cli.mjs bundle data-table
+node scripts/agents/cli.mjs bundle <bundle-id>
 ```
 
-Run these from the checkout root with exactly that relative script path: the hook recognizes the literal
-argv `node scripts/agents/cli.mjs <command>`, so an absolute script path or a different working directory
-is not inspection and is denied until prepared (measured 2026-09-13, a fresh session's first call).
+These commands are discovery helpers in both modes. In recorded sessions, exact literal inspection
+commands avoid opening a write-attribution bracket. A recorded descendant that has not prepared can
+still inspect, but a general shell call requires its own preparation. Ordinary sessions have no such
+preparation requirement. The recognizer and its diagnostic limits are owned by
+[runtime-adapters.md](runtime-adapters.md). A shell-operator diagnostic explains why a call was not
+recognized as inspection; it does not mean preparation can never admit that command.
 
-A denied shell call reports one of two causes, because they need different actions. When the command is
-not a literal argv — a pipe, a redirect, a glob, `&&`, or a backtick inside double quotes — the denial
-says so and preparing will not help; write the command without shell operators, and put literal text in
-single quotes so characters such as backticks stay literal. The recognized subset is not widened for
-double-quoted backticks, since the shell would run them as command substitution. When the command parses
-but is not an allowlisted read-only executable, the denial asks for preparation, which is the right action.
-
-Read-only inspection stays available without preparation: `read`, `cat`, `ls`, `rg`, `grep`, `wc`, `pwd`,
-Git `status`/`diff`/`log`/`show`/`ls-files`/`rev-parse` (including leading `-C <path>` or `-C<path>`),
-`find` limited to read-only predicates, `sed -n <range>p`, and the repository's own check scripts — `pnpm lint`,
-`typecheck`, `typecheck:generated`, `test:unit`, `i18n:check`, `contracts:check`, and `vitest run <paths>` through
-`pnpm` or `node node_modules/vitest/vitest.mjs` without options — which are read-only by contract so an independent reviewer can measure without preparing
-(`pnpm verify`/`api:check` regenerate files and stay gated); `pnpm -C <dir>` (or `--dir`) selects a checkout inside the repository — a directory carrying `.git`, such as a reviewed worktree. Test paths must lie under `src/`, `scripts/` or
-`tests/`, and node under the user's nvm directory (`$NVM_DIR/versions/node/v<x.y.z>/bin/node`) counts as `node`. `rtk` and `rtk proxy` wrappers are recognized.
-Git config/alias options, external diff/text conversion and output-to-file options remain gated.
-General Python/Node programs cannot be classified as read-only from their executable name.
-The writing forms of the same
-commands (`find -exec`/`-delete`/`-fprint`, `sed -i`/`-f`/`w`) require preparation. Literal quoted arguments
-are decoded before command/option checks, so `rg 'a|b' file` is inspection while a real pipe,
-redirection, separator or substitution requires preparation. Unsupported shell escapes/expansions are
-conservatively gated; quote glob patterns such as `find scripts -name '*.mjs'`. This is a limited argv
-recognizer, not a shell parser. Writes under `.ai-work/` remain available for preparation.
-
-These are read-only, available before prepare. `bundle` lists the valid IDs; an ID returns its code,
+The `context`, `context-report`, `bundle` and `sweep` (without `--apply`) commands above are read-only, available before prepare. `bundle` lists the valid IDs; an ID returns its code,
 reference sections, ADRs, focused tests, ownership split and any scoped consumption examples from the
-existing seed declaration ([example semantics](../contracts/README.md#consumption-examples)). `docs/reference/zero-sol/context.json` is owned by the
+existing seed declaration ([example semantics](../contracts/README.md#consumption-examples)). The scripts find the product's documents through one
+pointer, `docs/reference/product.json` — `{ inventory, judgment, scenarios, index }`, repository-relative
+paths, read by `scripts/contracts/product-paths.mjs` for `context`, `prepare` and `contracts:check` alike;
+`prepare` hashes the pointer so a change to it is a staleness event. The `index` it names (here
+`docs/reference/zero-sol/context.json`) is owned by the
 inventory and contains pointers, not copied policies. It connects targets to inventory/scenario
-locations, related inner surfaces, applicable references and existing code paths. It is not the skill
+locations, related inner surfaces, applicable references, existing code paths and, per surface, optional
+`parentReferences`: the parent policy sections a slice on that surface needs beside its rows. Declare
+them only when the relevant policies are known; an empty list is rejected, and an absent field keeps the
+whole section. It is not the skill
 set: after grain/kind, load that role's `형태` section from the path skill even when the index omitted
 it. A surface that cites a skill file which has `형태` must include that heading (or the whole file);
 `contracts:check` fails the index otherwise. Paths are discovery
 hints, never code ownership or a folder template. Feature API/model files can serve several surfaces;
 index those consumers rather than forcing an unrelated screen requirement just to satisfy a path match. Unimplemented paths are left empty. New product paths need explicit
-`evidenceGaps` until their own inventory is indexed; replace this product's index on transplant.
+`evidenceGaps` until their own inventory is indexed; replace this product's pointer and index on transplant.
 
 ### Read the migrated rows
 
@@ -175,6 +170,8 @@ that an external source is still current. Follow the inventory's re-observation 
 
 ## Prepare before editing
 
+**Recorded protocol only.** Ordinary work publishes the same relevant reasoning in conversation; it does not create this schema. Selecting prepare activates the existing recorded checks for the session.
+
 For new screens, workflow changes or API/shared boundary changes, publish the target and excluded
 screens, routes and inner surfaces, state owners, applicable contracts with adopt/modify/exclude,
 scenario cards, consumed bundles, unresolved questions/sentinels, edit scope and states to verify.
@@ -196,17 +193,35 @@ The path-only hook cannot distinguish a behavioral edit from a placement decisio
 A workflow checkpoint must declare `grain` (`screen|slice|component|logic|structure`), `entry`, `mode`
 (`implement|drill`), and `design.flow` / `ownership` / `reuse` / `simplicity`. A `src/shared` scope without
 `work.kind` uses the same cells with `grain` component or logic and a bundle `entry`. `prepare` rejects the
-task if any is missing, and checks two shapes: `entry` must resolve — a context surface id, a seed bundle
-id, `<reference file>#형태` whose heading exists, or (structure/logic) an existing path — and a partial grain
+task if any is missing, and checks three shapes: `entry` must resolve — a context surface id, a seed bundle
+id, `<reference file>#형태` whose heading exists, or (structure/logic) an existing path; a `<file>#heading`
+entry must also be **delivered**, through `references` or the surface context, or the task is rejected
+(an entry nobody reads is not an entry); and a partial grain
 (slice, component, logic) may not name a screen or feature directory as scope, only that part's files.
 A slice on a promoted screen also names `rows: ["<surface>.<row>", …]` from the `context` output; `prepare`
-then delivers those rows as one small table in place of the promoted surface's inventory reference, and
-rejects an id no included surface has. Only that reference is replaced: a heading of the same file the
-checkpoint lists, and the section of an included unpromoted surface, still arrive, and a whole-file
+then delivers those rows as one small table and rejects an id no included surface has. The promoted
+surface's own inventory section is dropped only when the index gives that surface `parentReferences`,
+which are delivered instead; otherwise the section stays beside the rows. A heading of the same file the
+checkpoint lists, and the section of an included unpromoted surface, always arrive, and a whole-file
 reference the checkpoint itself lists wins. An unpromoted screen still delivers the whole section, so
-promotion is what makes a slice cheap. In the review, cite the delivery as
+promotion plus `parentReferences` is what makes a slice cheap. In the review, cite the delivery as
 `{ "file": "<inventory>", "heading": "rows: <ids>" }`, the label prepare printed. `rows` on any other
 grain is rejected.
+
+A mixed request keeps every requirement in the first checkpoint and adds
+`units: [{ "id", "requirementIds", "scope" }]` with `currentUnit`. `prepare` rejects the task unless every
+requirement belongs to exactly one unit, unit scopes are disjoint, `scope` equals the current unit's scope,
+and every future scope is already a canonical repository path. On re-preparation, requirement membership
+and inactive scopes stay fixed; the active scope may be refined before editing. `grain`, `entry`,
+`references` and surface selections describe the current unit: `mixed` is a request classification, not
+a `grain` value. Surface, source and contract connections are checked for the current unit's requirements only;
+bundle documents are delivered only for contracts those requirements name. Keep explicit references local
+to this unit as well; an explicit whole-file request still delivers the whole file.
+a future unit is neither approved nor complete, and edits inside its scope are denied until it becomes
+current. Each `prepare` call, accepted or rejected, is appended to `.ai-work/agent-attempts/<session hash>.jsonl`
+with the checkpoint path, outcome, delivered bytes or error; `review-context <session-id>` prints the
+authored paths (`mine`), current-unit authored paths (`active`), external paths, the active fingerprint and
+that history without closing the author's open write bracket. Counts alone are not a quality verdict.
 It still does not score the *quality* of the design sentences; a reuse, ownership or simplicity defect
 found later returns to N3. `design.reuse` is feature-mechanic reuse outside seed bundles; seed
 adopt/modify/exclude stays on `contracts[]`.
@@ -268,7 +283,13 @@ node scripts/agents/cli.mjs prepare SESSION_ID .ai-work/task/checkpoint.json
   it, and the total it contributes. This surfaces what a narrowing decision would buy; it never drops a
   selection on its own. `SKILL.md` files stay whole because AGENTS §2 requires reading them in full.
 - Product unknowns use `unresolved: [{ "question": "Which wire value?", "paths": ["affected/path/"] }]`.
-  Native edits on those paths remain blocked. An indexing gap does not resolve a product unknown.
+  Paths may belong to any declared unit; retain the question and its affected paths across units. Native
+  edits on those paths remain blocked until `resolution: { status: resolved | irrelevant, evidence, sources }`
+  records the answer or why it does not affect this work. Sources are Markdown references under the product
+  pointer's inventory, scenarios or judgment locations, or `user`; root/skill prose cannot clear this block.
+  Only active-unit resolution sources load now. Surface selections and evidence gaps describe
+  the active unit, whereas full requirements and unanswered questions persist. An indexing gap does not
+  resolve a product unknown. Review must verify that the cited fact actually resolves the question.
 
 `prepare` adds the target's evidence and the adopted or modified seeds' skill/ADR sections automatically;
 an excluded contract's sections are not delivered, since the exclusion was decided before preparing. References
@@ -295,29 +316,57 @@ recorded changes in its handoff; session-local state cannot recover another sess
 
 ## Completion states
 
-Screen work in this repository is reported in four states, in this order and with no fifth word:
-**시나리오 확정됨 → 시나리오 구현 완료 → 완료 → 이관 검증됨**. When a claim needs more nuance, split it into
-what was observed here and what the target product still has to judge.
+Use a status that says what was actually verified; do not turn it into another artifact requirement.
 
-- **시나리오 확정됨** — every interaction of the screen is written down in the issue to the business
-  request function it ends in and the Korean log line that proves the call, and compared with the
-  inventory section. Which surfaces and transitions that comparison must cover is owned by [mutation-actions.md](../../.agents/skills/feature-contract/references/mutation-actions.md#시나리오-상태와-관찰-범위).
-- **시나리오 구현 완료** — the implemented, API-disconnected actions were pressed in a browser to their
-  final confirmation, the business request function was called and its log observed, and internal
-  transitions were confirmed by real URL and screen state. This is the highest state reachable here:
-  there is no real API, so evidence stops at request-function reach and internal URL/state.
-- **완료**, **이관 검증됨** — real API success and adoption in the target product. Judged only there.
+- **시나리오 확정됨** — the relevant interactions, inputs, outcomes and failure/recovery conditions are
+  grounded in confirmed product evidence. Keep the comparison in the current request; an issue or
+  separate scenario file is not mandatory for every task.
+- **시나리오 구현 완료** — the implemented interactions and internal transitions were exercised with
+  real rendered state and URL changes where applicable. State explicitly if the API was mocked or
+  disconnected; a business-function log proves only the call that was observed.
+- **완료** — the request's actual acceptance criteria, including required visual and real API behavior,
+  passed. Missing product facts, a mock-only result or an unexecuted check cannot be reported as verified.
+- **이관 검증됨** — the target product's first real consumer and required execution checks establish
+  adoption there; source fixtures and a staged copy alone do not.
 
-CSS and the real-server connection are outside screen work in this repository; the evidence is inventory
-comparison, not design comparison.
+Read the environment and unresolved API facts through AGENTS §1 and the product evidence pointer.
+A source rehearsal without the real server cannot prove real-server acceptance. Earlier workflow
+trials that excluded visual work do not remove visual acceptance from a new request. Components,
+logic and structure use their own requirement evidence; do not impose screen status machinery on them.
+
+### Loop acceptance trials
+
+A loop is judged by an actual fresh-session request and its implementation and evidence, not by
+receipt creation. Ordinary trials need no checkpoint/review/DRILL files. Keep a reproducible record only
+when it will be reused; recorded trials use the optional prepare/review protocol.
+
+- **Normal trials** cover screen, slice, component, logic, structure and a mixed request. Give a fresh
+  session one sentence without a tailored brief and examine the resulting code, requirement coverage,
+  ownership and actual checks. A genuine product unknown is a valid stop, not a successful implementation.
+  Existing source scripted fixtures and partial fresh-session trials do not prove this whole set or
+  another product's acceptance. Exact historical scope is in screen-loop
+  [observations](../../.agents/skills/screen-loop/references/observations.md).
+- **Negative trials** the independent reviewer must catch, planted deliberately: a consumer-only policy
+  added to a shared prop under an unchanged export name; a guessed enum reported as a `matched` row; a
+  URL, Query or Form value duplicated into a local store; the same responsibility repeated through a
+  controller or wrapper; a mixed request whose remaining units were dropped from the final reconciliation.
+  These semantic claims can pass the mechanical checks; a reviewer must reject the planted defect using
+  actual code and product evidence. Report which command was exercised, not a blanket all-gates-pass claim.
+- **Transplant** is judged in the target repository with a real requirement, first consumer and executed verification, never
+  by a hash mismatch or an empty-checkpoint rejection ([bundle application](../contracts/README.md#applying-a-bundle-to-a-new-product)).
 
 ## Review the actual output
+
+**Recorded protocol only:** the JSON fields and CLI receipt below apply after prepare. Ordinary work reconciles requirements, actual diff and execution results in its final report, with independent review where AGENTS §5 requires it.
 
 Compare the diff with every requirement and its evidence: target and inner-surface coverage, existing
 shared candidates, invented product facts, single state ownership, necessary complexity and actual
 failure/recovery behavior. Record each original requirement exactly once as `implemented`,
-`unimplemented` or `different`. Workflow requirements that are implemented/different also need concrete
-in-scope implementation files and verification methods/results:
+`unimplemented` or `different` (with `units`, the current unit's requirements). Every path this session
+wrote must appear in some requirement's `files`, whatever the work kind; loop requirements (workflow, or a
+`src/shared` implement/drill) that are implemented/different also need non-empty in-scope `files` and
+`verification` methods/results. When the prepared state holds selected inventory rows (a screen's promoted
+rows, or a slice's `rows`), the review also carries `rows[]`:
 
 ```json
 {
@@ -327,21 +376,46 @@ in-scope implementation files and verification methods/results:
     "files": ["src/features/performances/screens/list/ui/PerformanceListResult.tsx"],
     "verification": [{ "method": "Browser interaction", "result": "ascending → descending → ascending", "artifact": ".ai-work/task/browser-report.md" }]
   }],
+  "rows": [{
+    "id": "performance-list.sort", "verdict": "matched", "requirementIds": ["R1"],
+    "files": ["src/features/performances/screens/list/ui/PerformanceListResult.tsx"],
+    "evidence": "Seven sort keys in the row, seven in the schema and the header set."
+  }, {
+    "id": "performance-list.venue", "verdict": "blocked", "requirementIds": ["R1"], "files": [],
+    "evidence": "The venue option list is not enumerated.",
+    "unresolved": { "status": "blocked", "evidence": "Q7 has no answer.", "sources": [{ "file": "docs/reference/zero-sol-figma-analysis.md", "heading": "질문 7" }] }
+  }],
   "contractReview": "data-table adopted unchanged: the column meta and getRowId stay feature-owned; no prop was added for this caller.",
-  "complexityReview": "Three role files from the 형태 table; the sort transition is one pure policy function, no controller hook.",
-  "independentReview": { "reviewer": "Codex (fresh context)", "revision": "3f2a9c1", "findings": ["policy test missed the same-column click; added"] },
+  "complexityReview": "The sort transition stays with its state owner; no controller or duplicated state was added.",
+  "independentReview": { "reviewer": "Codex (fresh context)", "revision": "3f2a9c1", "fingerprint": "<review-context fingerprint of the reviewed diff>", "findings": ["policy test missed the same-column click; added"] },
   "assumptions": [], "limitations": ["No real API connection."]
 }
 ```
 
-These example sentences are illustrations of shape only. A review whose `contractReview` or
-`complexityReview` repeats them verbatim is rejected: nine recorded reviews had pasted the earlier examples
-(measured 2026-09-11), which is a field that exists without saying anything.
+These sentences illustrate the fields. Explain this diff’s actual contract and complexity decisions.
+The gate does not score prose quality or blacklist example wording: punctuation alone bypassed the old
+exact-string rejection without improving evidence. Independent review compares the claims with code
+and results; requirement/contract coverage, source fingerprints and execution receipts remain checked.
 
 Artifacts are optional; when supplied they must exist. Files must exist in scope or be a recorded
 baseline deletion. Unimplemented requirements keep their reason in `evidence`; they need no fabricated
-implementation file. Script/maintenance reviews keep the smaller requirement status/evidence shape;
+implementation file. Maintenance reviews keep the smaller requirement status/evidence shape, but a path
+they wrote still has to be claimed in `files`. Explicit infrastructure reviews claiming executable code
+also need structured `verification`, even with no mode; relabeling the work is not evidence of its correctness.
 all reviews still require top-level `contractReview`, `complexityReview`, `assumptions` and `limitations`.
+
+`rows[]` lists every selected row exactly once — the denominator is this unit's selection, never the
+screen's full specification. Each row names `verdict` (`matched` | `different` | `blocked`), `evidence`,
+the `requirementIds` it affects (current-unit ids) and `files` drawn from the files those requirements
+claim (empty only when `blocked`). A row whose inventory cell is unresolved also names
+`unresolved: { status: blocked | resolved | irrelevant, evidence, sources, requirementIds? }` with sources this session was
+actually delivered from that row's inventory, scenarios, parent references or product judgment, or `user`.
+Root instructions and skill prose cannot resolve a product question. A `blocked` disposition forces
+`verdict: blocked` and none of the affected requirements may be `implemented`. `unresolved.requirementIds`
+may identify the nonempty affected subset of the row's ids; omit it to affect the whole row. Explain why
+the other requirements are independent of the question, and have the reviewer check that distinction.
+This binds rows to implementation locations and unresolved facts to requirements; it does
+not check that a `matched` row is true, which is the independent reviewer's negative task.
 When no contract changes apply, say so with the reason; do not omit those fields.
 A reuse, ownership or simplicity defect names the return node (`N3`, `N4`, `E6`) in `contractReview` or
 `complexityReview`. The gate checks that the fields exist and three shapes of saying nothing, not whether
@@ -349,9 +423,12 @@ the judgment is right:
 
 - A loop review (workflow, or a `src/shared` implement/drill), and any review whose scope touches
   `scripts/agents/`, `scripts/contracts/`, `.agents/skills/`, `AGENTS.md` or `eslint.config.js`, records
-  `independentReview` `{ reviewer, revision, findings[] }`: someone other than the author — another model
+  `independentReview` `{ reviewer, revision, fingerprint, findings[] }`: someone other than the author — another model
   in a fresh context or a person — opened the diff and the owning documents (AGENTS §5, screen-loop N6).
-  The drills measured that this is the only check that reads judgment content; an empty `findings` array
+  `fingerprint` is the value `review-context <session-id>` prints for this unit's authored paths at
+  the time of the review; a review whose fingerprint differs from the current one is refused, so a
+  verdict on an older diff cannot close a newer one. The reviewer's identity is provenance, not proof of
+  understanding. The drills measured that this is the only check that reads judgment content; an empty `findings` array
   is a recorded verdict, a missing field is not. A scope declared wider than those roots (`scripts/`)
   escapes the regex and is a review finding, not a gate result.
 - `contractReview` names every `contracts[]` id the checkpoint declared and says what happened to it.
@@ -376,11 +453,25 @@ prove server success or post-success transitions. List omitted requirements and 
 in the final result. Passing separate task reviews is not proof that the combined workflow works.
 
 Run `node scripts/agents/cli.mjs review SESSION_ID .ai-work/task/review.json`. It runs `contracts:check`
-repository-wide, then ESLint and `vitest related` **over the paths this session actually wrote**, and records
-the report against those paths; further edits to them invalidate it. Scoping the code checks keeps a
+repository-wide, then ESLint and `vitest related` **over the active unit's authored paths**, as child
+processes whose receipts — command, start/end, exit code, signal, stdout/stderr files and digests — are written under
+`.ai-work/agent-receipts/<id>/` and stored in the recorded review. Each receipt carries the fingerprint of
+the active authored paths at that moment. Independent-review work requires an executed contracts-check
+receipt even when calling `recordReview` directly. A failed check, changed receipt/output or different
+fingerprint refuses review and Stop; further source edits invalidate the recorded review. Scoping the code checks keeps a
 concurrent session's unfinished work from failing — or silently passing — this review. Typecheck, browser
-checks and `pnpm verify` still apply and are not run here. Text/paths in the report do not prove a test ran
-or a design is correct. `unimplemented` can close accountability, never certify task completion.
+checks and `pnpm verify` still apply and are not run here; cite them in `verification` with their artifact.
+Prose in the report does not prove a test ran or a design is correct; the receipt proves the process ran
+and how it exited. `unimplemented` can close accountability, never certify task completion.
+
+With `units`, a review records the current unit only: requirements, delivered document digests, claimed
+files (including unchanged adopted files), authored files and check receipts are kept. The
+next unit is prepared with a new `currentUnit`, and Stop reports `Request units pending` until every unit
+has a recorded review. Changed inputs invalidate that unit at Stop, but do not prevent another unit from
+being re-prepared and reviewed: repair affected units one at a time, including when a shared reference changed.
+Writes belonging to another declared unit remain accountable to that unit; writes outside all unit scopes
+are rejected. Whole-request accountability is closed only when every original requirement is implemented,
+replaced or blocked with its condition — not when the last unit's review passes.
 
 Stop and review judge only those authored paths. One outside the declared scope blocks with the exit
 stated: add it to the scope with the requirement that justifies it and re-run prepare, or revert it.
@@ -422,12 +513,14 @@ node scripts/agents/cli.mjs sweep           # classify only; available without p
 node scripts/agents/cli.mjs sweep --apply   # remove expired entries; gated like any other write
 ```
 
-Retention is 7 days for task artifacts and 30 days for session states under `agent-checks/`. An
+Retention is 7 days for task artifacts and 30 days for session states under `agent-checks/`. Pending mixed
+units keep their state and task artifacts live even if the current unit has a review. Attempt history and
+check receipts are pinned; this sweep does not garbage-collect them automatically. An
 undated name falls back to mtime and is reported as `undated`. `sweep` classifies every entry:
 
 | Status | Meaning |
 | --- | --- |
-| `pinned` | `agent-checks`, `gates`, `archive`, `transplant-stage`, or a directory holding a `KEEP` file |
+| `pinned` | `agent-checks`, `agent-attempts`, `agent-receipts`, `gates`, `archive`, `transplant-stage`, or a directory holding a `KEEP` file |
 | `live` | a session that owes a review still points at this directory |
 | `open` | a state with a write capability and no recorded review |
 | `recent` | inside retention |

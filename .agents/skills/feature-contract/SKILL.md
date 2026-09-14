@@ -13,13 +13,13 @@ Select references by the surfaces actually present, not by the page type alone. 
 
 ## Read only what applies
 
-For screen/workflow work, use `node scripts/agents/cli.mjs context` to locate the target before selecting
-references. The inventory-owned context index connects evidence and related inner surfaces; `group`
-entries still require manual decomposition. Declare include/exclude decisions and requirement evidence
-through [prepare/review](../../../scripts/agents/README.md#prepare-before-editing). A code path is a routing hint, not a screen
-template. New or incomplete evidence stays explicit; copy/style-only work uses the lighter maintenance path.
+For screen/workflow work, locate the target through the product evidence entry point before selecting
+references. `context` is an optional discovery helper; its inventory-owned index connects evidence and
+inner surfaces, while group entries still require decomposition. Explain scope and requirement evidence
+in conversation. Only recorded work uses [prepare/review](../../../scripts/agents/README.md#prepare-before-editing).
+A code path is a routing hint, not a screen template. Keep missing evidence explicit.
 
-- Before composing any screen, read its inventory section, applicable scenario cards and the judgment/answered/open-question sections selected by `context` and `prepare`. The index routes evidence, not policy: decompose group entries and follow linked sibling rules when they change ownership, exceptions or failure behavior. Read a reference in full only when the work spans it; a heading selection includes its children and ancestor constraints. Compose only what the inventory shows; record what it does not.
+- Before composing a screen, read its relevant inventory, scenarios and confirmed/open decisions, or observe the original sources where those are missing. The index routes evidence, not policy: decompose group entries and follow linked rules when they affect ownership, exceptions or failure behavior. Read a reference in full only when the work spans it; preserve applicable ancestor constraints. Do not invent product facts from existing code.
 - Adding a check, a block, a confirmation, a completion — or the sentence that announces one — means matching **both its trigger and how the product states it** against a ledger sentence or an explicit user decision. Where the ledger only says `필드 강조` or `선택 불가`, it is not a new error sentence. Leave what the ledger does not answer unbuilt and ask; mark only an explicitly allowed stand-in with `TRANSPLANT_PENDING_<ID>`. Passing `i18n:check` proves key parity, never that the product says this.
 - Route, params/search validation, guard, loader, preload, or navigation entry: read [references/router.md](references/router.md).
 - List, filter, search, result state, sorting, or pagination: select the applicable sections of [references/list-workflow.md](references/list-workflow.md). Every filter host uses its [Draft commit adoption criteria](references/list-workflow.md#draft-commit) to choose `useListFilterDraft` or a smaller mechanic. A new list needs its complete lifecycle and composition; a result-only change still needs the Query and URL rules that govern that result.

@@ -1,4 +1,4 @@
-import { useBlocker } from '@tanstack/react-router';
+import { useBlocker } from '@tanstack/react-router'
 import {
   createContext,
   useCallback,
@@ -6,144 +6,154 @@ import {
   useEffect,
   useId,
   useLayoutEffect,
+  useMemo,
   useState,
   type ReactNode,
-} from 'react';
-import { useTranslation } from 'react-i18next';
-import { ConfirmDialog } from '../patterns/ConfirmDialog';
+} from 'react'
+import { useTranslation } from 'react-i18next'
+import { ConfirmDialog } from '../patterns/ConfirmDialog'
 
 interface GuardFacts {
-  readonly when: boolean;
-  readonly refuseSilently?: boolean;
+  readonly when: boolean
+  readonly refuseSilently: boolean
 }
+
 interface RouteOwner {
-  readonly register: (id: string, facts: GuardFacts) => () => void;
-  readonly leave: (navigate: () => void) => void;
+  readonly register: (id: string, facts: GuardFacts) => () => void
+  readonly leave: (navigate: () => void) => void
 }
-const RouteOwnerContext = createContext<RouteOwner | undefined>(undefined);
 
-/** One Router blocker for all mounted forms; registered facts never include their values. */
+const RouteOwnerContext = createContext<RouteOwner | undefined>(undefined)
+
+/** Owns the app's single Router blocker and browser-exit listener for registered draft forms. */
 export function UnsavedChangesProvider({ children }: { readonly children: ReactNode }) {
-  const [forms, setForms] = useState<ReadonlyMap<string, GuardFacts>>(() => new Map());
+  const { t } = useTranslation('shared')
+  const [forms, setForms] = useState<ReadonlyMap<string, GuardFacts>>(() => new Map())
+  const [reason, setReason] = useState<'navigate' | 'cancel'>('navigate')
   const register = useCallback((id: string, facts: GuardFacts) => {
-    setForms((current) => new Map(current).set(id, facts));
-    return () =>
+    setForms((current) => new Map(current).set(id, facts))
+    return () => {
       setForms((current) => {
-        const next = new Map(current);
-        next.delete(id);
-        return next;
-      });
-  }, []);
-  const facts = [...forms.values()];
-  const guard = useGuard({
-    when: facts.some((form) => form.when),
-    refuseSilently: facts.some((form) => form.refuseSilently),
-  });
+        const next = new Map(current)
+        next.delete(id)
+        return next
+      })
+    }
+  }, [])
+  const facts = [...forms.values()]
+  const isDirty = facts.some((form) => form.when)
+  const isPending = facts.some((form) => form.refuseSilently)
+  const shouldBlock = isDirty || isPending
+  const blocker = useBlocker({
+    shouldBlockFn: () => shouldBlock,
+    withResolver: true,
+    disabled: !shouldBlock,
+  })
+  const blocked = blocker.status === 'blocked'
+  const reset = blocked ? blocker.reset : undefined
+
+  useEffect(() => {
+    if (isPending) reset?.()
+  }, [isPending, reset])
+
+  useEffect(() => {
+    if (!shouldBlock) return
+    const preventExit = (event: BeforeUnloadEvent) => {
+      event.preventDefault()
+    }
+    window.addEventListener('beforeunload', preventExit)
+    return () => window.removeEventListener('beforeunload', preventExit)
+  }, [shouldBlock])
+
+  const leave = useCallback((navigate: () => void) => {
+    if (isPending) return
+    if (isDirty) setReason('cancel')
+    navigate()
+  }, [isDirty, isPending])
+  const owner = useMemo(() => ({ register, leave }), [leave, register])
+  const copy = reason === 'cancel'
+    ? {
+        description: t('formCancel.description'),
+        confirm: t('formCancel.confirm'),
+        cancel: t('formCancel.keep'),
+      }
+    : {
+        description: t('unsavedChanges.description'),
+        confirm: t('unsavedChanges.confirm'),
+        cancel: t('unsavedChanges.cancel'),
+      }
+
   return (
-    <RouteOwnerContext.Provider value={{ register, leave: guard.leave }}>
+    <RouteOwnerContext.Provider value={owner}>
       {children}
-      {guard.dialog}
+      {blocked && !isPending ? (
+        <ConfirmDialog
+          cancelLabel={copy.cancel}
+          confirmLabel={copy.confirm}
+          description={copy.description}
+          onConfirm={() => {
+            setReason('navigate')
+            blocker.proceed()
+          }}
+          onOpenChange={(open) => {
+            if (open) return
+            setReason('navigate')
+            blocker.reset()
+          }}
+          open
+          title={t('alert.title')}
+        />
+      ) : null}
     </RouteOwnerContext.Provider>
-  );
+  )
 }
 
-/**
- * With a provider, route exits ask once for all mounted dirty forms; without it this hook owns
- * the route blocker. Local dismissal stays scoped to the caller, which keeps its form mounted
- * until discard is confirmed. No destination or form value is copied into the provider.
- * Pending saves refuse exits silently because the measured progress overlay obscures a question.
- * This remains the one shared file allowed to import the Router.
- */
+/** Registers one form and guards its local cancel, close, Escape, and outside-dismiss actions. */
 export function useUnsavedChangesGuard({
   when,
   refuseSilently = false,
 }: {
-  readonly when: boolean;
-  readonly refuseSilently?: boolean;
+  readonly when: boolean
+  readonly refuseSilently?: boolean
 }) {
-  const owner = useContext(RouteOwnerContext);
-  const id = useId();
-  const register = owner?.register;
+  const { t } = useTranslation('shared')
+  const owner = useContext(RouteOwnerContext)
+  if (owner === undefined) {
+    throw new Error('useUnsavedChangesGuard requires UnsavedChangesProvider')
+  }
+  const id = useId()
+  const [discard, setDiscard] = useState<(() => void) | undefined>()
   useLayoutEffect(
-    () => register?.(id, { when, refuseSilently }),
-    [register, id, when, refuseSilently],
-  );
-  return useGuard({ when, refuseSilently }, owner);
-}
+    () => owner.register(id, { when, refuseSilently }),
+    [id, owner, when, refuseSilently],
+  )
 
-function useGuard(
-  { when, refuseSilently = false }: GuardFacts,
-  owner?: RouteOwner,
-): {
-  readonly dialog: ReactNode;
-  readonly leave: (navigate: () => void) => void;
-  readonly close: (discard: () => void, scope?: { readonly when: boolean }) => void;
-} {
-  const { t } = useTranslation('shared');
-  const [reason, setReason] = useState<'navigate' | 'cancel'>('navigate');
-  const [discard, setDiscard] = useState<(() => void) | undefined>();
-  const blocker = useBlocker({
-    shouldBlockFn: () => when,
-    withResolver: true,
-    disabled: owner !== undefined || !when,
-  });
-  const blocked = blocker.status === 'blocked';
-  const reset = blocked ? blocker.reset : undefined;
-  useEffect(() => {
-    if (refuseSilently) reset?.();
-  }, [refuseSilently, reset]);
-
-  const leave = (navigate: () => void) => {
-    if (refuseSilently) return;
-    if (owner) return owner.leave(navigate);
-    if (when) setReason('cancel');
-    navigate();
-  };
+  const leave = (navigate: () => void) => owner.leave(navigate)
   const close = (action: () => void, scope?: { readonly when: boolean }) => {
-    if (refuseSilently) return;
-    if (!(scope?.when ?? when)) return action();
-    setDiscard(() => action);
-  };
-
-  if ((!blocked && discard === undefined) || refuseSilently) return { dialog: null, leave, close };
-
-  const copy =
-    discard !== undefined || reason === 'cancel'
-      ? {
-          description: t('formCancel.description'),
-          confirm: t('formCancel.confirm'),
-          cancel: t('formCancel.keep'),
-        }
-      : {
-          description: t('unsavedChanges.description'),
-          confirm: t('unsavedChanges.confirm'),
-          cancel: t('unsavedChanges.cancel'),
-        };
+    if (refuseSilently) return
+    if (!(scope?.when ?? when)) return action()
+    setDiscard(() => action)
+  }
 
   return {
     leave,
     close,
-    dialog: (
+    dialog: discard === undefined ? null : (
       <ConfirmDialog
-        cancelLabel={copy.cancel}
-        confirmLabel={copy.confirm}
-        description={copy.description}
+        cancelLabel={t('formCancel.keep')}
+        confirmLabel={t('formCancel.confirm')}
+        description={t('formCancel.description')}
         onConfirm={() => {
-          setReason('navigate');
-          if (discard !== undefined) {
-            setDiscard(undefined);
-            discard();
-          } else if (blocker.status === 'blocked') blocker.proceed();
+          const action = discard
+          setDiscard(undefined)
+          action()
         }}
         onOpenChange={(open) => {
-          if (open) return;
-          setReason('navigate');
-          setDiscard(undefined);
-          if (blocker.status === 'blocked') blocker.reset();
+          if (!open) setDiscard(undefined)
         }}
         open
         title={t('alert.title')}
       />
     ),
-  };
+  }
 }

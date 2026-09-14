@@ -243,8 +243,10 @@ for (const [path, prefix] of [
     await edit.getByRole('button', { name: '저장', exact: true }).click();
     await expectRequests(observed, prefix + ' 등록', prefix + ' 수정');
     await edit.getByRole('button', { name: '취소', exact: true }).click();
+    const cancelEdit = page.getByRole('dialog', { name: '알림', exact: true });
+    await expect(cancelEdit).toContainText('입력을 취소하시겠습니까?');
+    await cancelEdit.getByRole('button', { name: '확인', exact: true }).click();
     await expect(edit).toHaveCount(0);
-    await expect(page.getByRole('dialog', { name: '알림', exact: true })).toHaveCount(0);
     await page.getByRole('button', { name: '삭제', exact: true }).click();
     await page.getByRole('dialog', { name: '알림', exact: true }).getByRole('button', { name: '취소', exact: true }).click();
     await expectRequests(observed, prefix + ' 등록', prefix + ' 수정');

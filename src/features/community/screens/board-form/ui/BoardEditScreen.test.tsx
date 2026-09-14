@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { TestQueryLocaleProvider } from '@/test/query-locale';
+import { UnsavedChangesProvider } from '@/shared/ui/form/UnsavedChangesGuard';
 import { BoardEditScreen } from './BoardEditScreen';
 
 vi.mock('@tanstack/react-router', () => ({
@@ -12,7 +13,9 @@ function setup(boardId = 'reference-board-2') {
   const onCancel = vi.fn();
   render(
     <TestQueryLocaleProvider>
-      <BoardEditScreen boardId={boardId} onConfirm={onConfirm} onCancel={onCancel} />
+      <UnsavedChangesProvider>
+        <BoardEditScreen boardId={boardId} onConfirm={onConfirm} onCancel={onCancel} />
+      </UnsavedChangesProvider>
     </TestQueryLocaleProvider>,
   );
   return { onConfirm, onCancel };

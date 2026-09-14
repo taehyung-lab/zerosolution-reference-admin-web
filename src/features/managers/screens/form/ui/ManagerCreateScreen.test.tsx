@@ -1,5 +1,6 @@
 import { ApiError } from "@/api/error";
 import { TestLocaleProvider } from "@/test/locale";
+import { UnsavedChangesProvider } from "@/shared/ui/form/UnsavedChangesGuard";
 import { chooseOptionIn } from "@/test/select";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
@@ -78,7 +79,9 @@ function renderScreen() {
   render(
     <QueryClientProvider client={client}>
       <TestLocaleProvider>
-        <ManagerCreateScreen />
+        <UnsavedChangesProvider>
+          <ManagerCreateScreen />
+        </UnsavedChangesProvider>
       </TestLocaleProvider>
     </QueryClientProvider>,
   );
@@ -199,7 +202,9 @@ describe("ManagerCreateScreen — 옵션 조회 상태", () => {
     const { rerender } = render(
       <QueryClientProvider client={new QueryClient()}>
         <TestLocaleProvider>
-          <ManagerCreateScreen />
+          <UnsavedChangesProvider>
+            <ManagerCreateScreen />
+          </UnsavedChangesProvider>
         </TestLocaleProvider>
       </QueryClientProvider>,
     );
@@ -218,7 +223,9 @@ describe("ManagerCreateScreen — 옵션 조회 상태", () => {
     rerender(
       <QueryClientProvider client={new QueryClient()}>
         <TestLocaleProvider>
-          <ManagerCreateScreen />
+          <UnsavedChangesProvider>
+            <ManagerCreateScreen />
+          </UnsavedChangesProvider>
         </TestLocaleProvider>
       </QueryClientProvider>,
     );

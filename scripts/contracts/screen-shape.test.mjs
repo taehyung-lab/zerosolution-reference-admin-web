@@ -6,10 +6,7 @@ import {
   detailRouteLoaderFailures,
   listRouteCoverageFailures,
   listRouteCoverageNotices,
-  resolvedShapeExceptionFailures,
-  screenRoles,
   screenShapeFailures,
-  screenShapeNotices,
 } from './screen-shape.mjs'
 
 const roots = []
@@ -38,60 +35,48 @@ const list = (screen = 'src/features/things/screens/list') => ({
 })
 
 describe('screen shape', () => {
-  it('reads roles from the files a screen actually has', () => {
-    expect([...screenRoles(['ui/AScreen.tsx', 'ui/AFilters.tsx'])]).toEqual(['list'])
-    expect([...screenRoles(['ui/ADetailScreen.tsx', 'ui/AEditScreen.tsx'])]).toEqual(['detail', 'form'])
-    // A dialog-hosted form does not follow the screen naming, so it is outside this check by design.
-    expect([...screenRoles(['ui/ComposeDialog.tsx', 'model/compose-schema.ts'])]).toEqual([])
-  })
-
-  it('accepts a list screen that carries the whole shape and rejects one missing its policy', () => {
-    const complete = fixture(list())
-    expect(screenShapeFailures(complete, [])).toEqual([])
+  it('does not demand a whole screen from a partial filter or a separate file for each responsibility', () => {
+    for (const name of ['QuickFilters', 'QuickPanel']) {
+      const root = fixture({
+        [`src/features/things/screens/list/ui/${name}.tsx`]: 'export const Filter = () => <input aria-label="Filter" />',
+      })
+      expect(screenShapeFailures(root)).toEqual([])
+    }
     const files = list()
     delete files['src/features/things/screens/list/model/thing-list-policy.ts']
-    const missing = fixture(files)
-    expect(screenShapeFailures(missing, [])).toEqual([
-      expect.stringMatching(/screens\/list 에 model\/\*-policy\.ts 이 없다 → .*list-workflow\.md#형태/),
-    ])
+    expect(screenShapeFailures(fixture(files))).toEqual([])
   })
 
   it('rejects a columns file that writes aria-sort vocabulary by hand or declares meta.sort without the shared mapping', () => {
     const files = list()
     const columns = 'src/features/things/screens/list/ui/thing-columns.tsx'
     files[columns] = "meta: { sort: { direction: sort === key ? (dir === 'asc' ? 'ascending' : 'descending') : undefined, onSort: () => go(key) } }"
-    expect(screenShapeFailures(fixture(files), [])).toEqual([
+    expect(screenShapeFailures(fixture(files))).toEqual([
       expect.stringMatching(/ui\/thing-columns\.tsx 이 aria-sort 어휘를 직접 쓴다 → headerSortDirection.*list-workflow\.md#sorting/),
       expect.stringMatching(/ui\/thing-columns\.tsx 이 meta\.sort 를 선언하면서 headerSortDirection.*import 하지 않는다/),
     ])
     // Comments do not count; a columns file without sortable headers owes no import.
     files[columns] = "/** direction is 'ascending' | 'descending' */\n// 'descending'\nconst plain = 1"
-    expect(screenShapeFailures(fixture(files), [])).toEqual([])
+    expect(screenShapeFailures(fixture(files))).toEqual([])
     files[columns] = "import { headerSortDirection } from '@/shared/lib/list-sort'\nmeta: { sort: { direction: headerSortDirection(active, key), onSort: () => go(key) } }"
-    expect(screenShapeFailures(fixture(files), [])).toEqual([])
+    expect(screenShapeFailures(fixture(files))).toEqual([])
   })
   it('rejects a list search contract whose sortDirection default is undefined', () => {
     const files = list()
     files['src/features/things/screens/list/model/thing-search.ts'] = "sortType: { defaultValue: 'a', kind: 'view' },\n  sortDirection: {\n    schema: s,\n    defaultValue: undefined,\n    kind: 'view',\n  },"
-    expect(screenShapeFailures(fixture(files), [])).toEqual([
+    expect(screenShapeFailures(fixture(files))).toEqual([
       expect.stringMatching(/model\/thing-search\.ts 의 sortDirection 기본값이 undefined 다 → .*list-workflow\.md#sorting/),
     ])
     files['src/features/things/screens/list/model/thing-search.ts'] = "sortDirection: { schema: s, defaultValue: 'desc', kind: 'view' },"
-    expect(screenShapeFailures(fixture(files), [])).toEqual([])
+    expect(screenShapeFailures(fixture(files))).toEqual([])
   })
-  it('delegates the model set only when a screen imports a mechanic model, not on a comment or a ui import', () => {
-    const screen = 'src/features/things/screens/recent'
-    const ui = {
-      [`${screen}/ui/RecentThingListFilters.tsx`]: '',
-      [`${screen}/ui/useRecentThingListResult.ts`]: '',
-      [`${screen}/ui/recent-thing-columns.tsx`]: '',
-    }
-    const delegated = fixture({ ...ui, [`${screen}/ui/RecentThingListScreen.tsx`]: "import { useThingRecordFilter } from '../../../mechanics/record-list/model/useThingRecordFilter'\n" })
-    expect(screenShapeFailures(delegated, [])).toEqual([])
-    const comment = fixture({ ...ui, [`${screen}/ui/RecentThingListScreen.tsx`]: '// see ../../../mechanics/record-list/model later\n' })
-    expect(screenShapeFailures(comment, [])).toHaveLength(4)
-    const uiOnly = fixture({ ...ui, [`${screen}/ui/RecentThingListScreen.tsx`]: "import { ThingRecordResult } from '../../../mechanics/record-list/ui/ThingRecordResult'\n" })
-    expect(screenShapeFailures(uiOnly, [])).toHaveLength(4)
+  it('allows detail and form responsibilities without imposing companion filenames', () => {
+    const root = fixture({
+      'src/features/things/screens/detail/ui/ThingDetailScreen.tsx': '',
+      'src/features/things/screens/detail/ui/ThingActions.tsx': '',
+      'src/features/things/screens/form/ui/ThingCreateScreen.tsx': '',
+    })
+    expect(screenShapeFailures(root)).toEqual([])
   })
 
   it('reports ui/model confusion at any depth and leaves lib and config to the placement table', () => {
@@ -102,29 +87,10 @@ describe('screen shape', () => {
       'src/features/things/screens/list/lib/format-date-mapper.ts': '',
       'src/features/things/screens/list/config/thing-columns.tsx': '',
     })
-    expect(screenShapeFailures(root, [])).toEqual([
+    expect(screenShapeFailures(root)).toEqual([
       expect.stringMatching(/mechanics\/record-list\/ui\/thing-record-policy\.ts 는 model\/ 에 있어야 한다/),
       expect.stringMatching(/screens\/list\/model\/nested\/ThingListActions\.tsx 는 ui\/ 에 있어야 한다/),
     ])
-  })
-
-  it('requires a request boundary only for a detail with actions, and schema plus request for a form', () => {
-    const readOnly = fixture({
-      'src/features/things/screens/detail/ui/ThingDetailScreen.tsx': '',
-      'src/features/things/screens/detail/ui/BulkActionBar.ts': '',
-    })
-    expect(screenShapeFailures(readOnly, [])).toEqual([])
-    const acting = fixture({
-      'src/features/things/screens/detail/ui/ThingDetailScreen.tsx': '',
-      'src/features/things/screens/detail/ui/ThingActionForm.tsx': '',
-    })
-    expect(screenShapeFailures(acting, [])).toEqual([expect.stringMatching(/model\/\*-requests\.ts 이 없다 → .*detail-workflow\.md#형태/)])
-    const form = fixture({
-      'src/features/things/screens/form/ui/ThingCreateScreen.tsx': '',
-      'src/features/things/screens/form/ui/ThingForm.tsx': '',
-      'src/features/things/screens/form/model/thing-form-schema.ts': '',
-    })
-    expect(screenShapeFailures(form, [])).toEqual([expect.stringMatching(/model\/\*-request\(s\)\.ts 또는 model\/use\*Mutation\.ts 가 없다/)])
   })
 
   it('requires every list route to join the list-contract e2e arrays, counting only array literals', () => {
@@ -156,19 +122,6 @@ describe('screen shape', () => {
     expect(listRouteCoverageNotices(covered)).toEqual([])
   })
 
-  it('reports an open exception as a notice, a closed one and a vanished screen as failures', () => {
-    const exceptions = [{ screen: 'src/features/things/screens/list', missing: 'model/*-policy.ts', until: 'split the inline transition' }]
-    const files = list()
-    delete files['src/features/things/screens/list/model/thing-list-policy.ts']
-    const open = fixture(files)
-    expect(screenShapeFailures(open, exceptions)).toEqual([])
-    expect(screenShapeNotices(open, exceptions)).toEqual([expect.stringMatching(/^화면 형태 예외: .* 해소 조건: split/)])
-    expect(resolvedShapeExceptionFailures(open, exceptions)).toEqual([])
-    const closed = fixture(list())
-    expect(resolvedShapeExceptionFailures(closed, exceptions)).toEqual([expect.stringMatching(/예외 해소됨 — SHAPE_EXCEPTIONS 에서 지운다/)])
-    const gone = fixture({})
-    expect(resolvedShapeExceptionFailures(gone, exceptions)).toEqual([expect.stringMatching(/화면이 없다 — SHAPE_EXCEPTIONS 에서 지운다/)])
-  })
   it('requires every $param route leaf to await its record in a loader', () => {
     const root = fixture({
       'src/routes/_app/things/$thingId/index.tsx': 'export const Route = createFileRoute("/_app/things/$thingId/")({ component: Detail })',

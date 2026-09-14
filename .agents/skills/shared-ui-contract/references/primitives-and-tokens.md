@@ -7,7 +7,7 @@ Read this file only for a shadcn-style copied component, Radix primitive, Tailwi
 - Add only the primitive and variants the current screen uses; do not install or prebuild a component catalog.
 - A primitive receives visible content, controlled values, and callbacks. It knows no feature, server DTO, Query, Router, permission, or mutation. Copy arrives as props; `Calendar` alone reads the `shared` namespace for its navigation labels and locale.
 - Accessibility or design-token invariants justify a source-owned primitive at first real use; they do not justify a shared workflow or page pattern.
-- `ModalCover` (2026-09-11, first use: the access-denied cover, Figma 1.4.3): a full-screen Radix modal surface — focus inside, document behind inert and aria-hidden, Escape/outside inert, stacked above dialogs and `BlockingProgress`. It owns no copy and no reason to open; the caller mounts and unmounts it.
+- `ModalCover`: a full-screen Radix modal surface — focus inside, document behind inert and aria-hidden, Escape/outside inert, stacked above dialogs and `BlockingProgress`. It owns no copy and no reason to open; the caller mounts and unmounts it.
 - Keep the public contract domain-neutral and preserve native semantics instead of recreating them with generic elements.
 - React 19: a primitive receives `ref` as an ordinary prop; do not add `forwardRef` wrappers.
 
@@ -19,12 +19,7 @@ Read this file only for a shadcn-style copied component, Radix primitive, Tailwi
 
 ## Observed candidates, not implementations
 
-- `Tooltip`: the Figma design system contains it and page headers repeat it. A future primitive may own focus/hover/Escape and accessible association; `PageHeader` and feature copy stay unchanged.
-- Row activation: 18 list occurrences. A future table-level interaction may own keyboard/screen-reader activation and interactive-child exclusion; destination, permission, and row meaning stay feature-owned.
-- Status-count filtering: five ticketing variants repeat the action while onsite counts explicitly have no event. A future controlled action item may own accessible activation; filter mapping, URL update, and page reset stay in the feature.
-- Empty value `-`: nine occurrences. A future narrow renderer may own only the visible fallback; the caller decides whether a value is absent.
-
-These are inventory-backed candidates with no second code consumer. Do not add APIs or raise their lifecycle stage until a real screen needs the domain-free contract; range slider, selected-label registry, last-value persistence, and `- 이하 생략 -` remain unresolved rather than candidates for implementation.
+Candidate shapes and repetition counts belong to the target inventory and judgment selected by `docs/reference/product.json`, not this primitive contract. Before implementing one, compare the current code and real consumers: an old inventory observation does not establish that a primitive is still missing. Build only the surface required by the current request and verify its interaction; do not promote from repetition counts alone.
 
 Which primitive a feature may use directly: `Button`, `Input`, `Checkbox`, `Badge`, `Table*`, `Select`, `Combobox`, `InlineSearchSelect`, `MultiSelect`, `RadioGroup`, `Calendar`, `FileInput`, `Dialog`, `Tabs*`. Consumed only through a pattern: `Accordion` (→ `SectionCard`), `Popover` (→ `Combobox`, `PeriodField`), `BlockingProgress` (→ app shell).
 
