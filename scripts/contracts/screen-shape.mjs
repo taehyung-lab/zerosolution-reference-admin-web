@@ -3,7 +3,7 @@ import { basename, join, relative, resolve } from 'node:path'
 
 /**
  * 화면 형태 검사. 역할별 reference 의 "형태" 절이 정한 파일 집합과 위치를 기계가 대조한다.
- * 규칙의 내용(왜 그 파일이 있어야 하는가)은 각 절이 소유하고, 여기는 이름·위치·존재만 본다.
+ * 규칙의 내용(왜 그 파일이 있어야 하는가)과 「역할이 있을 때만」생략은 각 절이 소유하고, 여기는 이름·위치·존재만 본다.
  * 2026-09-10 게시판 드릴에서 규칙을 다 지킨 화면이 형제와 다른 모양으로 나온 것이 계기다.
  *
  * 보지 않는 것(3차 독립 검토 실측): 이름 관례를 따르지 않는 파일은 역할이 없어 검사 대상이 아니다.
@@ -198,6 +198,14 @@ function quotedPathsInArrays(source) {
     for (const [, path] of body.matchAll(/["'](\/[^"']*)["']/g)) paths.add(path)
   }
   return paths
+}
+
+/** Spec 부재는 실패가 아니라 notice. 대상 저장소는 그 파일을 두거나 합류 규칙을 다시 선언한다. */
+export function listRouteCoverageNotices(root, specFile = 'tests/e2e/search-contract.spec.ts') {
+  const routesDir = resolve(root, 'src/routes/_app')
+  const specPath = resolve(root, specFile)
+  if (!existsSync(routesDir) || existsSync(specPath)) return []
+  return [`목록 route 합류 검사 생략: ${specFile} 가 없다. 목록 route가 있으면 그 파일을 두거나 합류 규칙을 다시 선언한다 → ${SHAPE_SECTIONS.list}`]
 }
 
 /**

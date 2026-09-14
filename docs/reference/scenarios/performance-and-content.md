@@ -21,7 +21,7 @@
 
 2026-09-07 검색 계약 확장: 공연도 공용 closed-range 정규화와 sparse URL → 화면 1회 기본값 해소를 채택한다. `searched: false`는 초기화 상태만 나타내며 실제 검색 입력·Query 키에는 넣지 않는다. 한쪽 날짜 입력은 draft에서 허용하고 제출·직접 URL에서는 양쪽을 제거한다. 실행 규칙은 [list-search-contract](../../../.agents/skills/feature-contract/references/list-search-contract.md#기간-입력과-확정-경계)가 소유한다.
 
-`PerformanceListScreen`은 이 전이를 reference query source와 검증한다. 2026-09-08 목록 행 → ID 상세 이동과 history back의 검색 조건 복원을 통합 테스트로 확인했다. 상세의 입력전/후·읽기 언어 탭·기본정보·이력은 임시 단건 Query로 구현됐고 실 API·공연장 원격 조회·등록/수정 폼은 미구현이다. fixture 결과는 제품 데이터나 서버 계약의 증거가 아니다. 상세 재관찰·sentinel 해소 조건은 [5.2 상세 경계](../zero-sol/05-performances.md#52-상세-재관찰구현-경계-2026-09-08)가 소유한다.
+`PerformanceListScreen`은 이 전이를 reference query source와 검증한다. 2026-09-08 목록 행 → ID 상세 이동과 history back의 검색 조건 복원을 통합 테스트로 확인했다. 상세의 입력전/후·읽기 언어 탭·기본정보·이력은 임시 단건 Query로 구현됐고 실 API·공연장 원격 조회·5.2 입장안내정보 편집 폼(입력전 → 수정 → 저장)은 미구현이다. 원장은 이 admin에 공연 자체를 등록하는 화면을 적지 않는다(원장 재판독 기준, 2026-09-13; "공연은 DTsol에 등록된 값을 읽는다"는 원문 미관찰의 추론이다). fixture 결과는 제품 데이터나 서버 계약의 증거가 아니다. 상세 재관찰·sentinel 해소 조건은 [5.2 상세 경계](../zero-sol/05-performances.md#52-상세-재관찰구현-경계-2026-09-08)가 소유한다.
 
 | 상태 | 소유자 |
 | --- | --- |

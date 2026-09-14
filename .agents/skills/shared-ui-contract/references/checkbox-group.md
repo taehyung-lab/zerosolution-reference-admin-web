@@ -4,7 +4,7 @@ Read this file only for a "전체 | 개별" multi-select filter group, a nested 
 
 ## Which control
 
-- Options are few, all visible at once, and the product shows them inline with a leading 전체 — `CheckboxTree` (every list filter group in the inventory: 가입방법, 계정 상태, 예매처, 유형…).
+- Options are few, all visible at once, and the product shows them inline with a leading 전체 — `CheckboxTree` (every inline multi-select filter group in the inventory).
 - Options are many, searched, or shown as removable tokens — `MultiSelect`.
 - Rows × function columns with per-column select-all — a feature composition of `Table` + `Checkbox`; `CheckboxTree` supplies only the row-hierarchy algebra.
 
@@ -17,8 +17,8 @@ Read this file only for a "전체 | 개별" multi-select filter group, a nested 
 [{ value: 'WEB', label: 'WEB' }, { value: 'APP', label: 'APP' }]
 
 // nested (two or more levels): a branch has `label` + `children` and no `value`
-[{ label: '활성회원', children: [{ value: 'NORMAL', label: '일반회원' }, { value: 'BAD', label: '불량회원' }] },
- { label: '비활성회원', children: [{ value: 'DORMANT', label: '휴면회원' }, { value: 'WITHDRAWN', label: '탈퇴회원' }] }]
+[{ label: '상위 A', children: [{ value: 'A1', label: '하위 A1' }, { value: 'A2', label: '하위 A2' }] },
+ { label: '상위 B', children: [{ value: 'B1', label: '하위 B1' }, { value: 'B2', label: '하위 B2' }] }]
 ```
 
 - `values` and `onValueChange` carry **leaf values only**. A branch is never a value; its checked state is derived (checked when any descendant is selected), and clicking it selects or clears every descendant.

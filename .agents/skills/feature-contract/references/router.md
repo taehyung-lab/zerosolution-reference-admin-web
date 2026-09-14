@@ -10,7 +10,7 @@ For cross-feature dialogs, the source feature owns the action intent, selected t
 
 ## Route file layout
 
-Route files mirror the URL. A single leaf stays a flat file (`managers/new.tsx`). A param or static segment with more than one leaf becomes a directory: `managers/$managerId/index.tsx` (detail) and `managers/$managerId/edit.tsx` (edit). A directory alone creates no route, so these leaves are siblings under `managers`; add `$managerId/route.tsx` only when the screens actually share chrome (header, tabs) and must render through an `<Outlet />`. Do not use the flat non-nesting escape (`$managerId_.edit.tsx`): it needs a comment to explain and hides the layout decision. Co-located tests match `routeFileIgnorePattern` and are not routes.
+Route files mirror the URL. A single leaf stays a flat file (`<domain>/new.tsx`). A param or static segment with more than one leaf becomes a directory: `<domain>/$<id>/index.tsx` (detail) and `<domain>/$<id>/edit.tsx` (edit). A directory alone creates no route, so these leaves are siblings under `<domain>`; add `$<id>/route.tsx` only when the screens actually share chrome (header, tabs) and must render through an `<Outlet />`. Do not use the flat non-nesting escape (`$<id>_.edit.tsx`): it needs a comment to explain and hides the layout decision. Co-located tests match `routeFileIgnorePattern` and are not routes.
 
 ## Search and navigation
 
@@ -36,7 +36,7 @@ Loaders read `context.locale`; components read `useLocale().locale`. The app-lev
 
 목록 route 본문의 요소는 넷이다: `validateSearch: <sparse schema>`, `beforeLoad: canonicalSearchGuard(<schema>)`, 선택지 query 가 있을 때만 위 [Loader and preload](#loader-and-preload) 의 예열, 그리고 `component` 가 `<XScreen search={Route.useSearch()} onSearchChange={(next) => void navigate({ search: () => next })} onActivate={...} />` 를 mount 한다. 다른 feature 의 다이얼로그를 함께 조립하는 것은 위 [Thin route](#thin-route) 가 허용하는 배선이다. 파일 배치는 [Route file layout](#route-file-layout) 이 정한다.
 **목록 자체의 query 는 진입 즉시 조회 화면이어도 loader 에서 await 하지 않는다** — 진입 progress 는 `src/api/list-query.ts` 가, 이후 전이는 `contentProgress` 가 소유하며 `loaderDeps` 로 검색을 loader 에 묶으면 정렬·페이지마다 loader 가 다시 돈다. 해소(`resolve*Search`)는 route 가 아니라 화면이 한다.
-**진입 즉시 조회인지 검색을 눌러야 조회인지의 스위치는 loader 의 유무가 아니라 URL 계약의 `searched` 표식이다**([list-search-contract 형태](list-search-contract.md#형태)): 표식이 있으면 검색 전 상태로 서고(회원·운영자), 없으면 진입 즉시 조회한다(게시판·공연). loader 가 있는 목록 route 는 선택지 예열만 한다는 뜻이다(2026-09-11 사용자 확정).
+**진입 즉시 조회인지 검색을 눌러야 조회인지의 스위치는 loader 의 유무가 아니라 URL 계약의 `searched` 표식이다**([list-search-contract 형태](list-search-contract.md#형태)): 표식이 있으면 검색 전 상태로 서고, 없으면 진입 즉시 조회한다. loader 가 있는 목록 route 는 선택지 예열만 한다는 뜻이다(2026-09-11 사용자 확정). 어느 목록이 어느 쪽인지는 그 목록의 원장 행과 [list-search-contract 관찰](list-search-contract.md#이-저장소의-관찰)이 적는다.
 
 상세·수정 route 본문의 요소는 둘이다: `loader: ({ context, params, preload }) => loadRequired(context.queryClient, <domain>DetailQuery(context.locale, params.<id>), { preload })` 와 화면을 mount 하는 `component`(위 [Loader and preload](#loader-and-preload)). 없는 ID·그 외 실패는 `_app` 의 notFound/error 컴포넌트가 셸 안에서 페이지(`src/app/error-boundary/StatusPage.tsx`)를 그리고, 403 은 `IncidentBoundary` 의 접근권한 커버, 401 은 그 boundary 의 로그인 이동 하나다(`{ preload }` 를 빼면 hover 예열마다 커버가 뜬다). 화면의 `DetailStateBoundary` 는 진입 이후 전이만 담당한다(2026-09-11 사용자 확정). 검사기는 `src/routes/_app` 아래 `$param` route 파일의 `loader` 유무만 본다.
 

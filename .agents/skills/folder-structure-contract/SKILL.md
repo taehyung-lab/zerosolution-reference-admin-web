@@ -37,9 +37,7 @@ src/
   api/                         # 공용 transport와 교체 가능한 generated
 ```
 
-`screens`는 전체 페이지뿐 아니라 route가 다른 도메인과 조립하는 기능 진입도 포함한다. 도메인의 대표 엔티티는 `list`·`detail`·`form` 그대로 쓰고(`members/screens/list`), 대표가 아닌 엔티티나 두 엔티티가 같은 workflow 이름을 다투는 도메인은 엔티티를 접두한다(`members/screens/appeals`·`counsel`, `community/screens/board-list`·`board-detail`·`board-form` — 게시판과 게시물이 둘 다 목록·조회·폼을 갖는다, 2026-09-11).
-메시지 작성 다이얼로그는 `messaging/screens/compose`다. 회원 all/general/flagged는 같은
-`members/screens/list`를 쓰며 URL 계층을 그대로 복제하지 않는다. 별도 `pages` 레이어는 없다.
+`screens`는 전체 페이지뿐 아니라 route가 다른 도메인과 조립하는 기능 진입도 포함한다. 도메인의 대표 엔티티는 `list`·`detail`·`form` 그대로 쓰고(`<domain>/screens/list`), 대표가 아닌 엔티티나 두 엔티티가 같은 workflow 이름을 다투는 도메인은 엔티티를 접두한다(`<domain>/screens/<entity>-list`·`<entity>-detail`·`<entity>-form`, 2026-09-11). route 가 여는 다이얼로그 하나도 `screens/<workflow>` 다. 한 목록의 URL 변형들은 같은 `screens/list`를 쓰며 URL 계층을 그대로 복제하지 않는다. 별도 `pages` 레이어는 없다. 이 저장소의 실제 배치는 [이 저장소의 관찰](#이-저장소의-관찰)에 있다.
 
 화면과 mechanic 안에는 필요한 `ui`·`model`·`lib`·`config`만 만든다. API는 domain/api에 모아
 서버 계약의 탐색 위치를 고정한다. 단일 화면 전용 API도 여기 두되 화면 상태는 가져오지 않는다.
@@ -63,81 +61,19 @@ src/
 [폼](../feature-contract/references/form-workflow.md#형태), [route](../feature-contract/references/router.md#형태)),
 `contracts:check` 가 이름·위치를 대조한다. 이 표는 그 파일이 어느 segment 에 놓이는가만 정한다.
 
-확장자로 분류하지 않는다. `useMemberListResult.ts`는 컬럼과 표시 옵션을 조립하므로
-`screens/list/ui`다. `useManagerInputForm.tsx`는 JSX·focus·폼 연결을 반환하는 UI 어댑터다.
+확장자로 분류하지 않는다. `use<Entity>ListResult.ts`는 컬럼과 표시 옵션을 조립하므로
+`screens/list/ui`다. `use<Entity>InputForm.tsx`는 JSX·focus·폼 연결을 반환하는 UI 어댑터다.
 검색 전이, 요청 입력, schema, mutation 후속 처리는 model에 남긴다. JSX를 없애려고 wrapper를 더하지 않는다.
 
 `mechanics`는 소유자가 애매한 파일을 넣는 곳이 아니다. 현재 소비자와 공유하는 계약을 확인한다.
 소비자가 둘이라는 숫자만으로 승격하지 않고, 의미가 달라지거나 단일 소비자로 좁아지면 재검토한다.
 도메인에 종속된 재사용 기능은 `shared`로 올리지 않는다.
 
-## 의존 방향
+## 필요할 때만 읽는 reference
 
-```text
-app / routes → features → shared / api
-screens → mechanics → domain api / model / lib / config
-screens → domain api / model / lib / config
-ui → 해당 소유자의 model / lib / config
-```
-
-- domain api/model/lib/config/fixtures는 screens나 mechanics 내부를 역참조하지 않는다.
-- mechanics는 screens를 참조하지 않는다. 서로 다른 screens의 내부 파일을 import하지 않는다.
-- model/lib/config는 feature ui를 역참조하지 않는다. UI가 정의한 데이터 타입을 API/model도 쓰면 그 타입의
-  의미에 맞는 model 또는 API 계약으로 옮긴다. 렌더 전용 props까지 옮기지는 않는다.
-- domain model은 React와 실행 훅을 모른다. screens/mechanics model은 React·Query를 사용할 수 있다.
-- domain api는 옵션 선언과 API-only 훅을 소유한다. URL·폼·선택·확인·navigation·mutation 뒤 캐시
-  후속 처리는 workflow가 소유한다. lib/config는 React·Query 실행 훅을 소유하지 않는다.
-- fixture는 예시 데이터의 소유자다. 화면의 URL schema나 UI 타입에 기대지 않고 공통 입력·값을 소비한다.
-- 기존 feature 간 import와 generated 접근 제한은 유지한다. API leaf 예외의 적용 조건은
-  [API 계약](../api-contract/references/query-cache.md)이 소유한다.
-
-API 입력 타입과 URL 정규화는 소유가 다르다. 공통 입력 타입은 api/model에 두고 URL schema는
-소비 화면 또는 실제 공유 mechanic의 model에 둔다. 타입을 옮기면서 미확정 서버 DTO를 새로 정의하거나 캐시 identity를 바꾸지 않는다.
-
-## API 훅과 model을 구분하는 기준
-
-`use` 접두사나 API 호출 유무가 아니라 **입력과 결과, 소유하는 결정**을 본다.
-
-- `api`: ID·locale·명시적인 조회 조건을 받아 요청하고 데이터·pending/error/retry 또는 안정된 옵션 값을 반환한다.
-  `usePerformanceVenues`, `useManagerOptions`, `useMemberDetail`, `useMessagePolicy`가 해당한다.
-  조회 조건의 선택은 caller가 소유한다. loader용 원본 queryOptions와 키를 그대로 공유한다.
-- `model`: URL 정규화·검색 시작 여부·페이지 수·선택 대상·폼 종속 필드·mutation 후 캐시를 결정한다.
-  `useMemberListData`, `useMemberListRecipients`, `useManagerFormOptions`, `useUpdateManagerMutation`이 해당한다.
-- API-only mutation 훅도 가능하다(`auth/api/useSignInMutation`). 성공 후 session·navigation 등은
-  호출 workflow가 처리한다. 캐시·폼·화면 동작을 옵션 팩토리나 API 훅에 감추지 않는다.
-- 기존 API 훅은 이 기준으로 옮기되, 새 훅은 안정된 연결 책임이 있을 때만 만든다.
-  함수 호출 한 줄을 감싸는 훅을 의무적으로 추가하지 않는다.
-
-공연장 조회가 같은 도메인에서 재사용될 수 있어도 `shared` 데이터는 아니다. 다른 도메인의
-실제 소비자가 생기면 [공용 reference data 조건](../api-contract/references/query-cache.md#shared-reference-data)을
-대조한다. 미래 사용 가능성만으로 cross-feature import를 허용하거나 entities를 만들지 않는다.
-
-## lib/config를 과하게 나누지 않는 기준
-
-`model`은 모든 .ts 파일의 수납장이 아니며, `lib`도 나머지를 버리는 폴더가 아니다.
-회원 날짜 formatter와 운영자 오류 번역 키 변환은 domain/lib, 회원 목록 노출 정의는
-screens/list/config에 둔다. 메시지 공통 타입은 domain/model, 작성 schema/defaults는 compose/model,
-dialog props는 compose/ui, 전화번호 표시 함수는 compose/lib가 소유한다.
-
-상수라고 모두 config로 빼지 않는다. 검색 schema의 기본값, 정렬 허용 목록과 전이,
-이력의 개인정보 비노출 정책은 이를 해석하는 model과 함께 둔다. 순수 함수여도 업무 판단을
-소유하면 model이다. 특정 화면만 사용하는 행 mapper는 그 화면 model에 둔다.
-
-## 현재 업무군의 배치
-
-| 도메인 | screens | mechanics |
-| --- | --- | --- |
-| members | list, detail, form, counsel, appeals, access, dormant, withdrawn | record-list, activity, counsel-record |
-| managers | list, detail, form | manager-select-options |
-| performances | list, detail | 현재 필요 없음; form은 입력 정책 확인 대기 |
-| community | board-list | — |
-| messaging | compose | 현재 필요 없음 |
-| auth | login | 현재 필요 없음 |
-
-`record-list`는 기록 목록의 결과·필터와 회원 목록에서 공유하는 선택 액션을,
-`activity`는 일반 상세·탈퇴 상세의 활동 목록을, `counsel-record`는 상세·상담의 상담 기록 편집을 소유한다.
-`dormant`의 현재 파일은 표시 조립이므로 ui만 두고 조회·필터는 record-list mechanic을 소비한다.
-운영자 제품/리허설 구현은 기존 list/detail/form 업무군 안에서 구분하며 서로의 서버 의미를 합치지 않는다.
+- import 경계를 새로 긋거나 넘을 때, 어떤 segment 가 어떤 segment 를 참조할 수 있는지: [references/dependency-direction.md](references/dependency-direction.md).
+- 한 훅이 `api`인지 `model`인지, 상수가 `config`인지 `model`인지, 도우미가 `lib`인지 갈릴 때: [references/owner-boundaries.md](references/owner-boundaries.md).
+- 화면 안 파일 집합은 위 배치 판단 절이 가리키는 각 역할의 `형태` 절이, 공용 승격은 [shared-ui-contract](../shared-ui-contract/SKILL.md)가 소유한다.
 
 ## 작업 시 연결
 
@@ -166,3 +102,25 @@ UI·URL·권한·번역·payload·Query 키는 폴더 이동을 이유로 바꾸
 
 자동 검사는 import 경계·React 실행 의존·API의 Router/Form/캐시 클라이언트 접근을 확인한다.
 훅이 업무 정책을 숨겼는지와 helper/config의 의미는 실제 소비자와 코드 리뷰로 확인한다.
+
+## 이 저장소의 관찰
+
+규칙이 아니라 이 저장소의 현재 배치다. 신규 프로젝트는 이 절을 비우고 자기 도메인으로 다시 채운다.
+
+- 접두 엔티티 예: `members/screens/appeals`·`counsel`, `community/screens/board-list`·`board-detail`·`board-form`(게시판과 게시물이 둘 다 목록·조회·폼을 갖는다). route 가 여는 다이얼로그: `messaging/screens/compose`. URL 변형이 한 화면을 쓰는 예: 회원 all/general/flagged 의 `members/screens/list`.
+- `api` 훅 예: `usePerformanceVenues`, `useManagerOptions`, `useMemberDetail`, `useMessagePolicy`. `model` 훅 예: `useMemberListData`, `useMemberListRecipients`, `useManagerFormOptions`, `useUpdateManagerMutation`. API-only mutation: `auth/api/useSignInMutation`.
+- lib/config 배치 예: 회원 날짜 formatter·운영자 오류 번역 키 변환은 domain/lib, 회원 목록 노출 정의는 screens/list/config, 메시지 공통 타입은 domain/model, 작성 schema/defaults 는 compose/model, dialog props 는 compose/ui, 전화번호 표시 함수는 compose/lib.
+
+| 도메인 | screens | mechanics |
+| --- | --- | --- |
+| members | list, detail, form, counsel, appeals, access, dormant, withdrawn | record-list, activity, counsel-record |
+| managers | list, detail, form | manager-select-options |
+| performances | list, detail | 현재 필요 없음; form은 입력 정책 확인 대기 |
+| community | board-list | — |
+| messaging | compose | 현재 필요 없음 |
+| auth | login | 현재 필요 없음 |
+
+`record-list`는 기록 목록의 결과·필터와 회원 목록에서 공유하는 선택 액션을,
+`activity`는 일반 상세·탈퇴 상세의 활동 목록을, `counsel-record`는 상세·상담의 상담 기록 편집을 소유한다.
+`dormant`의 현재 파일은 표시 조립이므로 ui만 두고 조회·필터는 record-list mechanic을 소비한다.
+운영자는 제품 계약과 격리 리허설 계약 두 구현이 같은 list/detail/form 업무군 안에 있다.

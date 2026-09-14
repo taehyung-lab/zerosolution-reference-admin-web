@@ -12,6 +12,8 @@ import {
   copilotAgentsPointerFailure,
   documentBudgetNotices,
   headingAnchors,
+  productNameNotices,
+  productTermsInLine,
   ledgerIndexFailures,
   DOCUMENT_LINE_BUDGET,
   parseReadmeVerifyProjection,
@@ -34,6 +36,9 @@ import {
   listSeedFiles,
   listTransplantManifestFiles,
   SEED_BUNDLES,
+  SEED_BUNDLE_EXPORTS,
+  findBundleExportDrift,
+  readExportedNames,
   validateSeedBundles,
   validateTransplantManifest,
 } from './seed.mjs'
@@ -320,6 +325,34 @@ describe('local markdown links', () => {
   })
 })
 
+describe('product names inside skill rule text', () => {
+  it('notices domain nouns, identifiers and feature directories in rule lines, and skips the observation section', () => {
+    // `auth` is filtered out by readFeatureDirectories in production; here the caller passes the list.
+    const dirs = ['members', 'managers']
+    expect(productTermsInLine('회원 목록은 즉시 조회한다', undefined, dirs)).toEqual(['회원'])
+    expect(productTermsInLine('`ManagerListScreen` 은 `members/screens/list` 를 쓴다', undefined, dirs)).toEqual(['ManagerListScreen', 'members', 'members/'])
+    // A generic word that happens to be a directory name is not a product name unless written as a path.
+    expect(productTermsInLine('auth session refresh keeps the draft; remember it', undefined, dirs)).toEqual([])
+    // English prose names the domain too, in any case and plural; `performance` is left out (React performance docs).
+    expect(productTermsInLine('the rehearsal manager list and member lists; performance boundaries', undefined, dirs)).toEqual(['rehearsal', 'manager', 'member'])
+    // camelCase-embedded identifiers count; a heading counts; `#` inside a fence is not a heading and cannot end the skip.
+    expect(productTermsInLine('`usePerformanceDetail` stays in api', undefined, dirs)).toEqual(['PerformanceDetail'])
+    const files = createDocuments({
+      'rule.md': '# Rule\n\n회원·운영자 목록은 명시 검색이다.\n\n## 이 저장소의 관찰\n\n회원 목록은 `MemberListScreen` 이다.\n\n```md\n# 운영자 fence heading\n```\n\n회원 관찰 계속.\n\n## Another rule\n\n공연 목록은 즉시 조회.\n\n### 게시판 heading\n',
+      'clean.md': '# Rule\n\nA list with a `searched` marker waits for the search action.\n',
+    })
+    const notices = productNameNotices(files, { featureDirs: dirs })
+    expect(notices).toHaveLength(1)
+    expect(notices[0]).toContain('rule.md')
+    expect(notices[0]).toContain('3: 회원·운영자')
+    expect(notices[0]).toContain('17: 공연')
+    expect(notices[0]).toContain('19: 게시판')
+    expect(notices[0]).not.toContain('MemberListScreen')
+    expect(notices[0]).not.toContain('fence')
+    expect(notices[0]).not.toContain('13:')
+  })
+})
+
 describe('agent-facing document line budget', () => {
   it('notices dense documents under the line budget without failing the contract', () => {
     const files = createDocuments({'dense.md': '# Dense\n' + '가'.repeat(12000), 'small.md':'# Small\n'})
@@ -518,6 +551,23 @@ describe('seed contract bundles', () => {
     expect(collectImportClosure(['src/shared/a.ts', 'src/shared/a.test.ts'], imports)).toEqual(
       ['src/shared/a.test.ts', 'src/shared/a.ts', 'src/shared/b.ts', 'src/test/helper.ts'],
     )
+  })
+
+  it('rejects a bundle whose code-root exports drifted from the declared set', () => {
+    expect(readExportedNames('export function visible() {}\nconst hidden = 1\n')).toEqual(['visible'])
+    // `export default X` is the outer name X; an anonymous default is `default`.
+    expect(readExportedNames('const client = 1\nexport default client\n')).toEqual(['client'])
+    expect(readExportedNames('export default function () {}\n')).toEqual(['default'])
+    expect(findBundleExportDrift()).toEqual([])
+    expect(Object.keys(SEED_BUNDLE_EXPORTS).sort()).toEqual(SEED_BUNDLES.map((bundle) => bundle.id).sort())
+    const [code] = createDocuments({ 'src/shared/a.ts': 'export function visible() {}\n' })
+    const bundle = { id: 'drift-example', code: [code] }
+    expect(findBundleExportDrift([bundle], { 'drift-example': ['visible'] })).toEqual([])
+    expect(findBundleExportDrift([bundle], { 'drift-example': ['gone'] })).toEqual([
+      expect.stringMatching(/미선언 export visible/),
+      expect.stringMatching(/코드에 없는 export gone/),
+    ])
+    expect(findBundleExportDrift([bundle], {})).toEqual([expect.stringMatching(/SEED_BUNDLE_EXPORTS 가 없다/)])
   })
 
   it('validates optional consumption examples without exporting feature code', () => {

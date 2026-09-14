@@ -3,7 +3,7 @@ import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { homedir, tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { execFileSync } from 'node:child_process'
-import { prepare, checkEdit, recordReview, checkStop, outputSnapshot } from './preflight.mjs'
+import { prepare, checkEdit, recordReview, checkStop, outputSnapshot, exportDriftFailure, REVIEW_EXAMPLE_SENTENCES } from './preflight.mjs'
 import { hookDecision, hookRoot } from './hook.mjs'
 import { realpathSync } from 'node:fs'
 
@@ -27,6 +27,12 @@ function setup() {
   return { root, checkpoint }
 }
 const fingerprint = (root) => ({ 'scripts/example.mjs': readFileSync(join(root, 'scripts/example.mjs'), 'utf8') })
+const loop = {
+  grain: 'structure',
+  entry: 'scripts/',
+  mode: 'implement',
+  design: { flow: 'script', ownership: 'file', reuse: 'exclude', simplicity: 'one owner' },
+}
 afterEach(() => { for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true }) })
 
 describe('repository preflight', () => {
@@ -100,6 +106,7 @@ describe('repository preflight', () => {
     expect(at({})).toBe('/repo')
     // A patch names its checkout through its first absolute target, like a Write does through file_path.
     expect(at({ tool_name: 'apply_patch', tool_input: { command: '*** Begin Patch\n*** Update File: /repo/.claude/worktrees/agent/src/a.ts\n@@\n-x\n+y\n*** End Patch' }, cwd: '/repo' })).toBe('/repo/.claude/worktrees/agent')
+    expect(at({ tool_name: 'apply_patch', toolArgs: '*** Begin Patch\n*** Update File: /repo/.claude/worktrees/agent/src/a.ts\n@@\n-x\n+y\n*** End Patch' })).toBe('/repo/.claude/worktrees/agent')
     // A target in a directory that does not exist yet climbs to the nearest existing ancestor before asking git.
     const onlyRoots = (dir) => dir === '/repo' || dir === '/repo/.claude/worktrees/agent'
     expect(hookRoot('/repo', write('/repo/.claude/worktrees/agent/src/new/a.ts'), toplevelOf, onlyRoots)).toBe('/repo/.claude/worktrees/agent')
@@ -227,11 +234,40 @@ describe('repository preflight', () => {
     expect(() => recordReview(root, 'one', gap({ replacement: 'R2' }), fingerprint)).not.toThrow()
     expect(() => recordReview(root, 'one', gap({ blocked: 'Waiting on the wire value.' }), fingerprint)).not.toThrow()
   })
+  it('treats a changed bundle export set as a modify decision the checkpoint must already carry', () => {
+    const baseline = { 'data-table': ['DataTable', 'selectionColumn'], 'list-result': ['ListResult'] }
+    // Same names in another order is the same public contract.
+    expect(exportDriftFailure(baseline, { 'data-table': ['selectionColumn', 'DataTable'], 'list-result': ['ListResult'] }, [])).toBeNull()
+    const widened = { ...baseline, 'data-table': ['DataTable', 'selectionColumn', 'rowExpander'] }
+    expect(exportDriftFailure(baseline, widened, [])).toMatch(/data-table.*"modify"/)
+    expect(exportDriftFailure(baseline, widened, [{ id: 'data-table', decision: 'adopt', reason: 'x' }])).toMatch(/data-table/)
+    expect(exportDriftFailure(baseline, widened, [{ id: 'data-table', decision: 'modify', reason: 'Row expander for two consumers.' }])).toBeNull()
+    // A bundle that appears or disappears is a contract change too.
+    expect(exportDriftFailure(baseline, { ...baseline, 'new-bundle': ['Thing'] }, [])).toMatch(/new-bundle/)
+    // A session prepared before this check has no baseline and is not judged retroactively.
+    expect(exportDriftFailure(undefined, widened, [])).toBeNull()
+  })
+  it('refuses every review sentence the README shows as an example, so the doc and the gate cannot drift apart', () => {
+    const readme = readFileSync(join(process.cwd(), 'scripts/agents/README.md'), 'utf8')
+    const shown = [...readme.matchAll(/"(?:contractReview|complexityReview)": "([^"]+)"/g)].map((match) => match[1])
+    expect(shown.length).toBeGreaterThan(0)
+    for (const sentence of shown) expect(REVIEW_EXAMPLE_SENTENCES, sentence).toContain(sentence)
+  })
+  it('requires an independent review record for a gate, root or skill scope even outside the loop', () => {
+    const { root, checkpoint } = setup()
+    mkdirSync(join(root, 'scripts/agents'), { recursive: true })
+    writeFileSync(join(root, 'scripts/agents/gate.mjs'), 'export const gate = 1\n')
+    writeFileSync(join(root, '.ai-work/checkpoint.json'), JSON.stringify({ ...checkpoint, scope: ['scripts/agents/gate.mjs'], work: { kind: 'infrastructure', reason: 'Gate wiring.' } }))
+    prepare(root, 'one', '.ai-work/checkpoint.json', fingerprint)
+    const report = { requirements: [{ id: 'R1', status: 'implemented', evidence: 'Gate test passed.', appliedSections: ['AGENTS.md'] }], contractReview: 'No bundle.', complexityReview: 'One predicate.', assumptions: [], limitations: [] }
+    expect(() => recordReview(root, 'one', report, fingerprint)).toThrow(/independentReview/)
+    expect(() => recordReview(root, 'one', { ...report, independentReview: { reviewer: 'second model', revision: 'abc', findings: ['none'] } }, fingerprint)).not.toThrow()
+  })
   it('refuses a review that leaves a written path unclaimed by any requirement', () => {
     const { root, checkpoint } = setup()
     // `unimplemented` skips the per-requirement file check, so the claim check is what accounts for writes.
     const flow = {
-      ...checkpoint, work: { kind: 'workflow' }, surfaces: [],
+      ...checkpoint, ...loop, work: { kind: 'workflow' }, surfaces: [],
       requirements: [{ ...checkpoint.requirements[0], surfaces: [], sources: ['user'], contracts: [], contractReason: 'No seed bundle applies.' }],
       evidenceGaps: [{ paths: ['scripts/'], requirements: ['R1'], reason: 'Unindexed fixture surface.', references: ['AGENTS.md'] }],
     }
@@ -239,7 +275,7 @@ describe('repository preflight', () => {
     prepare(root, 'one', '.ai-work/checkpoint.json', fingerprint)
     hookDecision(root, { session_id: 'one', hook_event_name: 'PreToolUse', tool_name: 'Bash', tool_input: { command: 'node build.mjs' } })
     writeFileSync(join(root, 'scripts/example.mjs'), 'export const value = 5\n')
-    const base = { contractReview: 'No contract changed.', complexityReview: 'One constant.', assumptions: [], limitations: [] }
+    const base = { contractReview: 'No contract changed.', complexityReview: 'One constant.', assumptions: [], limitations: [], independentReview: { reviewer: 'second model', revision: 'fixture', findings: [] } }
     const report = (requirement) => ({ ...base, requirements: [{ id: 'R1', evidence: 'Reported.', ...requirement }] })
     // Negative: the write happened and nothing accounts for it.
     expect(() => recordReview(root, 'one', report({ status: 'unimplemented', blocked: 'Waiting on the wire value.' }), fingerprint))
@@ -255,7 +291,7 @@ describe('repository preflight', () => {
   })
   it('refuses a review that cites a convention section this session never received', () => {
     const { root, checkpoint } = setup()
-    writeFileSync(join(root, 'scripts/notes.md'), '# Owned\n\nA rule.\n\n# Other\n\nAnother rule.\n')
+    writeFileSync(join(root, 'scripts/notes.md'), '# Owned\n\nA rule.\n\n## Nested\n\nA nested rule.\n\n# Other\n\nAnother rule.\n')
     const cited = { ...checkpoint, references: ['AGENTS.md', { file: 'scripts/notes.md', heading: 'Owned' }] }
     writeFileSync(join(root, '.ai-work/checkpoint.json'), JSON.stringify(cited))
     prepare(root, 'one', '.ai-work/checkpoint.json', fingerprint)
@@ -269,6 +305,8 @@ describe('repository preflight', () => {
     // The delivered section, and the whole file that contains it, both count.
     expect(() => recordReview(root, 'one', review([{ file: 'scripts/notes.md', heading: 'Owned' }]), fingerprint)).not.toThrow()
     expect(() => recordReview(root, 'one', review(['AGENTS.md']), fingerprint)).not.toThrow()
+    // A delivered parent heading covers a descendant heading in the same file.
+    expect(() => recordReview(root, 'one', review([{ file: 'scripts/notes.md', heading: 'Nested' }]), fingerprint)).not.toThrow()
     // A sibling section was never delivered, so it cannot be the source of a claim.
     expect(() => recordReview(root, 'one', review([{ file: 'scripts/notes.md', heading: 'Other' }]), fingerprint)).toThrow(/never received|not delivered/)
     // Neither can a document this session was never given.
@@ -318,6 +356,9 @@ describe('repository preflight', () => {
     }
     const feature = {
       ...checkpoint,
+      ...loop,
+      grain: 'screen',
+      entry: 'members-list',
       scope: ['src/features/members/screens/list/'],
       references: ['AGENTS.md', '.agents/skills/feature-contract/SKILL.md', '.agents/skills/screen-loop/SKILL.md'],
     }
@@ -437,9 +478,11 @@ describe('repository preflight', () => {
     const codex = hookDecision(root, { session_id: 'one', hook_event_name: 'PreToolUse', tool_name: 'apply_patch', tool_input: { command: '*** Begin Patch\n*** Update File: scripts/example.mjs\n@@\n-x\n+y\n*** End Patch' } })
     const claude = hookDecision(root, { session_id: 'one', hook_event_name: 'PreToolUse', tool_name: 'Edit', tool_input: { file_path: join(root, 'scripts/example.mjs') } })
     const copilot = hookDecision(root, { sessionId: 'one', toolName: 'edit', toolArgs: JSON.stringify({ path: 'scripts/example.mjs' }) }, 'preToolUse')
+    const rawPatch = hookDecision(root, { sessionId: 'one', toolName: 'apply_patch', toolArgs: '*** Begin Patch\n*** Update File: scripts/example.mjs\n@@\n-x\n+y\n*** End Patch' }, 'preToolUse')
     expect(codex.hookSpecificOutput.permissionDecision).toBe('deny')
     expect(claude.hookSpecificOutput.permissionDecision).toBe('deny')
     expect(copilot.permissionDecision).toBe('deny')
+    expect(rawPatch.permissionDecision).toBe('deny')
   })
   it('keeps inspection and checkpoint bootstrap available, but gates arbitrary shell execution', () => {
     const { root } = setup()
@@ -505,6 +548,48 @@ describe('repository preflight', () => {
     const blocked = checkStop(root, 'one')
     expect(blocked).toMatch(/wrote outside its declared scope: outside\.txt/)
     expect(blocked).toMatch(/Reported, not blocking: 1 path\(s\).*concurrent\.txt/)
+  })
+  it('hands a bracket-caught path to the session whose declared scope holds it, and still blocks a path nobody declared', () => {
+    const { root, checkpoint } = setup()
+    // Session one owns scripts/; session two owns docs/ and opens a shell bracket while one edits.
+    mkdirSync(join(root, 'docs'), { recursive: true })
+    writeFileSync(join(root, 'docs/note.md'), '# note\n')
+    prepare(root, 'one', '.ai-work/checkpoint.json', fingerprint)
+    writeFileSync(join(root, '.ai-work/two.json'), JSON.stringify({ ...checkpoint, scope: ['docs/'] }))
+    const files = (extra = {}) => ({ 'scripts/example.mjs': readFileSync(join(root, 'scripts/example.mjs'), 'utf8'), 'docs/note.md': readFileSync(join(root, 'docs/note.md'), 'utf8'), ...extra })
+    prepare(root, 'two', '.ai-work/two.json', () => files())
+    const call = (session, event, tool = 'Bash', input = { command: 'python3 write.py' }) => hookDecision(root, { session_id: session, hook_event_name: event, tool_name: tool, tool_input: input })
+    // Two's shell bracket is open while one edits its own file natively: one's bracket catches the write too.
+    call('two', 'PreToolUse')
+    call('one', 'PreToolUse', 'Write', { file_path: join(root, 'scripts/example.mjs') })
+    writeFileSync(join(root, 'scripts/example.mjs'), 'export const value = 7\n')
+    call('one', 'PostToolUse', 'Write', { file_path: join(root, 'scripts/example.mjs') })
+    call('two', 'PostToolUse')
+    // scripts/example.mjs is in one's scope and one's own authored set: two reports it, not blocking.
+    expect(checkStop(root, 'two', () => files())).toBeNull()
+    // A path nobody declared stays two's to answer for.
+    call('two', 'PreToolUse')
+    writeFileSync(join(root, 'nobody.txt'), 'x')
+    call('two', 'PostToolUse')
+    const blocked = checkStop(root, 'two', () => files({ 'nobody.txt': 'x' }))
+    expect(blocked).toMatch(/wrote outside its declared scope: nobody\.txt\. /)
+    expect(blocked).toMatch(/Reported, not blocking: 1 path\(s\).*scripts\/example\.mjs/)
+  })
+  it('does not let a shell write into another session\'s declared scope escape when that session never wrote it', () => {
+    const { root, checkpoint } = setup()
+    mkdirSync(join(root, 'docs'), { recursive: true })
+    writeFileSync(join(root, 'docs/note.md'), '# note\n')
+    // Session one is prepared over scripts/ but only inspected; session two writes into scripts/ through the shell.
+    prepare(root, 'one', '.ai-work/checkpoint.json', fingerprint)
+    writeFileSync(join(root, '.ai-work/two.json'), JSON.stringify({ ...checkpoint, scope: ['docs/'] }))
+    const files = () => ({ 'scripts/example.mjs': readFileSync(join(root, 'scripts/example.mjs'), 'utf8'), 'docs/note.md': '# note\n' })
+    prepare(root, 'two', '.ai-work/two.json', () => files())
+    const call = (event) => hookDecision(root, { session_id: 'two', hook_event_name: event, tool_name: 'Bash', tool_input: { command: 'python3 write.py' } })
+    call('PreToolUse')
+    writeFileSync(join(root, 'scripts/example.mjs'), 'export const value = 8\n')
+    call('PostToolUse')
+    // Scope alone is not a claim: one never held a bracket over this path, so two still owns it.
+    expect(checkStop(root, 'two', () => files())).toMatch(/wrote outside its declared scope: scripts\/example\.mjs/)
   })
   it('lets a session that only inspected finish while another session edits the tree', () => {
     const { root } = setup()

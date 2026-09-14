@@ -26,6 +26,7 @@ import {
   parseReadmeVerifyProjection,
   parseVerifyChain,
   pnpmCommandFailures,
+  productNameNotices,
   prohibitedAbstractionSourceFailures,
   readLocalLinkFailures,
   retiredDocumentNameFailures,
@@ -40,6 +41,7 @@ import {
 import {
   detailRouteLoaderFailures,
   listRouteCoverageFailures,
+  listRouteCoverageNotices,
   resolvedShapeExceptionFailures,
   screenShapeFailures,
   screenShapeNotices,
@@ -56,6 +58,7 @@ import {
   listTransplantManifestFiles,
   validateSeedBundles,
   validateTransplantManifest,
+  findBundleExportDrift,
 } from './seed.mjs'
 
 const modeIndex = process.argv.indexOf('--mode')
@@ -87,6 +90,7 @@ const documents = collectDocumentFiles()
 failures.push(...pnpmCommandFailures(documents, packageJson.scripts ?? {}))
 failures.push(...readLocalLinkFailures(documents))
 const budgetNotices = documentBudgetNotices(documents)
+notes.push(...productNameNotices(documents.filter((file) => file.startsWith('.agents/skills/'))))
 
 const agents = readFileSync(resolve('AGENTS.md'), 'utf8')
 const claudeImport = claudeAgentsImportFailure(readFileSync(resolve('CLAUDE.md'), 'utf8'))
@@ -130,8 +134,9 @@ failures.push(...transplantSentinelFailures(documents))
 failures.push(...screenShapeFailures(process.cwd()))
 failures.push(...listRouteCoverageFailures(process.cwd()))
 failures.push(...detailRouteLoaderFailures(process.cwd()))
-failures.push(...resolvedShapeExceptionFailures(process.cwd()))
+if (mode === 'source') failures.push(...resolvedShapeExceptionFailures(process.cwd()))
 notes.push(...screenShapeNotices(process.cwd()))
+notes.push(...listRouteCoverageNotices(process.cwd()))
 
 // 타입·테스트가 통과해도 런타임에만 죽는 두 실패. 실제로 겪어서 넣었다.
 failures.push(...findUnregisteredPorts())
@@ -141,6 +146,7 @@ failures.push(...findContractPathMismatches(declaredPaths))
 let seedSummary = null
 if (mode === 'source') {
   failures.push(...validateSeedBundles())
+  failures.push(...findBundleExportDrift())
   failures.push(...validateTransplantManifest())
   const codeClosure = collectImportClosure(SEED_BUNDLES.flatMap((bundle) => bundle.code))
   const testClosure = collectTestImportClosure(SEED_BUNDLES.flatMap((bundle) => bundle.tests))

@@ -2,10 +2,10 @@ import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, relative, resolve } from 'node:path'
-import { SEED_BUNDLES } from '../contracts/seed.mjs'
+import { SEED_BUNDLES, currentBundleExportNames } from '../contracts/seed.mjs'
 import { claudeAgentsImportFailure, copilotAgentsPointerFailure } from '../contracts/contracts.mjs'
-import { referenceOf, selectedDocuments } from './document-context.mjs'
-import { SURFACE_INDEX, workKind, workflowContext } from './surface-context.mjs'
+import { referenceOf, referenceCovers, selectedDocuments } from './document-context.mjs'
+import { SURFACE_INDEX, workKind, workflowContext, loopApplies, independentReviewRequired, loopDeclarationFailures, entryResolutionFailure } from './surface-context.mjs'
 
 const hash = (value) => createHash('sha256').update(value).digest('hex')
 const readJson = (file) => JSON.parse(readFileSync(file, 'utf8'))
@@ -133,11 +133,38 @@ function delegated(root, session) {
     .filter((state) => state?.parent === session)
 }
 
-/** Paths this session is accountable for, and the concurrent edits it must never be blocked by. */
-function partitionChanges(state, current, unsettled, children = []) {
+/**
+ * Scopes other sessions declared in this checkout (not this session, not its subagents). A write bracket
+ * attributes whatever moved while it was open, so a concurrent session's edit lands in this session's
+ * `authored` too; when that path is outside this session's scope and inside the other session's, it is
+ * that session's write. Measured 2026-09-13: a drill subagent's `prepare` bracket caught its parent's two
+ * skill edits, and its Stop check then had no exit (revert or re-scope another session's work).
+ */
+function otherSessionClaims(root, session) {
+  const directory = resolve(root, '.ai-work/agent-checks')
+  if (!existsSync(directory)) return []
+  const own = stateFile(root, session)
+  const descendant = (parent) => parent === session || (typeof parent === 'string' && parent.startsWith(`${session}/`))
+  return readdirSync(directory)
+    .filter((file) => file.endsWith('.json') && resolve(directory, file) !== own)
+    .map((file) => { try { return readJson(resolve(directory, file)) } catch { return null } })
+    .filter((state) => state && !descendant(state.parent) && state.wrote === true && Array.isArray(state.checkpoint?.scope))
+    .map((state) => ({ scope: state.checkpoint.scope, authored: new Set(state.authored ?? []) }))
+}
+
+/**
+ * Paths this session is accountable for, and the concurrent edits it must never be blocked by. A path is
+ * handed to another session only when that session's own bracket also caught it (`authored`) and it lies
+ * inside that session's scope and outside this one's — scope alone would let a shell write into anyone's
+ * declared scope escape both sessions (independent review, 2026-09-13).
+ */
+function partitionChanges(state, current, unsettled, children = [], foreignClaims = []) {
   const changed = changedPaths(state.baseline, current).filter((path) => unsettled === null || unsettled.has(path))
   const authored = new Set([...(state.authored ?? []), ...children.flatMap((child) => child.authored ?? [])])
-  return { mine: changed.filter((path) => authored.has(path)), external: changed.filter((path) => !authored.has(path)) }
+  const ownScope = state.checkpoint.scope
+  const claimedElsewhere = (path) => !within(path, ownScope) && foreignClaims.some((claim) => claim.authored.has(path) && within(path, claim.scope))
+  const mine = changed.filter((path) => authored.has(path) && !claimedElsewhere(path))
+  return { mine, external: changed.filter((path) => !mine.includes(path)) }
 }
 
 const fingerprintOf = (mine, current) => hash(JSON.stringify(mine.map((path) => [path, current[path]])))
@@ -173,13 +200,14 @@ function rootPointerDocuments(root) {
   return loaded
 }
 
-function requiredReferences(scope, work) {
+function requiredReferences(scope, checkpoint) {
   const paths = scope.join('\n')
   const refs = ['AGENTS.md']
   // Screen work enters through the loop skill before any path-routed contract, so it is listed first and
-  // the first missing-reference message names it. Declared maintenance/infrastructure work and app-shell
-  // paths are not screen requests and stay on the contracts alone.
-  if (work?.kind === undefined && /src\/(features|routes)\//.test(paths)) refs.push('.agents/skills/screen-loop/SKILL.md')
+  // the first missing-reference message names it. Whether the loop applies is one predicate
+  // (`loopApplies`); this only narrows it to the paths that are requests: feature, route and shared.
+  // App-shell paths and declared maintenance/infrastructure stay on the contracts alone.
+  if (loopApplies(checkpoint) && /src\/(features|routes|shared)\//.test(paths)) refs.push('.agents/skills/screen-loop/SKILL.md')
   if (/src\/(features|routes|app)\//.test(paths)) refs.push('.agents/skills/feature-contract/SKILL.md')
   if (/src\/shared\/|src\/app\/error-boundary\//.test(paths)) refs.push('.agents/skills/shared-ui-contract/SKILL.md')
   if (/openapi\/|src\/api\/|src\/features\/[^/]+\/api\/|src\/app\/providers\//.test(paths)) refs.push('.agents/skills/api-contract/SKILL.md')
@@ -201,8 +229,11 @@ export function prepare(root, session, checkpointFile, snapshot = outputSnapshot
   }
   if (!Array.isArray(references)) throw new Error('Declare repository Markdown references')
   const referenceFiles = references.map(referenceOf).filter((reference) => reference.heading === undefined).map((reference) => reference.file)
-  for (const file of requiredReferences(scope, checkpoint.work)) {
-    if (!referenceFiles.includes(file)) throw new Error(`Required reference: ${file}`)
+  for (const file of requiredReferences(scope, checkpoint)) {
+    if (referenceFiles.includes(file)) continue
+    // The loop is required because nothing declared this as non-request work; say so, or the reader only learns to add a file.
+    const exemption = file.endsWith('screen-loop/SKILL.md') ? ' (an implementation request reads it first; copy/style or tooling work instead declares work.kind maintenance|infrastructure with a reason)' : ''
+    throw new Error(`Required reference: ${file}${exemption}`)
   }
   if (!Array.isArray(prefixLoaded) || !prefixLoaded.every((file) => text(file) && referenceFiles.includes(file))) {
     throw new Error('prefixLoaded may only name declared full-file references')
@@ -216,18 +247,28 @@ export function prepare(root, session, checkpointFile, snapshot = outputSnapshot
   if (!Array.isArray(contracts) || !contracts.every((item) => SEED_BUNDLES.some((bundle) => bundle.id === item.id) && ['adopt', 'modify', 'exclude'].includes(item.decision) && text(item.reason))) throw new Error('Declare known seed bundle decisions and reasons; discover IDs with node scripts/agents/cli.mjs bundle (contracts may be empty when none apply)')
   if (new Set(contracts.map((item) => item.id)).size !== contracts.length) throw new Error('Duplicate contract decisions')
   if (!Array.isArray(unresolved) || !unresolved.every((item) => text(item.question) && Array.isArray(item.paths) && item.paths.length > 0 && item.paths.every((path) => text(path) && within(path, scope)))) throw new Error('Unresolved questions must name affected paths inside scope')
+  const loopFail = loopDeclarationFailures(checkpoint)[0]
+  if (loopFail) throw new Error(loopFail)
   const context = workflowContext(root, checkpoint)
-  const bundleRefs = contracts.flatMap(({ id }) => {
+  const entryFail = entryResolutionFailure(root, checkpoint)
+  if (entryFail) throw new Error(entryFail)
+  // An excluded contract was read to be excluded; its skill and ADR sections are not delivered again.
+  const bundleRefs = contracts.filter(({ decision }) => decision !== 'exclude').flatMap(({ id }) => {
     const bundle = SEED_BUNDLES.find((candidate) => candidate.id === id)
     return [...bundle.skills, ...bundle.adrs]
   })
+  // A slice with named rows receives those rows instead of the promoted surface's inventory reference; a
+  // whole-file request the checkpoint itself made still wins, because the author asked for it.
+  const refKey = (value) => { const ref = referenceOf(value); return JSON.stringify([ref.file, ref.heading ?? null]) }
+  const explicit = new Set(references.map(referenceOf).filter((ref) => ref.heading === undefined).map((ref) => ref.file))
   const inputs = [...references, ...context.references, ...bundleRefs]
-  const documents = selectedDocuments(root, inputs)
+    .filter((ref) => !context.rowDelivery.skip.has(refKey(ref)) || explicit.has(referenceOf(ref).file))
+  const documents = [...selectedDocuments(root, inputs), ...context.rowDelivery.documents.filter((doc) => !explicit.has(doc.file))]
   const originsOf = (file) => {
     const origins = []
     if (references.some(ref => referenceOf(ref).file === file && referenceOf(ref).heading === undefined)) origins.push('checkpoint.references')
     if (context.references.some(ref => referenceOf(ref).file === file && referenceOf(ref).heading === undefined)) origins.push('surface context or requirement.sources')
-    for (const {id} of contracts) {
+    for (const {id} of contracts.filter(({ decision }) => decision !== 'exclude')) {
       const bundle=SEED_BUNDLES.find(bundle=>bundle.id===id)
       if ([...bundle.skills,...bundle.adrs].some(ref=>referenceOf(ref).file===file && referenceOf(ref).heading===undefined)) origins.push(`bundle:${id}`)
     }
@@ -245,6 +286,9 @@ export function prepare(root, session, checkpointFile, snapshot = outputSnapshot
     baseline: previous?.baseline ?? snapshot(root), review: null, wrote: previous?.wrote ?? false,
     // Attribution survives re-preparation: a wider scope must not erase what this session already wrote.
     authored: previous?.authored ?? [], trace: previous?.trace ?? null,
+    // The public export names each bundle's code roots had when this session started; review compares
+    // the code again, not the declaration table, so an undeclared change is caught here and not only by check.
+    exportsBaseline: previous?.exportsBaseline ?? currentBundleExportNames(root),
     parent: parentOf(session),
   })
   // A `prefixLoaded` file reached the runtime through its root pointer before the first tool call, so
@@ -280,7 +324,7 @@ export function prepare(root, session, checkpointFile, snapshot = outputSnapshot
 export function checkEdit(root, session, targets) {
   const state = load(root, session)
   // The entry is AGENTS §2 (a screen request reads screen-loop first); the README only owns the checkpoint fields.
-  if (!state) return `Read AGENTS.md §2 first (a screen or shared-contract request starts with screen-loop), then run node scripts/agents/cli.mjs prepare ${session} .ai-work/<task>/checkpoint.json before editing. Checkpoint fields: scripts/agents/README.md#prepare-before-editing.`
+  if (!state) return `Read AGENTS.md §2 first (an implementation request starts with screen-loop), then run node scripts/agents/cli.mjs prepare ${session} .ai-work/<task>/checkpoint.json before editing. Checkpoint fields: scripts/agents/README.md#prepare-before-editing.`
   const { checkpointPath, checkpointHash, documents, checkpoint } = state
   const stale = (file) => `Reference/checkpoint changed: ${file}. Re-run prepare; reassess affected decisions.`
   if (!existsSync(resolve(root, checkpointPath)) || hash(readFileSync(resolve(root, checkpointPath))) !== checkpointHash) return stale(checkpointPath)
@@ -298,7 +342,7 @@ export function checkEdit(root, session, targets) {
   for (const target of targets) {
     const path = localPath(root, target)
     if (!within(path, checkpoint.scope)) return `Outside declared scope: ${path}. Update the checkpoint with requirements and evidence.`
-    for (const file of requiredReferences([path], checkpoint.work)) {
+    for (const file of requiredReferences([path], checkpoint)) {
       if (!(file in documents)) return `Required reference for ${path}: ${file}. Update checkpoint and prepare.`
     }
     try { workflowContext(root, checkpoint, [path]) } catch (error) { return error.message }
@@ -324,13 +368,61 @@ function reconcileOutput(root, session, state, mine, external) {
   return checkEdit(root, session, mine)
 }
 
+/**
+ * The README's example sentences, past and present. Nine recorded reviews pasted the earlier pair verbatim
+ * (measured 2026-09-11), which is the shape of a field that exists without saying anything; the same text
+ * is refused as a review. `preflight.test` checks that the README example still lists only these.
+ */
+export const REVIEW_EXAMPLE_SENTENCES = [
+  "Compared the adopted table contract with the caller's sort ownership.",
+  'No extra wrapper or replicated state.',
+  'data-table adopted unchanged: the column meta and getRowId stay feature-owned; no prop was added for this caller.',
+  'Three role files from the 형태 table; the sort transition is one pure policy function, no controller hook.',
+]
+
+/**
+ * A loop review (workflow, or shared implement/drill) is judged by someone other than its author: N6 is the
+ * only check that reads the content of `design` and the review sentences, so its record is required, not
+ * optional. AGENTS §5 asks the same of gate, root and skill changes. `contractReview` must speak about every
+ * contract the checkpoint declared, by id.
+ */
+export function loopReviewFailure(checkpoint, report) {
+  if (loopApplies(checkpoint)) {
+    for (const field of ['contractReview', 'complexityReview']) {
+      if (REVIEW_EXAMPLE_SENTENCES.includes(String(report[field]).trim())) return `${field} repeats the README example sentence; write what this diff did to the contracts and the structure`
+    }
+    const unmentioned = (checkpoint.contracts ?? []).map(({ id }) => id).filter((id) => !String(report.contractReview).includes(id))
+    if (unmentioned.length) return `contractReview must say what happened to each declared contract by id: ${unmentioned.join(', ')}`
+  }
+  if (!independentReviewRequired(checkpoint)) return null
+  const independent = report.independentReview
+  if (!independent || typeof independent !== 'object' || !text(independent.reviewer) || !text(independent.revision) || !Array.isArray(independent.findings)) {
+    return 'This review records independentReview { reviewer, revision, findings[] }: another model or person opened the diff and the owning documents (AGENTS §5; screen-loop N6 for implement/drill, §5 for gate, root and skill scopes). An empty findings array is a recorded verdict; a missing field is not.'
+  }
+  return null
+}
+
+/**
+ * A bundle whose public export names changed during this session widened or narrowed a shared contract.
+ * That is a `modify` decision on `contracts[]`, taken before the edit, not a table to update afterwards.
+ */
+export function exportDriftFailure(baseline, current, contracts = []) {
+  if (!baseline) return null
+  const changed = Object.keys({ ...baseline, ...current })
+    .filter((id) => JSON.stringify([...(baseline[id] ?? [])].sort()) !== JSON.stringify([...(current[id] ?? [])].sort()))
+  const undeclared = changed.filter((id) => !contracts.some((item) => item.id === id && item.decision === 'modify'))
+  return undeclared.length
+    ? `Public exports of seed bundle(s) ${undeclared.join(', ')} changed in this session without a contracts[] "modify" decision. Declare the modification with its reason and re-run prepare, or narrow the change back to the existing contract (E6).`
+    : null
+}
+
 export function recordReview(root, session, report, snapshot = outputSnapshot, unsettled = unsettledPaths) {
   const loaded = load(root, session)
   if (!loaded) throw new Error('Run prepare before review')
   const state = settle(root, session, loaded)
   const current = snapshot(root)
   const children = delegated(root, session)
-  const { mine, external } = partitionChanges(state, current, unsettled(root), children)
+  const { mine, external } = partitionChanges(state, current, unsettled(root), children, otherSessionClaims(root, session))
   const failure = state.wrote || children.some((child) => child.wrote) ? reconcileOutput(root, session, state, mine, external) : null
   if (failure) throw new Error(failure)
   const expected = state.checkpoint.requirements.map(({ id }) => id).sort()
@@ -348,10 +440,24 @@ export function recordReview(root, session, report, snapshot = outputSnapshot, u
     }
   }
   // A convention only counts as applied if this session was actually handed it. A whole-file delivery
-  // covers its own headings, matching how preparation treats a full-file selection.
-  const deliveredKeys = new Set(Object.keys(state.rendered ?? {}))
-  const covers = (reference) => deliveredKeys.has(JSON.stringify([reference.file, null])) ||
-    deliveredKeys.has(JSON.stringify([reference.file, reference.heading ?? null]))
+  // covers its own headings, and a delivered parent heading covers descendant headings.
+  const delivered = Object.keys(state.rendered ?? {}).map((key) => {
+    const [file, heading] = JSON.parse(key)
+    return { file, heading: heading ?? undefined }
+  })
+  // A `rows: …` delivery is a synthetic heading; it covers nothing but itself.
+  const coversSection = (evidence, reference) => {
+    try { return referenceCovers(root, evidence, reference) } catch { return false }
+  }
+  const covers = (reference) => delivered.some((evidence) =>
+    evidence.file === reference.file && (
+      evidence.heading == null
+      || reference.heading != null && (
+        evidence.heading === reference.heading
+        || coversSection(evidence, reference)
+      )
+    )
+  )
   for (const item of report.requirements) {
     if (item.status === 'unimplemented') continue
     if (!Array.isArray(item.appliedSections) || !item.appliedSections.length) {
@@ -363,7 +469,8 @@ export function recordReview(root, session, report, snapshot = outputSnapshot, u
       throw new Error(`Requirement ${item.id}: not delivered to this session, so it cannot be a source: ${missing.map((reference) => reference.heading ? `${reference.file} # ${reference.heading}` : reference.file).join(', ')}. Prepare it or cite what you received.`)
     }
     // A whole-file delivery covers a heading, but only one that exists; selection owns that check.
-    selectedDocuments(root, cited.filter((reference) => reference.heading !== undefined))
+    // A `rows: …` heading is the slice delivery itself, not a section of the file; it is cited as delivered.
+    selectedDocuments(root, cited.filter((reference) => reference.heading !== undefined && !reference.heading.startsWith('rows: ')))
   }
   if (workKind(state.checkpoint) === 'workflow') {
     for (const item of report.requirements) {
@@ -378,6 +485,11 @@ export function recordReview(root, session, report, snapshot = outputSnapshot, u
     if (unclaimed.length) throw new Error(`This session wrote paths no requirement claims in "files": ${unclaimed.join(', ')}. Name each in the requirement it serves, or revert it.`)
   }
   // Fingerprinted over this session's own paths so a concurrent edit cannot invalidate the review.
+  // Content checks come last: a review that fails on files or claims is fixed there first.
+  const loopFail = loopReviewFailure(state.checkpoint, report)
+  if (loopFail) throw new Error(loopFail)
+  const driftFail = exportDriftFailure(state.exportsBaseline, currentBundleExportNames(root), state.checkpoint.contracts)
+  if (driftFail) throw new Error(driftFail)
   save(root, session, { ...state, review: { fingerprint: fingerprintOf(mine, current), report } })
   return external
 }
@@ -388,7 +500,7 @@ export function authoredChanges(root, session, snapshot = outputSnapshot, unsett
   if (!state) return { mine: [], external: [] }
   const children = delegated(root, session)
   if (!state.wrote && !children.some((child) => child.wrote)) return { mine: [], external: [] }
-  return partitionChanges(state, snapshot(root), unsettled(root), children)
+  return partitionChanges(state, snapshot(root), unsettled(root), children, otherSessionClaims(root, session))
 }
 
 export function checkStop(root, session, snapshot = outputSnapshot, unsettled = unsettledPaths) {
@@ -400,7 +512,7 @@ export function checkStop(root, session, snapshot = outputSnapshot, unsettled = 
   if (!loaded.wrote && !children.some((child) => child.wrote)) return null
   const state = settle(root, session, loaded)
   const current = snapshot(root)
-  const { mine, external } = partitionChanges(state, current, unsettled(root), children)
+  const { mine, external } = partitionChanges(state, current, unsettled(root), children, otherSessionClaims(root, session))
   if (!mine.length) return null
   const stale = reconcileOutput(root, session, state, mine, external)
   if (stale) return stale

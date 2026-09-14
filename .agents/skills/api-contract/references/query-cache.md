@@ -62,5 +62,5 @@ Mutation and invalidation rules are owned by [mutations.md](mutations.md).
 - 생성된 mutation options는 feature workflow 또는 후속 처리가 없는 API-only 훅에서 실행한다. 목록·상세의 공용 상태 판정과 모양을 맞추기 위해 범용 mutation wrapper를 추가하지 않는다. 응답 후 cache·폼·선택 상태 처리는 해당 업무가 소유한다.
 - mock 선택은 테스트/개발 진입점의 응답 공급 경계에서 처리한다. 새 화면에 reference env로 Screen·검색 모델·업무 흐름을 둘로 나누지 않는다. 기존 분기를 제거할 때는 양쪽의 제품 필드·액션·검색 계약 차이를 먼저 대조한다.
 
-이 기준은 신규 구현과 전환의 목표다. 현재 members/managers의 적용 여부와 남은 차이는
+이 기준은 신규 구현과 전환의 목표다. 현재 각 도메인의 적용 여부와 남은 차이는
 [분석 원장 §5](../../../../docs/reference/zero-sol-figma-analysis.md#5-미확인--답이-구현을-바꾸는-질문)에 기록한다.

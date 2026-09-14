@@ -62,7 +62,13 @@ that only demotes a path to reported-not-blocking, never the reverse.
 
 Review/stop reconciles those authored paths against the preparation snapshot, even after a local commit,
 and rejects out-of-scope or unresolved ones with the correction stated. A session that only ran recognized
-inspection commands received no write capability and owns nothing.
+inspection commands received no write capability and owns nothing. Because a bracket attributes by time,
+not by author, a concurrent session's edit can land in another session's `authored`; when that path is
+outside the catching session's scope, inside another prepared session's declared scope, and in that
+session's own `authored` set, review and stop hand it to that session (reported, not blocking). Scope
+alone is not a claim, or a shell write into someone else's declared scope would escape both sessions; a
+path no other session's bracket caught stays with the session whose bracket caught it. Measured 2026-09-13: a drill subagent's `prepare` bracket caught two skill
+edits its parent was making and its Stop check offered only revert or re-scope, both wrong.
 
 A path whose working copy already equals the remote default branch (`origin/HEAD`) is pulled or merged
 work and leaves the review set. The remote-tracking reflog tells a pull from a push: when `origin/<default>`

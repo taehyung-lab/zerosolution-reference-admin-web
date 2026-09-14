@@ -15,6 +15,12 @@ export const ROW_KINDS = ['열거', '서술', 'ref', 'n/a']
 /** Cells the ledger uses for "nothing here"; any of them reads as empty. */
 const EMPTY = new Set(['', '—', '-', '없음'])
 const OBSERVATION_PENDING = '(미판독)'
+/**
+ * An observation cell that only says the frame exists enumerates nothing, so the screen's composition is
+ * unobserved (`docs/reference/zero-sol/README.md` 판독 규칙 "구성은 Figma frame 만이 열거한다"). The 2026-09-11
+ * board redesign started from such a cell passing as confirmed.
+ */
+const OBSERVATION_UNENUMERATED = /frame 존재(?!하지)/
 const POLICY_PENDING = '(대기)'
 
 const cell = (value) => value.trim()
@@ -24,26 +30,38 @@ const strip = (value) => cell(value).replace(/^`|`$/g, '')
 function tableRows(content) {
   const tables = []
   let header = null
+  let headerRaw = null
   let rows = null
   for (const line of content.split('\n')) {
     const trimmed = line.trim()
     if (!trimmed.startsWith('|')) {
-      if (header) tables.push({ header, rows })
+      if (header) tables.push({ header, headerRaw, rows })
       header = null
+      headerRaw = null
       rows = null
       continue
     }
     const cells = trimmed.replace(/^\|/, '').replace(/\|$/, '').split('|')
     if (!header) {
       header = cells.map(cell)
+      headerRaw = trimmed
       rows = []
       continue
     }
     if (cells.every((value) => /^-+$/.test(cell(value)))) continue
-    rows.push(cells)
+    // The raw line travels with the cells so a slice can be handed exactly these rows, as written.
+    rows.push({ cells, raw: trimmed })
   }
-  if (header) tables.push({ header, rows })
+  if (header) tables.push({ header, headerRaw, rows })
   return tables
+}
+
+/** The rows a task covers, rendered as the ledger writes them: one header, one separator, the chosen rows. */
+export function renderRows(rows) {
+  if (!rows.length) return ''
+  const header = rows[0].headerRaw
+  const separator = `|${header.split('|').slice(1, -1).map(() => ' --- ').join('|')}|`
+  return [header, separator, ...rows.map((row) => row.raw)].join('\n')
 }
 
 /** Reads one section file. Unmigrated tables contribute nothing rather than failing. */
@@ -52,10 +70,10 @@ export function screenRows(root, file) {
   if (!existsSync(path)) throw new Error(`Missing inventory section: ${file}`)
   const content = readFileSync(path, 'utf8')
   const collected = []
-  for (const { header, rows } of tableRows(content)) {
+  for (const { header, headerRaw, rows } of tableRows(content)) {
     const index = Object.fromEntries(header.map((name, position) => [name, position]))
     if (index.id === undefined) continue
-    for (const cells of rows) {
+    for (const { cells, raw } of rows) {
       const id = strip(cells[index.id] ?? '')
       if (blank(id)) continue
       const kind = cell(cells[index['종류']] ?? '')
@@ -67,6 +85,7 @@ export function screenRows(root, file) {
       const reasons = []
       if (!blank(unresolved)) reasons.push(unresolved)
       if (observation.includes(OBSERVATION_PENDING)) reasons.push('Figma 관찰 미판독')
+      if (OBSERVATION_UNENUMERATED.test(observation)) reasons.push('Figma 구성 미열거')
       if (policy.includes(POLICY_PENDING)) reasons.push('Notion 정책 미수집')
       collected.push({
         id,
@@ -78,8 +97,11 @@ export function screenRows(root, file) {
         observation,
         policy,
         unresolved: reasons.length ? reasons.join(' / ') : null,
-        questions: [...new Set([...unresolved.matchAll(/\bQ(\d+)\b/g)].map((match) => match[1]))],
+        // The ledger links questions two ways: a bare `Q7` token or the judgment link text `질문 7`.
+        questions: [...new Set([...unresolved.matchAll(/\bQ(\d+)\b|질문[ -](\d+)/g)].map((match) => match[1] ?? match[2]))],
         pointer: blank(pointer) ? null : pointer,
+        raw,
+        headerRaw,
       })
     }
   }
@@ -94,7 +116,8 @@ export function screenRows(root, file) {
  */
 export function rowsForSurface(root, surface) {
   if (!surface?.inventory) return []
-  return screenRows(root, surface.inventory).filter((row) => row.id.startsWith(`${surface.id}.`))
+  const file = typeof surface.inventory === 'string' ? surface.inventory : surface.inventory.file
+  return screenRows(root, file).filter((row) => row.id.startsWith(`${surface.id}.`))
 }
 
 /**
@@ -105,7 +128,8 @@ export function pointerState(root, row) {
   if (row.kind === 'n/a') return 'n/a'
   if (!row.pointer) return 'none'
   const candidates = [...row.pointer.matchAll(/`([^`]+)`/g)].map((match) => match[1])
-  const paths = candidates.filter((value) => value.includes('/') || /\.[jt]sx?$/.test(value))
+  // A leading slash is a URL the screen navigates to, not a repository path.
+  const paths = candidates.filter((value) => !value.startsWith('/') && (value.includes('/') || /\.[jt]sx?$/.test(value)))
   if (!paths.length) return 'unverifiable'
   return paths.every((value) => existsSync(resolve(root, value)) || tracked(root, value)) ? 'present' : 'stale'
 }

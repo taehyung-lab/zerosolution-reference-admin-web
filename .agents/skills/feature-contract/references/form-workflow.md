@@ -13,7 +13,7 @@ Read this file for create/edit form ownership, validation, conditional sections,
 - Submit orchestration is `useSaveForm` (shared): it takes `schema`, `defaultValues`, `sections`, `save.run/isPending`, `mapError`, `onDone` and returns `form`, `sections`, `stage`, `submit`, `guard`, `dialogs`. Render `dialogs` once — it holds the dirty-leave question and the save confirm/acknowledge pair, so the blocker never runs without its dialog. The feature passes `mapError: (e) => classifyFormError(e, fieldOrder)` (`src/api/form-error.ts`) and reads `stage.kind === 'failed'` for the root line (`FormSaveFailureMessage`). Do not add resource descriptors, a domain `mode`, or callback overrides to it; a differing workflow stays feature-local.
 - Do not mirror fields in component state, use Query cache as form state, or build a schema-driven renderer.
 - Conditional controls explicitly clear values when product behavior requires it; mapper whitelists do not fix dirty state or validation.
-- When the product instead requires restoring hidden input, keep values in the parent `useForm`. `MemberEditScreen` uses React `Activity` only for restriction UI visibility; its schema and confirmed-input mapper use account status, not DOM visibility. General-member input clears restrictions without mutating the editing draft. Hidden Activity cleans up child Effects, so test field hide/restore and validation with the real Form; do not replace every `keepMounted` section with Activity.
+- When the product instead requires restoring hidden input, keep values in the parent `useForm` and use React `Activity` only for the dependent group's visibility; the schema and confirmed-input mapper decide by the authoritative status, not DOM visibility, and clearing a dependent group must not mutate the editing draft. Hidden Activity cleans up child Effects, so test field hide/restore and validation with the real Form; do not replace every `keepMounted` section with Activity. (Current consumer: [이 저장소의 관찰](#이-저장소의-관찰).)
 - Fields bind through typed `shared/ui/form` adapters. Feature schema, defaults, conditional behavior, normalization, and payload mapping remain outside shared UI.
 - Server option `queryOptions` return raw reference records. A feature option hook may use Query `select` to expose `{ value, label }` while preserving the raw loader-warmed cache; forms consume that hook instead of calling `useQuery` and mapping records themselves. The hook projects each option query to `{ state, items, retry }` and the select renders that state in place (`FormSelectField state/onRetry`); `data ?? []` alone makes a failed request look like an empty list. Dependent options keep their prerequisite in the hook/query contract; clearing dependent values is wired by the screen at the select's `onValueChange`, next to the field, not in an effect.
 - A domain's create and edit screens render one feature form component (`{Domain}Form`) that owns what they share: the option queries, the dependent-value policy, the common fields in Figma order, and the shell (`{save.dialogs}`, `<form>`, `FormSaveFailureMessage`, `SectionCard` with the whole `sectionProps(section)` object, action row). Each screen declares `useSaveForm` (schema, defaults, mutation, destination) and passes only what differs — a slot for the differing fields and where cancel goes. That component is domain-specific by construction; do not reduce it to a domain-free shell (the next domain would copy it) and do not lift it to shared.
@@ -21,10 +21,10 @@ Read this file for create/edit form ownership, validation, conditional sections,
 A consuming form keeps its fields, schema, defaults, validation copy, conditional clearing, option sources, mapper, destination, and whether save uses the confirm/acknowledge pair. It adopts `SectionCard`, adapters, and `useUnsavedChangesGuard.leave()` through the contracts above; missing issue text does not justify a second cancel dialog, inline-form hook, or form controller.
 
 For an explicitly scoped pre-request scenario with no save implementation, compose `useForm`, the
-existing adapters/guard, `useConfirmation` and `ConfirmDialog`, as `MemberCreateScreen` does. Confirmation passes
+existing adapters/guard, `useConfirmation` and `ConfirmDialog`. Confirmation passes
 validated input to the required feature callback; it does not reset dirty state, acknowledge success or navigate.
 The explicit request handler and its observation rules are owned by [mutation-actions.md](mutation-actions.md#api-연결-전-시나리오-요청).
-Do not resolve a fake mutation, leave a promise pending forever, or add a rehearsal mode to `useSaveForm`.
+Do not resolve a fake mutation, leave a promise pending forever, or add a second-contract mode switch to `useSaveForm`.
 Revisit shared validation composition when another real caller demonstrates the same lifecycle.
 
 ## Composition index
@@ -43,6 +43,7 @@ Select only the surfaces the current form uses.
 ## 형태
 
 등록·수정 한 쌍이 `screens/form/` 하나를 쓴다. 파일 집합만 적는다. 각 역할의 규칙은 위 [Form ownership](#form-ownership) 이 소유한다.
+「있을 때」행은 그 책임이 있을 때만 파일을 만든다. 공유 필드가 없으면 공유 `Form` 파일을 만들지 않는다.
 
 | 파일 | 담는 것 |
 | --- | --- |
@@ -51,7 +52,7 @@ Select only the surfaces the current form uses.
 | `model/*-request.ts` | 검증된 입력 → 요청 입력 mapper |
 | `model/use*Mutation.ts` 또는 `*-requests.ts` | 저장 실행과 캐시 후속(API 연결 전이면 요청 함수 도달까지) |
 | `model/use*FormOptions.ts` | 선택지 투영 훅(선택지가 있을 때) |
-| `ui/{Domain}Form.tsx` | 등록·수정이 공유하는 폼(공유 필드가 있을 때. 회원 폼은 등록·수정 필드가 달라 없다) |
+| `ui/{Domain}Form.tsx` | 등록·수정이 공유하는 폼(공유 필드가 있을 때. 등록·수정 필드가 다르면 만들지 않는다) |
 | `ui/*CreateScreen.tsx`·`*EditScreen.tsx` | 각자의 `useSaveForm` 과 다른 필드 슬롯. 입력 화면 어댑터를 별도 파일(`*InputScreens.tsx`·`use*InputForm.tsx`)로 두는 것도 이 역할이다 |
 
 route 는 [Route file layout](router.md#route-file-layout) 을 따르고, 수정 route 는 상세 query 를 await 해 기본값을 준비할 수 있다.
@@ -68,7 +69,7 @@ Server field errors: `useSaveForm` writes `fieldMeta.errorMap.onServer` for the 
 question applies only to dedicated create/edit screens. A dirty form alone is not an eligibility rule.
 On create/edit screens, clean cancellation leaves directly; dirty cancellation asks once, keeping input
 when declined and running the original cancel action when confirmed. Inline editing inside a detail and
-action dialogs (counsel, appeal processing, SMS/email, password/account actions) run their existing
+action dialogs (record entry, review processing, message sending, password/account actions) run their existing
 cancel/close action without an additional dirty question. A local action named create/edit does not make
 its enclosing detail or dialog a dedicated create/edit screen. All supported dialog dismiss affordances
 (cancel, ×, Escape, outside dismissal) follow the same caller-owned close policy; pending restrictions remain.
@@ -89,3 +90,11 @@ Tabs inside a form (translation tabs, sub-tabs of a settings section) are presen
 Dirty-leave confirmation uses the Router blocker (`useBlocker({ shouldBlockFn, withResolver: true, disabled })` — the function/`condition` overloads are deprecated in Router 1.170) and a declarative confirm; do not copy the pending destination into a global store. `useSaveForm` passes `when: isDirty` and `refuseSilently: isPending`: a pending save is still dirty and stays guarded, but it refuses the leave without asking because the progress overlay is already the message (a dialog underneath it cannot be operated — Chromium); a successful save resets the dirty baseline (`form.reset(values, { keepDefaultValues: true })`; without `keepDefaultValues` the next render rolls values back to the original defaults) so acknowledging leaves without asking. The feature renders `save.dialogs` once and owns no leave state. A consequential field change keeps one candidate outside the committed form value until confirmation, then calls `setFieldValue`; that candidate is not a form mirror.
 
 Read [mutation-actions.md](mutation-actions.md) for pending, confirmation, feedback, and post-success navigation. Read [file-workflow.md](file-workflow.md) only when the form contains file workflow behavior.
+
+## 이 저장소의 관찰
+
+규칙이 아니라 이 저장소 화면에서 위 규칙을 적용한 기록이다. 신규 프로젝트는 이 절을 비우고 자기 화면으로 다시 채운다.
+
+- 숨긴 입력 복원 + `Activity`: `MemberEditScreen` 이 활동제한 UI 의 표시에만 Activity 를 쓰고, schema 와 확정 입력 mapper 는 계정 상태로 판단한다. 일반회원 입력은 편집 draft 를 건드리지 않고 제한을 지운다.
+- 저장 미구현의 요청 직전 시나리오 조립: `MemberCreateScreen`.
+- `{Domain}Form` 이 없는 예: 회원 폼은 등록·수정 필드가 달라 공유 폼이 없다.

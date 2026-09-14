@@ -328,6 +328,81 @@ export function documentBudgetNotices(files, budget = DOCUMENT_LINE_BUDGET, byte
   return notices
 }
 
+/** 스킬 reference 안에서 이 저장소 화면의 관찰·이탈·소비자 표가 모이는 절. 규칙이 아니라 관찰이며 이관 시 비운다. */
+export const OBSERVATION_HEADING = '이 저장소의 관찰'
+
+/**
+ * 이 저장소 제품의 도메인 명사와 식별자 접두. 규칙 문장에 이 낱말이 있으면 규칙이 한 화면의 인스턴스로
+ * 읽힌다(2026-09-10 게시판 드릴이 형제 값을 복사한 원인, 2026-09-11 판정 오류). 이관 시 대상 제품 값으로 바꾼다.
+ * `src/features` 디렉터리명은 실행 시 읽어 `<dir>/` 꼴만 잡는다(`auth` 같은 일반어를 낱말로 잡지 않기 위해).
+ */
+export const PRODUCT_DOMAIN_TERMS = {
+  nouns: ['회원', '운영자', '공연', '게시판', '게시물', '소명', '상담', '발권', '전시', '프로모션', '커뮤니티', '리허설', '메시지'],
+  /** 대문자 시작 식별자 조각. camelCase 안(`usePerformanceDetail`)도 잡도록 낱말 경계를 두지 않는다. */
+  identifiers: ['Manager', 'Member', 'Performance', 'Board', 'Counsel', 'Appeal', 'Dormant', 'Withdrawn'],
+  /** 영어 산문 속 도메인 낱말(대소문자 무관, 복수형 포함). `performance` 는 React 성능 문서와 겹쳐 뺀다. */
+  english: ['member', 'manager', 'board', 'rehearsal', 'venue', 'appeal', 'counsel', 'dormant', 'withdrawn'],
+  /** 제품 도메인이 아니라 모든 어드민이 갖는 관심사인 디렉터리. `auth/reissue` 같은 transport 경로가 여기 걸린다. */
+  ignoreDirectories: ['auth'],
+}
+
+function readFeatureDirectories(root = 'src/features', ignore = PRODUCT_DOMAIN_TERMS.ignoreDirectories) {
+  if (!existsSync(resolve(root))) return []
+  return readdirSync(resolve(root), { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && !ignore.includes(entry.name))
+    .map((entry) => entry.name)
+}
+
+/** 한 줄에서 찍힌 제품 이름들. 코드 fence 안도 본다 — 예시도 인스턴스다. */
+export function productTermsInLine(line, terms = PRODUCT_DOMAIN_TERMS, featureDirs = []) {
+  const found = new Set()
+  for (const noun of terms.nouns) if (line.includes(noun)) found.add(noun)
+  const identifier = new RegExp(`(?:${terms.identifiers.join('|')})\\w*`, 'g')
+  for (const [match] of line.matchAll(identifier)) found.add(match)
+  if (terms.english?.length) {
+    const word = new RegExp(`\\b(?:${terms.english.join('|')})s?\\b`, 'gi')
+    for (const [match] of line.matchAll(word)) found.add(match)
+  }
+  if (featureDirs.length) {
+    const dir = new RegExp(`\\b(?:${featureDirs.join('|')})\\/`, 'g')
+    for (const [match] of line.matchAll(dir)) found.add(match)
+  }
+  return [...found]
+}
+
+/**
+ * 스킬 Markdown 의 규칙 문장에 남은 제품 이름을 notice 로 낸다. `OBSERVATION_HEADING` 을 담은 heading 의 절(같은
+ * 깊이의 다음 heading 전까지)은 관찰이므로 보지 않는다. heading 문장 자체도 본다. fence 안의 `#` 은 heading 이
+ * 아니다. 실패가 아닌 이유: 어휘가 부분 문자열·일반어(`운영자`, `전시`)와 겹쳐 오탐이 있고, 그 판단은 리뷰 몫이다.
+ * 0 이 목표이고, 남은 것은 이유가 있어야 한다.
+ */
+export function productNameNotices(files, { terms = PRODUCT_DOMAIN_TERMS, featureDirs = readFeatureDirectories(), read = (file) => readFileSync(resolve(file), 'utf8') } = {}) {
+  const notices = []
+  for (const file of files) {
+    const hits = []
+    let skipLevel = null
+    let fence = null
+    read(file).split('\n').forEach((line, index) => {
+      const fenceMark = line.match(/^\s*(`{3,}|~{3,})/)
+      if (fenceMark) {
+        if (fence === null) fence = fenceMark[1][0]
+        else if (fenceMark[1][0] === fence) fence = null
+      }
+      const heading = fence === null ? line.match(/^(#{1,6}) +(.+?)\s*#*$/) : null
+      if (heading) {
+        const level = heading[1].length
+        if (skipLevel !== null && level <= skipLevel) skipLevel = null
+        if (heading[2].includes(OBSERVATION_HEADING)) { skipLevel = level; return }
+      }
+      if (skipLevel !== null) return
+      const found = productTermsInLine(line, terms, featureDirs)
+      if (found.length) hits.push(`${index + 1}: ${found.join('·')}`)
+    })
+    if (hits.length) notices.push(`스킬 규칙 문장에 제품 이름 ${hits.length}줄: ${file} — ${hits.join(' / ')}. 규칙은 도메인 없이 쓰고 관찰은 \`## ${OBSERVATION_HEADING}\` 절로 옮긴다.`)
+  }
+  return notices
+}
+
 export function claudeAgentsImportFailure(claude) {
   const firstInstruction = claude.split('\n').find((line) => line.trim() !== '')
   return firstInstruction?.trim() === '@AGENTS.md'

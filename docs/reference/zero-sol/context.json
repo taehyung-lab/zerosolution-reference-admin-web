@@ -329,8 +329,16 @@
           "heading": "Repeated result and search shapes"
         },
         {
+          "file": ".agents/skills/feature-contract/references/list-workflow.md",
+          "heading": "형태"
+        },
+        {
           "file": ".agents/skills/feature-contract/references/list-search-contract.md",
           "heading": "Search 계약과 기본값 작성"
+        },
+        {
+          "file": ".agents/skills/feature-contract/references/list-search-contract.md",
+          "heading": "형태"
         },
         ".agents/skills/feature-contract/references/table-composition.md",
         {
@@ -487,8 +495,16 @@
           "heading": "Repeated result and search shapes"
         },
         {
+          "file": ".agents/skills/feature-contract/references/list-workflow.md",
+          "heading": "형태"
+        },
+        {
           "file": ".agents/skills/feature-contract/references/list-search-contract.md",
           "heading": "Search 계약과 기본값 작성"
+        },
+        {
+          "file": ".agents/skills/feature-contract/references/list-search-contract.md",
+          "heading": "형태"
         },
         ".agents/skills/feature-contract/references/table-composition.md",
         {
@@ -593,8 +609,16 @@
           "heading": "Repeated result and search shapes"
         },
         {
+          "file": ".agents/skills/feature-contract/references/list-workflow.md",
+          "heading": "형태"
+        },
+        {
           "file": ".agents/skills/feature-contract/references/list-search-contract.md",
           "heading": "Search 계약과 기본값 작성"
+        },
+        {
+          "file": ".agents/skills/feature-contract/references/list-search-contract.md",
+          "heading": "형태"
         },
         ".agents/skills/feature-contract/references/table-composition.md",
         {
@@ -1230,6 +1254,10 @@
         {
           "file": ".agents/skills/feature-contract/references/detail-workflow.md",
           "heading": "Actions and verification"
+        },
+        {
+          "file": ".agents/skills/feature-contract/references/detail-workflow.md",
+          "heading": "형태"
         },
         ".agents/skills/feature-contract/references/form-workflow.md",
         ".agents/skills/feature-contract/references/file-workflow.md",

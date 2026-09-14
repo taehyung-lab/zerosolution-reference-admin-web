@@ -72,6 +72,7 @@ src/shared/       도메인·서버 계약을 모르는 UI와 순수 공용 코�
 | 위치 | 내용 |
 | ---- | ---- |
 | [`AGENTS.md`](AGENTS.md) | 프로젝트 사실, 전역 경계, 스킬 라우팅, 완료 기준. 사람과 에이전트 모두 여기서 시작한다 |
+| `.agents/skills/screen-loop/` | 구현 요청의 분류·모드·증거 순서·복귀 지점. 범위가 정해지기 전에 읽는 유일한 skill |
 | `.agents/skills/{folder-structure-contract,api-contract,feature-contract,shared-ui-contract}/` | 반복 구현 절차의 정본. 편집 범위가 정해진 뒤 필요한 reference만 읽는다 |
 | `docs/decisions/` | 결정 이유·대안·상태·재검토 조건을 보존하는 ADR |
 | [`docs/decisions/0009-shared-boundaries.md`](docs/decisions/0009-shared-boundaries.md) | 목록 공용화의 결정과 provisional 검증 상태. 구현법은 연결된 Skill reference가 소유한다 |
