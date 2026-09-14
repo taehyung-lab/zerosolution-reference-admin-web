@@ -4,7 +4,7 @@ import {
   useSelector,
   type DeepKeys,
 } from '@tanstack/react-form';
-import { useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import type { z } from 'zod';
@@ -13,9 +13,9 @@ import { FormSaveDialogs, type FormSaveFailure } from './FormSaveDialogs';
 import { useUnsavedChangesGuard } from './UnsavedChangesGuard';
 import { useFormSections } from './useFormSections';
 
-export type SaveStage<TOutput> =
+export type SaveStage<TOutput, TInput = unknown> =
   | { readonly kind: 'idle' }
-  | { readonly kind: 'confirming'; readonly values: TOutput }
+  | { readonly kind: 'confirming'; readonly values: TOutput; readonly submitted: TInput }
   | { readonly kind: 'saved' }
   | { readonly kind: 'failed'; readonly root: FormSaveFailure };
 
@@ -37,15 +37,14 @@ export interface FormErrorOutcome<TField extends string> {
  * blocker and its dialog together — a guard that blocks without a rendered dialog would trap the
  * user on the screen.
  *
- * On success the saved values become the dirty baseline (`reset(values, { keepDefaultValues })`):
- * the guard releases because nothing is unsaved, not because a flag says so. While the save is
- * pending the guard refuses a leave without asking (the progress overlay is the message). `keepDefaultValues`
- * matters — `useForm` re-applies the caller's options on every render and would otherwise roll
- * the values back to the original defaults (form-core 1.33.5 `update`).
+ * On success the server-normalized defaults become the dirty baseline when the feature maps them
+ * from the mutation result; otherwise the exact submitted input snapshot does. The guard releases
+ * because nothing is unsaved, not because a flag says so. Pending exits are refused silently.
  */
-export function useSaveForm<TInput, TOutput, TSection extends string>({
+export function useSaveForm<TInput, TOutput, TSection extends string, TSaveResult = unknown>({
   schema,
   defaultValues,
+  resetKey,
   sections,
   save,
   mapError,
@@ -53,9 +52,11 @@ export function useSaveForm<TInput, TOutput, TSection extends string>({
 }: {
   readonly schema: z.ZodType<TOutput, TInput>;
   readonly defaultValues: TInput;
+  readonly resetKey?: string | number;
   readonly sections: Readonly<Record<TSection, readonly DeepKeys<TInput>[]>>;
   readonly save: {
-    readonly run: (values: TOutput) => Promise<unknown>;
+    readonly run: (values: TOutput) => Promise<TSaveResult>;
+    readonly getDefaultValues?: (result: TSaveResult) => TInput | undefined;
     readonly isPending: boolean;
   };
   readonly mapError: (
@@ -64,17 +65,19 @@ export function useSaveForm<TInput, TOutput, TSection extends string>({
   readonly onDone: () => void;
 }) {
   const { t } = useTranslation('shared');
-  const [stage, setStage] = useState<SaveStage<TOutput>>({ kind: 'idle' });
+  const [stage, setStage] = useState<SaveStage<TOutput, TInput>>({ kind: 'idle' });
+  const [formDefaults, setFormDefaults] = useState(defaultValues);
+  const previousResetKey = useRef(resetKey);
   const fieldOrder = (
     Object.values(sections) as readonly (readonly DeepKeys<TInput>[])[]
   ).flat();
 
   const form = useForm({
-    defaultValues,
+    defaultValues: formDefaults,
     validationLogic: revalidateLogic(),
     validators: { onDynamic: schema },
     onSubmit: ({ value }) => {
-      setStage({ kind: 'confirming', values: schema.parse(value) });
+      setStage({ kind: 'confirming', values: schema.parse(value), submitted: value });
     },
     onSubmitInvalid: ({ formApi }) => {
       const invalid = Object.keys(formApi.state.fieldMeta).filter(
@@ -85,6 +88,14 @@ export function useSaveForm<TInput, TOutput, TSection extends string>({
       revealAndFocus(invalid);
     },
   });
+
+  useLayoutEffect(() => {
+    if (Object.is(previousResetKey.current, resetKey)) return;
+    previousResetKey.current = resetKey;
+    setFormDefaults(defaultValues);
+    form.reset(defaultValues);
+    setStage({ kind: 'idle' });
+  }, [defaultValues, form, resetKey]);
 
   const invalidFields = useSelector(form.store, (state) =>
     Object.keys(state.fieldMeta).filter(
@@ -124,11 +135,13 @@ export function useSaveForm<TInput, TOutput, TSection extends string>({
 
   async function confirm() {
     if (stage.kind !== 'confirming') return;
-    const { values } = stage;
+    const { values, submitted } = stage;
     flushSync(() => setStage({ kind: 'idle' }));
     try {
-      await save.run(values);
-      form.reset(form.state.values, { keepDefaultValues: true });
+      const result = await save.run(values);
+      const savedDefaults = save.getDefaultValues?.(result) ?? submitted;
+      flushSync(() => setFormDefaults(savedDefaults));
+      form.reset(savedDefaults);
       setStage({ kind: 'saved' });
     } catch (error: unknown) {
       const outcome = mapError(error);

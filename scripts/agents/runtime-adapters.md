@@ -13,6 +13,48 @@ review runtime availability, repository paths and native trust before enabling t
 - Other runtimes: use the same prepare/review commands and root instructions. An adapter must be implemented and
   exercised before claiming automatic interception there. “All agents” means one contract, not undocumented hook support.
 
+## Ordinary and recorded sessions
+
+A session with no prepared state and no prepared ancestor is ordinary: repository-native edits and general shell
+calls do not require prepare, PostToolUse creates no attribution state, and Stop requires no review
+receipt. This removes mandatory checkpoint/review artifacts; it does not prove the work correct or
+grant authority beyond the user's request. Root requirements, actual verification and high-risk
+independent review remain instructions, not automatic gates in this mode. Unsupported edit payloads
+are still rejected. A single native target outside the checkout can fail path validation before mode
+selection, but a mixed-target patch can short-circuit that preliminary check after an ordinary in-repo
+target. Shell destinations are not inspected. This existing channel difference is not a complete
+filesystem permission boundary; ordinary mode does not promise consistent out-of-repository native handling.
+
+Literal `head` and `tail` inspection does not open a recorded write bracket or require a child
+checkpoint. Redirection and command chaining still use the recorded write path. This is a bounded
+command classifier, not a shell sandbox or a general proof that a command cannot write.
+
+Recorded review requires a bundle `modify` decision for changed export names only when the session
+authored one of that bundle’s code roots. A concurrent change to another bundle is not this author’s
+edit. The repository-wide contracts check still validates export declarations; unchanged names do not
+prove unchanged API semantics. Unknown or removed bundles retain the conservative drift check.
+
+Calling prepare explicitly starts the existing recorded protocol. A descendant of any prepared
+ancestor must prepare for itself before writing; walking every ancestor prevents an unprepared
+intermediate child from hiding a recorded grandparent. State is local to the checkout and the session
+IDs supplied by the runtime; this is not cross-checkout or cryptographic identity enforcement.
+
+Recording starts at prepare time. Earlier changes become baseline and are **not certified** by the
+receipt. First prepare displays pre-existing in-scope paths when Git can enumerate them, otherwise
+reports that limitation. Review earlier changes separately; do not call a later receipt a review of
+the whole prior task.
+
+An ordinary session has no attribution record. Its concurrent writes can be caught in a recorded
+session's bracket and cannot be reassigned using otherSessionClaims. Use one writer or a separate
+worktree for recorded reproducibility. Do not add ordinary state files to conceal this tradeoff or
+weaken the genuine out-of-scope check.
+
+## Recorded interception and attribution
+
+**All preparation, scope, write-bracket and receipt rules below apply to recorded sessions and their
+descendants.** The inspection recognizer remains necessary to avoid attributing concurrent changes to
+a read-only call; it is not dead code after ordinary mode was introduced.
+
 Native Edit/Write/apply_patch calls check target scope before execution, but only once the tool accepts the
 call: an Edit whose `old_string` does not match fails inside the tool first, so that path never reaches the
 handler and never reports a scope or unresolved reason. Measure a path boundary with Write. General shell calls require preparation,
@@ -30,6 +72,9 @@ node under the user's nvm directory (`$NVM_DIR/versions/node/v<x.y.z>/bin/node`)
 executable path is recognized. Use it for review evidence: `pnpm` runs whatever node is on PATH, and outside
 the declared engine `pnpm test:unit` fails four `src/api/http` tests on a global `localStorage` (2026-09-11). `rtk` and `rtk proxy` wrappers are recognized.
 Git config/alias options, external diff/text conversion and output-to-file options remain gated.
+The exact `node scripts/contracts/check.mjs` command is inspection too (no extra arguments).
+`node scripts/agents/cli.mjs review-context <session-id>` is also inspection: it reports the active
+review fingerprint and preparation history without settling another session's open write bracket.
 General Python/Node programs cannot be classified as read-only from their executable name.
 The writing forms of the same
 commands (`find -exec`/`-delete`/`-fprint`, `sed -i`/`-f`/`w`) require preparation. Literal quoted arguments
@@ -85,9 +130,7 @@ inherited the parent's bracket and authored paths, measured at 18). The parent a
 subagent's authored paths join the parent's review set, so a delegated write is reviewed even when the
 subagent never reaches its own SubagentStop. Two checkpoints can now declare the same path in one checkout;
 `prepare` does not check scopes against each other, so "one final editor per file" is the brief's job, not
-the gate's. Concurrent edits are reported, never
-blocking: they belong to another session, and blocking on them previously left a session with no reachable
-exit. Mention them in the report's limitations; this is not a gate-exclusion field. Re-preparation preserves
+the gate's. Edits positively attributed to another prepared session are reported rather than blocking. Unclaimed concurrent edits can still block, as described above. Mention them in the report's limitations; this is not a gate-exclusion field. Re-preparation preserves
 both the baseline and the attribution, so widening scope cannot erase what the session already wrote.
 Attribution narrows the window; it is not proof of authorship, and a shared tree still costs review time —
 prefer one writing session or an isolated worktree. A worktree that a runtime creates **inside** the
@@ -111,7 +154,7 @@ necessary; do not describe this as a sandbox.
 No transcript, prompt, secret or global agent configuration is read or modified by these scripts.
 Normal and negative controls live in `preflight.test.mjs`; runtime input fixtures prove adapter decisions,
 not installation/trust or every native tool path. Report native runtime measurements separately.
-Freeze source while a same-tree preparation rehearsal runs. Even a source-read-only worker becomes
+Freeze source while a same-tree preparation rehearsal runs. Even a prepared source-read-only worker becomes
 accountable after a general shell command (such as copying a log; recognized inspection/RPC is exempt). Later
 coordinator edits can then block its Stop. Use a frozen checkout; do not broaden the worker scope or
 reset its baseline to conceal another session’s edits.

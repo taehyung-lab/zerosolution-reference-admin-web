@@ -143,7 +143,7 @@ export function AppealProcessingForm({
         <Button type="submit">{shared("formAction.save")}</Button>
         <Button
           type="button"
-          onClick={() => guard.close(() => form.reset(), { when: false })}
+          onClick={() => guard.close(() => form.reset())}
         >
           {shared("formAction.cancel")}
         </Button>

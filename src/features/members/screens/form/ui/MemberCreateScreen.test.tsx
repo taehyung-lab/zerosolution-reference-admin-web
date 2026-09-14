@@ -1,5 +1,6 @@
 import { formatDate } from "@/shared/lib/datetime";
 import { TestLocaleProvider } from "@/test/locale";
+import { UnsavedChangesProvider } from "@/shared/ui/form/UnsavedChangesGuard";
 import {
   fireEvent,
   render,
@@ -26,7 +27,9 @@ function setup() {
   const onConfirm = vi.fn();
   render(
     <TestLocaleProvider>
-      <MemberCreateScreen onConfirm={onConfirm} />
+      <UnsavedChangesProvider>
+        <MemberCreateScreen onConfirm={onConfirm} />
+      </UnsavedChangesProvider>
     </TestLocaleProvider>,
   );
   return onConfirm;

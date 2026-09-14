@@ -1,4 +1,5 @@
 import { TestQueryLocaleProvider as TestLocaleProvider } from "@/test/query-locale";
+import { UnsavedChangesProvider } from "@/shared/ui/form/UnsavedChangesGuard";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { expect, it, vi } from "vitest";
 import { type MemberCounselRequest } from "../model/member-counsel-request";
@@ -12,11 +13,11 @@ it("binds counsel and note identities to both printer request types without writ
   const onRequest = vi.fn<(request: MemberCounselRequest) => void>();
   render(
     <TestLocaleProvider>
-      <MemberCounselScreen
+      <UnsavedChangesProvider><MemberCounselScreen
         search={{}}
         onSearchChange={vi.fn()}
         onRequest={onRequest}
-      />
+      /></UnsavedChangesProvider>
     </TestLocaleProvider>,
   );
   fireEvent.click(await screen.findByText("시나리오 검증용 문의 내용"));

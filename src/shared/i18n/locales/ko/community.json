@@ -223,6 +223,8 @@
       "remove": "삭제",
       "removeFor": "{{order}}번 카테고리 삭제",
       "close": "닫기",
+      "required": "카테고리명을 입력해 주세요.",
+      "move": "{{order}}번 순서 이동",
       "moveUp": "{{order}}번 위로",
       "moveDown": "{{order}}번 아래로"
     }

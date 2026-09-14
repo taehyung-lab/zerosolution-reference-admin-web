@@ -26,7 +26,7 @@ const contract = defineSearchFields(fields);
 이는 선언 방식의 일부 예시다. 새 제품에서는 실제 필드·기본값·분류를 먼저 확인한다.
 공통 날짜·양의 정수·배열 codec의 동작과 타입 경계는
 [shared-values.md](../../shared-ui-contract/references/shared-values.md#search-field-declarations-and-codecs)가 소유한다.
-허용 pageSize와 enum은 caller가 선택한다. 제품 목록은 `standardPageSizeOptions` 중 하나를 쓴다. 제품 계약이 아닌 격리 계약의 소비자만 그 계약의 형(양의 정수)을 유지한다.
+허용 pageSize와 enum은 제품 근거로 caller가 선택한다. `standardPageSizeOptions`는 현재 제공되는 후보 값 집합이며 새 제품의 기본 정책이 아니다. schema와 옵션 UI는 채택한 같은 집합을 사용한다.
 
 ### 형태
 
@@ -34,8 +34,8 @@ const contract = defineSearchFields(fields);
 
 | 필드 | 모양 |
 | --- | --- |
-| `page`, `pageSize` | 양의 정수. 제품 목록의 `pageSize` 는 `standardPageSizeOptions` 중 하나(격리 계약의 소비자만 위 서술대로 그 계약의 형을 유지). kind `view` |
-| `sortType`, `sortDirection` | feature 의 정렬 키 enum, `'asc' \| 'desc'`. `sortDirection` 은 `defaultValue` 필수(목록 공통 `desc`, 2026-09-11 사용자 확정) — `undefined` 를 두면 활성 컬럼이 표시 없이 렌더되므로 `contracts:check` 가 `defaultValue: undefined` 를 실패로 잡는다. aria 어휘 변환은 `headerSortDirection`([list-workflow Sorting](list-workflow.md#sorting)). kind `view` |
+| `page`, `pageSize` | 양의 정수. `pageSize` 허용 집합은 제품이 선언한다. kind `view` |
+| `sortType`, `sortDirection` | feature 의 정렬 키 enum, `'asc' \| 'desc'`. `sortDirection` 은 `defaultValue` 필수(방향은 대상 제품 근거로 결정) — `undefined` 를 두면 활성 컬럼이 표시 없이 렌더되므로 `contracts:check` 가 `defaultValue: undefined` 를 실패로 잡는다. aria 어휘 변환은 `headerSortDirection`([list-workflow Sorting](list-workflow.md#sorting)). kind `view` |
 | `periodType`, `startDateTime`, `endDateTime` | 기간 기준 enum, UTC instant 두 개. kind `filter` |
 | `keywords` | `{ field, value }[]` — 검색 대상이 하나여도 이 모양이다. 축이 없는 `string[]` 을 만들지 않는다. kind `filter` |
 | 다중선택 | `string[]`(enum 항목), 빈 배열 = 전체. kind `filter` |
@@ -60,7 +60,7 @@ route의 `validateSearch`와 canonical guard는 해당 화면의 sparse schema�
 검색 시 첫 페이지, 초기화 시 `{}` 등은 서로 다른 전이다. URL 기본값을 생략할 때는
 같은 계약의 defaults와 비교한다. 의미 없는 별도 기본값 상수 계층이나 `?? 100` 복사본을 만들지 않는다.
 기간 preset의 기본 선택과 `periodType`은 서로 독립적이며, 검색어 editor의 `initialField`도
-`keywords: []`와 다르다. preset·keyword draft의 초기 조작값은 해당 feature 조립이 소유한다. 현재 목록의 무기간은 `inferPeriodPreset`으로 ALL을 파생하며 별도 defaultPreset 상태를 만들지 않는다. 검색어 초기 대상은 feature의 허용 목록 첫 항목을 채택하고 schema와 옵션 UI가 같은 목록을 읽는다. pageSize 허용 목록은 `standardPageSizeOptions`를 채택한다(격리 계약의 소비자만 그 계약의 형을 유지).
+`keywords: []`와 다르다. preset·keyword draft의 초기 조작값은 해당 feature 조립이 소유한다. 현재 목록의 무기간은 `inferPeriodPreset`으로 ALL을 파생하며 별도 defaultPreset 상태를 만들지 않는다. 검색어 초기 대상은 feature의 허용 목록 첫 항목을 채택하고 schema와 옵션 UI가 같은 목록을 읽는다. pageSize 허용 목록은 해당 제품이 채택한 집합을 사용한다.
 
 ### 기간 입력과 확정 경계
 

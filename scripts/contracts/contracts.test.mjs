@@ -1,7 +1,7 @@
 import { spawnSync } from 'node:child_process'
-import { cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { basename, join, resolve } from 'node:path'
+import { basename, join, relative, resolve } from 'node:path'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import {
   CI_VERIFY_SCRIPTS,
@@ -37,6 +37,7 @@ import {
   listTransplantManifestFiles,
   SEED_BUNDLES,
   SEED_BUNDLE_EXPORTS,
+  TRANSPLANT_MANIFEST,
   findBundleExportDrift,
   readExportedNames,
   validateSeedBundles,
@@ -471,7 +472,20 @@ describe('contracts check CLI wiring', () => {
     expect(result.status).toBe(0)
     expect(result.stdout).toContain('CLAUDE.md')
     expect(result.stdout).toContain('Copilot')
-    expect(result.stdout).toContain(`${SEED_BUNDLES.length}개 4-part bundle`)
+  })
+
+  it('reports missing merge prerequisites instead of crashing', () => {
+    for (const file of ['package.json', '.github/workflows/verify.yml']) {
+      const path = resolve(fixtureRoot, file)
+      const original = readFileSync(path)
+      try {
+        rmSync(path)
+        const result = runCheck()
+        expect(result.status).toBe(1)
+        expect(result.stderr).toContain(`${file} 를 먼저 병합한다`)
+        expect(result.stderr).not.toContain('ENOENT')
+      } finally { writeFileSync(path, original) }
+    }
   })
 
   it('fails through the real CLI when the Claude import is invalid', () => {
@@ -570,21 +584,50 @@ describe('seed contract bundles', () => {
     expect(findBundleExportDrift([bundle], {})).toEqual([expect.stringMatching(/SEED_BUNDLE_EXPORTS 가 없다/)])
   })
 
+  // A selective transplant leaves most bundles and all feature code behind, so this check builds its own
+  // four parts instead of naming a catalog id: the transplanted catalog must still be a valid input here.
   it('validates optional consumption examples without exporting feature code', () => {
-    const bundle = SEED_BUNDLES.find((item) => item.id === 'draft-commit')
+    const [code, skill, adr, test, consumer] = createDocuments({
+      'src/shared/lib/draft.ts': 'export function draft() {}\n',
+      'contracts/skill.md': '## Contract section\n\nStable contract sentence.\n',
+      'docs/decision.md': '## Decision stage\n\n| contract | provisional |\n',
+      'src/shared/lib/draft.test.ts': "import { draft } from './draft'\ndraft()\n",
+      'src/features/consumer/useConsumerFilter.ts': 'export const useConsumerFilter = () => null\n',
+    })
+    const bundle = {
+      id: 'draft-example',
+      code: [code],
+      skills: [{ file: skill, heading: 'Contract section', marker: 'Stable contract sentence.' }],
+      adrs: [{ file: adr, heading: 'Decision stage', marker: '| contract | provisional |' }],
+      tests: [test],
+      ownership: { shared: 'Holds the draft lifecycle.', feature: 'Owns fields, copy and navigation policy.' },
+    }
     const example = {
-      files: ['src/features/members/screens/list/model/useMemberListFilter.ts'],
+      files: [consumer],
       useWhen: 'Compare matching filter, period and keyword lifecycles.',
-      doNotCopy: 'Member defaults and navigation policy.',
+      doNotCopy: 'Consumer defaults and navigation policy.',
     }
     expect(validateSeedBundles([{ ...bundle, examples: [example] }])).toEqual([])
-    expect(validateSeedBundles([{ ...bundle, examples: [{ ...example, files: ['src/features/missing-example.ts'] }] }]))
+    expect(validateSeedBundles([{ ...bundle, examples: [{ ...example, files: [`${consumer}.missing`] }] }]))
       .toEqual([expect.stringContaining('example')])
     expect(validateSeedBundles([{ ...bundle, examples: [{ ...example, doNotCopy: '' }] }]))
       .toEqual([expect.stringContaining('example')])
     expect(validateSeedBundles([{ ...bundle, examples: [{ ...example, files: [] }] }]))
       .toEqual([expect.stringContaining('example')])
-    expect(listSeedFiles([{ ...bundle, examples: [example] }])).not.toContain(example.files[0])
+    expect(listSeedFiles([{ ...bundle, examples: [example] }])).not.toContain(relative(resolve('.'), consumer))
+  })
+
+  // The live catalog stays under test as a whole: whichever bundles a transplant selects, each one still
+  // declares its four parts, owns its code root alone and travels with the example rules above.
+  it('keeps every declared bundle in the live catalog valid', () => {
+    expect(SEED_BUNDLES.length).toBeGreaterThan(0)
+    expect(validateSeedBundles()).toEqual([])
+    for (const bundle of SEED_BUNDLES) {
+      expect(listSeedFiles([bundle])).toEqual(expect.arrayContaining(bundle.code))
+      for (const file of bundle.examples?.flatMap((example) => example.files) ?? []) {
+        expect(listSeedFiles([bundle])).not.toContain(file)
+      }
+    }
   })
 
   it('rejects a bundle when one of the four required parts is missing', () => {
@@ -686,6 +729,15 @@ describe('transplant manifest and seed negative controls', () => {
       'src/routes/_app/managers/index.tsx',
       'src/shared/i18n/locales/ko/managers.json',
     ])
+  })
+
+  // A tsconfig that travels without the projects it references makes the target fail to load tsconfig at
+  // all (measured: `Failed to load tsconfig 'tsconfig.e2e.json'` in the applied fixture).
+  it('carries every project reference of the tsconfig that travels', () => {
+    const references = JSON.parse(readFileSync(resolve('tsconfig.json'), 'utf8')).references ?? []
+    for (const { path } of references) {
+      expect(TRANSPLANT_MANIFEST.config).toContain(path.replace(/^\.\//, ''))
+    }
   })
 
   it('rejects a manifest entry that does not exist and accepts the real manifest', () => {

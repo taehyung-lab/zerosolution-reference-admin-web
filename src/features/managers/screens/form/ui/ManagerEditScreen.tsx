@@ -87,6 +87,7 @@ function ManagerEditForm({
   const save = useSaveForm({
     schema: managerEditSchema,
     defaultValues: defaults,
+    resetKey: managerId,
     sections: { info: managerEditFieldOrder },
     save: {
       run: (values) => mutation.mutateAsync(toManagerUpdateRequest(values)),

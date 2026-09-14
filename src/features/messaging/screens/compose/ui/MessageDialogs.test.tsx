@@ -1,8 +1,10 @@
 import { ApiError } from "@/api/error";
-import { TestLocaleProvider } from "@/test/locale";
-import { TestQueryLocaleProvider } from "@/test/query-locale";
+import { TestLocaleProvider as LocaleProvider } from "@/test/locale";
+import { TestQueryLocaleProvider as QueryLocaleProvider } from "@/test/query-locale";
+import { UnsavedChangesProvider } from "@/shared/ui/form/UnsavedChangesGuard";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import type { ReactNode } from "react";
 import { messagePolicyFixture } from "../../../fixtures/message-policy";
 import { MessageComposerDialog } from "./MessageComposerDialog";
 import { MessageFormDialog } from "./MessageFormDialog";
@@ -24,6 +26,14 @@ const policy = {
   senderAddress: "0212345678",
 };
 const recipients = [{ address: "01012345678", name: "김회원" }];
+
+function TestLocaleProvider({ children }: { readonly children: ReactNode }) {
+  return <LocaleProvider><UnsavedChangesProvider>{children}</UnsavedChangesProvider></LocaleProvider>;
+}
+
+function TestQueryLocaleProvider({ children }: { readonly children: ReactNode }) {
+  return <QueryLocaleProvider><UnsavedChangesProvider>{children}</UnsavedChangesProvider></QueryLocaleProvider>;
+}
 
 describe("message dialogs before API", () => {
   it.each(["sms", "email"] as const)(
@@ -127,8 +137,25 @@ describe("message dialogs before API", () => {
     );
     expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
+  it("keeps one recipient and hides removal at the minimum", () => {
+    render(
+      <TestLocaleProvider>
+        <MessageFormDialog
+          channel="sms"
+          policy={policy}
+          recipients={recipients}
+          onClose={vi.fn()}
+          onConfirm={vi.fn()}
+        />
+      </TestLocaleProvider>,
+    );
+    expect(screen.queryByRole("button", { name: "받는 사람 1 삭제" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "받는 사람 추가" }));
+    fireEvent.click(screen.getByRole("button", { name: "받는 사람 2 삭제" }));
+    expect(screen.queryByRole("button", { name: /받는 사람 .* 삭제/ })).toBeNull();
+  });
   it.each(["취소", "닫기", "Escape"])(
-    "closes dirty %s without an extra cancellation question",
+    "asks before closing dirty input through %s",
     (label) => {
       const onClose = vi.fn();
       render(
@@ -150,7 +177,9 @@ describe("message dialogs before API", () => {
         else fireEvent.click(screen.getByRole("button", { name: label }));
       };
       dismiss();
-      expect(screen.queryByRole("dialog", { name: "알림" })).toBeNull();
+      expect(screen.getByRole("dialog", { name: "알림" })).toHaveTextContent("입력을 취소하시겠습니까?");
+      expect(onClose).not.toHaveBeenCalled();
+      fireEvent.click(screen.getByRole("button", { name: "확인" }));
       expect(onClose).toHaveBeenCalledOnce();
     },
   );

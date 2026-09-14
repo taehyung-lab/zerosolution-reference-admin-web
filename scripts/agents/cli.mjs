@@ -1,8 +1,8 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { execFileSync } from 'node:child_process'
-import { authoredChanges, prepare, recordReview, localPath } from './preflight.mjs'
+import { prepare, prepareHistory, recordReview, reviewContext, localPath } from './preflight.mjs'
+import { runReviewCommand } from './review-checks.mjs'
 import { hookDecision, hookRoot } from './hook.mjs'
 import { describeContext, contextReport } from './surface-context.mjs'
 import { applySweep, describeSweep, sweepPlan } from './workspace.mjs'
@@ -33,13 +33,20 @@ try {
     }
   } else if (command === 'prepare') {
     process.stdout.write(prepare(root, sessionOrEvent, file))
+  } else if (command === 'review-context') {
+    process.stdout.write(JSON.stringify({ ...reviewContext(root, sessionOrEvent), attempts: prepareHistory(root, sessionOrEvent) }, null, 2) + '\n')
   } else if (command === 'review') {
     const reportPath = localPath(root, file)
     if (!reportPath.startsWith('.ai-work/')) throw new Error('Keep review evidence in .ai-work/')
-    const run = (args) => execFileSync(process.execPath, args, { cwd: root, stdio: ['ignore', 'ignore', 'inherit'] })
+    const { active: mine, external, fingerprint } = reviewContext(root, sessionOrEvent)
+    const checks = []
+    const run = args => {
+      const receipt = runReviewCommand(root, fingerprint, args)
+      checks.push(receipt)
+      if (receipt.exitCode !== 0 || receipt.error) throw new Error(`Review check failed; actual output and exit recorded in ${receipt.artifact}`)
+    }
     // Declaration checks stay repository-wide; code checks follow this session's own writes so that a
     // concurrent session's unfinished work cannot fail, or silently pass, this review.
-    const { mine, external } = authoredChanges(root, sessionOrEvent)
     const present = mine.filter((path) => existsSync(resolve(root, path)))
     const lintable = present.filter((path) => /\.(?:m|c)?[jt]sx?$/.test(path))
     run(['scripts/contracts/check.mjs'])
@@ -47,7 +54,7 @@ try {
     // "file ignored" warning is not a lint finding, so it must not fail the review under --max-warnings 0.
     if (lintable.length) run(['node_modules/eslint/bin/eslint.js', ...lintable, '--max-warnings', '0', '--no-warn-ignored'])
     if (present.length) run(['node_modules/vitest/vitest.mjs', 'related', ...present, '--run', '--passWithNoTests'])
-    recordReview(root, sessionOrEvent, JSON.parse(readFileSync(resolve(root, reportPath), 'utf8')))
+    recordReview(root, sessionOrEvent, JSON.parse(readFileSync(resolve(root, reportPath), 'utf8')), undefined, undefined, checks)
     process.stdout.write(`Review recorded over ${mine.length} authored path(s); contracts, lint and related tests passed for them. This records evidence; it does not certify its truth or replace verify.\n`)
     if (external.length) process.stdout.write(`Changed outside this session's writes (${external.length}, not judged here): ${external.join(', ')}\n`)
   } else if (command === 'hook') {
@@ -64,7 +71,7 @@ try {
       process.stdout.write(JSON.stringify(hookDecision(actedOn, payload, sessionOrEvent)))
     }
   } else {
-    throw new Error('Usage: node scripts/agents/cli.mjs context [surface-id] | context-report [--summary] | bundle [bundle-id] | sweep [--apply] | prepare|review <session-id> .ai-work/<task>/<file>.json | hook [event]')
+    throw new Error('Usage: node scripts/agents/cli.mjs context [surface-id] | context-report [--summary] | bundle [bundle-id] | sweep [--apply] | prepare|review <session-id> .ai-work/<task>/<file>.json | review-context <session-id> | hook [event]')
   }
 } catch (error) {
   process.stderr.write(`Repository preflight: ${error.message}\n`)

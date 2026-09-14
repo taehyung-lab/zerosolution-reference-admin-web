@@ -80,7 +80,7 @@ feature 가 값을 명시적으로 정리해야 한다. request mapper 의 white
 | -------------------------------------------------------- | ------------------------------------------------------------ |
 | primitive 의 접근성·토큰·키보드 동작                     | Zod 스키마, defaults, request mapper                        |
 | `FormField` 의 등록·오류 정규화·label/control/error 연결   | 필드 집합, 조건부 필드, 검증 문구                           |
-| TanStack 어댑터의 `form` + typed `name` → primitive 연결  | option Query, enum 의미, endpoint, cache 결과               |
+| TanStack 어댑터의 `form` + typed `name` → primitive/array 연결 | option Query, enum 의미, row 생성·stable ID, endpoint, cache 결과 |
 | 섹션 개폐 상태 대수와 "오류 있는 섹션 열기" 알고리즘      | 어떤 필드가 어느 섹션에 속하는지                            |
 | confirm/alert dialog 의 상호작용 mechanic                 | 저장 흐름의 문구·목적지·권한·실패 workflow                  |
 
@@ -143,8 +143,11 @@ Codex 는 consumer 수를 이유로 반대했고 그 이견을 기록으로 남�
 
 실측으로 폐기한 두 안: ① 루트 오류를 `form.setErrorMap({ onServer })` 에 두는 것 — form-level `onServer` validator 가
 없으면 `TOnServer=undefined` 로 추론되어 `string` 이 컴파일되지 않는다(tsc 재현). 루트 오류는 stage 의 `failed` variant.
-② 성공 후 `form.reset(values)` — `useForm` 이 매 렌더 `formApi.update(opts)` 를 부르므로 원래 defaults 로 값이 되돌아간다
-(form-core 1.33.5 재현). `reset(values, { keepDefaultValues: true })` 로 저장값을 dirty 기준선으로 만들어 가드가 풀린다.
+② 성공 후 외부의 최초 `defaultValues`를 계속 넘기는 상태에서 `form.reset(values)` — `useForm` 이 매 렌더
+`formApi.update(opts)` 를 부르므로 원래 defaults 로 값이 되돌아간다(form-core 1.33.5 재현). 훅이 현재 defaults를
+소유하고 서버 canonical 값 또는 제출 input snapshot으로 먼저 갱신한 뒤 `reset(savedDefaults)`해 값과 기준선을 함께 바꾼다.
+같은 폼 컴포넌트가 다른 resource identity로 재사용될 수 있으면 feature가 `resetKey`를 전달한다. key가 바뀔 때만 새 외부
+defaults로 재설정해 다른 resource의 값을 섞지 않고, 같은 key의 refetch는 작성 중인 draft를 덮어쓰지 않는다.
 
 서버 field error 는 `fieldMeta.errorMap.onServer` 에 쓰고 reveal → 첫 rejected field focus 순으로 처리한다. 일반 검증은
 `onServer` 를 절대 지우지 않아 다음 submit 을 영구 차단하므로, **submit 시작 시 모든 `onServer` 를 지운다**(서버가 다시
@@ -155,7 +158,7 @@ Codex 는 consumer 수를 이유로 반대했고 그 이견을 기록으로 남�
 
 방향(shared mechanic 의 소유 범위)은 바꾸지 않았다. 결정:
 
-- `useSaveForm` 은 한 훅으로 shared 에 둔다. 다섯 책임(submit 시 `onServer` 삭제 → reveal/focus → confirm → `reset(keepDefaultValues)` → 실패 시 배치·focus)이 순서 결합돼 있어 나누면 caller 가 그 순서를 다시 보장해야 하고, 그것이 곧 "40줄 복붙·조용한 저장 실패" 재발이다. 훅은 `dialogs` 노드 하나(이탈 질문 + 저장 확인·완료 쌍)를 돌려주고 `FormSaveDialogs` 는 이 훅 안에서만 렌더된다.
+- `useSaveForm` 은 한 훅으로 shared 에 둔다. 다섯 책임(submit 시 `onServer` 삭제 → reveal/focus → confirm → saved defaults로 reset → 실패 시 배치·focus)이 순서 결합돼 있어 나누면 caller 가 그 순서를 다시 보장해야 하고, 그것이 곧 "40줄 복붙·조용한 저장 실패" 재발이다. 훅은 `dialogs` 노드 하나(이탈 질문 + 저장 확인·완료 쌍)를 돌려주고 `FormSaveDialogs` 는 이 훅 안에서만 렌더된다.
 - 한 도메인의 등록·수정은 **하나의 feature 폼 컴포넌트**(`ManagerForm`)가 옵션 Query·유형 정책·공통 필드·섹션/action 껍데기를 소유하고, 화면은 `useSaveForm` 선언(스키마·defaults·mutation·목적지)과 다른 필드 slot(`identity`)만 갖는다. 결정 없는 domain-free layout 은 만들지 않는다.
 - 종속 값 초기화("유형 변경시 권한은 초기화됨")는 `useEffect` 가 아니라 유형 select 의 `onValueChange` 에 배선하고, 옵션 select 는 로딩·실패·재시도를 `FormSelectField state/onRetry` 로 표현한다.
 
@@ -175,15 +178,29 @@ Tabs는 인벤토리 7 surface/8 set과 APP PUSH 타겟 영역에서 반복된 �
 ## 입력 경계 적용 (2026-09-06)
 
 과거 결정(2026-09-05, local 취소 적용 범위는 아래 2026-09-07 결정으로 대체): dirty 보호를 팝업·인라인에도 적용했다. 값은 form, local 닫기 callback은 각 guard가 소유하며 `close(discard, { when })`로 자기 범위만 취소했다. 상담·공연 섹션·SMS/이메일의 같은 입력 손실이 당시 근거였다.
-상담+SMS 동시 dirty에서 Router 확인이 순차 2회 뜬 결함을 실측해 `UnsavedChangesProvider`가 dirty/pending 사실만 모으는 단일 route blocker를 소유하게 했다. `leave` API·standalone hook은 유지하며 목적지나 폼 값을 provider에 복제하지 않는다.
+상담+SMS 동시 dirty에서 Router 확인이 순차 2회 뜬 결함을 실측해 `UnsavedChangesProvider`가 dirty/pending 사실만 모으는 단일 route blocker를 소유하게 했다. `leave` API는 유지하며 목적지나 폼 값을 provider에 복제하지 않는다.
 `UnsavedChangesGuard.router.test.tsx`가 2consumer 확인 1회·취소 보존·pending 거부·local 범위·unmount cleanup·browser-history beforeunload를 검증한다. 실제 Chromium에서도 상담+SMS dirty→뒤로가기→확인 1회→목록/dialog 0을 재측정했다. 기존 Form+중첩 Dialog 검사는 `UnsavedChangesGuard.integration.test.tsx`다.
 회원 등록과 제품 운영자 등록·수정은 API 직전까지만 구현했다. 운영자는 `ManagerInputScreens`·`useManagerInputForm`이 기존 `ManagerForm`과 어댑터/guard/확인을 재사용하고, `useManagerDirectoryFormOptions`가 임시 옵션 공급을 Query로 조회해 필드별 loading/error/retry를 전달한다. 저장 성공을 만들거나 `useSaveForm`의 서버 오류·완료 lifecycle까지 이 소비 흐름에서 검증했다고 판정하지 않는다.
 
 ## 취소 경고 적용 범위 변경 (2026-09-07)
 
-사용자 결정: dirty 취소 경고는 **독립 등록·수정 화면에만** 적용한다. 상세 안 인라인 편집이나 action dialog에 폼이 있다는 사실만으로 경고하지 않는다. 취소·닫기 적용 범위의 단일 정본은 [form-workflow.md](../../.agents/skills/feature-contract/references/form-workflow.md#cancel-and-tabs)다. 이번 결정은 취소 경고를 좁히며 LNB·뒤로가기의 이동 경고는 변경하지 않는다. pending 거부·저장 확인·검증·최종 요청/log 경계는 별개다.
+사용자 결정: dirty 취소 경고는 **독립 등록·수정 화면에만** 적용한다. 상세 안 인라인 편집이나 action dialog에 폼이 있다는 사실만으로 경고하지 않는다. 현재 적용 범위는 [제품 근거 진입점](../reference/product.json)의 inventory README에 있는 제품 공통 정책이 소유하며, [form-workflow.md](../../.agents/skills/feature-contract/references/form-workflow.md#cancel-and-tabs)는 적용 방법을 소유한다. 이 절의 2026-09-07 범위는 아래 재결정으로 대체된 역사다. 이번 결정은 취소 경고를 좁히며 LNB·뒤로가기의 이동 경고는 변경하지 않는다. pending 거부·저장 확인·검증·최종 요청/log 경계는 별개다.
 
 기존 `close(discard, { when: false })`를 해당 caller에 적용한다. scoped dirty 질문만 생략하므로 guard의 pending 거부와 provider의 route 보호를 보존하며 공용 훅에 제품 화면 이름을 추가하지 않는다. 현재 consumer 검증 상태는 [회원 시나리오](../reference/scenarios/member-list-and-detail.md)와 [설정 시나리오](../reference/scenarios/settings-and-permissions.md)가 소유한다.
+
+## 배열 입력·이탈 보호 재결정 (2026-09-14)
+
+이 저장소의 사용자 결정으로 위 2026-09-07 범위를 대체한다. 화면 이름보다 작성 데이터의 손실을 기준으로 바꾼 결정이며, 현행 대상·제외·예외는 [제품 근거 진입점](../reference/product.json)의 inventory README에 있는 제품 공통 정책이 단일 소유한다. 다른 제품에는 이 대상 목록을 이식하지 않고 해당 제품 근거로 guard 채택 범위를 결정한다.
+
+`UnsavedChangesProvider`는 보호 app form의 필수 경계이며 한 Router blocker와 한 `beforeunload` listener를 소유한다.
+hook은 등록과 local cancel/×/Escape/outside callback만 소유하고 providerless Router fallback은 두지 않는다. pending 중
+local·Router 이탈은 조용히 거부하고 browser 이탈은 native 경고를 사용한다. 저장 성공은 feature가 서버 응답에서
+`save.getDefaultValues(result)`로 투영한 form-ready 값, 없으면 제출 input snapshot을 값과 default 기준선으로 만든 뒤 완료 alert를 연다.
+
+반복 입력은 `FormArrayField`가 typed array path와 append/prepend/insert/remove/move 및 `canRemove`만 제공한다.
+`minItems` 기본은 0이며 feature schema가 최소값을 요구할 때 전달한다. row JSX·factory·stable ID·Zod 검증은 feature에
+남는다. 순서 변경은 form-independent `SortableList`가 dnd-kit 센서·handle 접근성·from/to 계산을 소유하고 FormArrayField의
+`move`와 조합한다. 이 둘은 schema renderer나 editable DataTable을 만들지 않는다.
 
 ## 미확인
 

@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { applySweep, sweepPlan, STATE_RETENTION_DAYS, TASK_RETENTION_DAYS } from './workspace.mjs'
 import { hookDecision } from './hook.mjs'
+import { prepare } from './preflight.mjs'
 
 // Real time: the undated-name case falls back to mtime, which only the filesystem can set.
 const NOW = Date.now()
@@ -27,6 +28,17 @@ const find = (entries, path) => entries.find((entry) => entry.path === path)
 afterEach(() => { for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true }) })
 
 describe('workspace sweep', () => {
+  it('preserves review receipts, prepare history and sessions with unfinished request units', () => {
+    const root = setup()
+    task(root, 'agent-receipts', { 'receipt.json': '{}' })
+    task(root, 'agent-attempts', { 'attempt.jsonl': '{}' })
+    const name = `${stamp(TASK_RETENTION_DAYS + 40)}-01-mixed`
+    task(root, name, { 'checkpoint.json': '{}' })
+    state(root, 'mixed', { checkpointPath: `.ai-work/${name}/checkpoint.json`, wrote: true, review: { fingerprint: 'unit-one' }, checkpoint: { units: [{ id: 'one' }, { id: 'two' }] }, unitReviews: { one: {} } })
+    const plan = sweepPlan(root, NOW + (STATE_RETENTION_DAYS + 2) * 86_400_000)
+    expect(applySweep(root, plan)).toEqual([])
+    expect(find(plan.states, '.ai-work/agent-checks/mixed.json').status).toBe('open')
+  })
   it('expires a dated task directory past retention and removes only that entry', () => {
     const root = setup()
     task(root, `${stamp(TASK_RETENTION_DAYS + 3)}-01-old-analysis`, { 'BRIEF.md': 'done' })
@@ -98,9 +110,12 @@ describe('workspace sweep', () => {
     expect(() => applySweep(root, { tasks: [{ path: 'src/features', status: 'expired' }], states: [] })).toThrow(/Refusing to remove/)
   })
 
-  it('lets the hook classify without preparation but gates the deleting form', () => {
+  it('lets a recorded descendant classify without preparation but gates the deleting form', () => {
     const root = setup()
-    const event = { session_id: 'one', hook_event_name: 'PreToolUse', tool_name: 'Bash' }
+    writeFileSync(join(root, 'AGENTS.md'), '# Root\n')
+    writeFileSync(join(root, '.ai-work/checkpoint.json'), JSON.stringify({ scope: ['scripts/'], requirements: [{ id: 'R1', text: 'Inspect workspace.' }], references: ['AGENTS.md'], contracts: [], unresolved: [] }))
+    prepare(root, 'one', '.ai-work/checkpoint.json', () => ({}))
+    const event = { session_id: 'one/child', hook_event_name: 'PreToolUse', tool_name: 'Bash' }
     expect(hookDecision(root, { ...event, tool_input: { command: 'node scripts/agents/cli.mjs sweep' } })).toEqual({})
     expect(hookDecision(root, { ...event, tool_input: { command: 'node scripts/agents/cli.mjs sweep --apply' } }))
       .toMatchObject({ hookSpecificOutput: { permissionDecision: 'deny' } })

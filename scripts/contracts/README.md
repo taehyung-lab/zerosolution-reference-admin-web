@@ -56,34 +56,40 @@ candidate should be adopted.** That stays with review.
 
 ## Applying a bundle to a new product
 
-1. Split the new product's screens and logic by surface, and extract UI, state ownership, URL, API
-   payload/cache, permission, i18n, navigation and failure/recovery as requirements.
-2. Compare each requirement against the existing candidates and judge `그대로 채택 / 제품에 맞게 수정 /
-   제외 / feature-local 신규 구현`. Meaning, lifecycle, ownership and failure behaviour must match — a
-   shared name is not evidence.
-3. Assemble only the adopted minimum into the first representative vertical slice. When a Manager value
-   or a rehearsal contract is needed, do not widen the shared API; return it to the product feature.
-4. Verify each requirement against real screens and responses, then confirm, narrow or demote the
-   provisional candidates once a second real consumer exists.
+Use three stages: **target-owned documents → required shared contracts/code → one screen workflow at a time**. These are work boundaries, not three new commands or required report files. Keep decisions in the target’s existing product owner and the task conversation; use an ignored handoff only when another session needs it.
 
-Leave `TRANSPLANT_PENDING_<ID>` wherever an adoption decision is still open. One remaining sentinel
-means bootstrap is not complete.
+| Stage | Carry and replace | Evidence needed to move on |
+| --- | --- | --- |
+| 1. Documents | Adapt `AGENTS.md` and runtime pointers; bring only applicable skill/reference and ADR decisions with their linked owners. Register the target’s sources through `docs/reference/product.json`. Replace product facts, defaults, wording, inventory, judgments and scenarios with target evidence. | A screen, partial UI, or logic request can reach its own requirements and relevant contract without consulting a source-product domain. Referenced owners exist; unknown API/policy remains explicit. This is document readiness, not bootstrap or implementation completion. |
+| 2. Shared | Choose only what the first real screen needs. Compare each candidate’s code, contract, ADR and focused tests with that requirement; declare adopt/modify/exclude and the feature-owned remainder. | Trace requirement → first consumer → focused verification in the existing task. No shared API widening for one consumer and no need to copy an unrelated source feature to satisfy a bundle example. |
+| 3. Screens | Implement one bounded workflow, or the requested component/logic slice, using the target’s design and policy. Keep the implementation request small; inspect connected transitions without rebuilding unrequested screens. | Observe UI and interactions, verify state ownership/shared boundaries/failure paths, return to the cause of a failure and update its existing owner. Compare a different second consumer before confirming a provisional abstraction. |
+
+For this reference project, stage 1 preserves its product facts and moves them out of portable rules; then stage 3 can exercise screens here before migration. An unavailable backend does not prevent measured UI and confirmed interaction work. Use the existing [pre-server responsibility boundary](../../.agents/skills/api-contract/references/query-cache.md#서버-연결-전후의-책임): an explicit fixture proves only the scenario it supplies. Do not invent endpoint, DTO, permission, status or success semantics. When the actual API arrives, replace the feature adapter and verify payload, response mapping, errors, cache consequences and real environment per screen before claiming that screen’s integration is complete.
+
+**Target facts never come from source history.** Do not transplant `.ai-work/`, `.superpowers/`, `docs/superpowers/`, `docs/design/`, `docs/research/`, source-product inventory/judgments/scenario contents, or rehearsal API facts as target operating instructions. Clear `이 저장소의 관찰` bodies and source consumer pointers in the target copy; replace them with target evidence when available. An ADR carries rationale and the adoption conditions, not authority over the new product’s defaults. Do not keep empty historical drill headings unless an adopted operational link actually needs them.
+
+**Authentication is conditional.** The current `transport-auth` bundle couples HTTP transport with credential storage and reissue/replay policy. Exclude it until target OpenAPI/auth policy confirms the credential body, storage/lifetime, endpoint, cookie settings and replay behaviour. A target needing a different policy implements that boundary against its own contract; this document does not claim a separate `transport-core` bundle exists. Only a dependency on the excluded credential/reissue implementation requires narrowing or deferral. Sharing pure error types or classification with this bundle does not require adopting its auth policy.
+
+**Current tool boundary.** `pnpm transplant:plan` and `pnpm transplant:stage` with explicit `--bundles` produce review material containing code, documents, gates and configuration together. They do not implement stage 1 alone. For documents-first work, edit the target-owned documents and required linked owners directly; do not apply the whole staged payload or carry runtime hooks whose scripts have not arrived. At stage 2, inspect the selected staged contents, remove source observations/policy through the target’s own document edits, merge dependencies/configuration deliberately, and use `pnpm transplant:apply --target <repo>` only for the reviewed tool payload. Apply verifies staged digests: do not hand-edit staging bytes and call them a verified payload. Existing target files are merge items, so they still require explicit integration after apply.
+
+Do not use `--with-ledger` for this clean-product workflow: it copies source facts. The option still exists; this is an explicit workflow exclusion, not a new hard gate. Bundle selection/closure, path rewriting and sentinel scans do not prove semantic neutrality. Review the actual target copy before implementation, especially retained ADR observations, app/translation copy and source-only examples.
+
+Leave `TRANSPLANT_PENDING_<ID>` at an explicitly allowed temporary adapter or unresolved adoption value. Do not clear it merely to pass target checks. During document preparation and pre-API screen trials, report those limits; full bootstrap still requires the target verification chain and all applicable unresolved conditions to be closed. No new adoption manifest, file-per-screen checklist or additional gate is required by these stages.
 
 ## Transplant material that is not a candidate
 
-`TRANSPLANT_MANIFEST` in `seed.mjs` lists what travels without being an adoption candidate: whole
-skills, the ADRs a skill names, version-pin ADRs to compare against the target, the product inventory,
-gates, configuration, the test harness, the i18n runtime, and app shell copy to merge. Entries under
-`templates` are merged into the target, not copied over it.
+`TRANSPLANT_MANIFEST` in `seed.mjs` declares the material that travels with selected bundles: whole skills, their linked ADRs, conditional version decisions, runtime pointers/hooks, gates, configuration, test harness, i18n runtime and app copy. This is the tool’s payload, not a requirement to install all of it during document preparation.
 
-`--mode target` skips `SHAPE_EXCEPTIONS` (source-product list-screen debt). If
-`tests/e2e/search-contract.spec.ts` is absent, list-route join is a notice rather than a silent pass;
-the target keeps that spec or restates the join rule. Do not copy this product's spec as a substitute.
+- `--bundles a,b` limits code/test closure and the copied `SEED_BUNDLES` / `SEED_BUNDLE_EXPORTS` catalog; omitting it selects every bundle. It does not narrow the manifest’s whole skills, linked ADRs or gate/config files. Resolve their dependencies or choose a smaller manual document adaptation; do not leave pointers to unavailable owners.
+- `templates`, `config` and `app` entries require merging. Other files copy only when absent; existing target files are also merge items. Source product feature/routes/generated code, domain translations and `src/test/workflows/` tests are excluded. Consumer examples stay outside the code/test closure and must be replaced or removed in the target catalog.
+- Default stage creates empty inventory, judgment, scenario and index shells at the target `docs/reference/product.json` paths (or `product-paths.mjs` defaults). It preserves schema/evidence rules, not source facts, and marks target facts unresolved. `--with-ledger` instead copies the active source ledger unchanged and is excluded from the clean-product procedure above.
+- Source ledger paths are rewritten only when the resulting target exists in the payload or target tree. Links to excluded product evidence are unlinked and recorded with source provenance in `PENDING.md`; text is not thereby rewritten into valid target policy. Missing normative skill/active ADR dependencies fail staging. Retired or unselected ADR citations retain source provenance instead of claiming a target decision.
+- Only the dedicated drill history `.agents/skills/screen-loop/references/observations.md` is automatically converted to a cited-heading stub (`HISTORICAL_STUBS`). Other reference/ADR observation bodies are not automatically erased. Clear or adapt those in target-owned documents before implementation; source measurements never establish target behaviour.
+- Staged `AGENTS.md` uses product-repository mode and the target fact pointer. The checker and package draft default to target mode. Package script paths not carried by the payload, retained source vocabulary and unresolved links appear in `PENDING.md`; the file is review input, not proof that every policy dependency was detected.
+- Run plan/stage at the reference repository root. Apply verifies every staged digest before copying and preserves existing target files. Package name/scripts, dependency versions, runtime paths, hooks, CI and test harness remain target-owned integration work. Do not enable hook configurations until their actual scripts/runtime are installed and exercised.
+- If `tests/e2e/search-contract.spec.ts` is absent, list-route join produces a notice; it is not proven. Keep the relevant target verification or restate the rule, rather than copying a source feature test. The source-product integration test stays here; generic routing tests travel.
 
-The agent context index under the product inventory travels as product-specific reference material,
-not a shared candidate. Rebuild its evidence/path connections from the target product before claiming
-handoff validation. `prepare` uses the bundle's declared section locations for reading; transplant still
-copies the complete declared documents and computes the same code/test closure.
+`prepare` reads declared sections; transplant copies complete documents. Neither successful staging nor a closed import graph proves a valid handoff. After target adaptation, run `contracts:check --mode target` and the adopted package verification chain; use actual browser/API evidence for the screen’s integration claim. The checker reports missing package/CI prerequisites, but document-only preparation and pre-API trials are explicitly earlier stages.
 
 ## Verification ownership
 
@@ -99,21 +105,19 @@ under `.worktrees/` or `.claude/worktrees/`) is linted whole unless its root is 
 exceeded the Node heap. CI runs on a fresh checkout and never has such a tree, so this regression is
 local-only and no CI stage guards it.
 
-The surface index (`docs/reference/zero-sol/context.json`) fails when a surface cites a skill file that has a unique `형태` heading but delivers neither that heading nor the whole file. The index does not name product domains as the skill set; grain and the path skill load `형태` even when other headings were omitted.
+The surface index selected by `docs/reference/product.json` fails when a surface cites a skill file that has a unique `형태` heading but delivers neither that heading nor the whole file. The index does not name product domains as the skill set; grain and the path skill load `형태` even when other headings were omitted.
 
-`screen-shape.mjs` compares each `screens/<workflow>/` (and `mechanics/<name>/`) with the role shapes
-that the feature-contract references own in their `형태` sections: a role-named file must sit in its
-segment (`ui/` or `model/`; `lib/` and `config/` are left to the placement table). The tables distinguish
-invariants from files that exist only when the role is present; the checker still sees names and
-existence, not whether the missing role was a correct omission. A list screen must
-carry its search, filter, data and policy files unless it imports a mechanic's `model/` (the mechanic's
-own names are not checked), a detail with actions needs its request boundary, a form needs schema plus
-request or mutation, and every list route must appear in an array literal of
-`tests/e2e/search-contract.spec.ts`; a `$param` route leaf must declare a `loader`, and a list `*-columns` file may not write the aria-sort vocabulary by hand (both read the file's source with comments stripped). Otherwise it reads names and existence only — a screen that ignores the
-naming convention is invisible to it, two stacks in one directory are not told apart, and URL field
-names, value shapes and `locale` types are review's job. A failure names the section to read. Screens
-that predate a shape are listed in `SHAPE_EXCEPTIONS` with the condition that closes them and reported
-as notices; a closed gap still listed, or a vanished screen, is a failure, so the list only shrinks.
+`screen-shape.mjs` checks existing role-named files for `ui/` versus `model/` placement and selected
+sort-source mistakes. It does **not** require a companion search/filter/data/policy/schema/request
+file: a partial request and a coherent single-file responsibility must not trigger whole-screen scaffolding.
+The former file-set gate and its `SHAPE_EXCEPTIONS` lifecycle were removed after a filter-only probe
+produced seven missing-file errors which vanished when the same component was named Panel.
+
+List-route registration in `tests/e2e/search-contract.spec.ts` and `$param` leaf loader presence remain
+cheap supporting checks. They inspect source conventions, not runtime behavior: renamed roles can be
+invisible, a loader body may be wrong, and array membership does not prove an executed test. Actual URL,
+state, API, accessibility and shared-boundary correctness belongs to focused tests and consumer review.
+The feature references’ `형태` tables describe responsibility placement, not mandatory file counts.
 
 Skill rule text is product-free. `productNameNotices` scans `.agents/skills/**/*.md` for this product's
 domain nouns, `Manager*`/`Member*`-style identifiers and `src/features/<dir>/` paths

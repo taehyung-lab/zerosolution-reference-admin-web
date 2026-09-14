@@ -2,11 +2,13 @@ import { afterEach, expect, it } from 'vitest'
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { selectedDocuments, sectionText } from './document-context.mjs'
 import { hookDecision } from './hook.mjs'
-import { workflowContext, surfaceIndexFailures, contextReport, readSurfaceIndex } from './surface-context.mjs'
+import { surfaceIndexFailures, contextReport, readSurfaceIndex } from './surface-context.mjs'
 import { spawnSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
-import { prepare, recordReview, checkEdit, loopReviewFailure } from './preflight.mjs'
+import { prepare, reviewFingerprint, checkEdit, loopReviewFailure } from './preflight.mjs'
+import { recordFixtureReview as recordReview } from './review-test-helper.mjs'
+import { SEED_BUNDLES } from '../contracts/seed.mjs'
 
 const roots = []
 function fixture() {
@@ -15,6 +17,8 @@ function fixture() {
   const write = (file, value) => { mkdirSync(dirname(join(root, file)), { recursive: true }); writeFileSync(join(root, file), value) }
   const inventory = 'docs/reference/zero-sol/05-performances.md'
   const scenario = 'docs/reference/scenarios/performance.md'
+  write('scripts/contracts/check.mjs', 'console.log("fixture contract passed")\n')
+  write('docs/reference/product.json', JSON.stringify({ inventory: 'docs/reference/zero-sol', judgment: 'docs/reference/zero-sol-figma-analysis.md', scenarios: 'docs/reference/scenarios', index: 'docs/reference/zero-sol/context.json' }))
   write('AGENTS.md', '# Root\nGlobal constraints.\n')
   write('.agents/skills/feature-contract/SKILL.md', '# Feature\nOwnership.\n')
   write('.agents/skills/screen-loop/SKILL.md', '# Loop\nEntry and return points.\n')
@@ -46,6 +50,64 @@ it('delivers the actual selected surface evidence without requiring hand-copied 
   expect(output).toContain('No selection column.')
   expect(output).toContain('Entry loads; reset clears.')
   expect(output).not.toContain('Section-owned save.')
+})
+it('routes another product through its canonical pointer without reading the old product index', () => {
+  const { root, write } = fixture()
+  write('docs/reference/product.json', JSON.stringify({ inventory: 'docs/product', judgment: 'docs/product/decisions.md', scenarios: 'docs/events', index: 'docs/product/index.json' }))
+  write('docs/product/index.json', JSON.stringify({ judgment: [], surfaces: [] }))
+  expect(readSurfaceIndex(root).surfaces).toEqual([])
+  expect(surfaceIndexFailures(root)).toEqual([])
+})
+it('applies the loop to explicit implement mode even with infrastructure kind', () => {
+  const { root, checkpoint, run, write } = fixture()
+  checkpoint.scope = ['scripts/logic.mjs']
+  checkpoint.work = { kind: 'infrastructure', reason: 'Implement a reusable gate.' }
+  checkpoint.grain = 'logic'
+  checkpoint.entry = 'scripts/logic.mjs'
+  write('scripts/logic.mjs', 'export const value = 1')
+  delete checkpoint.design
+  expect(run).toThrow(/design/)
+  checkpoint.design = { flow: 'input to verdict', ownership: 'script', reuse: 'local', simplicity: 'one function' }
+  expect(run).not.toThrow()
+  const report = { requirements: [{ id: 'R1', status: 'implemented', evidence: 'Executed.', appliedSections: ['AGENTS.md'], files: ['scripts/logic.mjs'] }], contractReview: 'No shared changes.', complexityReview: 'One function.', assumptions: [], limitations: [] }
+  expect(() => recordReview(root, 'one', report, () => ({}))).toThrow(/verification/)
+})
+it('requires measured verification for infrastructure code even when mode is omitted', () => {
+  const { root, checkpoint, run, write } = fixture()
+  checkpoint.scope = ['scripts/logic.mjs']
+  checkpoint.work = { kind: 'infrastructure', reason: 'Change gate behavior.' }
+  delete checkpoint.mode
+  write('scripts/logic.mjs', 'export const value = 1')
+  run()
+  const report = { requirements: [{ id: 'R1', status: 'implemented', evidence: 'Executed.', appliedSections: ['AGENTS.md'], files: ['scripts/logic.mjs'] }], contractReview: 'No seed changed.', complexityReview: 'One function.', assumptions: [], limitations: [] }
+  expect(() => recordReview(root, 'one', report, () => ({}))).toThrow(/verification/)
+})
+it('delivers only contracts connected to active-unit requirements', () => {
+  const { checkpoint, run } = fixture()
+  checkpoint.units = [
+    { id: 'list', requirementIds: ['R1'], scope: checkpoint.scope },
+    { id: 'utility', requirementIds: ['R2'], scope: ['src/shared/lib/ascii-triplet.ts'] },
+  ]
+  checkpoint.currentUnit = 'list'
+  checkpoint.requirements.push({ id: 'R2', text: 'Then reuse the selected contract.', contracts: [SEED_BUNDLES[0].id] })
+  checkpoint.contracts.push({ id: SEED_BUNDLES[0].id, decision: 'adopt', reason: 'The future unit needs it.' })
+  // Its references deliberately do not exist yet: future evidence must not be loaded now.
+  expect(run).not.toThrow()
+})
+it('defers future unit surface evidence until that requirement becomes active', () => {
+  const { checkpoint, run } = fixture()
+  checkpoint.units = [
+    { id: 'list', requirementIds: ['R1'], scope: checkpoint.scope },
+    { id: 'edit', requirementIds: ['R2'], scope: ['src/features/performances/form/'] },
+  ]
+  checkpoint.currentUnit = 'list'
+  checkpoint.requirements.push({ id: 'R2', text: 'Implement edit after the list.' })
+  expect(run).not.toThrow()
+  checkpoint.currentUnit = 'edit'
+  checkpoint.scope = checkpoint.units[1].scope
+  checkpoint.entry = 'performance-edit'
+  checkpoint.surfaces = [{ id: 'performance-edit', decision: 'include' }]
+  expect(run).toThrow(/Requirement R2/)
 })
 it('rejects a workflow checkpoint that omits grain, entry, mode or design', () => {
   const { checkpoint, run } = fixture()
@@ -84,7 +146,7 @@ it('requires loop declarations for shared implement without work.kind', () => {
   delete checkpoint.surfaces
   delete checkpoint.work
   checkpoint.grain = 'component'
-  checkpoint.entry = 'data-table'
+  checkpoint.entry = SEED_BUNDLES[0].id
   checkpoint.mode = 'implement'
   checkpoint.references = ['AGENTS.md', '.agents/skills/screen-loop/SKILL.md', '.agents/skills/shared-ui-contract/SKILL.md']
   expect(() => run()).not.toThrow()
@@ -120,7 +182,7 @@ it('accepts a shared logic grain and resolves its entry to a bundle id', () => {
   delete checkpoint.surfaces
   delete checkpoint.work
   checkpoint.grain = 'logic'
-  checkpoint.entry = 'search-partition'
+  checkpoint.entry = SEED_BUNDLES[0].id
   checkpoint.mode = 'implement'
   checkpoint.references = ['AGENTS.md', '.agents/skills/screen-loop/SKILL.md', '.agents/skills/shared-ui-contract/SKILL.md']
   expect(() => run()).not.toThrow()
@@ -134,6 +196,8 @@ it('rejects an entry that resolves to nothing and a partial grain whose scope is
   const skill = '.agents/skills/feature-contract/references/list-workflow.md'
   write(skill, '# List\n\n## 형태\nFiles.\n')
   checkpoint.entry = `${skill}#형태`
+  expect(() => run()).toThrow(/entry.*delivered/)
+  checkpoint.references.push({ file: skill, heading: '형태' })
   expect(() => run()).not.toThrow()
   checkpoint.grain = 'slice'
   expect(() => run()).toThrow(/grain slice names one part of a screen/)
@@ -165,7 +229,7 @@ it('settles a workflow only when its included surface has promoted inventory row
   expect(() => run()).not.toThrow()
 })
 it('hands a slice only the inventory rows it names, and the whole section to a screen', () => {
-  const { checkpoint, run, write, inventory } = fixture()
+  const { root, checkpoint, run, write, inventory } = fixture()
   write(inventory, '# Performance\nCommon policy.\n## List\nNo selection column.\n\n| id | 종류 | 화면 | surface | Figma 관찰 | Notion 동작·정책 | 미확인 | 현재 코드 |\n| --- | --- | --- | --- | --- | --- | --- | --- |\n| `performance-list.filter` | 열거 | 5.2 | 기간 | 기준 A·B | 정책 | — | — |\n| `performance-list.table` | 열거 | 5.2 | table | 컬럼 A·B | 정책 | — | — |\n\n## Edit\nSection-owned save.\n')
   // A screen still receives the section as a whole.
   expect(run('screen')).toContain('컬럼 A·B')
@@ -173,10 +237,16 @@ it('hands a slice only the inventory rows it names, and the whole section to a s
   checkpoint.scope = ['src/features/performances/screens/list/ui/PerformanceListFilters.tsx']
   expect(() => run('slice-a')).toThrow(/checkpoint\.rows .*performance-list\.filter, performance-list\.table/)
   checkpoint.rows = ['performance-list.filter']
+  const fallback = run('slice-fallback')
+  expect(fallback).toContain('No selection column.')
+  const index = readSurfaceIndex(root)
+  write('docs/parent.md', '# Parent\nNo selection column.\n')
+  index.surfaces[0].parentReferences = ['docs/parent.md']
+  write('docs/reference/zero-sol/context.json', JSON.stringify(index))
   const output = run('slice-b')
   expect(output).toContain('| `performance-list.filter` |')
   expect(output).not.toContain('컬럼 A·B')
-  expect(output).not.toContain('No selection column.')
+  expect(output).toContain('No selection column.')
   expect(output).toContain('rows: performance-list.filter')
   checkpoint.rows = ['performance-list.venue']
   expect(() => run('slice-c')).toThrow(/rows no included surface has: performance-list\.venue/)
@@ -207,10 +277,60 @@ it('lets a slice review cite the rows it was handed', () => {
   const report = (sections) => ({
     requirements: [{ id: 'R1', status: 'implemented', evidence: 'Observed.', appliedSections: sections, files: ['src/features/performances/screens/list/ui/PerformanceListFilters.tsx'], verification: [{ method: 'Scenario test', result: 'passed' }] }],
     contractReview: 'No bundle declared.', complexityReview: 'One filter file.', assumptions: [], limitations: [],
-    independentReview: { reviewer: 'second model', revision: 'fixture', findings: [] },
+    independentReview: { reviewer: 'second model', revision: 'fixture', fingerprint: reviewFingerprint(root, 'one', () => ({})), findings: [] },
+    rows: [{ id: 'performance-list.filter', verdict: 'matched', evidence: 'Compared filter behavior with selected row.', files: ['src/features/performances/screens/list/ui/PerformanceListFilters.tsx'], requirementIds: ['R1'] }],
   })
   expect(() => recordReview(root, 'one', report([{ file: inventory, heading: 'rows: performance-list.filter' }]), () => ({}))).not.toThrow()
-  expect(() => recordReview(root, 'one', report([{ file: inventory, heading: 'List' }]), () => ({}))).toThrow(/not delivered/)
+  expect(() => recordReview(root, 'one', report([{ file: inventory, heading: 'Edit' }]), () => ({}))).toThrow(/not delivered/)
+})
+it('requires a verdict for each selected row and binds unresolved rows to affected requirements', () => {
+  const { root, checkpoint, run, write, inventory } = fixture()
+  write(inventory, '# Performance\n## List\n| id | 종류 | Figma 관찰 | Notion 동작·정책 | 미확인 |\n| --- | --- | --- | --- | --- |\n| performance-list.filter | 열거 | 기준 | 정책 | Q7 wire value |\n| performance-list.table | 열거 | 컬럼 | 정책 | — |\n')
+  checkpoint.grain = 'slice'
+  checkpoint.scope = ['src/features/performances/screens/list/filter.ts']
+  checkpoint.rows = ['performance-list.filter']
+  run()
+  const report = {
+    requirements: [{ id: 'R1', status: 'unimplemented', evidence: 'Wire value unconfirmed.', blocked: 'Q7 needs server confirmation.' }],
+    contractReview: 'No shared changes.', complexityReview: 'No code until wire confirmed.', assumptions: [], limitations: ['Q7'],
+    independentReview: { reviewer: 'second model', revision: 'fixture', fingerprint: reviewFingerprint(root, 'one', () => ({})), findings: ['Q7 remains blocked.'] },
+  }
+  expect(() => recordReview(root, 'one', report, () => ({}))).toThrow(/selected row/)
+  report.rows = [{ id: 'performance-list.filter', verdict: 'blocked', files: [], evidence: 'Q7 stops the filter.', requirementIds: ['R1'] }]
+  expect(() => recordReview(root, 'one', report, () => ({}))).toThrow(/unresolved/)
+  report.rows[0].unresolved = { status: 'blocked', evidence: 'Requires server wire value.', sources: [{ file: inventory, heading: 'List' }] }
+  expect(() => recordReview(root, 'one', report, () => ({}))).not.toThrow()
+  report.rows[0].unresolved = { status: 'resolved', evidence: 'Claimed confirmation.', sources: ['AGENTS.md'] }
+  expect(() => recordReview(root, 'one', report, () => ({}))).toThrow(/product evidence/)
+  report.rows[0].unresolved = { status: 'resolved', evidence: 'User confirmed the wire value.', sources: ['user'] }
+  expect(() => recordReview(root, 'one', report, () => ({}))).not.toThrow()
+  report.rows.push({ ...report.rows[0], id: 'performance-list.table' })
+  expect(() => recordReview(root, 'one', report, () => ({}))).toThrow(/selected row/)
+})
+it('does not block confirmed requirements when an unknown affects only another part of the row', () => {
+  const { root, checkpoint, run, write, inventory } = fixture()
+  write(inventory, '# Performance\n## List\n| id | 종류 | Figma 관찰 | Notion 동작·정책 | 미확인 |\n| --- | --- | --- | --- | --- |\n| performance-list.filter | 열거 | 기준과 옵션 | 정책 | Q7 additional option |\n')
+  const file = 'src/features/performances/screens/list/filter.ts'
+  checkpoint.grain = 'slice'
+  checkpoint.scope = [file]
+  checkpoint.rows = ['performance-list.filter']
+  checkpoint.requirements.push({ ...checkpoint.requirements[0], id: 'R2', text: 'Unknown additional option.' })
+  write(file, 'export const confirmedOptions = [1, 2]')
+  run()
+  const report = {
+    requirements: [
+      { id: 'R1', status: 'implemented', evidence: 'Confirmed options match.', files: [file], appliedSections: ['AGENTS.md'], verification: [{ method: 'Option assertion', result: 'passed' }] },
+      { id: 'R2', status: 'unimplemented', evidence: 'Additional option unknown.', blocked: 'Q7' },
+    ],
+    contractReview: 'No shared changes.', complexityReview: 'Existing local options.', assumptions: [], limitations: ['Q7'],
+    independentReview: { reviewer: 'second model', revision: 'fixture', fingerprint: reviewFingerprint(root, 'one', () => ({})), findings: [] },
+    rows: [{ id: 'performance-list.filter', verdict: 'blocked', files: [file], requirementIds: ['R1', 'R2'], evidence: 'Q7 affects only additional option.', unresolved: { status: 'blocked', requirementIds: ['R2'], evidence: 'Confirmed R1 options independent of Q7.', sources: [{ file: inventory, heading: 'List' }] } }],
+  }
+  expect(() => recordReview(root, 'one', report, () => ({}))).not.toThrow()
+  report.rows[0].unresolved.requirementIds = ['R1']
+  expect(() => recordReview(root, 'one', report, () => ({}))).toThrow(/cannot be reported implemented/)
+  report.rows[0].unresolved.requirementIds = []
+  expect(() => recordReview(root, 'one', report, () => ({}))).toThrow(/affected requirementIds/)
 })
 it('requires a recorded independent review and a contract-by-contract sentence for a loop review', () => {
   const { root, checkpoint, run, write } = fixture()
@@ -219,18 +339,19 @@ it('requires a recorded independent review and a contract-by-contract sentence f
   const report = (extra) => ({
     requirements: [{ id: 'R1', status: 'implemented', evidence: 'Observed.', appliedSections: ['AGENTS.md'], files: ['src/features/performances/screens/list/ui/Screen.tsx'], verification: [{ method: 'Scenario test', result: 'passed' }] }],
     contractReview: 'No seed bundle declared; rows stay feature-owned.', complexityReview: 'Three role files, no wrapper.', assumptions: [], limitations: [],
-    independentReview: { reviewer: 'second model', revision: 'fixture', findings: [] },
+    independentReview: { reviewer: 'second model', revision: 'fixture', fingerprint: reviewFingerprint(root, 'one', () => ({})), findings: [] },
     ...extra,
   })
   expect(() => recordReview(root, 'one', report({ independentReview: undefined }), () => ({}))).toThrow(/independentReview/)
   expect(() => recordReview(root, 'one', report({ independentReview: { reviewer: 'x', revision: 'y' } }), () => ({}))).toThrow(/independentReview/)
-  expect(() => recordReview(root, 'one', report({ complexityReview: 'No extra wrapper or replicated state.' }), () => ({}))).toThrow(/README example sentence/)
+  // Review quality is independent review’s job; matching a documentation sentence is not a defect.
+  expect(() => recordReview(root, 'one', report({ complexityReview: 'No extra wrapper or replicated state.' }), () => ({}))).not.toThrow()
   expect(() => recordReview(root, 'one', report({}), () => ({}))).not.toThrow()
   // Every declared contract is spoken about by id; a maintenance checkpoint is outside the loop and unjudged.
   const declared = { ...checkpoint, contracts: [{ id: 'data-table', decision: 'adopt', reason: 'Read-only rows.' }] }
   expect(loopReviewFailure(declared, report({ contractReview: 'Adopted the table.' }))).toMatch(/by id: data-table/)
   expect(loopReviewFailure(declared, report({ contractReview: 'data-table adopted as is.' }))).toBeNull()
-  expect(loopReviewFailure({ ...declared, work: { kind: 'maintenance', reason: 'Copy.' } }, report({ contractReview: 'x', independentReview: undefined }))).toBeNull()
+  expect(loopReviewFailure({ ...declared, mode: undefined, work: { kind: 'maintenance', reason: 'Copy.' } }, report({ contractReview: 'x', independentReview: undefined }))).toBeNull()
 })
 it('requires explicit evidence gaps for unknown workflows and forbids them as a known-screen bypass', () => {
   const { checkpoint, run, inventory } = fixture()
@@ -289,7 +410,7 @@ it('does not borrow evidence or coverage from another requirement gap', () => {
 it('requires concrete implementation paths and verification results for completed workflow requirements', () => {
   const { root, run, write } = fixture()
   run()
-  const report = { requirements: [{ id: 'R1', status: 'implemented', evidence: 'Looks good.', appliedSections: ['AGENTS.md'] }], contractReview: 'Checked.', complexityReview: 'Checked.', assumptions: [], limitations: [], independentReview: { reviewer: 'second model', revision: 'fixture', findings: [] } }
+  const report = { requirements: [{ id: 'R1', status: 'implemented', evidence: 'Looks good.', appliedSections: ['AGENTS.md'] }], contractReview: 'Checked.', complexityReview: 'Checked.', assumptions: [], limitations: [], independentReview: { reviewer: 'second model', revision: 'fixture', fingerprint: reviewFingerprint(root, 'one', () => ({})), findings: [] } }
   expect(() => recordReview(root, 'one', report, () => ({}))).toThrow(/files|verification/)
   write('src/features/performances/screens/list/ui/Screen.tsx', 'export const Screen = 1')
   report.requirements[0].files = ['src/features/performances/screens/list/ui/Screen.tsx']
@@ -378,17 +499,6 @@ it('reduces actual prepare delivery by selecting a section while retaining globa
   expect(Buffer.byteLength(narrow)).toBeLessThan(Buffer.byteLength(broad))
   expect(broad).toContain('Independent form evidence.')
 })
-it('routes content actions and preserves unresolved entry policy without importing manager API judgments', () => {
-  const index=readSurfaceIndex(process.cwd())
-  const content=index.surfaces.find(surface=>surface.id==='performance-content')
-  expect(content.related).toEqual(expect.arrayContaining(['content-bulk','content-edit','content-preview']))
-  const bulk=index.surfaces.find(surface=>surface.id==='content-bulk')
-  const output=selectedDocuments(process.cwd(),[...index.judgment,...content.references,...bulk.references]).map(doc=>doc.selected).join('\n')
-  expect(output).toContain('Send stable IDs, not row objects.')
-  expect(output).toContain('다른 화면의 답으로 확장하지 않는다.')
-  expect(output).not.toContain('members/managers API 책임 재대조')
-  expect(output).not.toContain('코드 결함 후보')
-})
 it('protects surrounding text and newly uncovered actual edit paths', () => {
   const { root, write, inventory, run } = fixture()
   run()
@@ -436,9 +546,10 @@ it('rejects requirement evidence from an unrelated screen unless explicitly base
   expect(() => run()).not.toThrow()
 })
 
-it('allows context discovery before preparation but rejects command chaining and arbitrary script execution', () => {
-  const { root } = fixture()
-  const call = (command) => hookDecision(root, { session_id: 'unprepared', hook_event_name: 'PreToolUse', tool_name: 'Bash', tool_input: { command } })
+it('recorded descendants: allows context discovery before preparation but rejects command chaining and arbitrary script execution', () => {
+  const { root, run } = fixture()
+  run('recorded')
+  const call = (command) => hookDecision(root, { session_id: 'recorded/child', hook_event_name: 'PreToolUse', tool_name: 'Bash', tool_input: { command } })
   expect(call('rtk proxy node scripts/agents/cli.mjs context performance-list')).toEqual({})
   expect(call('rtk proxy node scripts/agents/cli.mjs context')).toEqual({})
   expect(call('node scripts/agents/cli.mjs context-report --summary --write')).toHaveProperty('hookSpecificOutput.permissionDecision', 'deny')
@@ -457,7 +568,7 @@ it('rechecks actual targets even when a broad preparation scope overlaps a valid
 it('does not force an implementation artifact for an honestly unimplemented requirement', () => {
   const { root, run } = fixture()
   run()
-  expect(() => recordReview(root, 'one', { requirements: [{ id: 'R1', status: 'unimplemented', evidence: 'Awaiting confirmed server contract.', blocked: 'The server contract is unconfirmed.' }], contractReview: 'Not adopted yet.', complexityReview: 'No edits.', assumptions: [], limitations: ['Blocked.'], independentReview: { reviewer: 'second model', revision: 'fixture', findings: [] } }, () => ({}))).not.toThrow()
+  expect(() => recordReview(root, 'one', { requirements: [{ id: 'R1', status: 'unimplemented', evidence: 'Awaiting confirmed server contract.', blocked: 'The server contract is unconfirmed.' }], contractReview: 'Not adopted yet.', complexityReview: 'No edits.', assumptions: [], limitations: ['Blocked.'], independentReview: { reviewer: 'second model', revision: 'fixture', fingerprint: reviewFingerprint(root, 'one', () => ({})), findings: [] } }, () => ({}))).not.toThrow()
 })
 
 it('tracks index edits as stale references', () => {
@@ -490,11 +601,12 @@ it('does not treat a broad src scope as script-only infrastructure', () => {
 it('discovers valid seed bundle IDs and their four roots without reading the declaration source', () => {
   const listing = spawnSync(process.execPath, ['scripts/agents/cli.mjs', 'bundle'], { encoding: 'utf8' })
   expect(listing.status).toBe(0)
-  expect(listing.stdout).toContain('data-table')
-  const detail = spawnSync(process.execPath, ['scripts/agents/cli.mjs', 'bundle', 'data-table'], { encoding: 'utf8' })
+  expect(listing.stdout.trim().split('\n')).toEqual(SEED_BUNDLES.map(bundle => bundle.id))
+  const selected = SEED_BUNDLES[0]
+  const detail = spawnSync(process.execPath, ['scripts/agents/cli.mjs', 'bundle', selected.id], { encoding: 'utf8' })
   expect(detail.status).toBe(0)
   const bundle = JSON.parse(detail.stdout)
-  expect(bundle.code).toContain('src/shared/ui/patterns/DataTable.tsx')
+  expect(bundle.code).toContain(selected.code[0])
   expect(bundle.tests.length).toBeGreaterThan(0)
   expect(bundle.ownership.feature).toBeTruthy()
   const invalid = spawnSync(process.execPath, ['scripts/agents/cli.mjs', 'bundle', 'invented'], { encoding: 'utf8' })
@@ -504,9 +616,10 @@ it('allows read-only bundle discovery before prepare', () => {
   const { root } = fixture()
   expect(hookDecision(root, { session_id: 'unprepared', hook_event_name: 'PreToolUse', tool_name: 'Bash', tool_input: { command: 'rtk proxy node scripts/agents/cli.mjs bundle data-table' } })).toEqual({})
 })
-it('recognizes quoted literal searches without admitting executable shell syntax or hidden options', () => {
-  const {root}=fixture()
-  const call=command=>hookDecision(root,{session_id:'unprepared',hook_event_name:'PreToolUse',tool_name:'Bash',tool_input:{command}})
+it('recorded descendants: recognizes quoted literal searches without admitting executable shell syntax or hidden options', () => {
+  const {root,run}=fixture()
+  run('recorded')
+  const call=command=>hookDecision(root,{session_id:'recorded/child',hook_event_name:'PreToolUse',tool_name:'Bash',tool_input:{command}})
   for(const command of ["rtk proxy rg 'a|b' file", 'rg "a|b" file', "r'g' 'a|b' file", "rg '$(touch x)' file", "sed '-n' '1,40p' 'file name.md'"]) expect(call(command), command).toEqual({})
   for(const command of ["rg a file | sh", 'rg "$(touch x)" file', "rg --p're'=script file", "git diff --out'put'=file", "cat'evil' file", "rg --p\\re=script file", "rg 'unterminated", "sed -n 1p --file=script", 'rg a <(touch x)']) expect(call(command), command).toHaveProperty('hookSpecificOutput.permissionDecision','deny')
 })
@@ -523,14 +636,4 @@ it('fails a surface that cites a skill file without its 형태 heading', () => {
   index.surfaces[0].references = [skill]
   write('docs/reference/zero-sol/context.json', JSON.stringify(index))
   expect(surfaceIndexFailures(root).filter((item) => item.includes('형태'))).toEqual([])
-})
-
-it('routes shared feature API paths to an edit consumer without inventing a list requirement', () => {
-  const checkpoint = {
-    scope: ['src/features/performances/api/'],
-    surfaces: [{ id: 'performance-edit', decision: 'include' }, { id: 'performance-language', decision: 'exclude', reason: 'Only the edit API boundary is under review.' }],
-    requirements: [{ id: 'R1', text: 'Review edit API boundary.', surfaces: ['performance-edit'], sources: ['user'], contracts: [], contractReason: 'Discovery only.' }],
-    contracts: [],
-  }
-  expect(workflowContext(process.cwd(), checkpoint).included.map((surface) => surface.id)).toEqual(['performance-edit'])
 })

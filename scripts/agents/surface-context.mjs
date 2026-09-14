@@ -3,8 +3,8 @@ import { dirname, relative, resolve } from 'node:path'
 import { readReference, referenceCovers, referenceOf, selectedDocuments } from './document-context.mjs'
 import { pointerState, renderRows, rowsForSurface, summarize } from './screen-contract.mjs'
 import { SEED_BUNDLES } from '../contracts/seed.mjs'
+import { PRODUCT_POINTER, productPaths } from '../contracts/product-paths.mjs'
 
-export const SURFACE_INDEX = 'docs/reference/zero-sol/context.json'
 const text = (value) => typeof value === 'string' && value.trim().length > 0
 const list = (value) => Array.isArray(value)
 const inside = (path, prefix) => path === prefix || (prefix.endsWith('/') && path.startsWith(prefix))
@@ -44,8 +44,12 @@ export function withShapeHeadings(root, references) {
 }
 
 export function readSurfaceIndex(root) {
-  if (!existsSync(resolve(root, SURFACE_INDEX))) return { judgment: [], surfaces: [] }
-  const index = JSON.parse(readFileSync(resolve(root, SURFACE_INDEX), 'utf8'))
+  const file = productPaths(root).index
+  if (!existsSync(resolve(root, file))) {
+    if (existsSync(resolve(root, PRODUCT_POINTER))) throw new Error(`Product pointer index does not exist: ${file}`)
+    return { judgment: [], surfaces: [] }
+  }
+  const index = JSON.parse(readFileSync(resolve(root, file), 'utf8'))
   if (!list(index.surfaces) || !list(index.judgment)) throw new Error('Surface index needs surfaces and judgment references')
   return index
 }
@@ -53,16 +57,18 @@ export function readSurfaceIndex(root) {
 export function surfaceIndexFailures(root) {
   const failures = []
   try {
+    const paths = productPaths(root)
     const index = readSurfaceIndex(root)
     const ids = new Set()
     for (const surface of index.surfaces) {
       if (!text(surface.id) || ids.has(surface.id)) throw new Error(`Duplicate or empty surface id: ${surface.id}`)
       ids.add(surface.id)
       if (!text(surface.title) || !['group', 'surface'].includes(surface.coverage) || !list(surface.paths) || !surface.paths.every(safePath) || !list(surface.related) || !list(surface.scenarios) || !list(surface.references)) throw new Error(`Invalid surface: ${surface.id}`)
-      if (!referenceOf(surface.inventory).file.startsWith('docs/reference/zero-sol/')) throw new Error(`Inventory location required: ${surface.id}`)
+      if (!referenceOf(surface.inventory).file.startsWith(`${paths.inventory}/`)) throw new Error(`Inventory location required: ${surface.id}`)
       if (!surface.scenarios.length && !text(surface.gap)) throw new Error(`Scenario or explicit gap required: ${surface.id}`)
-      if (!surface.scenarios.every((ref) => referenceOf(ref).file.startsWith('docs/reference/scenarios/'))) throw new Error(`Scenario location required: ${surface.id}`)
-      for (const ref of [surface.inventory, ...surface.scenarios, ...surface.references]) readReference(root, ref)
+      if (!surface.scenarios.every((ref) => referenceOf(ref).file.startsWith(`${paths.scenarios}/`))) throw new Error(`Scenario location required: ${surface.id}`)
+      if (surface.parentReferences !== undefined && (!list(surface.parentReferences) || !surface.parentReferences.length)) throw new Error(`parentReferences must name relevant parent policies: ${surface.id}`)
+      for (const ref of [surface.inventory, ...surface.scenarios, ...surface.references, ...(surface.parentReferences ?? [])]) readReference(root, ref)
       for (const miss of missingShapeHeadingRefs(root, surface.references)) {
         failures.push(`${surface.id} cites ${miss.file} without heading ${miss.heading}`)
       }
@@ -70,10 +76,13 @@ export function surfaceIndexFailures(root) {
     for (const surface of index.surfaces) {
       for (const id of surface.related) if (!ids.has(id) || id === surface.id) throw new Error(`Dangling related surface: ${surface.id} → ${id}`)
     }
-    for (const ref of index.judgment) readReference(root, ref)
-    const directory = resolve(root, 'docs/reference/zero-sol')
+    for (const ref of index.judgment) {
+      if (referenceOf(ref).file !== paths.judgment) throw new Error(`Judgment location must match ${PRODUCT_POINTER}: ${referenceOf(ref).file}`)
+      readReference(root, ref)
+    }
+    const directory = resolve(root, paths.inventory)
     if (existsSync(directory)) for (const file of readdirSync(directory).filter((name) => /^\d{2}-.+\.md$/.test(name))) {
-      if (!index.surfaces.some((surface) => referenceOf(surface.inventory).file === `docs/reference/zero-sol/${file}`)) failures.push(`Inventory without context entry: ${file}`)
+      if (!index.surfaces.some((surface) => referenceOf(surface.inventory).file === `${paths.inventory}/${file}`)) failures.push(`Inventory without context entry: ${file}`)
     }
   } catch (error) { failures.push(error.message) }
   return failures
@@ -100,12 +109,13 @@ const sharedPath = (path) => /^src\/shared\//.test(path)
 const WHOLE_SCREEN_SCOPE = /^src\/(?:(?:features(?:\/[^/]+(?:\/(?:screens|mechanics)(?:\/[^/]+)?)?)?|routes(?:\/[^/]+)*)\/)?$/
 
 /**
- * Workflow always. A `src/shared` scope with no `work.kind` also, whatever `mode` says: the exemption
+ * Explicit implement/drill mode and workflow always. A `src/shared` scope with no `work.kind` also: the exemption
  * for a one-line primitive fix is the declared `work.kind` with its reason, never an omitted field —
  * a gate that fires only for sessions that already know the loop misses exactly the ones that do not.
  * `work: { reason }` without a kind is still no kind.
  */
 export function loopApplies(checkpoint) {
+  if (LOOP_MODES.includes(checkpoint.mode)) return true
   if (workKind(checkpoint) === 'workflow') return true
   return checkpoint.work?.kind === undefined && checkpoint.scope.some(sharedPath)
 }
@@ -120,13 +130,15 @@ export function independentReviewRequired(checkpoint) {
 export function loopDeclarationFailures(checkpoint) {
   if (!loopApplies(checkpoint)) return []
   const failures = []
-  const shared = workKind(checkpoint) !== 'workflow'
+  const shared = checkpoint.scope.some(sharedPath) && workKind(checkpoint) !== 'workflow'
   if (shared && !LOOP_MODES.includes(checkpoint.mode)) {
     failures.push('A src/shared scope declares checkpoint.mode (implement|drill), or work.kind maintenance|infrastructure with a reason')
   } else if (!LOOP_MODES.includes(checkpoint.mode)) {
     failures.push('Declare checkpoint.mode (implement|drill)')
   }
-  if (shared && !SHARED_GRAINS.includes(checkpoint.grain)) {
+  if (checkpoint.grain === 'mixed') {
+    failures.push('Mixed request: declare units/currentUnit and use the current unit grain (screen|slice|component|logic|structure), not grain mixed')
+  } else if (shared && !SHARED_GRAINS.includes(checkpoint.grain)) {
     failures.push('Shared implement/drill declares checkpoint.grain component|logic (entry is a bundle id)')
   } else if (!LOOP_GRAINS.includes(checkpoint.grain)) {
     failures.push(`Declare checkpoint.grain (${LOOP_GRAINS.join('|')})`)
@@ -186,7 +198,7 @@ export function workflowContext(root, checkpoint, paths = checkpoint.scope) {
     if (!list(gap.requirements) || !gap.requirements.length || new Set(gap.requirements).size !== gap.requirements.length || !gap.requirements.every((id) => checkpoint.requirements.some((requirement) => requirement.id === id))) throw new Error('Evidence gaps need existing requirement IDs')
   }
   if (checkpoint.stage === 'settled' && (gaps.length || included.some((surface) => surface.gap))) throw new Error('A settled workflow cannot have evidence gaps')
-  if (checkpoint.stage === 'settled') {
+  if (checkpoint.stage === 'settled' && ['screen', 'slice'].includes(checkpoint.grain)) {
     // Settled means the next task can read this screen by machine: its inventory table carries `id` rows.
     // A group whose rows are promoted under its inner surfaces (`member-list.*` under `members`) passes
     // through an included inner surface that has rows.
@@ -206,7 +218,7 @@ export function workflowContext(root, checkpoint, paths = checkpoint.scope) {
   for (const surface of included) {
     for (const id of surface.related) if (!chosen.has(id)) throw new Error(`Decide included/excluded inner surface: ${id}`)
   }
-  const references = [...index.judgment, ...included.flatMap((surface) => [surface.inventory, ...surface.scenarios, ...withShapeHeadings(root, surface.references)]), ...gaps.flatMap((gap) => gap.references)]
+  const references = [...index.judgment, ...included.flatMap((surface) => [surface.inventory, ...surface.scenarios, ...withShapeHeadings(root, surface.references), ...(surface.parentReferences ?? [])]), ...gaps.flatMap((gap) => gap.references)]
   for (const requirement of checkpoint.requirements) {
     const requirementGaps = gaps.filter((gap) => gap.requirements.includes(requirement.id))
     if (!list(requirement.surfaces) || !requirement.surfaces.every((id) => included.some((surface) => surface.id === id)) || (!requirement.surfaces.length && !requirementGaps.length)) throw new Error(`Requirement ${requirement.id} needs included surfaces or its own evidence gap`)
@@ -217,7 +229,7 @@ export function workflowContext(root, checkpoint, paths = checkpoint.scope) {
     references.push(...requirement.sources.filter((source) => source !== 'user'))
   }
   for (const surface of included) if (!checkpoint.requirements.some((requirement) => requirement.surfaces.includes(surface.id))) throw new Error(`Included surface needs a requirement: ${surface.id}`)
-  return { references, included, indexed: existsSync(resolve(root, SURFACE_INDEX)), rowDelivery: sliceRowDelivery(root, checkpoint, included) }
+  return { references, included, indexed: existsSync(resolve(root, productPaths(root).index)), rowDelivery: sliceRowDelivery(root, checkpoint, included) }
 }
 
 /**
@@ -257,7 +269,9 @@ export function sliceRowDelivery(root, checkpoint, included) {
   const promotedIds = new Set(promoted.map((entry) => entry.surface.id))
   const refKey = (value) => { const ref = referenceOf(value); return JSON.stringify([ref.file, ref.heading ?? null]) }
   const sharedByUnpromoted = new Set(included.filter((surface) => !promotedIds.has(surface.id)).map((surface) => refKey(surface.inventory)))
-  const skip = new Set(promoted.map((entry) => refKey(entry.surface.inventory)).filter((key) => !sharedByUnpromoted.has(key)))
+  // Only an explicit parent-policy selection allows dropping its parent section. Without one,
+  // preserve the original section: row tables cannot tell which surrounding prose is relevant.
+  const skip = new Set(promoted.filter(entry => entry.surface.parentReferences?.length).map((entry) => refKey(entry.surface.inventory)).filter((key) => !sharedByUnpromoted.has(key)))
   return { skip, documents }
 }
 
@@ -289,7 +303,7 @@ export function contextReport(root, { summary = false } = {}) {
   const index = readSurfaceIndex(root)
   const direct = new Set(index.judgment.map(ref => referenceOf(ref).file))
   const surfaces = index.surfaces.map(surface => {
-    const refs = [...index.judgment, surface.inventory, ...surface.scenarios, ...withShapeHeadings(root, surface.references)]
+    const refs = [...index.judgment, surface.inventory, ...surface.scenarios, ...withShapeHeadings(root, surface.references), ...(surface.parentReferences ?? [])]
     refs.forEach(ref => direct.add(referenceOf(ref).file))
     const documents = selectedDocuments(root, refs)
     return {
@@ -314,7 +328,7 @@ export function contextReport(root, { summary = false } = {}) {
       pending.push(target)
     }
   }
-  const notion=resolve(root,'docs/reference/zero-sol/notion')
+  const notion=resolve(root,productPaths(root).inventory,'notion')
   const supporting=existsSync(notion)?readdirSync(notion,{recursive:true,withFileTypes:true}).filter(entry=>entry.isFile()&&entry.name.endsWith('.md')).map(entry=>{
     const file=relative(root,resolve(entry.parentPath,entry.name)).replaceAll('\\','/')
     return {file,route:direct.has(file)?'direct':reachable.has(file)?'linked':'unlinked',bytes:Buffer.byteLength(readFileSync(resolve(root,file)))}

@@ -1,4 +1,5 @@
 import { TestLocaleProvider } from "@/test/locale";
+import { UnsavedChangesProvider } from "@/shared/ui/form/UnsavedChangesGuard";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
@@ -16,12 +17,12 @@ function setup(accountStatus: ManagerAccountStatus) {
   const onActionRequest = vi.fn();
   render(
     <TestLocaleProvider>
-      <ManagerDetailContent
+      <UnsavedChangesProvider><ManagerDetailContent
         manager={{ id: "example", name: "Example" }}
         managerId="example"
         accountStatus={accountStatus}
         onActionRequest={onActionRequest}
-      />
+      /></UnsavedChangesProvider>
     </TestLocaleProvider>,
   );
   return onActionRequest;
@@ -31,7 +32,7 @@ describe("manager detail input boundaries", () => {
   it("masks only reference email and phone before operator verification", () => {
     render(
       <TestLocaleProvider>
-        <ManagerDetailContent
+        <UnsavedChangesProvider><ManagerDetailContent
           managerId="example"
           accountStatus="active"
           manager={{
@@ -40,7 +41,7 @@ describe("manager detail input boundaries", () => {
             email: "operator@example.com",
           }}
           onActionRequest={vi.fn()}
-        />
+        /></UnsavedChangesProvider>
       </TestLocaleProvider>,
     );
     expect(screen.getByText("Jane")).toBeInTheDocument();
@@ -139,7 +140,7 @@ describe("manager detail input boundaries", () => {
     ).toBeInTheDocument();
   });
 
-  it("dismisses dirty rejection without a warning and sends only the new reason", async () => {
+  it("asks before dismissing a dirty rejection and sends only the new reason", async () => {
     const onActionRequest = setup("awaiting");
     fireEvent.click(screen.getByRole("button", { name: "거절" }));
     fireEvent.change(screen.getByLabelText("승인거절 사유*"), {
@@ -150,8 +151,9 @@ describe("manager detail input boundaries", () => {
         name: "취소",
       })[1]!,
     );
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "알림" })).toHaveTextContent("입력을 취소하시겠습니까?");
     expect(onActionRequest).not.toHaveBeenCalled();
+    fireEvent.click(within(screen.getByRole("dialog", { name: "알림" })).getByRole("button", { name: "확인" }));
     fireEvent.click(screen.getByRole("button", { name: "거절" }));
     fireEvent.change(screen.getByLabelText("승인거절 사유*"), {
       target: { value: "Review needed" },

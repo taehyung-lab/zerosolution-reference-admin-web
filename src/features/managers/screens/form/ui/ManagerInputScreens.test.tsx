@@ -1,5 +1,6 @@
 import { ApiError } from "@/api/error";
-import { TestQueryLocaleProvider } from "@/test/query-locale";
+import { TestQueryLocaleProvider as BaseTestQueryLocaleProvider } from "@/test/query-locale";
+import { UnsavedChangesProvider } from "@/shared/ui/form/UnsavedChangesGuard";
 import { chooseOptionIn } from "@/test/select";
 import {
   fireEvent,
@@ -9,6 +10,7 @@ import {
   within,
 } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import type { PropsWithChildren } from "react";
 import { readManagerDirectoryTypeOptions } from "../../../fixtures/directory-options";
 import { findManagerFixture } from "../../../fixtures/managers";
 import { toManagerEditDefaults } from "../model/manager-form-defaults";
@@ -16,6 +18,14 @@ import {
   ManagerCreateInputScreen,
   ManagerEditInputScreen,
 } from "./ManagerInputScreens";
+
+function TestQueryLocaleProvider({ children }: PropsWithChildren) {
+  return (
+    <BaseTestQueryLocaleProvider>
+      <UnsavedChangesProvider>{children}</UnsavedChangesProvider>
+    </BaseTestQueryLocaleProvider>
+  );
+}
 
 let guardDisabled = true;
 const navigate = vi.fn();

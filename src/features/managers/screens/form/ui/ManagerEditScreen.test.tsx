@@ -1,5 +1,6 @@
 import { ApiError } from "@/api/error";
 import { TestLocaleProvider } from "@/test/locale";
+import { UnsavedChangesProvider } from "@/shared/ui/form/UnsavedChangesGuard";
 import { useQuery } from "@tanstack/react-query";
 import {
   fireEvent,
@@ -53,11 +54,17 @@ vi.mock(
   },
 );
 
+const screenView = (managerId = "manager-1") => (
+  <TestLocaleProvider>
+    <UnsavedChangesProvider>
+      <ManagerEditScreen managerId={managerId} />
+    </UnsavedChangesProvider>
+  </TestLocaleProvider>
+);
+
 const renderScreen = () =>
   render(
-    <TestLocaleProvider>
-      <ManagerEditScreen managerId="manager-1" />
-    </TestLocaleProvider>,
+    screenView(),
   );
 
 const detail = {
@@ -163,6 +170,23 @@ describe("ManagerEditScreen 저장 경로", () => {
     expect(screen.getByText("ididi1234")).toBeInTheDocument();
     expect(screen.queryByRole("textbox", { name: /^아이디/ })).toBeNull();
     expect(screen.queryByLabelText("비밀번호*")).toBeNull();
+  });
+
+  it("같은 화면에서 운영자 ID가 바뀌면 새 조회값과 dirty 기준으로 재설정한다", () => {
+    const view = render(screenView());
+    fireEvent.change(screen.getByLabelText("이름*"), {
+      target: { value: "저장하지 않은 이름" },
+    });
+    vi.mocked(useQuery).mockReturnValue({
+      isPending: false,
+      isError: false,
+      data: { ...detail, id: "other-id", name: "다른 운영자" },
+    } as never);
+
+    view.rerender(screenView("manager-2"));
+
+    expect(screen.getByLabelText("이름*")).toHaveValue("다른 운영자");
+    expect(screen.getByText("other-id")).toBeInTheDocument();
   });
 
   it("저장 → 확인은 아이디·비밀번호 없는 PUT 본문을 보내고, 완료 확인 뒤 상세로 이동한다", async () => {

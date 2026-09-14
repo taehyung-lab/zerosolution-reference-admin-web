@@ -40,6 +40,6 @@ export function useCounselRecords({
     guard,
     deletion,
     // 상세 안 편집 전환에는 취소 경고를 띄우지 않는다. 신규 상담 입력과 route 보호는 유지한다.
-    edit: (id?: string) => guard.close(() => setEditing(id), { when: false }),
+    edit: (id?: string) => guard.close(() => setEditing(id), { when: editDirty }),
   };
 }

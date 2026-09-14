@@ -155,7 +155,7 @@ describe('route guard with multiple form owners', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
-  it('browser beforeunload is prevented only while registered dirty input exists', async () => {
+  it('browser beforeunload is prevented while registered input is dirty or saving', async () => {
     setup(true);
     await screen.findByRole('textbox', { name: 'first' });
     const unload = () => {
@@ -170,6 +170,10 @@ describe('route guard with multiple form owners', () => {
     fireEvent.change(screen.getByRole('textbox', { name: 'first' }), { target: { value: '' } });
     expect(unload()).toBe(true);
     fireEvent.click(screen.getByRole('button', { name: 'unmount second' }));
+    expect(unload()).toBe(false);
+    fireEvent.click(screen.getByRole('button', { name: 'pending first' }));
+    expect(unload()).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: 'pending first' }));
     expect(unload()).toBe(false);
   });
 });

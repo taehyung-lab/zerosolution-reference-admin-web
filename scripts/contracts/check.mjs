@@ -3,14 +3,15 @@
  * 규범 문서와 저장소 설정의 기계적 정합성만 검사한다.
  * 설계 판단이나 문서 내용의 옳고 그름은 검사하지 않는다. 그건 리뷰가 소유한다.
  *
- * `--mode source`(기본): 이 레퍼런스 저장소. seed·manifest 폐쇄를 검사하고, 코드 안의
+ * `--mode source`(이 레퍼런스의 기본): seed·manifest 폐쇄를 검사하고, 코드 안의
  *   `TRANSPLANT_PENDING_*` 는 이관 대기 목록으로만 보고한다(문서 안의 sentinel은 실패).
  * `--mode target`: 이관된 제품 저장소. seed·manifest 검사는 source 전용이라 건너뛰고,
- *   문서·코드 어디에든 sentinel 이 남아 있으면 bootstrap 미완료로 실패한다.
+ *   문서·코드 어디에든 sentinel 이 남아 있으면 bootstrap 미완료로 실패한다. stage 사본의 기본 모드는 target이다.
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { surfaceIndexFailures } from '../agents/surface-context.mjs'
+import { productPaths } from './product-paths.mjs'
 import {
   agentsSectionReferenceFailures,
   claudeAgentsImportFailure,
@@ -42,9 +43,7 @@ import {
   detailRouteLoaderFailures,
   listRouteCoverageFailures,
   listRouteCoverageNotices,
-  resolvedShapeExceptionFailures,
   screenShapeFailures,
-  screenShapeNotices,
 } from './screen-shape.mjs'
 import {
   SEED_BUNDLES,
@@ -62,7 +61,8 @@ import {
 } from './seed.mjs'
 
 const modeIndex = process.argv.indexOf('--mode')
-const mode = modeIndex === -1 ? 'source' : process.argv[modeIndex + 1]
+const DEFAULT_MODE = 'source'
+const mode = modeIndex === -1 ? DEFAULT_MODE : process.argv[modeIndex + 1]
 if (mode !== 'source' && mode !== 'target') {
   console.error(`  ✗ --mode 는 source | target 이어야 한다: ${mode}`)
   process.exit(1)
@@ -70,6 +70,12 @@ if (mode !== 'source' && mode !== 'target') {
 
 const failures = []
 const notes = []
+
+const missingMerge = ['package.json', '.github/workflows/verify.yml'].filter((file) => !existsSync(resolve(file)))
+if (missingMerge.length) {
+  for (const file of missingMerge) console.error(`  ✗ ${file} 를 먼저 병합한다 (대상 소유 설정; 이관 apply는 덮어쓰지 않음).`)
+  process.exit(1)
+}
 
 const packageJson = JSON.parse(readFileSync(resolve('package.json'), 'utf8'))
 const chain = parseVerifyChain(packageJson.scripts?.verify ?? '')
@@ -124,18 +130,16 @@ const citingFiles = [
 failures.push(...retiredDocumentNameFailures(citingFiles))
 failures.push(...agentsSectionReferenceFailures(citingFiles, agents))
 failures.push(...prohibitedAbstractionSourceFailures(readFileSync(resolve('eslint.config.js'), 'utf8')))
-failures.push(...ledgerIndexFailures())
+try { failures.push(...ledgerIndexFailures(productPaths(process.cwd()).scenarios)) } catch (error) { failures.push(error.message) }
 failures.push(...surfaceIndexFailures(process.cwd()))
 
 // 문서 안의 sentinel 은 어느 모드에서도 결정 미해소다.
 failures.push(...transplantSentinelFailures(documents))
 
-// 화면 형태: 역할별 reference 의 형태 절이 정한 파일 집합·위치와, 목록 route 의 계약 e2e 합류.
+// Existing role names/placement, selected source behavior, and route coverage; no mandatory file sets.
 failures.push(...screenShapeFailures(process.cwd()))
 failures.push(...listRouteCoverageFailures(process.cwd()))
 failures.push(...detailRouteLoaderFailures(process.cwd()))
-if (mode === 'source') failures.push(...resolvedShapeExceptionFailures(process.cwd()))
-notes.push(...screenShapeNotices(process.cwd()))
 notes.push(...listRouteCoverageNotices(process.cwd()))
 
 // 타입·테스트가 통과해도 런타임에만 죽는 두 실패. 실제로 겪어서 넣었다.
@@ -200,7 +204,7 @@ console.log(`  ✓ 삭제된 문서 이름·옛 AGENTS §번호·금지 추상�
 console.log('  ✓ 시나리오 원장 색인과 카드가 서로를 덮음')
 console.log('  ✓ 화면 context 색인의 인벤토리·시나리오·절·관련 surface 연결 실존 (의미·내부 구성 완전성은 리뷰)')
 console.log(`  ✓ 문서 안 미해소 이관 sentinel 없음${mode === 'target' ? ' (target: 코드 포함)' : ''}`)
-console.log('  ✓ 화면 형태: 역할 파일의 위치·필수 집합과 목록 route 의 계약 e2e 합류 (의미는 형태 절과 리뷰)')
+console.log('  ✓ 화면 보조 검사: 기존 역할 파일의 위치·정렬, route loader·e2e 합류 (파일 집합·동작 완전성은 판정하지 않음)')
 console.log(
   declaredPaths === null
     ? '  ✓ transport 포트 등록됨 (계약 snapshot 없음: 경로 대조 건너뜀)'

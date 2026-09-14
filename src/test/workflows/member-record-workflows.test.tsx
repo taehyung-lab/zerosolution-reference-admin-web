@@ -1,4 +1,5 @@
-import { TestQueryLocaleProvider as TestLocaleProvider } from "@/test/query-locale";
+import { TestQueryLocaleProvider as BaseTestLocaleProvider } from "@/test/query-locale";
+import { UnsavedChangesProvider } from "@/shared/ui/form/UnsavedChangesGuard";
 import {
   fireEvent,
   render,
@@ -7,6 +8,7 @@ import {
   within,
 } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import type { PropsWithChildren } from "react";
 import {
   appealDetailFixture,
   counselDetailFixture,
@@ -27,6 +29,14 @@ import { WithdrawnMemberListScreen } from "../../features/members/screens/withdr
 import { CounselDetailDialog } from "../../features/members/screens/counsel/ui/CounselDetailDialog";
 import { MemberCounselListScreen } from "../../features/members/screens/counsel/ui/MemberCounselListScreen";
 import { ReissueDialog } from "../../features/members/screens/counsel/ui/ReissueDialog";
+
+function TestLocaleProvider({ children }: PropsWithChildren) {
+  return (
+    <BaseTestLocaleProvider>
+      <UnsavedChangesProvider>{children}</UnsavedChangesProvider>
+    </BaseTestLocaleProvider>
+  );
+}
 
 vi.mock("@tanstack/react-router", () => ({
   useBlocker: () => ({ status: "idle" }),
@@ -127,7 +137,9 @@ describe("secondary member pre-request workflows", () => {
       target: { value: "기존 상담 수정 초안" },
     });
     fireEvent.click(within(edit).getByRole("button", { name: "취소" }));
-    expect(screen.queryByRole("dialog", { name: "알림" })).toBeNull();
+    const alert = screen.getByRole("dialog", { name: "알림" });
+    expect(alert).toHaveTextContent("입력을 취소하시겠습니까?");
+    fireEvent.click(within(alert).getByRole("button", { name: "확인" }));
     await waitFor(() =>
       expect(
         screen.queryByRole("form", { name: "수정" }),
@@ -212,7 +224,7 @@ describe("secondary member pre-request workflows", () => {
     expect(screen.queryAllByRole("combobox", { hidden: true })).toHaveLength(0);
     expect(screen.queryAllByRole("textbox", { hidden: true })).toHaveLength(0);
   });
-  it("opens the counsel reissue boundary and closes a dirty note without a question", () => {
+  it("opens the counsel reissue boundary and confirms before closing a dirty note", () => {
     const detail = counselDetailFixture("counsel-1");
     if (!detail) throw new Error("Missing counsel fixture");
     const onClose = vi.fn();
@@ -236,7 +248,10 @@ describe("secondary member pre-request workflows", () => {
     const content = screen.getByRole("textbox", { name: /상담내용/ });
     fireEvent.change(content, { target: { value: "Draft note" } });
     fireEvent.keyDown(document, { key: "Escape" });
-    expect(screen.queryByRole("dialog", { name: "알림" })).toBeNull();
+    const alert = screen.getByRole("dialog", { name: "알림" });
+    expect(alert).toHaveTextContent("입력을 취소하시겠습니까?");
+    expect(onClose).not.toHaveBeenCalled();
+    fireEvent.click(within(alert).getByRole("button", { name: "확인" }));
     expect(onClose).toHaveBeenCalledOnce();
   });
   it("renders all five list entry surfaces and commits pending keyword on search", () => {

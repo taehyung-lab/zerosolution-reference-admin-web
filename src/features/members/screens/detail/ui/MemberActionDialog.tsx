@@ -77,7 +77,7 @@ function PasswordDialog({
         description={t("detailAction.passwordDescription")}
         closeLabel={t("detailAction.close")}
         onOpenChange={(open) => {
-          if (!open) guard.close(onClose, { when: false });
+          if (!open) guard.close(onClose);
         }}
       >
         <form
@@ -111,7 +111,7 @@ function PasswordDialog({
             <Button type="submit">{t("detailAction.confirm")}</Button>
             <Button
               type="button"
-              onClick={() => guard.close(onClose, { when: false })}
+              onClick={() => guard.close(onClose)}
             >
               {t("detailAction.cancel")}
             </Button>
@@ -175,7 +175,7 @@ function VerificationDialog({
         }
         closeLabel={t("detailAction.close")}
         onOpenChange={(open) => {
-          if (!open) guard.close(onClose, { when: false });
+          if (!open) guard.close(onClose);
         }}
       >
         <form
@@ -208,7 +208,7 @@ function VerificationDialog({
             <Button type="submit">{t("detailAction.confirm")}</Button>
             <Button
               type="button"
-              onClick={() => guard.close(onClose, { when: false })}
+              onClick={() => guard.close(onClose)}
             >
               {t("detailAction.cancel")}
             </Button>

@@ -39,6 +39,8 @@
     "test:e2e:verify": "playwright test --project=chromium --grep \"@smoke|@reference\""
   },
   "dependencies": {
+    "@dnd-kit/dom": "0.5.0",
+    "@dnd-kit/react": "0.5.0",
     "@tanstack/react-form": "1.33.5",
     "@tanstack/react-query": "5.102.6",
     "@tanstack/react-router": "1.170.32",

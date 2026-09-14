@@ -1,4 +1,5 @@
 import { TestLocaleProvider } from "@/test/locale";
+import { UnsavedChangesProvider } from "@/shared/ui/form/UnsavedChangesGuard";
 import {
   createMemoryHistory,
   createRootRoute,
@@ -19,7 +20,13 @@ import { MemberEditScreen } from "./MemberEditScreen";
 
 function setup(accountStatus: "general" | "flagged" = "flagged") {
   const onConfirm = vi.fn();
-  const root = createRootRoute({ component: Outlet });
+  const root = createRootRoute({
+    component: () => (
+      <UnsavedChangesProvider>
+        <Outlet />
+      </UnsavedChangesProvider>
+    ),
+  });
   const editor = createRoute({
     getParentRoute: () => root,
     path: "/edit",

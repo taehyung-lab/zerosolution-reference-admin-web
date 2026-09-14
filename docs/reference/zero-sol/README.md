@@ -7,6 +7,31 @@ Figma `ZEROsol (For Kakao)`(`Ogb6WpSpwCVhKggQ1NLRlQ`) 78 page와 Notion `DB: Wor
 [zero-sol-figma-analysis.md](../zero-sol-figma-analysis.md), 승격 절차는
 `.agents/skills/shared-ui-contract/references/promotion.md`, 단계는 `docs/decisions/0009-shared-boundaries.md`가 소유한다.
 
+## 프로젝트 사실
+
+확인되지 않은 값은 추측해 채우지 않으며, 자리표시자가 남은 상태를 bootstrap 완료라고 부르지 않는다.
+
+- 제품과 사용자: ZERO PLUS+ 공연·전시 티켓 운영 어드민(BOOSTER LAB). 내부 운영자가 회원·공연·발권·전시·프로모션·커뮤니티·통계·설정을 처리한다. 현장발권은 LNB가 분리된 별도 화면군이다. 운영자 역할 종류와 규모, 현장발권의 배포 형태는 미확인이다.
+- 배포 환경: 미확인. API base URL, CORS·cookie domain·SameSite 정책이 확정되기 전에는 bootstrap 완료로 보지 않는다.
+- Admin OpenAPI URL: 미확인. 신규 백엔드가 아직 없다.
+- 계약 snapshot: `openapi/admin.snapshot.json`. 현재 값은 신규 제품 계약이 아니라 격리된 리허설 계약이다. 출처와 폐기 조건은 `openapi/README.md`와 `docs/decisions/0001-rehearsal-api-contract.md`가 소유한다. 리허설의 endpoint·DTO·enum·status·permission을 `shared`, `app/config`, 번역의 제품 진실로 삼지 않는다.
+- 기술 스택·버전·검증 명령: `README.md`와 `package.json`이 소유한다. 생성 범위 정책은 `api-contract`가 소유한다.
+- 다국어: UI 카피는 `ko`, `en`, `ja` parity. 서버 응답 로케일 지원 범위는 계약 snapshot이 선언한 값을 따른다.
+- 날짜·시간: instant request는 `UTC`, 화면 표시와 달력의 하루 경계는 브라우저 IANA zone을 쓴다. locale에서 zone을 추정하거나 상태를 복제하지 않는다. 변환·API 파라미터·재검토 조건은 [날짜 계약](../../decisions/0003-datetime-utc.md)이 소유한다.
+- 권한 기준선: 권한 코드와 역할 체계는 미확인이다. 화면은 "권한이 있으면 이렇게 동작한다"를 기준으로 설계하고 권한 유무 분기를 화면 설계 축으로 삼지 않는다. 접근권한은 `화면 × 기능` 조합이며 화면마다 가능한 기능 집합이 다르다. 거부는 app-level 단일 surface로 수렴하고 실제 식별자는 신규 프로젝트 이관 시 sentinel로 추적한다.
+
+## 현재 제품의 공통 정책
+
+이 절은 공용 mechanic의 계약이 아니라 **ZEROsol에서 적용할 제품 선택**이다. 공용 skill은 정책의 소유권과 적용 방법만 설명한다. 다른 제품으로 이관할 때 아래 값·문구·대상 범위를 복사하지 않고 그 제품 근거로 다시 결정한다. 이번 분리는 기존 화면 동작을 바꾸지 않는다.
+
+- 목록 값 집합: 제품 목록은 `standardPageSizeOptions`를 채택하며 리허설 소비자의 양의 정수 계약은 별도로 유지한다. 실제 숫자와 enum은 각 feature search 선언이 소유한다. 진입 즉시 조회인지 명시 검색인지의 원문 판독은 아래 판독 규칙과 해당 화면 원장을 따른다.
+- 목록 정렬: 초기 기본 방향은 `desc`(2026-09-11 사용자 확정). 정렬 컬럼과 다른 컬럼 클릭 시의 방향은 해당 화면의 원장·현재 구현을 대조한다. 활성 정렬의 방향을 표시하는 mechanic 자체와 이 기본값은 별개다.
+- 폼 이탈: 2026-09-14 사용자 확정에 따라 폐기 가능한 입력이 있는 등록·수정·기타 입력 폼은 page/inline/dialog와 무관하게 dirty 취소·닫기를 보호한다. 검색·필터, 로그인, 입력 없는 삭제 확인은 제외한다. 입력을 보존하는 화면 전환의 예외는 해당 동작 근거로 판단한다. 이는 공용 guard를 사용할 대상 범위이며, guard의 상태·blocker 소유권은 form 계약이 소유한다.
+- 취소 문구: "취소할 경우 입력된 정보는 모두 삭제됩니다. 입력을 취소하시겠습니까?"(Notion, 기존 form 계약의 20개 이상 화면 근거). 화면 이동 문구: "화면을 이동할 경우 입력된 정보는 모두 삭제됩니다. 화면으로 이동하시겠습니까?"(Figma `1.1.3.1.2`). 이번 작업은 기존에 기록된 출처를 이동한 것이며 원문을 새로 실측한 것은 아니다.
+- 폼 액션 라벨: `shared:formAction.save/cancel`의 현재 기본 문구는 저장/취소다. 실제 번역 값은 `src/shared/i18n/locales/{locale}/shared.json`이 소유하며 다른 문구가 확정된 화면은 caller가 전달한다.
+- 공통 알림: [공통 원장](01-common.md)의 Figma `1.3 Alert`, `1.1.3.1.x`/`1.1.3.2.x` 카탈로그를 사용한다. 현재 `shared` 키는 `alert.title`, `formSave.confirmDescription`, `unsavedChanges.description`, `bulkAction.confirm`, `deleteConfirm.description` 및 완료 문구다. 카탈로그와 다른 업무 문장은 feature 카피로 유지한다.
+- 공통 검색 결과 문구: [화면 간 정책](notion/99-cross-screen.md)의 원문을 기준으로 번역을 일치시킨다. locale 집합은 위 프로젝트 사실이 소유하며, 공용 i18n mechanic이 특정 제품의 언어 집합을 결정하지 않는다.
+
 ## 작업 대상에서 근거 찾기
 
 [context.json](context.json)은 이 인벤토리의 **연결 정보**만 소유한다. 제품 정책은 아래 원장과

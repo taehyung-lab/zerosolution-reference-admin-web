@@ -16,6 +16,9 @@ src/api/generated/
 
 # 세션 작업 문서·에이전트 런타임 캐시. 저장소에 남기는 문서 기준은 AGENTS.md "실행·협업 모델"이 소유한다.
 .ai-work/
+.superpowers/
+docs/superpowers/
+.playwright-mcp/
 .serena/
 .worktrees/
 .claude/worktrees/

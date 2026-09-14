@@ -1,4 +1,5 @@
 import { TestLocaleProvider } from "@/test/locale";
+import { UnsavedChangesProvider } from "@/shared/ui/form/UnsavedChangesGuard";
 import {
   createMemoryHistory,
   createRootRoute,
@@ -27,7 +28,7 @@ function setup(action: "password" | "reveal" | "withdraw") {
       <p>closed</p>
     );
   }
-  const root = createRootRoute({ component: Outlet });
+  const root = createRootRoute({ component: () => <UnsavedChangesProvider><Outlet /></UnsavedChangesProvider> });
   const page = createRoute({
     getParentRoute: () => root,
     path: "/",
@@ -124,7 +125,7 @@ describe("member detail action boundaries", () => {
   });
 
   it.each(["cancel", "close", "escape"] as const)(
-    "dismisses dirty %s without a cancellation question",
+    "asks before dismissing dirty input through %s",
     async (method) => {
       setup("reveal");
       const input = await screen.findByLabelText(/운영자 비밀번호/);
@@ -135,7 +136,9 @@ describe("member detail action boundaries", () => {
         fireEvent.click(screen.getByRole("button", { name: "닫기" }));
       if (method === "escape")
         fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
-      expect(screen.queryByRole("dialog", { name: "알림" })).toBeNull();
+      expect(screen.getByRole("dialog", { name: "알림" })).toHaveTextContent("입력을 취소하시겠습니까?");
+      expect(screen.queryByText("closed")).toBeNull();
+      fireEvent.click(screen.getByRole("button", { name: "확인" }));
       expect(await screen.findByText("closed")).toBeVisible();
     },
   );

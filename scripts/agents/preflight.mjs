@@ -1,11 +1,15 @@
 import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
+import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, relative, resolve } from 'node:path'
 import { SEED_BUNDLES, currentBundleExportNames } from '../contracts/seed.mjs'
 import { claudeAgentsImportFailure, copilotAgentsPointerFailure } from '../contracts/contracts.mjs'
 import { referenceOf, referenceCovers, selectedDocuments } from './document-context.mjs'
-import { SURFACE_INDEX, workKind, workflowContext, loopApplies, independentReviewRequired, loopDeclarationFailures, entryResolutionFailure } from './surface-context.mjs'
+import { activeCheckpoint, validateUnits } from './request-units.mjs'
+import { workflowContext, loopApplies, independentReviewRequired, loopDeclarationFailures, entryResolutionFailure } from './surface-context.mjs'
+import { PRODUCT_POINTER, productPaths } from '../contracts/product-paths.mjs'
+import { rowsForSurface } from './screen-contract.mjs'
+import { receiptFailure } from './review-checks.mjs'
 
 const hash = (value) => createHash('sha256').update(value).digest('hex')
 const readJson = (file) => JSON.parse(readFileSync(file, 'utf8'))
@@ -161,13 +165,14 @@ function otherSessionClaims(root, session) {
 function partitionChanges(state, current, unsettled, children = [], foreignClaims = []) {
   const changed = changedPaths(state.baseline, current).filter((path) => unsettled === null || unsettled.has(path))
   const authored = new Set([...(state.authored ?? []), ...children.flatMap((child) => child.authored ?? [])])
-  const ownScope = state.checkpoint.scope
+  const ownScope = state.checkpoint.units?.flatMap(unit => unit.scope) ?? state.checkpoint.scope
   const claimedElsewhere = (path) => !within(path, ownScope) && foreignClaims.some((claim) => claim.authored.has(path) && within(path, claim.scope))
   const mine = changed.filter((path) => authored.has(path) && !claimedElsewhere(path))
   return { mine, external: changed.filter((path) => !mine.includes(path)) }
 }
 
 const fingerprintOf = (mine, current) => hash(JSON.stringify(mine.map((path) => [path, current[path]])))
+const activePaths = (checkpoint, mine) => checkpoint.units ? mine.filter(path => within(path, checkpoint.scope)) : mine
 const listed = (paths) => paths.length > 6 ? `${paths.slice(0, 6).join(', ')} and ${paths.length - 6} more` : paths.join(', ')
 const externalNote = (external) => external.length
   ? ` Reported, not blocking: ${external.length} path(s) changed outside this session's writes (${listed(external)}); name them in the review's limitations.`
@@ -214,7 +219,31 @@ function requiredReferences(scope, checkpoint) {
   return refs
 }
 
+const historyFile = (root, session) => resolve(root, '.ai-work/agent-attempts', `${hash(session)}.jsonl`)
+export function prepareHistory(root, session) {
+  const file = historyFile(root, session)
+  return existsSync(file) ? readFileSync(file, 'utf8').trim().split('\n').filter(Boolean).map(line => JSON.parse(line)) : []
+}
+
 export function prepare(root, session, checkpointFile, snapshot = outputSnapshot) {
+  if (!text(session)) throw new Error('A runtime session ID is required')
+  const started = new Date().toISOString()
+  const record = attempt => {
+    const file = historyFile(root, session)
+    mkdirSync(dirname(file), { recursive: true })
+    appendFileSync(file, JSON.stringify({ started, checkpointFile, ...attempt }) + '\n')
+  }
+  try {
+    const delivered = prepareCheckpoint(root, session, checkpointFile, snapshot)
+    record({ outcome: 'accepted', bytes: Buffer.byteLength(delivered), checkpointHash: load(root, session).checkpointHash })
+    return delivered
+  } catch (error) {
+    record({ outcome: 'rejected', error: error.message })
+    throw error
+  }
+}
+
+function prepareCheckpoint(root, session, checkpointFile, snapshot) {
   const checkpointPath = localPath(root, checkpointFile)
   if (!checkpointPath.startsWith('.ai-work/')) throw new Error('Keep task checkpoints in .ai-work/')
   const checkpoint = readJson(resolve(root, checkpointPath))
@@ -222,6 +251,7 @@ export function prepare(root, session, checkpointFile, snapshot = outputSnapshot
   if (!Array.isArray(scope) || !scope.length || !scope.every((path) => text(path) && localPath(root, path) === path.replace(/\/$/, ''))) throw new Error('Declare exact files or directory/ scope')
   if (!Array.isArray(requirements) || !requirements.length || !requirements.every((item) => text(item.id) && text(item.text)) || new Set(requirements.map((item) => item.id)).size !== requirements.length) throw new Error('Declare unique numbered requirements')
   const previous = load(root, session)
+  validateUnits(checkpoint, previous?.checkpoint, path => localPath(root, path))
   for (const original of previous?.checkpoint.requirements ?? []) {
     if (!requirements.some((item) => item.id === original.id && item.text === original.text)) {
       throw new Error(`Preserve requirement ${original.id} and its text. Add a new ID for changed scope; review the original as unimplemented or different with the reason.`)
@@ -246,14 +276,29 @@ export function prepare(root, session, checkpointFile, snapshot = outputSnapshot
   if (![BUILD_STAGE, SETTLED_STAGE].includes(stageOf(checkpoint))) throw new Error(`stage must be "${BUILD_STAGE}" or "${SETTLED_STAGE}"`)
   if (!Array.isArray(contracts) || !contracts.every((item) => SEED_BUNDLES.some((bundle) => bundle.id === item.id) && ['adopt', 'modify', 'exclude'].includes(item.decision) && text(item.reason))) throw new Error('Declare known seed bundle decisions and reasons; discover IDs with node scripts/agents/cli.mjs bundle (contracts may be empty when none apply)')
   if (new Set(contracts.map((item) => item.id)).size !== contracts.length) throw new Error('Duplicate contract decisions')
-  if (!Array.isArray(unresolved) || !unresolved.every((item) => text(item.question) && Array.isArray(item.paths) && item.paths.length > 0 && item.paths.every((path) => text(path) && within(path, scope)))) throw new Error('Unresolved questions must name affected paths inside scope')
+  const requestScope = checkpoint.units?.flatMap(unit => unit.scope) ?? scope
+  if (!Array.isArray(unresolved) || !unresolved.every((item) => text(item.question) && Array.isArray(item.paths) && item.paths.length > 0 && item.paths.every((path) => text(path) && localPath(root, path) === path.replace(/\/$/, '') && within(path, requestScope)))) throw new Error('Unresolved questions must name affected paths inside request scope')
+  if (checkpoint.units) for (const original of previous?.checkpoint.unresolved ?? []) {
+    if (!unresolved.some(item => item.question === original.question && original.paths.every(path => item.paths.includes(path)))) throw new Error(`Preserve unresolved question "${original.question}"; record its resolution instead of dropping it between units`)
+  }
+  for (const item of unresolved) if (item.resolution !== undefined) {
+    const resolution = item.resolution
+    if (!resolution || !['resolved', 'irrelevant'].includes(resolution.status) || !text(resolution.evidence) || !Array.isArray(resolution.sources) || !resolution.sources.length) throw new Error(`Unresolved question "${item.question}" needs resolution status, evidence and sources`)
+    const paths = productPaths(root)
+    for (const source of resolution.sources) if (source !== 'user') {
+      const { file } = referenceOf(source)
+      if (file !== paths.judgment && !file.startsWith(`${paths.inventory}/`) && !file.startsWith(`${paths.scenarios}/`)) throw new Error(`Unresolved question "${item.question}" needs product evidence from the product pointer locations or user, not root or skill prose`)
+    }
+  }
   const loopFail = loopDeclarationFailures(checkpoint)[0]
   if (loopFail) throw new Error(loopFail)
-  const context = workflowContext(root, checkpoint)
+  const context = workflowContext(root, activeCheckpoint(checkpoint))
   const entryFail = entryResolutionFailure(root, checkpoint)
   if (entryFail) throw new Error(entryFail)
   // An excluded contract was read to be excluded; its skill and ADR sections are not delivered again.
-  const bundleRefs = contracts.filter(({ decision }) => decision !== 'exclude').flatMap(({ id }) => {
+  const activeContractIds = new Set(activeCheckpoint(checkpoint).requirements.flatMap(item => item.contracts ?? []))
+  const deliveredContracts = contracts.filter(({ id, decision }) => decision !== 'exclude' && (!checkpoint.units || activeContractIds.has(id)))
+  const bundleRefs = deliveredContracts.flatMap(({ id }) => {
     const bundle = SEED_BUNDLES.find((candidate) => candidate.id === id)
     return [...bundle.skills, ...bundle.adrs]
   })
@@ -261,14 +306,22 @@ export function prepare(root, session, checkpointFile, snapshot = outputSnapshot
   // whole-file request the checkpoint itself made still wins, because the author asked for it.
   const refKey = (value) => { const ref = referenceOf(value); return JSON.stringify([ref.file, ref.heading ?? null]) }
   const explicit = new Set(references.map(referenceOf).filter((ref) => ref.heading === undefined).map((ref) => ref.file))
-  const inputs = [...references, ...context.references, ...bundleRefs]
+  const inputs = [...references, ...context.references, ...bundleRefs, ...unresolved.filter(item => item.resolution && item.paths.some(path => within(path, scope))).flatMap(item => item.resolution.sources.filter(source => source !== 'user'))]
     .filter((ref) => !context.rowDelivery.skip.has(refKey(ref)) || explicit.has(referenceOf(ref).file))
   const documents = [...selectedDocuments(root, inputs), ...context.rowDelivery.documents.filter((doc) => !explicit.has(doc.file))]
+  if (loopApplies(checkpoint) && checkpoint.entry?.includes('#')) {
+    const [file, heading] = checkpoint.entry.split('#')
+    if (!documents.some((document) => {
+      try { return referenceCovers(root, document, { file, heading }) } catch { return false }
+    })) {
+      throw new Error(`checkpoint.entry ${checkpoint.entry} must be delivered through its references or context`)
+    }
+  }
   const originsOf = (file) => {
     const origins = []
     if (references.some(ref => referenceOf(ref).file === file && referenceOf(ref).heading === undefined)) origins.push('checkpoint.references')
     if (context.references.some(ref => referenceOf(ref).file === file && referenceOf(ref).heading === undefined)) origins.push('surface context or requirement.sources')
-    for (const {id} of contracts.filter(({ decision }) => decision !== 'exclude')) {
+    for (const {id} of deliveredContracts) {
       const bundle=SEED_BUNDLES.find(bundle=>bundle.id===id)
       if ([...bundle.skills,...bundle.adrs].some(ref=>referenceOf(ref).file===file && referenceOf(ref).heading===undefined)) origins.push(`bundle:${id}`)
     }
@@ -279,11 +332,16 @@ export function prepare(root, session, checkpointFile, snapshot = outputSnapshot
     .map(document => `Full-file selection overrides headings: ${document.file} (${originsOf(document.file).join(', ')})`)
   const rendered = Object.fromEntries(documents.map((document) => [document.key, hash(document.selected)]))
   const hashes = Object.fromEntries(documents.map((document) => [document.file, hash(document.content)]))
-  if (context.indexed) hashes[SURFACE_INDEX] = hash(readFileSync(resolve(root, SURFACE_INDEX)))
+  if (context.indexed) hashes[productPaths(root).index] = hash(readFileSync(resolve(root, productPaths(root).index)))
+  if (existsSync(resolve(root, PRODUCT_POINTER))) hashes[PRODUCT_POINTER] = hash(readFileSync(resolve(root, PRODUCT_POINTER)))
   save(root, session, {
     checkpointPath, checkpointHash: hash(readFileSync(resolve(root, checkpointPath))), checkpoint,
     documents: hashes, rendered,
+    selectedRows: ['screen', 'slice'].includes(checkpoint.grain) ? context.included.flatMap(surface => rowsForSurface(root, surface).map(row => ({
+      ...row, evidenceReferences: [surface.inventory, ...surface.scenarios, ...(surface.parentReferences ?? []), productPaths(root).judgment],
+    }))).filter(row => checkpoint.grain !== 'slice' || checkpoint.rows?.includes(row.id)) : [],
     baseline: previous?.baseline ?? snapshot(root), review: null, wrote: previous?.wrote ?? false,
+    unitReviews: Object.fromEntries(Object.entries(previous?.unitReviews ?? {}).filter(([id]) => id !== checkpoint.currentUnit)),
     // Attribution survives re-preparation: a wider scope must not erase what this session already wrote.
     authored: previous?.authored ?? [], trace: previous?.trace ?? null,
     // The public export names each bundle's code roots had when this session started; review compares
@@ -315,7 +373,18 @@ export function prepare(root, session, checkpointFile, snapshot = outputSnapshot
     .sort((left, right) => right.sent - left.sent)
     .map((entry) => `${entry.sent} bytes  ${entry.document.file} — requested whole by ${originsOf(entry.document.file).join(', ') || 'a heading selection widened to the file'}`)
   const surfaceNotes = context.included.map((surface) => `${surface.id} [${surface.coverage}]${surface.gap ? ` — gap: ${surface.gap}` : ''}`).join('\n')
-  return delivered + (fullOverrides.length ? `\n${fullOverrides.join('\n')}\n` : '') + (surfaceNotes ? `\nSurface coverage (not completion):\n${surfaceNotes}\n` : '') +
+  let baselineNotice = ''
+  if (!previous) {
+    baselineNotice = '\nRecording starts now. Earlier changes are not certified by this session receipt; review them separately.\n'
+    try {
+      const existing = execFileSync('git', ['status', '--porcelain=v1', '--no-renames', '-z', '--untracked-files=all'], { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+        .split('\0').filter(Boolean).map(entry => entry.slice(3)).filter(path => within(path, checkpoint.scope))
+      if (existing.length) baselineNotice += `Pre-existing changes in declared scope (not attributed):\n${existing.join('\n')}\n`
+    } catch {
+      baselineNotice += 'Pre-existing changes could not be enumerated; do not treat this receipt as a review of the earlier diff.\n'
+    }
+  }
+  return delivered + baselineNotice + (fullOverrides.length ? `\n${fullOverrides.join('\n')}\n` : '') + (surfaceNotes ? `\nSurface coverage (not completion):\n${surfaceNotes}\n` : '') +
     (costNotes.length ? `\nWhole-file deliveries over ${WHOLE_FILE_NOTICE} bytes — narrow the input or keep it deliberately:\n${costNotes.join('\n')}\n` : '') +
     `\nContext: ${documents.length} selections, ${Buffer.byteLength(delivered)} bytes delivered (${wholeFile.reduce((sum, entry) => sum + entry.sent, 0)} in whole files). Whole-file hashes protect surrounding text too.\n` +
     'Context delivered, not semantically approved. Inspect bundle code/tests and linked rules that affect the decision, publish the checkpoint, and review actual changes before completion.\n'
@@ -323,8 +392,13 @@ export function prepare(root, session, checkpointFile, snapshot = outputSnapshot
 
 export function checkEdit(root, session, targets) {
   const state = load(root, session)
-  // The entry is AGENTS §2 (a screen request reads screen-loop first); the README only owns the checkpoint fields.
-  if (!state) return `Read AGENTS.md §2 first (an implementation request starts with screen-loop), then run node scripts/agents/cli.mjs prepare ${session} .ai-work/<task>/checkpoint.json before editing. Checkpoint fields: scripts/agents/README.md#prepare-before-editing.`
+  if (!state) {
+    // Ordinary work is artifact-free; delegation cannot escape a recorded ancestor's protocol.
+    for (let ancestor = parentOf(session); ancestor; ancestor = parentOf(ancestor)) {
+      if (load(root, ancestor)) return `Recorded ancestor ${ancestor}: run node scripts/agents/cli.mjs prepare ${session} .ai-work/<task>/checkpoint.json before editing. Checkpoint fields: scripts/agents/README.md#prepare-before-editing.`
+    }
+    return null
+  }
   const { checkpointPath, checkpointHash, documents, checkpoint } = state
   const stale = (file) => `Reference/checkpoint changed: ${file}. Re-run prepare; reassess affected decisions.`
   if (!existsSync(resolve(root, checkpointPath)) || hash(readFileSync(resolve(root, checkpointPath))) !== checkpointHash) return stale(checkpointPath)
@@ -345,8 +419,8 @@ export function checkEdit(root, session, targets) {
     for (const file of requiredReferences([path], checkpoint)) {
       if (!(file in documents)) return `Required reference for ${path}: ${file}. Update checkpoint and prepare.`
     }
-    try { workflowContext(root, checkpoint, [path]) } catch (error) { return error.message }
-    const question = checkpoint.unresolved.find((item) => within(path, item.paths))
+    try { workflowContext(root, activeCheckpoint(checkpoint), [path]) } catch (error) { return error.message }
+    const question = checkpoint.unresolved.find((item) => !item.resolution && within(path, item.paths))
     if (question) return `Unresolved product contract for ${path}: ${question.question}. Ask for the fact; do not guess.`
   }
   return null
@@ -362,23 +436,26 @@ function changedPaths(baseline, current) {
  * reported instead: they are someone else's to answer for, and blocking on them left sessions with
  * no reachable exit.
  */
-function reconcileOutput(root, session, state, mine, external) {
-  const outside = mine.filter((path) => !within(path, state.checkpoint.scope))
-  if (outside.length) return `This session wrote outside its declared scope: ${listed(outside)}. Add those paths to the checkpoint scope with the requirements that justify them and re-run prepare, or revert them.${externalNote(external)}`
-  return checkEdit(root, session, mine)
+function unitEvidenceFailure(root, state) {
+  for (const [id, review] of Object.entries(state.unitReviews ?? {})) {
+    const receiptError = receiptFailure(root, review.checks ?? [], review.fingerprint, review.requiresChecks ?? false)
+    if (receiptError) return `Reviewed unit ${id}: ${receiptError}`
+    const ids = state.checkpoint.units.find(unit => unit.id === id).requirementIds
+    const requirements = state.checkpoint.requirements.filter(item => ids.includes(item.id))
+    if (JSON.stringify(requirements) !== JSON.stringify(review.requirements) || Object.entries({ ...review.documents, ...review.files }).some(([file, digest]) => fileHash(resolve(root, file)) !== digest)) return `Reviewed unit ${id} or its evidence changed; re-prepare and review that unit before completion.`
+  }
+  return null
 }
 
-/**
- * The README's example sentences, past and present. Nine recorded reviews pasted the earlier pair verbatim
- * (measured 2026-09-11), which is the shape of a field that exists without saying anything; the same text
- * is refused as a review. `preflight.test` checks that the README example still lists only these.
- */
-export const REVIEW_EXAMPLE_SENTENCES = [
-  "Compared the adopted table contract with the caller's sort ownership.",
-  'No extra wrapper or replicated state.',
-  'data-table adopted unchanged: the column meta and getRowId stay feature-owned; no prop was added for this caller.',
-  'Three role files from the 형태 table; the sort transition is one pure policy function, no controller hook.',
-]
+function reconcileOutput(root, session, state, mine, external) {
+  // Each declared unit can be repaired independently. Other units remain pending/stale at Stop;
+  // checking them here would make two stale units prevent each other's re-review indefinitely.
+  const scopes = state.checkpoint.units?.flatMap(unit => unit.scope) ?? state.checkpoint.scope
+  const active = mine.filter(path => within(path, state.checkpoint.scope))
+  const outside = mine.filter((path) => !within(path, scopes))
+  if (outside.length) return `This session wrote outside its declared scope: ${listed(outside)}. Add those paths to the checkpoint scope with the requirements that justify them and re-run prepare, or revert them.${externalNote(external)}`
+  return checkEdit(root, session, active)
+}
 
 /**
  * A loop review (workflow, or shared implement/drill) is judged by someone other than its author: N6 is the
@@ -388,9 +465,6 @@ export const REVIEW_EXAMPLE_SENTENCES = [
  */
 export function loopReviewFailure(checkpoint, report) {
   if (loopApplies(checkpoint)) {
-    for (const field of ['contractReview', 'complexityReview']) {
-      if (REVIEW_EXAMPLE_SENTENCES.includes(String(report[field]).trim())) return `${field} repeats the README example sentence; write what this diff did to the contracts and the structure`
-    }
     const unmentioned = (checkpoint.contracts ?? []).map(({ id }) => id).filter((id) => !String(report.contractReview).includes(id))
     if (unmentioned.length) return `contractReview must say what happened to each declared contract by id: ${unmentioned.join(', ')}`
   }
@@ -403,20 +477,27 @@ export function loopReviewFailure(checkpoint, report) {
 }
 
 /**
- * A bundle whose public export names changed during this session widened or narrowed a shared contract.
+ * A bundle whose code roots this session authored and whose export names changed needs a contract decision.
+ * Concurrent changes to other code roots are not attributed to this author; the global checker still
+ * validates their export declarations. Signatures and same-name semantic changes remain review-owned.
  * That is a `modify` decision on `contracts[]`, taken before the edit, not a table to update afterwards.
  */
-export function exportDriftFailure(baseline, current, contracts = []) {
+export function exportDriftFailure(baseline, current, contracts = [], authoredFiles) {
   if (!baseline) return null
   const changed = Object.keys({ ...baseline, ...current })
     .filter((id) => JSON.stringify([...(baseline[id] ?? [])].sort()) !== JSON.stringify([...(current[id] ?? [])].sort()))
+    .filter((id) => {
+      const bundle = SEED_BUNDLES.find(bundle => bundle.id === id)
+      // No ownership input (legacy callers), or a removed/unknown bundle, keeps the conservative check.
+      return authoredFiles === undefined || !bundle || bundle.code.some(file => authoredFiles.includes(file))
+    })
   const undeclared = changed.filter((id) => !contracts.some((item) => item.id === id && item.decision === 'modify'))
   return undeclared.length
     ? `Public exports of seed bundle(s) ${undeclared.join(', ')} changed in this session without a contracts[] "modify" decision. Declare the modification with its reason and re-run prepare, or narrow the change back to the existing contract (E6).`
     : null
 }
 
-export function recordReview(root, session, report, snapshot = outputSnapshot, unsettled = unsettledPaths) {
+export function recordReview(root, session, report, snapshot = outputSnapshot, unsettled = unsettledPaths, checks = []) {
   const loaded = load(root, session)
   if (!loaded) throw new Error('Run prepare before review')
   const state = settle(root, session, loaded)
@@ -425,7 +506,7 @@ export function recordReview(root, session, report, snapshot = outputSnapshot, u
   const { mine, external } = partitionChanges(state, current, unsettled(root), children, otherSessionClaims(root, session))
   const failure = state.wrote || children.some((child) => child.wrote) ? reconcileOutput(root, session, state, mine, external) : null
   if (failure) throw new Error(failure)
-  const expected = state.checkpoint.requirements.map(({ id }) => id).sort()
+  const expected = activeCheckpoint(state.checkpoint).requirements.map(({ id }) => id).sort()
   const actual = report.requirements?.map(({ id }) => id).sort()
   if (JSON.stringify(expected) !== JSON.stringify(actual)) throw new Error(`Review every requirement exactly once: ${expected.join(', ')}`)
   if (!report.requirements.every((item) => ['implemented', 'unimplemented', 'different'].includes(item.status) && text(item.evidence)) || !text(report.contractReview) || !text(report.complexityReview) || !Array.isArray(report.assumptions) || !Array.isArray(report.limitations)) throw new Error('Review needs requirement evidence, contract/complexity comparison, assumptions and limitations')
@@ -472,40 +553,84 @@ export function recordReview(root, session, report, snapshot = outputSnapshot, u
     // A `rows: …` heading is the slice delivery itself, not a section of the file; it is cited as delivered.
     selectedDocuments(root, cited.filter((reference) => reference.heading !== undefined && !reference.heading.startsWith('rows: ')))
   }
-  if (workKind(state.checkpoint) === 'workflow') {
-    for (const item of report.requirements) {
-      if (item.status === 'unimplemented') continue
-      if (!Array.isArray(item.files) || !item.files.length || !item.files.every((file) => text(file) && localPath(root, file) === file && within(file, state.checkpoint.scope) && (existsSync(resolve(root, file)) ? statSync(resolve(root, file)).isFile() : Boolean(state.baseline[file])))) throw new Error(`Requirement ${item.id}: implementation files must exist in scope (or be a baseline deletion)`)
+  for (const item of report.requirements) {
+    const filesRequired = loopApplies(state.checkpoint) && item.status !== 'unimplemented'
+    if (filesRequired || item.files !== undefined) {
+      if (!Array.isArray(item.files) || (filesRequired && !item.files.length) || !item.files.every((file) => text(file) && localPath(root, file) === file && within(file, state.checkpoint.scope) && (existsSync(resolve(root, file)) ? statSync(resolve(root, file)).isFile() : Boolean(state.baseline[file])))) throw new Error(`Requirement ${item.id}: implementation files must exist in scope (or be a baseline deletion)`)
+    }
+    const infrastructureCode = state.checkpoint.work?.kind === 'infrastructure' && (item.files ?? []).some(file => /\.(?:[cm]?[jt]sx?|py|sh|rs)$/.test(file))
+    if ((loopApplies(state.checkpoint) || infrastructureCode) && item.status !== 'unimplemented') {
       if (!Array.isArray(item.verification) || !item.verification.length || !item.verification.every((check) => text(check.method) && text(check.result) && (!check.artifact || (localPath(root, check.artifact) === check.artifact && existsSync(resolve(root, check.artifact)) && statSync(resolve(root, check.artifact)).isFile())))) throw new Error(`Requirement ${item.id}: verification needs method, result and an existing artifact when provided`)
     }
-    // `unimplemented` skips the file check above, so without this a session could write source, attach it
-    // to no requirement, review every requirement as unimplemented and still close the stop gate.
-    const claimed = new Set(report.requirements.flatMap((item) => (Array.isArray(item.files) ? item.files : []).filter(text)))
-    const unclaimed = mine.filter((path) => !claimed.has(path))
-    if (unclaimed.length) throw new Error(`This session wrote paths no requirement claims in "files": ${unclaimed.join(', ')}. Name each in the requirement it serves, or revert it.`)
   }
+  // Attribution is independent of workflow depth, including maintenance and blocked requirements.
+  const claimed = new Set(report.requirements.flatMap((item) => (Array.isArray(item.files) ? item.files : []).filter(text)))
+  const rows = state.selectedRows ?? []
+  if (rows.length || report.rows !== undefined) {
+    if (!Array.isArray(report.rows) || JSON.stringify(report.rows.map(row => row.id).sort()) !== JSON.stringify(rows.map(row => row.id).sort())) throw new Error('Review every selected row exactly once in rows; the denominator is this unit selection')
+    for (const row of rows) {
+      const item = report.rows.find(item => item.id === row.id)
+      if (!['matched', 'different', 'blocked'].includes(item.verdict) || !text(item.evidence) || !Array.isArray(item.files) || (item.verdict !== 'blocked' && !item.files.length) || !item.files.every(file => claimed.has(file)) || !Array.isArray(item.requirementIds) || !item.requirementIds.length || !item.requirementIds.every(id => expected.includes(id))) throw new Error(`Selected row ${row.id} needs verdict, evidence, compared requirement files and affected requirementIds`)
+      if (row.unresolved) {
+        const resolution = item.unresolved
+        const productSource = source => source === 'user' || covers(referenceOf(source)) && (row.evidenceReferences ?? [row.file]).some(ref => coversSection(referenceOf(ref), referenceOf(source)))
+        if (!resolution || !['blocked', 'resolved', 'irrelevant'].includes(resolution.status) || !text(resolution.evidence) || !Array.isArray(resolution.sources) || !resolution.sources.length || !resolution.sources.every(productSource)) throw new Error(`Selected row ${row.id}: unresolved facts need a disposition and delivered product evidence (row, judgment, scenario, parent policy, or user)`)
+        const affected = resolution.requirementIds ?? item.requirementIds
+        if (!Array.isArray(affected) || !affected.length || new Set(affected).size !== affected.length || !affected.every(id => item.requirementIds.includes(id))) throw new Error(`Selected row ${row.id}: unresolved affected requirementIds must be a nonempty subset of the row requirements`)
+        if (resolution.status === 'blocked' && (item.verdict !== 'blocked' || affected.some(id => report.requirements.find(requirement => requirement.id === id).status === 'implemented'))) throw new Error(`Selected row ${row.id}: unresolved blocked facts cannot be reported implemented`)
+      }
+    }
+  }
+  const unclaimed = mine.filter((path) => (!state.checkpoint.units || within(path, state.checkpoint.scope)) && !claimed.has(path))
+  if (unclaimed.length) throw new Error(`This session wrote paths no requirement claims in "files": ${unclaimed.join(', ')}. Name each in the requirement it serves, or revert it.`)
   // Fingerprinted over this session's own paths so a concurrent edit cannot invalidate the review.
   // Content checks come last: a review that fails on files or claims is fixed there first.
   const loopFail = loopReviewFailure(state.checkpoint, report)
   if (loopFail) throw new Error(loopFail)
-  const driftFail = exportDriftFailure(state.exportsBaseline, currentBundleExportNames(root), state.checkpoint.contracts)
+  const fingerprint = fingerprintOf(activePaths(state.checkpoint, mine), current)
+  if (independentReviewRequired(state.checkpoint) && report.independentReview.fingerprint !== fingerprint) throw new Error('Independent review fingerprint must match the current authored source diff; obtain review-context and review the changed diff again')
+  const receiptError = receiptFailure(root, checks, fingerprint, independentReviewRequired(state.checkpoint))
+  if (receiptError) throw new Error(receiptError)
+  const driftFail = exportDriftFailure(state.exportsBaseline, currentBundleExportNames(root), state.checkpoint.contracts, mine)
   if (driftFail) throw new Error(driftFail)
-  save(root, session, { ...state, review: { fingerprint: fingerprintOf(mine, current), report } })
+  const review = { fingerprint, report, checks, requiresChecks: independentReviewRequired(state.checkpoint) }
+  const unitReviews = { ...state.unitReviews }
+  if (state.checkpoint.units) unitReviews[state.checkpoint.currentUnit] = {
+    ...review, requirements: activeCheckpoint(state.checkpoint).requirements,
+    documents: Object.fromEntries(Object.keys(state.documents).map(file => [file, fileHash(resolve(root, file))])),
+    files: Object.fromEntries([...new Set([...claimed, ...mine.filter(path => within(path, state.checkpoint.scope))])].map(file => [file, fileHash(resolve(root, file))])),
+  }
+  save(root, session, { ...state, review, unitReviews })
   return external
 }
 
-/** The paths a review must account for, for callers that run checks before recording one. */
-export function authoredChanges(root, session, snapshot = outputSnapshot, unsettled = unsettledPaths) {
-  const state = settle(root, session, load(root, session))
-  if (!state) return { mine: [], external: [] }
-  const children = delegated(root, session)
-  if (!state.wrote && !children.some((child) => child.wrote)) return { mine: [], external: [] }
-  return partitionChanges(state, snapshot(root), unsettled(root), children, otherSessionClaims(root, session))
+export function reviewContext(root, session, snapshot = outputSnapshot, unsettled = unsettledPaths) {
+  const current = snapshot(root)
+  const state = load(root, session)
+  if (!state) return { mine: [], active: [], external: [], fingerprint: fingerprintOf([], current) }
+  // Peek at an open bracket without saving or closing it: an independent reviewer may inspect
+  // while the author's shell command is still running and has more writes left to attribute.
+  const peek = entry => entry.trace ? { ...entry, authored: [...new Set([...(entry.authored ?? []), ...changedPaths(entry.trace, traceSnapshot(root))])] } : entry
+  const changes = partitionChanges(peek(state), current, unsettled(root), delegated(root, session).map(peek), otherSessionClaims(root, session))
+  const active = activePaths(state.checkpoint, changes.mine)
+  return { ...changes, active, fingerprint: fingerprintOf(active, current) }
+}
+
+export function reviewFingerprint(root, session, snapshot = outputSnapshot, unsettled = unsettledPaths) {
+  return reviewContext(root, session, snapshot, unsettled).fingerprint
 }
 
 export function checkStop(root, session, snapshot = outputSnapshot, unsettled = unsettledPaths) {
   const loaded = load(root, session)
   if (!loaded) return null
+  if (loaded.checkpoint.units) {
+    const evidenceFailure = unitEvidenceFailure(root, loaded)
+    if (evidenceFailure) return evidenceFailure
+    const stale = reconcileOutput(root, session, loaded, [], [])
+    if (stale) return stale
+    const pending = loaded.checkpoint.units.filter(unit => !loaded.unitReviews?.[unit.id]).map(unit => unit.id)
+    if (pending.length) return `Request units pending: ${pending.join(', ')}. A unit review does not complete the whole request.`
+  }
   // A session that was never granted a write capability, and delegated to no one who was, owns no
   // tracked change, so a concurrent session's edits must not hold its completion hostage.
   const children = delegated(root, session)
@@ -516,6 +641,8 @@ export function checkStop(root, session, snapshot = outputSnapshot, unsettled = 
   if (!mine.length) return null
   const stale = reconcileOutput(root, session, state, mine, external)
   if (stale) return stale
-  if (state.review?.fingerprint === fingerprintOf(mine, current)) return null
+  if (state.review?.fingerprint === fingerprintOf(activePaths(state.checkpoint, mine), current)) {
+    return receiptFailure(root, state.review.checks ?? [], state.review.fingerprint, independentReviewRequired(state.checkpoint))
+  }
   return `Review this session's ${mine.length} changed path(s) against requirements, evidence, shared ownership and complexity; fix unsupported assumptions. Run node scripts/agents/cli.mjs review ${session} .ai-work/<task>/review.json. Record blocked items honestly; do not claim completion from this check alone.${externalNote(external)}`
 }

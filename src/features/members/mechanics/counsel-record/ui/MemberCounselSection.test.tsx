@@ -1,4 +1,5 @@
 import { TestLocaleProvider } from "@/test/locale";
+import { UnsavedChangesProvider } from "@/shared/ui/form/UnsavedChangesGuard";
 import {
   createMemoryHistory,
   createRootRoute,
@@ -42,7 +43,7 @@ function setup() {
   const onCreate = vi.fn();
   const onUpdate = vi.fn();
   const onDelete = vi.fn();
-  const root = createRootRoute({ component: Outlet });
+  const root = createRootRoute({ component: () => <UnsavedChangesProvider><Outlet /></UnsavedChangesProvider> });
   const detail = createRoute({
     getParentRoute: () => root,
     path: "/",
@@ -104,7 +105,7 @@ describe("member counsel request boundary", () => {
     ).toHaveValue("새 상담\n<b>그대로</b>");
   });
 
-  it("preserves new input while editing a record and cancels dirty editing without a question", async () => {
+  it("preserves new input while editing a record and confirms before discarding dirty editing", async () => {
     const { onUpdate, router } = setup();
     fireEvent.change(
       await screen.findByRole("textbox", { name: "상담내용 및 처리결과" }),
@@ -156,7 +157,8 @@ describe("member counsel request boundary", () => {
       ),
     );
     fireEvent.click(screen.getByRole("button", { name: "취소" }));
-    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(screen.getByRole("dialog", { name: "알림" })).toHaveTextContent("입력을 취소하시겠습니까?");
+    fireEvent.click(within(screen.getByRole("dialog", { name: "알림" })).getByRole("button", { name: "확인" }));
     expect(screen.queryByRole("form", { name: "수정" })).toBeNull();
     expect(creation.getByRole("textbox", { name: "담당자" })).toHaveValue(
       "로그인담당자",
@@ -206,7 +208,7 @@ describe("member counsel request boundary", () => {
 describe("counsel records load state", () => {
   function renderRecords(initial: typeof readyRecords) {
     let apply: (records: typeof readyRecords) => void = () => undefined;
-    const root = createRootRoute({ component: Outlet });
+    const root = createRootRoute({ component: () => <UnsavedChangesProvider><Outlet /></UnsavedChangesProvider> });
     const detail = createRoute({
       getParentRoute: () => root,
       path: "/",

@@ -15,6 +15,7 @@ import { i18n } from '@/shared/i18n/i18n'
 import { SectionCard } from '../patterns/SectionCard'
 import { FormSaveFailureMessage } from './FormSaveDialogs'
 import { FormTextField } from './FormTextField'
+import { UnsavedChangesProvider } from './UnsavedChangesGuard'
 import { useSaveForm, type FormErrorOutcome } from './useSaveForm'
 
 /**
@@ -28,7 +29,7 @@ const schema = z.object({ name: z.string().min(1, 'name required'), email: z.str
 type Input = z.input<typeof schema>
 const fields = ['name', 'email'] as const
 
-const run = vi.fn<(values: z.output<typeof schema>) => Promise<unknown>>()
+const run = vi.fn<(values: z.output<typeof schema>) => Promise<{ canonical?: Input } | void>>()
 let mapError: (error: unknown) => FormErrorOutcome<(typeof fields)[number]> | undefined = () => ({
   fields: [],
   root: 'general',
@@ -49,6 +50,7 @@ function Harness() {
           setPending(false)
         }
       },
+      getDefaultValues: (result) => result?.canonical,
       isPending: pending,
     },
     mapError,
@@ -84,7 +86,7 @@ function Harness() {
   )
 }
 
-const rootRoute = createRootRoute({ component: () => <Outlet /> })
+const rootRoute = createRootRoute({ component: () => <UnsavedChangesProvider><Outlet /></UnsavedChangesProvider> })
 const formRoute = createRoute({ getParentRoute: () => rootRoute, path: '/form', component: Harness })
 const doneRoute = createRoute({ getParentRoute: () => rootRoute, path: '/done', component: () => <h1>done</h1> })
 let router = createRouter({ routeTree: rootRoute.addChildren([formRoute, doneRoute]) })
@@ -145,14 +147,43 @@ describe('useSaveForm — 실제 Router 위의 저장 흐름', () => {
 
     const saved = await screen.findByRole('dialog')
     expect(saved).toHaveTextContent('저장되었습니다.')
-    // The saved values stay on screen (keepDefaultValues): nothing rolled back to the defaults.
-    // (role queries cannot see behind the modal, so read the value directly)
+    // The submitted snapshot becomes the current value and dirty baseline before acknowledgement.
+    // Role queries cannot see behind the modal, so read the value directly.
     expect(screen.getByDisplayValue('Kim')).toBeInTheDocument()
 
     fireEvent.click(within(saved).getByRole('button', { name: '확인' }))
     await waitFor(() => expect(router.state.location.pathname).toBe('/done'))
     expect(await screen.findByRole('heading', { name: 'done' })).toBeInTheDocument()
     noDialog()
+  })
+
+  it('저장 응답의 기준값이 있으면 그 값으로 재설정한다', async () => {
+    run.mockResolvedValue({ canonical: { name: 'KIM', email: 'kim@example.com' } })
+    renderForm()
+    await screen.findByRole('button', { name: 'save' })
+
+    const confirm = await fillAndSubmit()
+    fireEvent.click(within(confirm).getByRole('button', { name: '확인' }))
+
+    await screen.findByText('저장되었습니다.')
+    expect(screen.getByDisplayValue('KIM')).toBeInTheDocument()
+  })
+
+  it('저장 중 값이 달라져도 요청에 제출한 snapshot만 새 기준으로 만든다', async () => {
+    let resolveRun: (() => void) | undefined
+    run.mockImplementation(() => new Promise<void>((resolve) => { resolveRun = resolve }))
+    renderForm()
+    await screen.findByRole('button', { name: 'save' })
+
+    const confirm = await fillAndSubmit()
+    fireEvent.click(within(confirm).getByRole('button', { name: '확인' }))
+    await waitFor(() => expect(run).toHaveBeenCalledOnce())
+    type('name', 'Later edit')
+    resolveRun?.()
+
+    await screen.findByText('저장되었습니다.')
+    expect(screen.getByDisplayValue('Kim')).toBeInTheDocument()
+    expect(screen.queryByDisplayValue('Later edit')).toBeNull()
   })
 
   it('입력 후 취소 버튼은 취소 문구로, LNB 이동은 화면 이동 문구로 막고, 입력이 없으면 바로 나간다', async () => {

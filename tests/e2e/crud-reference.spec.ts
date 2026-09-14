@@ -31,7 +31,9 @@ test('@reference counsel edit cancellation preserves the new note, and reissue r
   const edit = page.getByRole('form', { name: '수정', exact: true });
   await edit.getByRole('textbox', { name: '상담내용 및 처리결과' }).fill('수정 초안');
   await edit.getByRole('button', { name: '취소', exact: true }).click();
-  await expect(page.getByRole('dialog', { name: '알림', exact: true })).toHaveCount(0);
+  const cancelEdit = page.getByRole('dialog', { name: '알림', exact: true });
+  await expect(cancelEdit).toContainText('입력을 취소하시겠습니까?');
+  await cancelEdit.getByRole('button', { name: '확인', exact: true }).click();
   await expect(edit).toHaveCount(0);
   await expect(create.getByRole('textbox', { name: '상담내용 및 처리결과' })).toHaveValue('새 상담 초안');
   await page.getByRole('button', { name: '티켓재발권', exact: true }).click();
@@ -130,6 +132,12 @@ test('@reference dirty counsel and SMS ask once on browser back; local dismissal
   await expect(page.getByRole('textbox', { name: '받는 사람 1', exact: true })).toHaveValue('010-4000-5000');
   await page.getByRole('textbox', { name: '메시지 내용' }).fill('message draft');
   await page.keyboard.press('Escape');
+  const cancelMessage = page.getByRole('dialog', { name: '알림', exact: true });
+  await expect(cancelMessage).toContainText('입력을 취소하시겠습니까?');
+  await cancelMessage.getByRole('button', { name: '취소', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: '메시지 내용' })).toHaveValue('message draft');
+  await page.keyboard.press('Escape');
+  await cancelMessage.getByRole('button', { name: '확인', exact: true }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(page.getByRole('textbox', { name: '상담내용 및 처리결과' })).toHaveValue('counsel draft');
   await page.getByRole('button', { name: 'SMS', exact: true }).click();
@@ -153,6 +161,9 @@ test('@reference privacy and withdrawal stop at verification input, password mis
   await page.getByRole('dialog').getByRole('button', { name: '확인', exact: true }).click();
   await expect(page.getByRole('dialog')).toBeVisible();
   await page.getByRole('dialog').getByRole('button', { name: '취소', exact: true }).click();
+  const cancelVerification = page.getByRole('dialog', { name: '알림', exact: true });
+  await expect(cancelVerification).toContainText('입력을 취소하시겠습니까?');
+  await cancelVerification.getByRole('button', { name: '확인', exact: true }).click();
   await expect(page.getByText('gene***@example.test', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: '회원 탈퇴', exact: true }).click();
   await page.getByRole('textbox', { name: '탈퇴 사유' }).fill('짧음');
@@ -184,7 +195,7 @@ test('@reference manager states expose their own actions without changing the fi
 });
 
 for (const dismissal of ['취소', '닫기', 'Escape', 'outside'] as const) {
-  test('@reference dirty SMS closes without cancellation warning: ' + dismissal, async ({ page }) => {
+  test('@reference dirty SMS asks before closing: ' + dismissal, async ({ page }) => {
     const requests: string[] = [];
     page.on('console', (message) => { if (message.type() === 'log') requests.push(message.text()); });
     await page.goto('/members/example-general');
@@ -194,6 +205,9 @@ for (const dismissal of ['취소', '닫기', 'Escape', 'outside'] as const) {
     if (dismissal === 'Escape') await page.keyboard.press('Escape');
     else if (dismissal === 'outside') await page.mouse.click(5, 5);
     else await dialog.getByRole('button', { name: dismissal, exact: true }).click();
+    const cancelMessage = page.getByRole('dialog', { name: '알림', exact: true });
+    await expect(cancelMessage).toContainText('입력을 취소하시겠습니까?');
+    await cancelMessage.getByRole('button', { name: '확인', exact: true }).click();
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(page).toHaveURL(/\/members\/example-general$/);
     expect(requests).toEqual([]);
