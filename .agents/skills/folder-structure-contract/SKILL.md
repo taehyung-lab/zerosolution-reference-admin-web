@@ -56,10 +56,10 @@ src/
 | 화면·표시용 컴포넌트·컬럼·렌더와 결합된 훅 | 소비 화면 또는 mechanic의 `ui` |
 | 여러 화면이 같은 의미·상태·실패 계약으로 쓰는 기능 | `mechanics/{기능명}/{ui,model}` |
 
-화면 안의 역할별 배치 예시는 각 역할 reference 의 `형태` 절이
+화면 안의 파일 집합(목록·상세·폼이 어떤 파일을 어떤 이름으로 갖는가)은 각 역할 reference 의 `형태` 절이
 소유하고([목록](../feature-contract/references/list-workflow.md#형태), [상세](../feature-contract/references/detail-workflow.md#형태),
 [폼](../feature-contract/references/form-workflow.md#형태), [route](../feature-contract/references/router.md#형태)),
-`contracts:check`는 기존 역할 이름·위치를 대조하지만 동반 파일 생성을 강제하지 않는다. 이 표는 책임이 어느 segment에 놓이는가를 정하며, 같은 소유권 안의 파일 분리는 실제 복잡도·재사용으로 판단한다.
+`contracts:check` 가 이름·위치를 대조한다. 이 표는 그 파일이 어느 segment 에 놓이는가만 정한다.
 
 확장자로 분류하지 않는다. `use<Entity>ListResult.ts`는 컬럼과 표시 옵션을 조립하므로
 `screens/list/ui`다. `use<Entity>InputForm.tsx`는 JSX·focus·폼 연결을 반환하는 UI 어댑터다.
@@ -73,7 +73,7 @@ src/
 
 - import 경계를 새로 긋거나 넘을 때, 어떤 segment 가 어떤 segment 를 참조할 수 있는지: [references/dependency-direction.md](references/dependency-direction.md).
 - 한 훅이 `api`인지 `model`인지, 상수가 `config`인지 `model`인지, 도우미가 `lib`인지 갈릴 때: [references/owner-boundaries.md](references/owner-boundaries.md).
-- 화면 안 역할별 배치 예시는 위 배치 판단 절이 가리키는 각 역할의 `형태` 절이, 공용 승격은 [shared-ui-contract](../shared-ui-contract/SKILL.md)가 소유한다.
+- 화면 안 파일 집합은 위 배치 판단 절이 가리키는 각 역할의 `형태` 절이, 공용 승격은 [shared-ui-contract](../shared-ui-contract/SKILL.md)가 소유한다.
 
 ## 작업 시 연결
 

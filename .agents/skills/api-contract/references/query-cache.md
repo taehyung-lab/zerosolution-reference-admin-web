@@ -63,4 +63,4 @@ Mutation and invalidation rules are owned by [mutations.md](mutations.md).
 - mock 선택은 테스트/개발 진입점의 응답 공급 경계에서 처리한다. 새 화면에 reference env로 Screen·검색 모델·업무 흐름을 둘로 나누지 않는다. 기존 분기를 제거할 때는 양쪽의 제품 필드·액션·검색 계약 차이를 먼저 대조한다.
 
 이 기준은 신규 구현과 전환의 목표다. 현재 각 도메인의 적용 여부와 남은 차이는
-`docs/reference/product.json`이 가리키는 대상 제품 판정 문서의 관련 절에 기록한다.
+[분석 원장 §5](../../../../docs/reference/zero-sol-figma-analysis.md#5-미확인--답이-구현을-바꾸는-질문)에 기록한다.

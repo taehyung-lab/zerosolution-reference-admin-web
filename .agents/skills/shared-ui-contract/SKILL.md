@@ -5,14 +5,14 @@ description: Use when adding or changing shared Radix and Tailwind UI, DataTable
 
 # Shared UI Contract
 
-범위가 불명확한 구현 요청은 [screen-loop](../screen-loop/SKILL.md)에서 먼저 분류한다. 실제 소비자와 공용 여부를 확인하고 아래에서 해당 책임만 읽는다. 일반 작업에 bundle ID나 기록용 필드 작성을 요구하지 않는다.
+구현 요청이면 이 문서로 오기 전에 [screen-loop](../screen-loop/SKILL.md) N0에서 `grain`·`entry`·`mode`를 적었는지 본다. 공용 컴포넌트 구현은 `grain` component, `entry`는 bundle id.
 
 Share stable behavior, not a guessed resource framework. Source-owned UI remains replaceable only when it has no domain, API, router, cache, permission, or workflow knowledge.
 
 ## Read only what applies
 
 - Source-owned shadcn-style/Radix primitive, Tailwind token, focus, keyboard, or primitive accessibility: read [references/primitives-and-tokens.md](references/primitives-and-tokens.md).
-- Promoting, confirming, narrowing, or demoting shared UI/pattern composition: read [references/promotion.md](references/promotion.md). Use the requested product’s observed behavior, confirmed policy and actual consumers; [product.json](../../../docs/reference/product.json) locates its evidence and current judgments.
+- Promoting, confirming, narrowing, or demoting shared UI/pattern composition: read [references/promotion.md](references/promotion.md). Count screens and quote Notion sentences from `docs/reference/zero-sol/` as the evidence; the current verdicts live in `docs/reference/zero-sol-figma-analysis.md`.
 - Promoting or demoting a shared state mechanic or pure utility: read [references/logic-promotion.md](references/logic-promotion.md).
 - Any `shared/lib` function or hook or `shared/config` preset: read [references/shared-values.md](references/shared-values.md).
 - Translation namespace, adding a key, product-generic copy ownership, or locale parity: read [references/i18n.md](references/i18n.md).
