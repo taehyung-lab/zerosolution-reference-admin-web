@@ -152,7 +152,6 @@
     "inquiryType": "Inquiry type",
     "chooseType": "Choose inquiry type",
     "content": "Counseling notes and outcome",
-    "required": "Complete this required field.",
     "invalidDate": "Enter a date and time on or before today.",
     "empty": "No counseling records.",
     "record": "Counseling by {{name}}",
@@ -224,7 +223,6 @@
       "confirmNotify": "Notify the member of this result?",
       "memberLink": "View member information",
       "attachment": "Attachments",
-      "required": "Complete the required fields.",
       "notified": "Member notified"
     },
     "example": {

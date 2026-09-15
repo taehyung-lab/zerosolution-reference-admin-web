@@ -352,7 +352,6 @@ describe('plan / stage / apply against a target directory', () => {
     expect(staged.sourceReferences.some((item) => item.link === 'docs/reference/product/README.md')).toBe(false)
     // Section files and feature code stay home: their citations keep the reference path instead of inventing a target one.
     expect(staged.sourceReferences.some((item) => item.file.startsWith('docs/decisions/') && /docs\/reference\/zero-sol\/\d{2}-/.test(item.link))).toBe(true)
-    expect(staged.sourceReferences.some((item) => item.link.startsWith('src/features/'))).toBe(true)
     expect(staged.danglingLinks).toEqual([])
     expect(readFileSync(join(out, 'PENDING.md'), 'utf8')).toContain('## 레퍼런스 저장소에만 있는 근거')
 
@@ -487,11 +486,7 @@ describe('plan / stage / apply against a target directory', () => {
     const detail = readFileSync(join(out, 'docs/decisions/0007-detail-data-and-update-history-boundaries.md'), 'utf8')
     expect(detail).toContain('레퍼런스 저장소 docs/reference/zero-sol/04-members.md')
     expect(detail).not.toContain('docs/reference/product/04-members.md')
-    const filters = readFileSync(join(out, 'docs/decisions/0010-list-filter-draft-composition.md'), 'utf8')
-    expect(filters).toContain('레퍼런스 저장소 src/features/')
-    expect(filters).not.toContain('](../../src/features/')
     expect(staged.sourceReferences.some((item) => item.link.startsWith('docs/reference/zero-sol/'))).toBe(true)
-    expect(staged.sourceReferences.some((item) => item.link.startsWith('src/features/'))).toBe(true)
     expect(staged.productTerms.some((item) => item.file === 'docs/decisions/0005-shared-boundaries.md')).toBe(true)
     expect(staged.danglingLinks).toEqual([])
     expect(readFileSync(join(out, 'PENDING.md'), 'utf8')).toContain('## 레퍼런스 저장소에만 있는 근거')

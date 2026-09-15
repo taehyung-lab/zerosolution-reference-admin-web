@@ -57,6 +57,14 @@ Select only the surfaces the current form uses.
 
 route 는 [Route file layout](router.md#route-file-layout) 을 따르고, 수정 route 는 상세 query 를 await 해 기본값을 준비할 수 있다.
 
+## Validation copy
+
+Every validator supplies a message; the schema owns it and `FormField` renders it with the invalid state.
+A screen whose own wording is not confirmed uses the product's default copy for that error kind rather than
+inventing wording or rendering an invalid state with no message. Which default applies is a product choice
+owned by the confirmed product ledger, not by this contract; the reusable strings and the rendering mechanic
+belong to [form-fields](../../shared-ui-contract/references/form-fields.md).
+
 ## Sections and error visibility
 
 A collapsed section can hide an invalid field and make submit appear silent. Form sections therefore stay mounted while closed (`useFormSections` → `keepMounted`), so TanStack Form never clears their errors. On rejected submit, reveal the sections containing errors and focus the first invalid control in declared order; no revalidation after reveal is needed because nothing remounted. While a section with errors is collapsed, its header shows the invalid-field count (`errorCount` from the same `fieldMeta.errors` selection). Shared UI owns disclosure and the count rendering; the feature owns field-to-section mapping and the invalid-field selection.

@@ -27,9 +27,8 @@ export function PerformanceListScreen({
   const { t } = useTranslation("performances");
   const venueQuery = usePerformanceVenues();
   const resolved = resolvePerformanceSearch(search);
-  const searched = search.searched !== false;
-  const filter = usePerformanceListFilter(resolved, onSearchChange, searched);
-  const data = usePerformanceListData(resolved, searched);
+  const filter = usePerformanceListFilter(resolved, onSearchChange);
+  const data = usePerformanceListData(resolved);
   const result = usePerformanceListResult(resolved, data, onSearchChange);
 
   return (

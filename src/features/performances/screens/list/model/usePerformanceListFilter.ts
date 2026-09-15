@@ -11,12 +11,10 @@ import {
 export function usePerformanceListFilter(
   search: ResolvedPerformanceSearch,
   onChange: (next: PerformanceRouteSearch) => void,
-  searched: boolean,
 ) {
   const inputs = useListFilterDraft({
     search,
     partition: performanceSearchPartition,
-    scope: searched,
     keywords: search.keywords,
     initialKeywordField: performanceKeywordFields[0],
     localDefaults: { venueKeyword: "" },
@@ -38,13 +36,12 @@ export function usePerformanceListFilter(
           ...input.range,
           keywords: input.keywords,
           page: undefined,
-          searched: undefined,
         }),
       );
     },
     reset: () => {
       inputs.resetDrafts();
-      onChange({ searched: false });
+      onChange({});
     },
   };
 }

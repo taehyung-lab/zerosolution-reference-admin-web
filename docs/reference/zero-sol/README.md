@@ -28,6 +28,7 @@ Figma `ZEROsol (For Kakao)`(`Ogb6WpSpwCVhKggQ1NLRlQ`) 78 page와 Notion `DB: Wor
 - 목록 정렬: 초기 기본 방향은 `desc`(2026-09-11 사용자 확정). 정렬 컬럼과 다른 컬럼 클릭 시의 방향은 해당 화면의 원장·현재 구현을 대조한다. 활성 정렬의 방향을 표시하는 mechanic 자체와 이 기본값은 별개다.
 - 폼 이탈: 2026-09-14 사용자 확정에 따라 폐기 가능한 입력이 있는 등록·수정·기타 입력 폼은 page/inline/dialog와 무관하게 dirty 취소·닫기를 보호한다. 검색·필터, 로그인, 입력 없는 삭제 확인은 제외한다. 입력을 보존하는 화면 전환의 예외는 해당 동작 근거로 판단한다. 이는 공용 guard를 사용할 대상 범위이며, guard의 상태·blocker 소유권은 form 계약이 소유한다.
 - 취소 문구: "취소할 경우 입력된 정보는 모두 삭제됩니다. 입력을 취소하시겠습니까?"(Notion, 기존 form 계약의 20개 이상 화면 근거). 화면 이동 문구: "화면을 이동할 경우 입력된 정보는 모두 삭제됩니다. 화면으로 이동하시겠습니까?"(Figma `1.1.3.1.2`). 이번 작업은 기존에 기록된 출처를 이동한 것이며 원문을 새로 실측한 것은 아니다.
+- 검증 실패 문구: 화면 고유 문구가 확정되지 않은 필드는 오류 종류에 맞는 공용 문구를 쓴다(필수 입력은 `shared:formError.required`). 원장이 「해당 필드 강조 처리」만 적은 것은 문구가 없다는 뜻이 아니라 그 화면 고유 문구가 없다는 뜻이며, 이 제품은 강조와 문구를 함께 보이는 쪽을 택한다(2026-09-15 사용자 확정). 문구를 schema·오류 표시로 연결하는 방법은 form 계약이, 재사용 문구와 표시 mechanic은 shared가 소유한다.
 - 폼 액션 라벨: `shared:formAction.save/cancel`의 현재 기본 문구는 저장/취소다. 실제 번역 값은 `src/shared/i18n/locales/{locale}/shared.json`이 소유하며 다른 문구가 확정된 화면은 caller가 전달한다.
 - 공통 알림: [공통 원장](01-common.md)의 Figma `1.3 Alert`, `1.1.3.1.x`/`1.1.3.2.x` 카탈로그를 사용한다. 현재 `shared` 키는 `alert.title`, `formSave.confirmDescription`, `unsavedChanges.description`, `bulkAction.confirm`, `deleteConfirm.description` 및 완료 문구다. 카탈로그와 다른 업무 문장은 feature 카피로 유지한다.
 - 공통 검색 결과 문구: [화면 간 정책](notion/99-cross-screen.md)의 원문을 기준으로 번역을 일치시킨다. locale 집합은 위 프로젝트 사실이 소유하며, 공용 i18n mechanic이 특정 제품의 언어 집합을 결정하지 않는다.

@@ -11,15 +11,20 @@
 
 ## 초안 조합 결정
 
-판정: `useListFilterDraft`를 **provisional shared**로 채택한다. 기본 훅의 기존 confirmed 판정을 조합 훅에 상속하지 않는다. 비교 대상은 아래 5개 코드 호출부이며, 리허설이나 같은 업무의 변형을 별개의 독립 제품 요구로 세지 않는다.
+판정: `useListFilterDraft`를 **provisional shared**로 채택한다. 기본 훅의 기존 confirmed 판정을 조합 훅에 상속하지 않는다. 비교 대상은 다섯 개 코드 호출부였으며, 리허설이나 같은 업무의 변형을 별개의 독립 제품 요구로 세지 않는다.
 
-| 비교한 호출부 | 공용 조합 밖에 남긴 차이 |
-| --- | --- |
-| [공연](../../src/features/performances/screens/list/model/usePerformanceListFilter.ts) | 진입 즉시 조회·초기화 대기, `searched: false`, 공연장 검색용 로컬 입력 |
-| [활성 회원](../../src/features/members/screens/list/model/useMemberListFilter.ts) | 명시 검색, 회원 URL 변환·첫 페이지 정책 |
-| [회원 기록](../../src/features/members/mechanics/record-list/model/useMemberRecordFilter.ts) | 선택된 화면의 필드 집합, 명시 검색/즉시 조회를 정하는 host 정책 |
-| [제품 운영자](../../src/features/managers/screens/list/model/useManagerDirectoryFilter.ts) | 제품 schema, 옵션 조회·표시, 명시 검색 표식 |
-| [리허설 운영자](../../src/features/managers/screens/list/model/useManagerListFilter.ts) | 서버 keyword 어휘의 양방향 변환, 기존 view 전이·옵션 Query |
+공용 조합 밖에 남긴 차이는 아래 종류였고 어느 것도 조합 훅으로 흡수하지 않았다.
+
+| 공용 조합 밖에 남긴 차이 |
+| --- |
+| 화면별 필드 집합과 제품 schema |
+| URL 변환과 첫 페이지 정책 |
+| 옵션 조회·표시와 옵션 Query |
+| 선택 입력용 로컬 임시 값 |
+| 서버 어휘의 양방향 변환 |
+
+진입 정책(즉시 조회인지 명시 검색인지)과 그 표식은 이 ADR이 판단하지 않는다. 확정된 제품 원장이
+화면 원문에서 읽는 규칙을 소유하며, 조합 훅은 그 결과를 draft identity 로 받기만 한다.
 
 공통 책임은 일반 필터·기간·검색어가 같은 확정 identity로 유지·재생성되는 것이다. view 변경은 초안을 보존하고, filter 또는 검색/대기 전환은 함께 재생성한다. 제출은 현재 입력을 먼저 수집하고 기간만 reset하며, 취소 성격의 초기화는 모든 초안을 현재 확정값에서 재생성한다. URL 목적지 선택은 그 다음 feature가 수행한다.
 

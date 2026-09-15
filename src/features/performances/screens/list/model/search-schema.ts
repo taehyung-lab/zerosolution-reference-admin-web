@@ -96,20 +96,18 @@ export const performanceSearchContract = defineSearchFields(
 export const performanceSearchDefaults = performanceSearchContract.defaults;
 export const performanceSearchPartition = performanceSearchContract.partition;
 
-export const performanceSearchSchema = performanceSearchContract.schema
-  .extend({ searched: z.literal(false).optional().catch(undefined) })
-  .transform(({ searched, ...fields }) => ({
-    ...omitSearchDefaults(
+export const performanceSearchSchema = performanceSearchContract.schema.transform(
+  (fields) =>
+    omitSearchDefaults(
       normalizeClosedInstantRange(fields),
       performanceSearchDefaults,
     ),
-    ...(searched === false ? { searched: false as const } : {}),
-  }));
+);
 export type PerformanceRouteSearch = z.output<typeof performanceSearchSchema>;
 
 export function resolvePerformanceSearch(search: PerformanceRouteSearch) {
   return resolveSearchDefaults<
-    Omit<PerformanceRouteSearch, "searched">,
+    PerformanceRouteSearch,
     typeof performanceSearchDefaults
   >(search, performanceSearchDefaults);
 }

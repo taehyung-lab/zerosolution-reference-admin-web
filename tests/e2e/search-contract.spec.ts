@@ -57,15 +57,9 @@ for (const path of [
     const committed = page.url();
     for (let reset = 0; reset < 2; reset++)
       await page.getByRole("button", { name: "초기화", exact: true }).click();
-    const resetLoads = [
-      "/members/counsel",
-      "/members/appeals",
-      "/community/boards",
-    ].includes(path);
-    await expect(page.getByRole("table")).toHaveCount(resetLoads ? 1 : 0);
-    expect(new URL(page.url()).search).toBe(
-      path === "/performances" ? "?searched=false" : "",
-    );
+    // 초기화는 최초 진입 계약을 다시 적용한다: 진입에서 조회하던 목록은 초기화 뒤에도 조회 상태다.
+    await expect(page.getByRole("table")).toHaveCount(immediate ? 1 : 0);
+    expect(new URL(page.url()).search).toBe("");
     await page.goBack();
     await expect(page).toHaveURL(committed);
     await expect(
@@ -75,7 +69,7 @@ for (const path of [
       page.getByRole("combobox", { name: "정렬", exact: true }),
     ).toContainText(changedSort);
     await page.goForward();
-    await expect(page.getByRole("table")).toHaveCount(resetLoads ? 1 : 0);
+    await expect(page.getByRole("table")).toHaveCount(immediate ? 1 : 0);
   });
 }
 

@@ -8,7 +8,7 @@
 
 ## 이 ADR의 책임
 
-이 문서는 목록 공용화의 이유, 거부한 대안, 소유권 결정, provisional 상태, 재검토 조건을 보존한다. Managers 구현 가이드나 최신 테스트 결과표가 아니다.
+이 문서는 목록 공용화의 이유, 거부한 대안, 소유권 결정, provisional 상태, 재검토 조건을 보존한다. 구현 가이드나 테스트 결과표가 아니다.
 
 - 반복 구현 절차: `.agents/skills/feature-contract/references/list-workflow.md`(목록 lifecycle), `.agents/skills/feature-contract/references/list-search-contract.md`(검색 선언·기본값)
 - shared 승격·confirm·demote 절차: `.agents/skills/shared-ui-contract/references/promotion.md`
@@ -33,11 +33,11 @@ Figma에서 filter frame, 기간 선택, 검색 전·후 상태, toolbar, table,
 
 ## 검토한 대안
 
-동일 feature의 동일 workflow는 작은 typed definition으로 실제 필드·컬럼 차이를 표현할 수 있다(활성회원의 별도 route + `MemberListScreen`). 이것은 도메인 전반의 config renderer 승격 근거가 아니다. 휴면·탈퇴·상담·소명·접속 목록은 기존 filter mechanic을 재사용하고, 반복되는 정렬/page 전이만 feature-local 순수 함수로 모은다. 서로 다른 결과 action과 selection 소유자는 각각 남긴다.
+동일 feature의 동일 workflow는 작은 typed definition으로 실제 필드·컬럼 차이를 표현할 수 있다(같은 workflow의 별도 route + 전용 screen). 이것은 도메인 전반의 config renderer 승격 근거가 아니다. 같은 도메인의 나머지 목록은 기존 filter mechanic을 재사용하고, 반복되는 정렬/page 전이만 feature-local 순수 함수로 모은다. 서로 다른 결과 action과 selection 소유자는 각각 남긴다.
 
-공연목록은 진입 즉시 조회·단일 lookup·선택 없는 결과의 추가 reference consumer다. 기존 draft/period/keyword/FilterPanel/ListResult/DataTable을 채택하며 lookup 조립은 feature에 둔다. fixture 기반 요청 직전 검증은 실제 서버 consumer에 의한 shared 확정이나 신규 프로젝트 이관 검증을 대체하지 않는다.
+fixture 기반 요청 직전 검증은 실제 서버 consumer에 의한 shared 확정이나 신규 프로젝트 이관 검증을 대체하지 않는다.
 
-2026-09-06 사용자 공용화 요청과 dt-admin-web의 VenueSearchInput/PerformanceSearchDialog 대조로 `InlineSearchSelect`를 provisional primitive로 분리했다. 관찰된 단일 선택·삭제·재선택과 초기화 누락 위험만 공유하며 options/value/label/callback 외에 도메인·API·mode를 받지 않는다. 원격 조회·사용 가능한 공연장 정책은 feature, 공연 선택 모달의 회차·확인/취소는 공연 feature가 소유한다. 현재 코드 consumer는 공연목록 하나이므로 재사용 확정 단계가 아니다.
+2026-09-06 사용자 공용화 요청과 dt-admin-web의 VenueSearchInput/PerformanceSearchDialog 대조로 `InlineSearchSelect`를 provisional primitive로 분리했다. 관찰된 단일 선택·삭제·재선택과 초기화 누락 위험만 공유하며 options/value/label/callback 외에 도메인·API·mode를 받지 않는다. 원격 조회 정책과 선택 모달의 부가 입력·확인/취소는 그것을 여는 feature가 소유한다. 아직 재사용 확정 단계가 아니다.
 
 ### 모든 것을 feature-local로 둔다
 
@@ -103,13 +103,13 @@ workflow를 실측하는 것은 `완료`, 신규 제품에서 채택까지 한 �
 
 ### URL과 서버 어휘
 
-Managers 리허설에서는 URL search와 요청에 리허설 서버 enum을 그대로 사용하고 별도 client codec을 두지 않는다. 현재 이득은 URL 가독성뿐인데 enum별 양방향 mapping, option 응답의 미지 값 처리, 완전성 테스트 비용이 생기기 때문이다. 범용 `SCREAMING_SNAKE ↔ camelCase` 변환도 만들지 않는다.
+같은 계약의 값을 가독성만을 위해 별도 어휘로 복제하지 않는다. 양방향 변환·미지 값 처리·정합성 검증 비용에 비해 이득이 부족했기 때문이다. 범용 `SCREAMING_SNAKE ↔ camelCase` 변환도 만들지 않는다. 별도 어휘나 변환은 확인된 요구가 이 비용을 정당화할 때 재검토한다.
 
 이는 신규 제품의 영구 어휘 결정이 아니다. 새 프로젝트는 실제 OpenAPI, URL 공유·복원 요구, migration 비용을 확인해 다시 결정한다. shared UI는 어느 어휘도 알지 않고 `aria-sort`처럼 표준 접근성 어휘만 사용한다. 컬럼 ID와 서버 sort key의 짝, 그리고 URL·Select·헤더에 노출하는 sort key subset은 feature의 단일 typed mapping이 소유한다. 컬럼이 없는 리허설 값(`AGENCY`)은 노출하지 않는다.
 
 ## 현재 provisional 계약
 
-아래 단위는 레퍼런스의 shared 후보다. 파일이 존재하거나 테스트가 한 번 통과했다는 이유로 confirmed라 부르지 않는다. 2026-09-05에 활성회원 목록 3 route가 **두 번째 실제 consumer**가 되어 처음으로 confirm·demote를 판정했다.
+아래 단위는 레퍼런스의 shared 후보다. 파일이 존재하거나 테스트가 한 번 통과했다는 이유로 confirmed라 부르지 않는다.
 
 이 표는 **경계**(shared가 어디까지 소유하는가)만 담는다. 단위별 **단계와 비교 요구 수**는 [단위별 단계와 소비자](#단위별-단계와-소비자)가, 그렇게 좁힌 **근거와 이력**은 표 아래 산문이 소유한다. 셋 중 하나를 바꾸면 나머지를 대조한다.
 
@@ -140,7 +140,7 @@ filter/view partition을 2026-09-02 demote 했다가 재승격한 이유는 두 
 
 `ListResult`는 `notSearched | loading | error | empty | ready` 다섯 상태를 판정하며 `ListResultData`는 renderer가 실제로 읽는 facts(rows·searched·isPending·isFetching·isError·trace·retry)만 요구한다(2026-09-02 narrow). total·totalPages는 feature 확장 타입이다. searched entry의 pending 첫 조회는 공용 `BlockingProgress`가 loading 표면을 덮고 area skeleton은 두지 않는다. observer가 없는 prefetch는 로딩·에러 표면에서 배제한다. feature는 상태, 검색 전/결과 없음 문구, retry 동작, 구조적 trace, footer와 ready content를 제공한다. shared pattern은 공용 error/retry 문구, live region과 `ErrorTrace` disclosure를 직접 소유하며 API를 import하거나 raw message를 받지 않는다. 이 다섯 상태는 모든 목록의 필수 단계가 아니며, `DataTable`은 caller의 `meta.sort`로 헤더 버튼·`aria-sort`·glyph를 렌더하고 `onSort`를 호출할 뿐 어떤 컬럼이 정렬 가능한지, 방향 전이, route policy를 소유하지 않는다.
 
-2026-09-07 사용자 결정: managers(제품·리허설)·members의 검색 의도를 실제 필터(`periodType`)와 분리한다. 명시 검색은 `{}` / `{ searched: true, ...기본값 아닌 조건 }`으로 URL에서 복원하고, 유효한 소유 필드가 있는 직접 접근도 검색으로 정규화한다. 즉시 조회 화면은 표식 없이 빈 URL도 조회한다. 이는 기본값 검색과 최초 진입이 같은 빈 URL로 합쳐지는 문제를 해결하며, boolean을 local state에 복제하지 않는다. 화면별 정책은 feature에 남기고 이 날짜·기본값 결정의 공용 범위는 실제 소비자에서 중복·비교 차이가 확인된 순수 변환이다. 초안 조합의 후속 결정은 아래 별도 절을 따른다. 값·표식·기본값의 실행 순서와 예외 소비자는 [list-workflow](../../.agents/skills/feature-contract/references/list-workflow.md#state-and-url-lifecycle), 공용 함수 계약은 [shared-values](../../.agents/skills/shared-ui-contract/references/shared-values.md)가 소유한다. 이전의 서버 필터 판별자 의무와 별도 표식 금지는 이 범위에서 대체한다. 공연도 같은 날짜·기본값 공용 도구와 화면 1회 해소를 채택하며, 진입 즉시 조회/초기화 대기를 구분하는 `searched: false`는 URL 메타데이터로만 남긴다.
+2026-09-07 사용자 결정: 검색 의도를 실제 필터(`periodType`)와 분리한다. 기본값 검색과 최초 진입이 같은 빈 URL로 합쳐지는 문제를 해결하기 위해서이며, boolean을 local state에 복제하지 않는다. 표식의 극성·수명·정규화 규칙 자체는 여기서 다시 정의하지 않는다. 화면별 정책은 feature에 남기고 이 날짜·기본값 결정의 공용 범위는 실제 소비자에서 중복·비교 차이가 확인된 순수 변환이다. 초안 조합의 후속 결정은 아래 별도 절을 따른다. 값·표식·기본값의 실행 순서와 예외 소비자는 [list-workflow](../../.agents/skills/feature-contract/references/list-workflow.md#state-and-url-lifecycle), 공용 함수 계약은 [shared-values](../../.agents/skills/shared-ui-contract/references/shared-values.md)가 소유한다. 이전의 서버 필터 판별자 의무와 별도 표식 금지는 이 범위에서 대체한다. 초기화가 최초 진입 계약을 다시 적용하므로 진입과 초기화를 가르는 URL 표식은 두지 않는다.
 
 기간 range는 오류 메시지를 두지 않는다(2026-09-05 demote). 반대쪽 값이 `min/max`와 calendar bound가 되고, 그것으로 막지 못하는 직접 타이핑은 방금 편집한 bound를 남기고 낡은 bound를 지운다. 2026-09-07 사용자 결정으로 확정 범위는 양끝을 요구한다. 제출·직접 URL의 한쪽 결손, 불량 또는 역전은 날짜 pair만 제거하고 기간 기준·정렬처럼 독립적으로 유효한 검색값은 보존한다. 이 demote의 제품 근거(원장에 역전 오류 문구 0건)는 판정 기록 §5가 소유한다.
 
@@ -180,7 +180,7 @@ Figma 원장의 field-level evidence는 현재 surface와 의도적 차이를 �
 | `selectionColumn` | **provisional shared(2026-09-06)** | 2 | 동일한 page/mixed/row 체크박스 렌더를 추출. 입력은 선택 controller·라벨·순수 선택 가능 판정이며 DTO·URL·권한을 모른다. 상태는 `usePageRowSelection`에 유지 |
 | `useConfirmation` | **provisional shared(2026-09-06)** | 3 | 값 보관→취소/확정만. opaque 값과 `run`만 알고 폼·성공·API를 모른다. 서버 이후 `useSaveForm`은 유지 |
 | `maskEmail`·`maskPhone` | **provisional shared(2026-09-06)** | 2 | 동일한 문자열 알고리즘 복제본 제거. 문자열만 받고 표시 문자열만 반환하며 공개 권한·API는 호출부 소유. 현재 규칙의 재사용이며 신규 제품 마스킹 정책 확정이 아니다 |
-| `hasRepeatedOrSequentialAsciiTriplet` | **provisional shared(2026-09-07)** | 2 | 회원·운영자 입력 검증의 동일 ASCII 3반복/3연속 판정만 추출. 길이·문자군·schema·카피는 feature에 남고 서버 이력이나 신규 제품 정책은 알지 않는다 |
+| `hasRepeatedOrSequentialAsciiTriplet` | **provisional shared(2026-09-07)** | 2 | 입력 검증의 동일 ASCII 3반복/3연속 판정만 추출. 길이·문자군·schema·카피는 feature에 남고 서버 이력이나 신규 제품 정책은 알지 않는다 |
 | `usePageRowSelection` | **confirmed(2026-09-05)** | 2 | page 한정·view 변경 시 해제·같은 view refetch 잔존. 두 번째 소비자가 배열 identity 의존의 무한 렌더를 드러내 내용 비교로 고쳤다 |
 | filter/view partition·`defineSearchFields`·search codecs | **confirmed(2026-09-05, 2026-09-07 확장)** | 2 | 두 목록이 같은 결함을 보여 재승격. 2026-09-07에 세 map 파생·복구 codec·closed pair 정규화·기본값 생략을 추가했다. 배열 복구는 항목 단위와 전체 중 소비자가 고르며 어느 쪽도 기본이 아니다 |
 | `standardPageSizeOptions`·`standardPeriodPresetValues` | **provisional named preset** | 다수 | 값 목록만 공용. 채택 선언·default·예외는 feature가 명시적으로 소유한다 |
@@ -197,13 +197,13 @@ Figma 원장의 field-level evidence는 현재 surface와 의도적 차이를 �
 - rehearsal `INACTIVE`와 Figma의 거절·비활성 상태 의미의 대응
 - array·object-array query의 실제 서버 wire binding
 
-회원별 통계는 목록 전체가 아니라 기간 mechanic만 독립 비교할 후보다. 계약이 연결되기 전에는 리허설 endpoint를 대신 쓰거나 Figma에서 runtime 정책을 추론하지 않는다. 아직 code consumer가 없는 Tabs·상태 count 클릭 필터·빈 값 `-` 표현은 후보일 뿐 단계 값을 부여하지 않는다.
+통계 화면은 목록 전체가 아니라 기간 mechanic만 독립 비교할 후보다. 계약이 연결되기 전에는 리허설 endpoint를 대신 쓰거나 Figma에서 runtime 정책을 추론하지 않는다. 아직 code consumer가 없는 Tabs·상태 count 클릭 필터·빈 값 `-` 표현은 후보일 뿐 단계 값을 부여하지 않는다.
 
 range slider는 `129:32748`에서 출처가 확인됐지만 다른 발권 4 variant에는 미확인이고, 선택 label registry는 cardinality, 보기·정렬 마지막값은 저장 범위, `- 이하 생략 -`은 의미가 미확인이다. 팝업 안 목록은 `table-composition.md` kind E의 component-local params로 충분하며 새 controller가 필요하지 않는다.
 
 ## 신규 프로젝트 채택 경계
 
-새 프로젝트는 이 저장소 전체나 Managers 구현을 복사하지 않는다. 새 제품의 요구사항, Figma, OpenAPI가 제품 진실이고 이 ADR은 설계 근거다.
+새 프로젝트는 이 저장소의 구현을 복사하지 않는다. 새 제품의 요구사항, Figma, OpenAPI가 제품 진실이고 이 ADR은 설계 근거다.
 
 그대로 가져갈 수 있는 것은 shared/feature 소유권 원칙, explicit composition, provisional → 실제 consumer 비교 → confirm/demote 절차, 그리고 증거가 검사한 범위만 완료로 말하는 원칙이다.
 
@@ -241,10 +241,9 @@ matrix·알림처럼 미구현 화면 유형은 후보로 추측하지 않는다
 
 ## 목록 소비자 정리 (2026-09-07)
 
-회원·운영자·공연의 목록 파일 배치는 feature-contract의 screen-composition이 소유한다.
+목록 파일 배치는 feature-contract의 screen-composition이 소유한다.
 `ResultTotal(searched, total)`은 기존 `ResultSummary`를 사용해 한 개 건수의 공용 문장·포맷과
-검색 전 부재/검색 후 0건 표시를 묶는다. 활성 회원, 제품/API 운영자, 공연, 회원 기록의
-동일한 표시 책임을 비교했다. 위치·툴바 노출·추가 loading gate·선택·조회 정책은 소비자에 남긴다.
+검색 전 부재/검색 후 0건 표시를 묶는다. 네 목록 소비자의 동일한 표시 책임을 비교했다. 위치·툴바 노출·추가 loading gate·선택·조회 정책은 소비자에 남긴다.
 반환 모양이 같다는 이유로 결과 훅이나 검색 스키마 전체를 팩토리로 승격하지 않는다.
 기본값 결합은 기존 `resolveSearchDefaults`를 채택하고 제품별 enum/default/URL 확정 정책을 유지한다.
 실 API 실패 수명과 신규 프로젝트 이관이 검증된 계약으로 승격한 것은 아니다.

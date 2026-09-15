@@ -89,9 +89,8 @@ See [State and URL lifecycle](#state-and-url-lifecycle) and [data-table.md](../.
 | row selection                                          | list screen or feature-local table adapter |
 | transient interaction                                  | nearest feature component                  |
 
-The confirmed product ledger owns entry/reset policy and its evidence-reading rules. Read that owner's behavior clause before choosing; do not derive the gate from another consumer or an unconfirmed pre-search frame. Explicit-search lists keep `{}` idle and commit `searched: true` plus non-default conditions on submit. Canonicalization validates only that screen's owned fields, normalizes date ranges, and detects valid conditions before omitting defaults. A valid condition (including page/sort) starts a direct-link search even without the marker. Only literal `true` is a marker; `false` or invalid marker values are removed, never a veto over valid conditions. Invalid-only or hidden-only input returns to `{}`. Removing the sole marker returns to idle. Immediate-load lists ignore the marker and pass `searched: true` to Query even for `{}`. The marker is URL metadata, excluded from field defaults/partition, request input and query keys. Committed search inside a dialog (kind E in [table-composition.md](table-composition.md)) stays with its host, not the URL.
+The confirmed product ledger owns the entry policy — whether entering the screen loads the list or waits for an explicit search. Read that owner's behavior clause before choosing; do not derive the gate from another consumer or an unconfirmed pre-search frame. Reset re-applies that same entry contract: committed conditions and drafts return to their defaults, page, selection and dependent transient input clear, and whether a query runs and what the result shows follow the entry policy. Reset owns state, not execution — it neither clears caches nor forces a request; see [Search execution](#search-execution). Explicit-search lists keep `{}` idle and commit `searched: true` plus non-default conditions on submit. Canonicalization validates only that screen's owned fields, normalizes date ranges, and detects valid conditions before omitting defaults. A valid condition (including page/sort) starts a direct-link search even without the marker. Only literal `true` is a marker; `false` or invalid marker values are removed, never a veto over valid conditions. Invalid-only or hidden-only input returns to `{}`. Removing the sole marker returns to idle. Immediate-load lists ignore the marker and pass `searched: true` to Query even for `{}`. The marker is URL metadata, excluded from field defaults/partition, request input and query keys. Committed search inside a dialog (kind E in [table-composition.md](table-composition.md)) stays with its host, not the URL.
 
-If confirmed policy requires immediate entry loading but reset to an idle result, empty filters cannot distinguish those states. That feature may use a single sparse URL discriminator (`searched: false` only after reset, removed on submit). Query enablement and result presentation derive from that same value; do not duplicate it in local state or send it as a server parameter.
 
 ```text
 route search -> field validation -> canonical sparse search
@@ -108,6 +107,14 @@ local draft --Apply/Enter/declared debounce--> one route-search update
 - Shared draft hooks own mechanics only; the feature owns field meaning, defaults, navigation, Query gating, and request mapping.
 - Period calendar dates use `displayTimeZone()` for both display and local-day interpretation. Convert that
   day to a `REQUEST_TIMEZONE` UTC instant only at the request boundary; do not derive timezone from locale.
+
+### Search execution
+
+An explicit search means *run a new query for the current conditions*, so it does not consult `staleTime`:
+submitting the same conditions refetches instead of serving a fresh cache entry. One search action has a
+single execution boundary — a condition change and the forced refetch must not produce two requests.
+Cover both a same-condition search against a fresh cache and a condition-changing search, asserting the
+request count, the resolved params and the cache entry that backs the rendered result.
 
 ## Query and option lifecycle
 

@@ -110,6 +110,7 @@
     "cancelled": "Cancelled moving {{item}}."
   },
   "formError": {
+    "required": "Complete this required field.",
     "rejectedByServer": "The server rejected this value.",
     "validation": "The submitted values could not be saved.",
     "connection": "Check your network connection.",

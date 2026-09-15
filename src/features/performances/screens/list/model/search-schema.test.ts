@@ -16,11 +16,9 @@ describe("performance search defaults", () => {
       periodType: "performedAt",
       keywords: [],
     });
-    expect(entry).not.toHaveProperty("searched");
     expect(entry.sortDirection).toBe("desc");
     expect(entry.startDateTime).toBeUndefined();
     expect(entry.endDateTime).toBeUndefined();
-    expect(resolvePerformanceSearch({ searched: false })).toEqual(entry);
     expect(performanceSearchSchema.parse(entry)).toEqual({});
   });
   it("preserves explicit period, keywords, sort direction and paging through resolution", () => {
@@ -43,17 +41,12 @@ describe("performance search defaults", () => {
   });
 });
 
-it("keeps entry/reset metadata out of performance cache identity", () => {
+it("gives entry, reset and explicit defaults one performance cache identity", () => {
   const entry = performanceListQuery("ko", resolvePerformanceSearch({}));
-  const reset = performanceListQuery(
-    "ko",
-    resolvePerformanceSearch({ searched: false }),
-  );
   const explicit = performanceListQuery(
     "ko",
     resolvePerformanceSearch({ page: 1, pageSize: 100 }),
   );
-  expect(entry.queryKey).toEqual(reset.queryKey);
   expect(entry.queryKey).toEqual(explicit.queryKey);
   expect(JSON.stringify(entry.queryKey)).not.toContain("searched");
   expect(
@@ -63,7 +56,6 @@ it("keeps entry/reset metadata out of performance cache identity", () => {
 
 it("preserves every performance field and whole-array recovery", () => {
   const input = {
-    searched: false,
     periodType: "updatedAt",
     startDateTime: "2026-09-01T00:00:00Z",
     endDateTime: "2026-09-07T00:00:00Z",
@@ -84,9 +76,7 @@ it("preserves every performance field and whole-array recovery", () => {
     performanceSearchContract.partition,
   ])
     expect(Object.keys(value).sort()).toEqual(
-      Object.keys(input)
-        .filter((key) => key !== "searched")
-        .sort(),
+      Object.keys(input).sort(),
     );
   expect(
     performanceSearchSchema.parse({

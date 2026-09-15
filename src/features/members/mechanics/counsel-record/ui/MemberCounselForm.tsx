@@ -37,7 +37,7 @@ export function MemberCounselForm({
   const { t: shared } = useTranslation("shared");
   const element = useRef<HTMLFormElement>(null);
   const today = formatDate(new Date().toISOString());
-  const requiredMessage = t("counsel.required");
+  const requiredMessage = t("shared:formError.required");
   const dateMessage = t("counsel.invalidDate");
   const form = useForm({
     defaultValues: initialValues,

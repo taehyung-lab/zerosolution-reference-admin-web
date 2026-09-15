@@ -12,7 +12,7 @@
 `APP_TIMEZONE = 'UTC'` Context 하나가 표시와 기간 변환을 함께 맡아 서울 브라우저에서도 UTC 날짜를
 보여 줬고, 비어 있거나 파싱할 수 없는 날짜 하나가 목록 전체를 `RangeError`로 중단시켰다.
 
-리허설 OpenAPI의 `timezone` 파라미터 의미는 신규 서버 계약이 아니다. Managers 요청은 현재 이
+리허설 OpenAPI의 `timezone` 파라미터 의미는 신규 서버 계약이 아니다. 현재 요청은 이
 파라미터를 보내지 않으며, UTC instant를 보낸다는 사실만으로 값을 추론해 추가하지 않는다.
 
 ## 결정
@@ -67,7 +67,7 @@ endDateTime request:     2026-08-28T14:59:59.999Z
 - 빈 날짜 row 렌더가 예외 없이 빈 셀을 만든다.
 - 같은 UTC instant가 `Asia/Seoul`과 `UTC`에서 서로 다른 날짜로 표시된다.
 - 서울과 DST zone의 local-day 시작·끝이 올바른 UTC instant로 변환되고 표시 날짜로 왕복한다.
-- Chromium에서 `/managers?searched=true`의 날짜 열과 root error 부재를 확인한다.
+- Chromium에서 목록 화면의 날짜 열과 root error 부재를 확인한다.
 
 - `closed-search.test.ts`는 전체 목록의 한쪽 결손·불량·역전·동일 시점·소수점 정밀도와 mock 실제 필터링을 검증한다.
 - `use-period-draft.test.tsx`는 두 단계 입력, 전체 해제, 서울·뉴욕 DST의 TODAY preset 변환을 검증한다.
