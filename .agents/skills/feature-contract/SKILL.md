@@ -44,13 +44,14 @@ A code path is a routing hint, not a screen template. Keep missing evidence expl
 - Screen-internal responsibility decomposition, including existing screens, are owned by [references/screen-composition.md](references/screen-composition.md#feature-internal-decomposition).
 - `features/{domain}` owns domain workflows. Screens and domain mechanics separate presentation from execution/state; form schema/defaults/request mapper stay with the consuming workflow, while only genuinely shared pure values move to domain model.
 - There is no `pages` layer. Features do not import another feature's UI, model, or hooks; a route composes multiple screens. Cross-feature API leaf exceptions are limited to the cases defined by [api-contract](../api-contract/references/query-cache.md).
-- A product screen's domain enum is declared once in that feature's `model/`, as the product axis, and is not restated in a second file. Do not guess its correspondence to an unconfirmed server value. Where the product axis and a confirmed server contract are the same set with the same meaning, take the generated type as the spelling; a `TRANSPLANT_PENDING_<ID>` marks an unconfirmed server correspondence, never a deliberate internal spelling.
+- 제품 enum의 집합·의미·필수·기본값은 원장, 내부 철자는 feature `model/`의 한 선언이 소유한다. 화면은 재선언하지 않는다.
+  서버가 미확정이어도 내부 선언은 확정할 수 있다. raw shape·fixture 공유는 [query-cache](../api-contract/references/query-cache.md#서버-연결-전후의-책임), 실제 wire 대응은 확인된 서버 계약이 소유한다. generated 타입의 채택은 집합과 의미가 확인된 경우뿐이며 미확인 대응은 기존 이관 sentinel로 남긴다.
 - Components do not call generated operations or reconstruct query keys.
 - Hooks have one state or behavior owner. Do not bundle query, mutation, form, dialog, toast, navigation, and permission into a page controller hook.
 - Separate UI from business rules by ownership, not by forcing every calculation into a hook. Render-local formatting and memoized columns may stay near the result UI; URL transitions, Query enablement, payload/cache identity, permission, and workflow decisions stay in feature logic or focused hooks.
 - Do not build `useCrud`, `ResourcePage`, universal list/form descriptors, or a resource framework around feature workflows.
 
-Do not infer permissions, statuses, bulk semantics, upload limits, or post-success navigation. Stop with the unresolved contract when code and requirements cannot answer them.
+권한·status 의미·bulk·업로드 제한·실 저장 성공 후 이동은 추측하지 않는다. 원장·원문에도 답이 없는 영향 부분만 보류한다. 목적지 파일 부재와 API 미연결은 제품 부재가 아니다. 연결 범위는 [screen-loop](../screen-loop/SKILL.md#요청의-종류), 미연결 종착점은 [mutation-actions](references/mutation-actions.md#api-연결-전-시나리오-요청)가 소유한다.
 
 ## Common mistakes
 

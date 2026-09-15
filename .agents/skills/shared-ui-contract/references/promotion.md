@@ -8,7 +8,7 @@ One use stays feature-local. Two uses are compared. A third stable use starts re
 
 - semantics, interaction lifecycle, ownership, and failure behavior match
 - the public API contains no domain type, server DTO, Query, Router, permission, or mutation policy
-- no resource/entity switch, domain mode, schema injection, or callback override is needed. An opaque generic — a schema type parameter the hook never reads, a `run(values)` callback, a pure classifier result, a completion callback — is not schema injection or a callback override: the hook learns no field, DTO, endpoint, or destination from it (`useSaveForm`, ADR 0010 2026-09-03)
+- no resource/entity switch, domain mode, schema injection, or callback override is needed. An opaque generic — a schema type parameter the hook never reads, a `run(values)` callback, a pure classifier result, a completion callback — is not schema injection or a callback override: the hook learns no field, DTO, endpoint, or destination from it (구조적 필드 오류/DOM focus 연결, ADR 0010)
 - one implementation reduces observed change cost or defect risk
 
 Figma repetition counts only when semantics, state transitions, and failure behavior are legible and match. It may establish a documented contract before three code uses; it does not automatically authorize a component. Visual similarity and anticipated reuse are not evidence.

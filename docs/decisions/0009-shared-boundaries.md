@@ -178,7 +178,7 @@ Figma 원장의 field-level evidence는 현재 surface와 의도적 차이를 �
 | 행 활성화 | **provisional shared** | 1 | `DataTable.onRowActivate(row)`가 pointer·Enter·Space와 interactive child 제외만 소유. destination·permission은 feature callback |
 | 일괄변경 alert 연쇄 | **provisional shared** | 1 | 선택 유무 판정과 frozen opaque values·`run(values)`까지만. ID·cascade·권한·호출 이후는 feature |
 | `selectionColumn` | **provisional shared(2026-09-06)** | 2 | 동일한 page/mixed/row 체크박스 렌더를 추출. 입력은 선택 controller·라벨·순수 선택 가능 판정이며 DTO·URL·권한을 모른다. 상태는 `usePageRowSelection`에 유지 |
-| `useConfirmation` | **provisional shared(2026-09-06)** | 3 | 값 보관→취소/확정만. opaque 값과 `run`만 알고 폼·성공·API를 모른다. 서버 이후 `useSaveForm`은 유지 |
+| `useConfirmation` | **provisional shared(2026-09-06)** | 3 | 값 보관→취소/확정만. opaque 값과 `run`만 알고 폼·성공·API를 모른다. 서버 이후 저장 결과는 소비 workflow가 소유 |
 | `maskEmail`·`maskPhone` | **provisional shared(2026-09-06)** | 2 | 동일한 문자열 알고리즘 복제본 제거. 문자열만 받고 표시 문자열만 반환하며 공개 권한·API는 호출부 소유. 현재 규칙의 재사용이며 신규 제품 마스킹 정책 확정이 아니다 |
 | `hasRepeatedOrSequentialAsciiTriplet` | **provisional shared(2026-09-07)** | 2 | 입력 검증의 동일 ASCII 3반복/3연속 판정만 추출. 길이·문자군·schema·카피는 feature에 남고 서버 이력이나 신규 제품 정책은 알지 않는다 |
 | `usePageRowSelection` | **confirmed(2026-09-05)** | 2 | page 한정·view 변경 시 해제·같은 view refetch 잔존. 두 번째 소비자가 배열 identity 의존의 무한 렌더를 드러내 내용 비교로 고쳤다 |
