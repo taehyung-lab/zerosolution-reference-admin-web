@@ -2,8 +2,8 @@
  * 활성 회원의 현재 페이지 선택 상태, 컬럼, 건수 요약과 정렬·페이지 변경 callback을 조립한다.
  * API 연결 후에도 표시·선택 책임은 유지한다. 서버 조회/행 정렬은 수행하지 않으며 Query 데이터는 입력으로 받는다.
  */
-import { standardPageSizeOptions } from "@/shared/config/list";
-import { usePageRowSelection } from "@/shared/lib/use-page-row-selection";
+import { standardPageSizeOptions } from "@/shared/model/list-options";
+import { usePageRowSelection } from "@/shared/model/use-page-row-selection";
 import { useTranslation } from "react-i18next";
 import {
   memberSortTypes,

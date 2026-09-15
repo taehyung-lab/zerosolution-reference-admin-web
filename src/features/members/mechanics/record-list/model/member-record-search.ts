@@ -14,7 +14,7 @@ import { type MemberRecordSearch } from "../../../model/member-record-search";
  * 기록 목록별로 URL에서 허용할 검색 필드·정렬·페이지와 잘못된 값의 복구 규칙을 정의한다.
  * 실제 API에서도 URL 검증은 필요하다. 이 화면용 이름을 서버 파라미터로 그대로 간주하지 않고 계약별로 변환한다.
  */
-import { standardPageSizeOptions } from "@/shared/config/list";
+import { standardPageSizeOptions } from "@/shared/model/list-options";
 import { compactSearchValues } from "@/shared/lib/compact-search-values";
 import { z } from "zod";
 import {

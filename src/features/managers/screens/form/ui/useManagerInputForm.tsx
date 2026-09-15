@@ -2,10 +2,10 @@
  * API 미연결 운영자 입력 화면의 검증·dirty 보호·최종 확인을 공용 폼 UI에 연결한다.
  * 현재 저장 상태는 idle로 고정되어 실제 mutation workflow가 아니다. API 연결 시 검증은 유지하고 저장/오류/완료 상태 연결부를 교체한다.
  */
-import { useConfirmation } from "@/shared/lib/use-confirmation";
+import { useConfirmation } from "@/shared/model/use-confirmation";
 import { formFieldControlId } from "@/shared/ui/form/FormField";
 import { useUnsavedChangesGuard } from "@/shared/ui/form/UnsavedChangesGuard";
-import { useFormSections } from "@/shared/ui/form/useFormSections";
+import { useFormSections } from "@/shared/model/use-form-sections";
 import { ConfirmDialog } from "@/shared/ui/patterns/ConfirmDialog";
 import {
   revalidateLogic,

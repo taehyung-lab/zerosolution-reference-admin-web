@@ -1,4 +1,4 @@
-import { standardPeriodPresetValues } from "@/shared/config/list";
+import { standardPeriodPresetValues } from "@/shared/model/list-options";
 import { usePeriodPresets } from "@/shared/i18n/use-period-presets";
 import { AsyncFieldBoundary } from "@/shared/ui/patterns/AsyncFieldBoundary";
 import { FilterField } from "@/shared/ui/patterns/FilterField";

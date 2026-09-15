@@ -14,7 +14,7 @@ Share stable behavior, not a guessed resource framework. Source-owned UI remains
 - Source-owned shadcn-style/Radix primitive, Tailwind token, focus, keyboard, or primitive accessibility: read [references/primitives-and-tokens.md](references/primitives-and-tokens.md).
 - Promoting, confirming, narrowing, or demoting shared UI/pattern composition: read [references/promotion.md](references/promotion.md). Use the target inventory and judgment document located through `docs/reference/product.json`; the skill does not name a product domain.
 - Promoting or demoting a shared state mechanic or pure utility: read [references/logic-promotion.md](references/logic-promotion.md).
-- Any `shared/lib` function or hook or `shared/config` preset: read [references/shared-values.md](references/shared-values.md).
+- Any `shared/lib` pure function, `shared/model` state mechanic, or policy value: read [references/shared-values.md](references/shared-values.md).
 - Translation namespace, adding a key, product-generic copy ownership, or locale parity: read [references/i18n.md](references/i18n.md).
 - Filter panel/row, period or keyword filter composition, `useListFilterDraft`, `usePeriodDraft`, or `useKeywordDraft`: read [references/filter-fields.md](references/filter-fields.md), which links the adoption criteria and state API; add the select or date reference only when changing that lower-level contract.
 - TanStack Form adapter, `FormField`, label/control/error association, or typed field name: read [references/form-fields.md](references/form-fields.md).

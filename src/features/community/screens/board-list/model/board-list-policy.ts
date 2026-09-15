@@ -1,8 +1,8 @@
 import type { BoardKeywordField, BoardSortKey } from '@/features/community/model/board';
 import { boardListCanonicalSchema } from './board-list-search';
 import type { BoardListSearch, ResolvedBoardListSearch } from './board-list-search';
-import type { KeywordFilterItem } from '@/shared/lib/use-keyword-draft';
-import type { UtcPeriodRange } from '@/shared/lib/use-period-draft';
+import type { KeywordFilterItem } from '@/shared/model/use-keyword-draft';
+import type { UtcPeriodRange } from '@/shared/model/use-period-draft';
 
 /**
  * URL 전이 정책. 모두 순수 함수이고 결과는 canonical sparse search 다.

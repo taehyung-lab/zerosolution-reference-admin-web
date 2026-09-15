@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { usePageRowSelection } from "@/shared/lib/use-page-row-selection";
+import { usePageRowSelection } from "@/shared/model/use-page-row-selection";
 import { DataTable } from "./DataTable";
 import { selectionColumn } from "./selection-column";
 

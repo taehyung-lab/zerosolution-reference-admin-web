@@ -2,7 +2,7 @@
  * 신규 상담 초안의 초기값, 편집 대상, 두 폼의 dirty 여부와 삭제 확인 상태를 관리한다.
  * 이 client 상호작용은 API 연결 후에도 필요하다. 상담 레코드 자체와 저장 결과는 외부 데이터/요청 소유자가 제공한다.
  */
-import { useConfirmation } from "@/shared/lib/use-confirmation";
+import { useConfirmation } from "@/shared/model/use-confirmation";
 import { useUnsavedChangesGuard } from "@/shared/ui/form/UnsavedChangesGuard";
 import { useState } from "react";
 import { type MemberCounselValues } from "../../../model/member-counsel";

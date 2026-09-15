@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import { useFormSections } from './useFormSections'
+import { useFormSections } from './use-form-sections'
 
 const sections = {
   account: ['type', 'permission', 'loginId'],

@@ -21,8 +21,8 @@ export const SEED_BUNDLES = [
   },
   {
     id: 'confirmation',
-    code: ['src/shared/lib/use-confirmation.ts', 'src/shared/ui/patterns/BulkActionDialogs.tsx'],
-    skills: [location('.agents/skills/shared-ui-contract/references/shared-values.md', 'State mechanics (`shared/lib`)', '`useConfirmation')],
+    code: ['src/shared/model/use-confirmation.ts', 'src/shared/model/use-selection-gate.ts', 'src/shared/ui/patterns/BulkActionDialogs.tsx'],
+    skills: [location('.agents/skills/shared-ui-contract/references/shared-values.md', 'State mechanics (`shared/model`)', '`useConfirmation')],
     adrs: [location('docs/decisions/0009-shared-boundaries.md', '단위별 단계와 소비자', '`useConfirmation')],
     tests: ['src/shared/ui/patterns/BulkActionDialogs.test.tsx'],
     ownership: { shared: 'Holds opaque confirmation values, invokes run after confirm, and renders selection rejection/confirmation surfaces; no form or API knowledge.', feature: 'Owns validation, copy, selection, callbacks, and all success/failure behavior.' },
@@ -155,7 +155,7 @@ export const SEED_BUNDLES = [
       doNotCopy: 'Rehearsal Manager fields, defaults, dependent options, request DTOs, route destinations or the optional internal options Query. Recheck the target product save policy.',
     }],
     code: [
-      'src/shared/ui/form/useFormSections.ts',
+      'src/shared/model/use-form-sections.ts',
       'src/shared/ui/form/FormField.tsx',
       'src/shared/ui/form/FormTextField.tsx',
       'src/shared/ui/form/FormSelectField.tsx',
@@ -199,7 +199,7 @@ export const SEED_BUNDLES = [
       ),
     ],
     tests: [
-      'src/shared/ui/form/useFormSections.test.tsx',
+      'src/shared/model/use-form-sections.test.tsx',
       'src/shared/ui/form/useSaveForm.test.tsx',
       'src/shared/ui/form/FormField.test.tsx',
       'src/shared/ui/form/FormAdapters.test.tsx',
@@ -230,14 +230,14 @@ export const SEED_BUNDLES = [
       useWhen: 'Compare filter, period and keyword drafts that share a commit identity; callers collect input through prepareSubmit and retain URL transitions.',
       doNotCopy: 'Member explicit-search and performance immediate-search/reset policies, keyword fields or venueKeyword. Use individual primitives when input lifecycles differ.',
     }],
-    code: ['src/shared/lib/use-draft-commit.ts', 'src/shared/lib/use-list-filter-draft.ts'],
+    code: ['src/shared/model/use-draft-commit.ts', 'src/shared/model/use-list-filter-draft.ts'],
     skills: [location(
       '.agents/skills/shared-ui-contract/references/logic-promotion.md',
       'Shared logic admission',
       'draft preservation while a caller identity is equal',
     ), location(
       '.agents/skills/shared-ui-contract/references/shared-values.md',
-      'State mechanics (`shared/lib`)',
+      'State mechanics (`shared/model`)',
       '`useListFilterDraft` composes',
     )],
     adrs: [location(
@@ -249,7 +249,7 @@ export const SEED_BUNDLES = [
       '초안 조합 결정',
       '`useListFilterDraft`를 **provisional shared**로 채택한다',
     )],
-    tests: ['src/shared/lib/use-draft-commit.test.tsx', 'src/shared/lib/use-list-filter-draft.test.tsx'],
+    tests: ['src/shared/model/use-draft-commit.test.tsx', 'src/shared/model/use-list-filter-draft.test.tsx'],
     ownership: {
       shared: 'Owns preserve, rebuild, reset, and patch mechanics; composes declared filter identity, period and keyword drafts and input collection.',
       feature: 'Owns identity policy, field declarations, defaults, validation, keyword mapping, submit/reset destinations, navigation, and page policy.',
@@ -257,7 +257,7 @@ export const SEED_BUNDLES = [
   },
   {
     id: 'period-draft',
-    code: ['src/shared/lib/use-period-draft.ts'],
+    code: ['src/shared/model/use-period-draft.ts'],
     skills: [location(
       '.agents/skills/shared-ui-contract/references/logic-promotion.md',
       'Shared logic admission',
@@ -268,7 +268,7 @@ export const SEED_BUNDLES = [
       '현재 provisional 계약',
       '`usePeriodDraft`',
     )],
-    tests: ['src/shared/lib/use-period-draft.test.tsx'],
+    tests: ['src/shared/model/use-period-draft.test.tsx'],
     ownership: {
       shared: 'Owns preset/custom draft transitions and conversion from explicit timezone inputs.',
       feature: 'Owns period meaning, adopted presets, validation copy, provider use, and request boundaries.',
@@ -325,12 +325,12 @@ export const SEED_BUNDLES = [
     // The standard-preset assembly hook is an i18n entrypoint a renderer never imports, so the
     // import closure cannot reach it from `filter-surface`. Declaring it here keeps it exportable.
     code: [
-      'src/shared/config/list.ts',
+      'src/shared/model/list-options.ts',
       'src/shared/i18n/use-period-presets.ts',
     ],
     skills: [location(
       '.agents/skills/shared-ui-contract/references/shared-values.md',
-      'Config (`shared/config/list.ts`)',
+      'Config (`shared/model/list-options.ts`)',
       'standardPageSizeOptions',
     )],
     adrs: [location(
@@ -339,7 +339,7 @@ export const SEED_BUNDLES = [
       '`standardPageSizeOptions`, `standardPeriodPresetValues`',
     )],
     tests: [
-      'src/shared/config/list.test.ts',
+      'src/shared/model/list-options.test.ts',
       'src/shared/i18n/use-period-presets.test.tsx',
     ],
     ownership: {
@@ -349,7 +349,7 @@ export const SEED_BUNDLES = [
   },
   {
     id: 'keyword-draft',
-    code: ['src/shared/lib/use-keyword-draft.ts'],
+    code: ['src/shared/model/use-keyword-draft.ts'],
     skills: [location(
       '.agents/skills/shared-ui-contract/references/logic-promotion.md',
       'Shared logic admission',
@@ -360,7 +360,7 @@ export const SEED_BUNDLES = [
       '현재 provisional 계약',
       '`useKeywordDraft`',
     )],
-    tests: ['src/shared/lib/use-keyword-draft.test.tsx'],
+    tests: ['src/shared/model/use-keyword-draft.test.tsx'],
     ownership: {
       shared: 'Owns pending keyword add, remove, and trim mechanics.',
       feature: 'Owns keyword enum and field meaning, limits, URL state, and request mapping.',

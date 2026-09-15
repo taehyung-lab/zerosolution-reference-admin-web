@@ -3,7 +3,7 @@
  * 현재는 onConfirm 호출까지이며 저장 성공은 만들지 않는다. API 연결 시 같은 입력 흐름 뒤에 mutation과 확인된 후처리를 연결한다.
  */
 import { formatDate } from "@/shared/lib/datetime";
-import { useConfirmation } from "@/shared/lib/use-confirmation";
+import { useConfirmation } from "@/shared/model/use-confirmation";
 import { FormCancelButton } from "@/shared/ui/form/FormCancelButton";
 import { FormDateField } from "@/shared/ui/form/FormDateField";
 import { formFieldControlId } from "@/shared/ui/form/FormField";

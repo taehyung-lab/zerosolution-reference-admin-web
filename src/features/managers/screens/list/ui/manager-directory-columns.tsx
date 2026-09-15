@@ -4,7 +4,7 @@
  * 방향 표시는 활성 컬럼 하나에만 주고(aria-sort 한 개), 정렬 확정과 URL 전이는 결과 workflow가 소유한다.
  */
 import { headerSortDirection } from "@/shared/lib/list-sort";
-import type { PageRowSelection } from "@/shared/lib/use-page-row-selection";
+import type { PageRowSelection } from "@/shared/model/use-page-row-selection";
 import type { DataTableProps } from "@/shared/ui/patterns/DataTable";
 import { selectionColumn } from "@/shared/ui/patterns/selection-column";
 import type { TFunction } from "i18next";

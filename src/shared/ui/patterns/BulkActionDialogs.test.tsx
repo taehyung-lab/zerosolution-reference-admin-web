@@ -1,4 +1,4 @@
-import { useConfirmation } from "@/shared/lib/use-confirmation";
+import { useConfirmation } from "@/shared/model/use-confirmation";
 import {
   act,
   fireEvent,
@@ -12,8 +12,8 @@ import { i18n } from "@/shared/i18n/i18n";
 import {
   BulkActionDialogs,
   SelectionAlert,
-  useSelectionGate,
 } from "./BulkActionDialogs";
+import { useSelectionGate } from "@/shared/model/use-selection-gate";
 
 describe("useConfirmation", () => {
   it("lets one gate reject different actions without requiring confirmation", () => {

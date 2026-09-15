@@ -35,4 +35,4 @@
 
 ### 실행 계약과 검증 범위
 
-사용 API의 단일 출처는 [shared-values의 State mechanics](../../.agents/skills/shared-ui-contract/references/shared-values.md#state-mechanics-sharedlib), 실행 순서는 [list-workflow](../../.agents/skills/feature-contract/references/list-workflow.md#draft-commit)다. [조합 테스트](../../src/shared/lib/use-list-filter-draft.test.tsx)는 view 보존·scope 전환·입력 수집·로컬값 제외·variant·반복 reset을, [소비자 E2E](../../tests/e2e/search-contract.spec.ts)는 URL·기간·history를 대조한다. 이 판정은 제품 전 페이지 감사, 실 API 완료, 신규 제품 이관 또는 전체 검사 무실패 판정이 아니다. 최신 실행 결과는 작업 review가 소유한다.
+사용 API의 단일 출처는 [shared-values의 State mechanics](../../.agents/skills/shared-ui-contract/references/shared-values.md#state-mechanics-sharedmodel), 실행 순서는 [list-workflow](../../.agents/skills/feature-contract/references/list-workflow.md#draft-commit)다. [조합 테스트](../../src/shared/model/use-list-filter-draft.test.tsx)는 view 보존·scope 전환·입력 수집·로컬값 제외·variant·반복 reset을, [소비자 E2E](../../tests/e2e/search-contract.spec.ts)는 URL·기간·history를 대조한다. 이 판정은 제품 전 페이지 감사, 실 API 완료, 신규 제품 이관 또는 전체 검사 무실패 판정이 아니다. 최신 실행 결과는 작업 review가 소유한다.

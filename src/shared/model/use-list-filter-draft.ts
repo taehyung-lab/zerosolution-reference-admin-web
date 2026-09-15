@@ -2,7 +2,7 @@ import {
   filterPartitionKey,
   filterPartitionValues,
   type SearchFieldPartition,
-} from "./search-partition";
+} from "../lib/search-partition";
 import { useDraftCommit } from "./use-draft-commit";
 import { useKeywordDraft, type KeywordFilterItem } from "./use-keyword-draft";
 import { usePeriodDraft, type UtcPeriodRange } from "./use-period-draft";

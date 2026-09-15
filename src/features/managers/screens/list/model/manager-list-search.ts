@@ -1,4 +1,4 @@
-import { standardPageSizeOptions } from "@/shared/config/list";
+import { standardPageSizeOptions } from "@/shared/model/list-options";
 import { defineSearchFields } from "@/shared/lib/search-fields";
 import {
   optionalInstant,

@@ -1,4 +1,4 @@
-import { useListFilterDraft } from "@/shared/lib/use-list-filter-draft";
+import { useListFilterDraft } from "@/shared/model/use-list-filter-draft";
 import type { SubmitEvent } from "react";
 import {
   performanceSearchPartition,

@@ -3,7 +3,7 @@
  * 필드 의미·기본값·확정 시점은 이 훅이 소유하고 초안 보존 mechanic은 공용 훅에 맡긴다.
  * 옵션 목록은 조회 상태를 그대로 노출해 필드가 로딩·실패·재시도를 표시할 수 있게 한다.
  */
-import { useListFilterDraft } from "@/shared/lib/use-list-filter-draft";
+import { useListFilterDraft } from "@/shared/model/use-list-filter-draft";
 import { type SubmitEvent } from "react";
 import { useTranslation } from "react-i18next";
 import {

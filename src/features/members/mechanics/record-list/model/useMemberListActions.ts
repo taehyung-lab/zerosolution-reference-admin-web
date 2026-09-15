@@ -2,8 +2,8 @@
  * 활성 회원 일괄변경의 입력·선택 검증·확인할 대상과 메시지 작성 요청을 관리한다.
  * API 연결 후에도 필요한 상호작용이다. 실제 변경과 서버 성공 후 선택 해제는 최종 요청 workflow에 연결해야 한다.
  */
-import { useConfirmation } from "@/shared/lib/use-confirmation";
-import { useSelectionGate } from "@/shared/ui/patterns/BulkActionDialogs";
+import { useConfirmation } from "@/shared/model/use-confirmation";
+import { useSelectionGate } from "@/shared/model/use-selection-gate";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { MemberListActionRequest } from "../../../model/member-list-action";

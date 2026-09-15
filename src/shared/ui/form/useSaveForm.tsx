@@ -11,7 +11,7 @@ import type { z } from 'zod';
 import { formFieldControlId } from './FormField';
 import { FormSaveDialogs, type FormSaveFailure } from './FormSaveDialogs';
 import { useUnsavedChangesGuard } from './UnsavedChangesGuard';
-import { useFormSections } from './useFormSections';
+import { useFormSections } from '../../model/use-form-sections';
 
 export type SaveStage<TOutput, TInput = unknown> =
   | { readonly kind: 'idle' }

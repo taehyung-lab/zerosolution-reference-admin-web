@@ -2,8 +2,8 @@
  * 운영자 일괄변경의 선택·변경값·금지 상태 확인과 최종 확인 입력을 관리한다.
  * 실제 API에서도 입력 검증은 필요하지만 서버 처리 결과나 부분 성공을 자체적으로 만들지 않는다.
  */
-import { useConfirmation } from "@/shared/lib/use-confirmation";
-import { useSelectionGate } from "@/shared/ui/patterns/BulkActionDialogs";
+import { useConfirmation } from "@/shared/model/use-confirmation";
+import { useSelectionGate } from "@/shared/model/use-selection-gate";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ManagerListItem } from "../../../model/manager";

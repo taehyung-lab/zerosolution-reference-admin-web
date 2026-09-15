@@ -1,31 +1,8 @@
-import type { useConfirmation } from "@/shared/lib/use-confirmation";
-import { useState } from "react";
+import type { useConfirmation } from "@/shared/model/use-confirmation";
+import type { useSelectionGate } from "@/shared/model/use-selection-gate";
 import { useTranslation } from "react-i18next";
 import { AlertDialog } from "./AlertDialog";
 import { ConfirmDialog } from "./ConfirmDialog";
-
-export function useSelectionGate(selectedCount: number) {
-  const [message, setMessage] = useState<string>();
-
-  return {
-    message,
-    requireSelection: (missingSelectionMessage: string) => {
-      if (selectedCount > 0) return true;
-      setMessage(missingSelectionMessage);
-      return false;
-    },
-    /**
-     * Every precheck an action button runs fails the same way, so a caller's other rules
-     * (an unfinished cascade value, for example) reject into this alert instead of growing
-     * their own inline error state. Returns `false` so a check reads as one `return`.
-     */
-    reject: (message: string) => {
-      setMessage(message);
-      return false;
-    },
-    close: () => setMessage(undefined),
-  };
-}
 
 export function SelectionAlert({
   controller,

@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { safeErrorKey } from '@/api/error-copy';
 import { useBoardDetail } from '@/features/community/api/useBoardDetail';
 import type { BoardCategoryItem, BoardDetail, BoardPermissionSetting } from '@/features/community/model/board';
-import { useConfirmation } from '@/shared/lib/use-confirmation';
+import { useConfirmation } from '@/shared/model/use-confirmation';
 import { ConfirmDialog } from '@/shared/ui/patterns/ConfirmDialog';
 import { DetailField } from '@/shared/ui/patterns/DetailField';
 import { DetailStateBoundary } from '@/shared/ui/patterns/DetailStateBoundary';

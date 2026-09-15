@@ -4,7 +4,7 @@ import {
   optionalPositiveInteger,
   recoverArray,
 } from "@/shared/lib/search-codecs";
-import { standardPageSizeOptions } from "@/shared/config/list";
+import { standardPageSizeOptions } from "@/shared/model/list-options";
 import {
   normalizeClosedInstantRange,
   omitSearchDefaults,

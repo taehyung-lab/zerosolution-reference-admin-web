@@ -1,6 +1,6 @@
 # Shared logic promotion
 
-Read this file only when deciding whether a feature-local state mechanic or pure utility should enter, remain in, narrow within, or leave `shared/lib`.
+Read this file only when deciding whether a feature-local state mechanic or pure utility should enter, remain in, narrow within, or leave `shared/lib` (pure calculation) or `shared/model` (state lifetime and policy values).
 
 Use the same evidence threshold as UI promotion: compare real callers and admit only a domain-neutral contract that reduces observed change cost or defect risk.
 

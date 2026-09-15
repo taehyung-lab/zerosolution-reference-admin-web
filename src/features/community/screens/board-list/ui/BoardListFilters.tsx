@@ -7,7 +7,7 @@ import {
   boardUsages,
 } from '@/features/community/model/board';
 import type { BoardPermission, BoardPeriodType } from '@/features/community/model/board';
-import { standardPeriodPresetValues } from '@/shared/config/list';
+import { standardPeriodPresetValues } from '@/shared/model/list-options';
 import { usePeriodPresets } from '@/shared/i18n/use-period-presets';
 import { FilterField } from '@/shared/ui/patterns/FilterField';
 import { FilterPanel } from '@/shared/ui/patterns/FilterPanel';

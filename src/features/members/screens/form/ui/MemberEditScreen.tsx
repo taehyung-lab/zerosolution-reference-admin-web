@@ -3,7 +3,7 @@
  * API 이후에도 필요하며 초기값 조회와 최종 저장은 외부 경계다. 숨긴 활동제한 초안 보존과 제출값 제외를 구분한다.
  */
 import { formatDate } from "@/shared/lib/datetime";
-import { useConfirmation } from "@/shared/lib/use-confirmation";
+import { useConfirmation } from "@/shared/model/use-confirmation";
 import { FormCancelButton } from "@/shared/ui/form/FormCancelButton";
 import { FormDateField } from "@/shared/ui/form/FormDateField";
 import { formFieldControlId } from "@/shared/ui/form/FormField";

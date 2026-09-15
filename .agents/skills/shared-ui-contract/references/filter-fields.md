@@ -20,7 +20,7 @@ A caller declares the preset values it adopts — `usePeriodPresets(standardPeri
 
 ## State boundary
 
-For every filter host, apply the [Draft commit adoption criteria](../../feature-contract/references/list-workflow.md#draft-commit). `useListFilterDraft` coordinates matching filter/period/keyword lifecycles; [shared-values](shared-values.md#state-mechanics-sharedlib) owns its input and reset API. The host's page type is not an exemption from reuse.
+For every filter host, apply the [Draft commit adoption criteria](../../feature-contract/references/list-workflow.md#draft-commit). `useListFilterDraft` coordinates matching filter/period/keyword lifecycles; [shared-values](shared-values.md#state-mechanics-sharedmodel) owns its input and reset API. The host's page type is not an exemption from reuse.
 
 `usePeriodDraft` and `useKeywordDraft` may own domain-free draft transitions. The feature still owns route search, Query gating, request mapping, API payloads, validation policy, and when a draft commits. The period mechanic converts browser-zone calendar days to UTC. Partial date drafts remain editable; closed-range consumers validate both bounds on submit/URL entry and reset the period draft on submit even when canonical URL identity is unchanged.
 

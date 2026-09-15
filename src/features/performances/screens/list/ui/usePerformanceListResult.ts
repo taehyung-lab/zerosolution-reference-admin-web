@@ -1,4 +1,4 @@
-import { standardPageSizeOptions } from "@/shared/config/list";
+import { standardPageSizeOptions } from "@/shared/model/list-options";
 import { useTranslation } from "react-i18next";
 import {
   performanceSearchSchema,

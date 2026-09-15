@@ -3,7 +3,7 @@
  * 실제 API에서도 필요한 표시 책임이다. 정렬 callback은 조회 조건을 바꾸며 서버 결과 배열을 여기서 정렬하지 않는다.
  */
 import { headerSortDirection } from "@/shared/lib/list-sort";
-import type { PageRowSelection } from "@/shared/lib/use-page-row-selection";
+import type { PageRowSelection } from "@/shared/model/use-page-row-selection";
 import type { DataTableProps } from "@/shared/ui/patterns/DataTable";
 import { selectionColumn } from "@/shared/ui/patterns/selection-column";
 import type { TFunction } from "i18next";

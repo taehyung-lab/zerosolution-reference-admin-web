@@ -2,7 +2,7 @@
  * 기존 API 운영자 목록의 기간·검색어·유형·상태·가입경로 입력 UI다.
  * 입력과 옵션 상태를 소비하고 조회 실행은 소유하지 않는다. 실제 API 연결 때 옵션 출처를 빈 배열로 숨기지 않는다.
  */
-import { standardPeriodPresetValues } from "@/shared/config/list";
+import { standardPeriodPresetValues } from "@/shared/model/list-options";
 import { usePeriodPresets } from "@/shared/i18n/use-period-presets";
 import { AsyncFieldBoundary } from "@/shared/ui/patterns/AsyncFieldBoundary";
 import { FilterField } from "@/shared/ui/patterns/FilterField";

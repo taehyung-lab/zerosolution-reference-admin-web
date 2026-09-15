@@ -2,7 +2,7 @@
  * 기록 목록이 공유하는 기간·검색어 및 계정 상태·가입 방식 입력 컴포넌트다.
  * 값과 변경 callback을 연결하는 UI는 유지하며, 옵션이 서버 조회 대상인지 여부는 각 필드 계약에서 결정한다.
  */
-import { standardPeriodPresetValues } from "@/shared/config/list";
+import { standardPeriodPresetValues } from "@/shared/model/list-options";
 import { usePeriodPresets } from "@/shared/i18n/use-period-presets";
 import { FilterField } from "@/shared/ui/patterns/FilterField";
 import { KeywordFilterField } from "@/shared/ui/patterns/KeywordFilterField";
