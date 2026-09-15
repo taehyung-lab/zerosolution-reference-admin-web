@@ -959,9 +959,9 @@ export const TRANSPLANT_MANIFEST = {
   ],
   app: [
     'src/app/i18n/resources.ts',
-    'src/shared/i18n/locales/ko/app.json',
-    'src/shared/i18n/locales/en/app.json',
-    'src/shared/i18n/locales/ja/app.json',
+    'src/app/i18n/locales/ko/app.json',
+    'src/app/i18n/locales/en/app.json',
+    'src/app/i18n/locales/ja/app.json',
   ],
   templates: ['package.json'],
 }
