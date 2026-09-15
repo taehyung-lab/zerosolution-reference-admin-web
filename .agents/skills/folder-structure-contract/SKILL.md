@@ -23,6 +23,7 @@ src/
       lib/                     # 필요한 순수 도우미
       config/                  # 필요한 정적 구성
       fixtures/                # 서버 연결 전 예시 데이터
+      i18n/locales/{locale}/     # 이 도메인의 번역 namespace. app/i18n/resources.ts 가 등록한다
       mechanics/
         {capability}/          # 도메인 내부에서 실제 재사용하는 기능
           ui/                  # 렌더와 표시 조립
@@ -39,6 +40,7 @@ src/
     lib/                       # 상태도 렌더도 없는 결정적 계산
     i18n/                      # 번역 runtime·locale·shared namespace resource
   api/                         # 공용 transport와 교체 가능한 generated
+  test/                        # vitest setup, msw server, 여러 화면을 조립하는 workflow 테스트
 ```
 
 `screens`는 전체 페이지뿐 아니라 route가 다른 도메인과 조립하는 기능 진입도 포함한다. 도메인의 대표 엔티티는 `list`·`detail`·`form` 그대로 쓰고(`<domain>/screens/list`), 대표가 아닌 엔티티나 두 엔티티가 같은 workflow 이름을 다투는 도메인은 엔티티를 접두한다(`<domain>/screens/<entity>-list`·`<entity>-detail`·`<entity>-form`). route 가 여는 다이얼로그 하나도 `screens/<workflow>` 다. 한 목록의 URL 변형들은 같은 `screens/list`를 쓰며 URL 계층을 그대로 복제하지 않는다. 별도 `pages` 레이어는 없다.
@@ -90,7 +92,7 @@ src/
 ## 작업 시 연결
 
 새 파일·이동·소유권 변경 전에는 실제 import 소비자를 확인하고 위 표로 위치를 정한다.
-테스트는 검증하는 소유자 옆에 둔다. 여러 화면을 조립하는 통합 테스트는 route/test 소유 위치에 두며,
+테스트는 검증하는 소유자 옆에 둔다. 여러 화면을 조립하는 통합 테스트는 `src/test/workflows`에 두며,
 테스트 편의를 이유로 production import 경계를 완화하지 않는다.
 
 이동하면 routes import, test mock, context index, 현재 참조 문서와 검사 fixture 경로도 대조한다.
@@ -98,8 +100,10 @@ src/
 UI·URL·권한·번역·payload·Query 키는 폴더 이동을 이유로 바꾸지 않는다.
 
 이 문서는 배치만 소유한다. 화면 조립·상태는 [feature-contract](../feature-contract/SKILL.md),
-서버·캐시는 [api-contract](../api-contract/SKILL.md), 도메인 없는 공용 승격은
-[shared-ui-contract](../shared-ui-contract/SKILL.md)를 함께 적용한다. 기존 파일의 동작만 수정할 때는
+서버·캐시와 다른 도메인의 데이터·cache key를 쓰는 규칙은 [api-contract](../api-contract/SKILL.md)의
+[query-cache](../api-contract/references/query-cache.md), 도메인 없는 공용 승격은
+[shared-ui-contract](../shared-ui-contract/SKILL.md)를 함께 적용한다. 다른 도메인의 기능을 한 화면에
+연결하는 자리는 위 구조의 `routes/`다. 기존 파일의 동작만 수정할 때는
 루트의 해당 기능 스킬 라우팅을 따르며 이 문서를 매번 다시 읽지 않는다.
 
 ## 설계 참고와 채택 범위
