@@ -5,13 +5,11 @@ import { performanceListQuery } from "../../../api/queries";
 import { type ResolvedPerformanceSearch } from "./search-schema";
 
 export function usePerformanceListData(
-  search: ResolvedPerformanceSearch,
-  searched: boolean,
-) {
+  search: ResolvedPerformanceSearch) {
   const { locale } = useLocale();
   const list = useListQuery({
     options: performanceListQuery(locale, search),
-    searched,
+    searched: true,
     select: (page) => page,
   });
 

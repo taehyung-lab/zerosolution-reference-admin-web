@@ -20,7 +20,7 @@ in conversation.
 A code path is a routing hint, not a screen template. Keep missing evidence explicit.
 
 - Before composing a screen, read its relevant inventory, scenarios and confirmed/open decisions, or observe the original sources where those are missing. The index routes evidence, not policy: decompose group entries and follow linked rules when they affect ownership, exceptions or failure behavior. Read a reference in full only when the work spans it; preserve applicable ancestor constraints. Do not invent product facts from existing code.
-- Adding a check, a block, a confirmation, a completion — or the sentence that announces one — means matching **both its trigger and how the product states it** against a ledger sentence or an explicit user decision. Where the ledger only says `필드 강조` or `선택 불가`, it is not a new error sentence. Leave what the ledger does not answer unbuilt and ask; mark only an explicitly allowed stand-in with `TRANSPLANT_PENDING_<ID>`. Passing `i18n:check` proves key parity, never that the product says this.
+- Adding a check, a block, a confirmation, a completion — or the sentence that announces one — means matching **both its trigger and how the product states it** against a ledger sentence or an explicit user decision. Where the ledger only says `필드 강조` or `선택 불가`, it states no screen-specific wording: use the product's default copy for that error kind instead of inventing one. Leave a behavior the ledger does not answer unbuilt and ask; mark only an explicitly allowed stand-in with `TRANSPLANT_PENDING_<ID>`. Passing `i18n:check` proves key parity, never that the product says this.
 - Route, params/search validation, guard, loader, preload, or navigation entry: read [references/router.md](references/router.md).
 - List, filter, search, result state, sorting, or pagination: select the applicable sections of [references/list-workflow.md](references/list-workflow.md). Every filter host uses its [Draft commit adoption criteria](references/list-workflow.md#draft-commit) to choose `useListFilterDraft` or a smaller mechanic. A new list needs its complete lifecycle and composition; a result-only change still needs the Query and URL rules that govern that result.
 - Search field schema, defaults, codecs, filter/view partition, date commit or variants: also read [references/list-search-contract.md](references/list-search-contract.md). Consumer defaults are observations, not new-product policy.
@@ -44,12 +44,14 @@ A code path is a routing hint, not a screen template. Keep missing evidence expl
 - Screen-internal responsibility decomposition, including existing screens, are owned by [references/screen-composition.md](references/screen-composition.md#feature-internal-decomposition).
 - `features/{domain}` owns domain workflows. Screens and domain mechanics separate presentation from execution/state; form schema/defaults/request mapper stay with the consuming workflow, while only genuinely shared pure values move to domain model.
 - There is no `pages` layer. Features do not import another feature's UI, model, or hooks; a route composes multiple screens. Cross-feature API leaf exceptions are limited to the cases defined by [api-contract](../api-contract/references/query-cache.md).
+- 제품 enum의 집합·의미·필수·기본값은 원장, 내부 철자는 feature `model/`의 한 선언이 소유한다. 화면은 재선언하지 않는다.
+  서버가 미확정이어도 내부 선언은 확정할 수 있다. raw shape·fixture 공유는 [query-cache](../api-contract/references/query-cache.md#서버-연결-전후의-책임), 실제 wire 대응은 확인된 서버 계약이 소유한다. generated 타입의 채택은 집합과 의미가 확인된 경우뿐이며 미확인 대응은 기존 이관 sentinel로 남긴다.
 - Components do not call generated operations or reconstruct query keys.
 - Hooks have one state or behavior owner. Do not bundle query, mutation, form, dialog, toast, navigation, and permission into a page controller hook.
 - Separate UI from business rules by ownership, not by forcing every calculation into a hook. Render-local formatting and memoized columns may stay near the result UI; URL transitions, Query enablement, payload/cache identity, permission, and workflow decisions stay in feature logic or focused hooks.
 - Do not build `useCrud`, `ResourcePage`, universal list/form descriptors, or a resource framework around feature workflows.
 
-Do not infer permissions, statuses, bulk semantics, upload limits, or post-success navigation. Stop with the unresolved contract when code and requirements cannot answer them.
+권한·status 의미·bulk·업로드 제한·실 저장 성공 후 이동은 추측하지 않는다. 원장·원문에도 답이 없는 영향 부분만 보류한다. 목적지 파일 부재와 API 미연결은 제품 부재가 아니다. 연결 범위는 [screen-loop](../screen-loop/SKILL.md#요청의-종류), 미연결 종착점은 [mutation-actions](references/mutation-actions.md#api-연결-전-시나리오-요청)가 소유한다.
 
 ## Common mistakes
 

@@ -110,6 +110,7 @@
     "cancelled": "{{item}}の並び替えをキャンセルしました。"
   },
   "formError": {
+    "required": "必須項目を入力してください。",
     "rejectedByServer": "サーバーで使用できない値です。",
     "validation": "入力した値を保存できません。",
     "connection": "ネットワーク接続を確認してください。",

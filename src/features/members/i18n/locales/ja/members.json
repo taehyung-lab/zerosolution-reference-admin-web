@@ -152,7 +152,6 @@
     "inquiryType": "問い合わせ種別",
     "chooseType": "問い合わせ種別を選択",
     "content": "相談内容および処理結果",
-    "required": "必須項目を入力してください。",
     "invalidDate": "今日以前の日付と時刻を入力してください。",
     "empty": "登録された相談がありません。",
     "record": "{{name}}の相談",
@@ -224,7 +223,6 @@
       "confirmNotify": "会員に結果を通知しますか？",
       "memberLink": "会員情報を表示",
       "attachment": "添付ファイル",
-      "required": "必須項目を入力してください。",
       "notified": "結果通知済み"
     },
     "example": {

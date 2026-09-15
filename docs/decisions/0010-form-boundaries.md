@@ -21,7 +21,7 @@
 ## 결정과 이유
 
 1. **같은 입력 전이와 실패 복구만 공유한다.** 스키마·기본값·mapper·필드·선택지·조건부 정책은 소비 workflow에 남겼다. 화면의 필드 차이를 mode나 descriptor로 숨기면 입력 타입과 서버 계약이 합집합으로 번지고 추적 비용이 증가했다. 공통 표시가 있다는 이유로 검증·저장까지 합치지 않았다.
-2. **저장 확인·완료 쌍의 조립은 하나의 mechanic으로 둔다.** 검증 실패 노출·서버 오류 배치·확인·성공 기준선 갱신은 순서가 결합돼 있었다. 독립 구현에서 순서 배선이 빠져 조용한 저장 실패가 발생했으므로 이를 공유했다. 다른 저장 흐름까지 옵션으로 흡수한 것은 아니다.
+2. **입력 오류 노출과 저장 결과를 분리한다.** 오류 노출의 반복은 입력 UI adapter에 남기고, 성공/실패·기준선·완료 이동은 실제 저장 workflow로 돌린다. 미연결 요청도 보호·오류 노출을 재사용할 수 있으며 부모 보호·inline·blur 검증을 저장 쌍에 억지로 맞추지 않는다. 순서 보존은 입력과 실제 소비자의 기존 전이 테스트로 검증한다.
 3. **입력 값은 Form, 오류·접근성 연결은 어댑터가 소유한다.** TanStack Form과 Zod Standard Schema는 설치된 타입으로 필드 경계를 확인할 수 있었다. primitive는 폼 라이브러리를 모르며, Query는 옵션·서버 응답만 소유한다. 실제 transformed output의 생성은 workflow 책임으로 남겼다.
 4. **보호의 기계적 동작과 제품 대상 범위를 분리한다.** 여러 폼의 dirty/pending 사실은 하나의 provider가 집계하지만 값·목적지는 복제하지 않는다. 2026-09-07의 화면 종류 중심 제한은 2026-09-14의 입력 손실 중심 사용자 결정으로 대체됐다. 현행 대상·제외와 문구는 제품 원장, 적용 방법은 form-workflow가 소유한다. 이전 대상 목록을 공용 계약이나 새 제품에 이식하지 않는다.
 5. **반복 입력과 순서 변경도 책임을 분리한다.** typed array mechanic은 Form의 값 변경만, 정렬 mechanic은 센서·handle·접근성·이동 계산만 소유하도록 결정했다. row factory·identity·검증·표시는 feature에 남겼다. editable DataTable이나 schema renderer를 만들 근거가 아니었다.
@@ -33,7 +33,7 @@
 
 | 관찰한 실패·차이 | 설계에 남긴 이유 | 현재 검증 소유자 |
 | --- | --- | --- |
-| 닫힌 섹션의 필드가 사라져도 전체 입력 검증은 제출을 차단했으나 오류와 focus가 보이지 않았다. 필드 unmount는 오류 map도 비웠다 | 폼 섹션의 mount 유지와 같은 오류 원천의 badge·reveal·focus가 필요했다. 재마운트 후 재검증 보상 절차는 폐기했다 | [저장 전이 테스트](../../src/shared/ui/form/useSaveForm.test.tsx), [섹션 계약](../../.agents/skills/shared-ui-contract/references/disclosure-sections.md) |
+| 닫힌 섹션의 필드가 사라져도 전체 입력 검증은 제출을 차단했으나 오류와 focus가 보이지 않았다. 필드 unmount는 오류 map도 비웠다 | 폼 섹션의 mount 유지와 같은 오류 원천의 badge·reveal·focus가 필요했다. 재마운트 후 재검증 보상 절차는 폐기했다 | [입력 feedback 테스트](../../src/shared/ui/form/useSaveForm.test.tsx), [섹션 계약](../../.agents/skills/shared-ui-contract/references/disclosure-sections.md) |
 | 제출 전용 validator만 연결하면 blur/change 뒤 오류가 사라졌다 | 첫 제출 뒤 같은 스키마로 change 재검증하는 연결을 선택했다. 재파싱으로 별도 오류 집합을 만드는 안은 폐기했다 | [필드 테스트](../../src/shared/ui/form/FormField.test.tsx), form-workflow의 검증 연결 |
 | Standard Schema 성공 output은 submit values를 치환하지 않았다 | UI 입력 타입과 검증 output·요청 mapper 경계를 분리했다 | form-fields와 소비 schema·mapper 테스트 |
 | form-level 서버 오류는 당시 Form 타입과 맞지 않았고, field 서버 오류는 일반 검증으로 지워지지 않았다 | root 실패 stage와 field 오류를 분리하고 다음 제출에서 서버 오류를 다시 판단하도록 했다 | 저장 전이 테스트 |

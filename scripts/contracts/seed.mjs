@@ -178,7 +178,7 @@ export const SEED_BUNDLES = [
       location(
         '.agents/skills/feature-contract/references/form-workflow.md',
         'Sections and error visibility',
-        'writes `fieldMeta.errorMap.onServer`',
+        'onServer 표시/정리',
       ),
       location(
         '.agents/skills/shared-ui-contract/references/form-fields.md',

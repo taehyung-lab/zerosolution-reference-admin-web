@@ -68,7 +68,7 @@ describe("performance list pre-request consumer", () => {
   beforeEach(() =>
     readPage.mockReset().mockResolvedValue({ rows: [row], total: 101 }),
   );
-  it("returns to the Notion pre-search state on reset and resumes on submit", async () => {
+  it("resets to the entry state: drafts clear and the entry result stays", async () => {
     const { onSearchChange, rerender, view } = setup();
     await screen.findByRole("table");
     fireEvent.change(screen.getByRole("textbox", { name: "공연장 검색" }), {
@@ -76,31 +76,18 @@ describe("performance list pre-request consumer", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "초기화" }));
     rerender(view(onSearchChange.mock.calls.at(-1)![0]));
-    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+
+    // 이 목록의 진입 계약은 즉시 조회다. 초기화는 그 진입 화면을 다시 적용하므로 결과가 남는다.
+    expect(screen.getByRole("table")).toBeInTheDocument();
+    expect(screen.getByText("검색결과 : 101")).toBeInTheDocument();
     expect(
       screen.getByRole("combobox", { name: "기간 기준" }),
     ).toHaveTextContent("공연일");
     expect(screen.getByRole("radio", { name: "전체" })).toBeChecked();
-    expect(screen.queryByText("검색결과 : 101")).not.toBeInTheDocument();
-    expect(screen.getByRole("textbox", { name: "공연장 검색" })).toHaveValue(
-      "",
-    );
-    fireEvent.change(screen.getByRole("textbox", { name: "공연장 검색" }), {
-      target: { value: "Venue" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "초기화" }));
-    expect(screen.getByRole("textbox", { name: "공연장 검색" })).toHaveValue(
-      "",
-    );
-    expect(
-      screen.getByText("검색 조건을 설정한 후 검색해 주세요."),
-    ).toBeInTheDocument();
-    expect(readPage).toHaveBeenCalledTimes(1);
-    fireEvent.click(screen.getByRole("button", { name: "검색" }));
-    rerender(view(onSearchChange.mock.calls.at(-1)![0]));
-    await screen.findByRole("table");
-    expect(readPage).toHaveBeenCalledTimes(2);
+    expect(screen.getByRole("textbox", { name: "공연장 검색" })).toHaveValue("");
+    expect(onSearchChange.mock.calls.at(-1)![0]).toEqual({});
   });
+
   it("queries on entry without a search marker and renders a read-only reverse-numbered table", async () => {
     const { onActivate } = setup();
     const table = await screen.findByRole("table");

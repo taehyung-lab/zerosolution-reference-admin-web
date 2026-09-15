@@ -74,7 +74,7 @@ src/
 
 `shared` 안의 세그먼트는 **소유하는 계약**으로 갈린다. 렌더(JSX·focus·ARIA·component props 계약)를
 소유하면 `ui`, 렌더하지 않고 상태 수명·전이나 허용 값을 소유하면 `model`, 둘 다 아니면 `lib` 이다.
-`use` 접두사나 확장자는 판정 근거가 아니다 — `useSaveForm` 은 dialog 를 렌더하므로 `ui` 에 남고,
+`use` 접두사나 확장자는 판정 근거가 아니다 — `useFormFeedback` 은 DOM focus 를 소유하므로 `ui` 에 남고,
 `usePageRowSelection` 은 선택 수명만 소유하므로 `model` 이다. `ui` 아래 이름은 세그먼트가 아니라
 렌더 계약 family 이며, 한 파일이 둘 이상의 family 에 해당하면 우선순위를 만들지 말고 파일을 나눈다.
 `shared/lib` 의 React import·hook export 금지와 `shared/model` 의 JSX 금지는 `eslint.config.js` 가 본다.

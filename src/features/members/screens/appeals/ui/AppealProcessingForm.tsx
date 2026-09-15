@@ -38,13 +38,13 @@ export function AppealProcessingForm({
           context.addIssue({
             code: "custom",
             path: ["reason"],
-            message: t("secondary.appeal.required"),
+            message: t("shared:formError.required"),
           });
         if (value.reason === "other" && value.direct.trim() === "")
           context.addIssue({
             code: "custom",
             path: ["direct"],
-            message: t("secondary.appeal.required"),
+            message: t("shared:formError.required"),
           });
       }
     });

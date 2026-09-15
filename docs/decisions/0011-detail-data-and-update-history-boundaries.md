@@ -60,13 +60,13 @@ generated (HTTP 함수·DTO)
 - **선언과 실행의 분리**: generated 함수는 `features/*/api` 와 `src/api` 만 import 할 수 있다(기존 lint). 따라서 `api/mutations.ts` 는 `mutationOptions`(서버 호출·`retry: false`) 선언만 두고, workflow 훅이 `useMutation({ ...선언, onSuccess })` 로 실행하며 `useQueryClient` 와 awaited invalidation 을 소유한다. `queryClient` 를 인자로 받는 팩토리는 만들지 않는다.
 - `features/*/api/**`의 `useQuery`·`useMutation`은 허용한다. `useQueryClient`, 전역 진행 집계, Router/Form import는 lint가 막는다. API 훅의 화면 정책 혼입은 import 검사만으로 증명할 수 없으므로 소비자·callbacks를 리뷰한다. 정상 query/mutation 훅과 위반 cache-client/router 대조군은 `gates:negative`가 실행한다.
 
-**2026-09-07 재검토:** 공연장·운영자 옵션 및 ID 상세 조회까지 화면 model에 강제하면 재사용 API와 화면 상태가 다시 섞였다. 사용자의 전체 구조 재점검 요청과 실제 훅 책임을 근거로 기존의 모든 API 훅 금지를 API-only 실행 허용으로 수정했다. mutation 캐시 후속 처리의 workflow 소유는 유지한다. 폴더 배치 정본은 [folder-structure-contract](../../.agents/skills/folder-structure-contract/SKILL.md)다.
+**2026-09-07 재검토:** 옵션 조회와 ID 상세 조회까지 화면 model에 강제하면 재사용 API와 화면 상태가 다시 섞였다. 사용자의 전체 구조 재점검 요청과 실제 훅 책임을 근거로 기존의 모든 API 훅 금지를 API-only 실행 허용으로 수정했다. mutation 캐시 후속 처리의 workflow 소유는 유지한다. 폴더 배치 정본은 [folder-structure-contract](../../.agents/skills/folder-structure-contract/SKILL.md)다.
 - 화면 이름은 자원과 목적을 말한다(`useManagerDetail`, `useManagerEditDetail`). HTTP 동사 이름(`useGetManager`)은 쓰지 않는다.
 
 ### 업데이트 이력 — 2층
 
 - `UpdateHistory`(`shared/ui/detail/UpdateHistory.tsx`, props `{ entries, labels: { date, change, actor }, emptyText }`) 는 3열 `Table` primitive, stable key, 사항 셀의 `<ul><li>`(줄마다 한 항목) 만 소유한다. `UpdateHistoryEntry { id, date, lines: readonly string[], actor }` 는 이미 localized·safe 한 문자열이다. `actor`는 도메인 역할명이 아니라 변경을 수행한 행위자의 표시 문자열이다. `SectionCard` 감싸기·제목·빈 문구는 feature 가 쓴다. `ReactNode`·render callback·server DTO 는 받지 않는다. 정렬 계약이 없으므로 `DataTable` 이 아니다.
-- feature 순수 mapper가 서버의 담당자·운영자 필드를 `actor`로 투영하고 C/D 한 줄, U의 변경 줄, 동일 값 방지, 비노출 값 제거, 구조 미정·미등록 field의 중립 문구를 소유한다. 원문 JSON·secret·서버 field 코드 비노출은 각 mapper 테스트가 보장한다. 훅이 아니다.
+- feature 순수 mapper가 서버의 행위자 필드를 `actor`로 투영하고 C/D 한 줄, U의 변경 줄, 동일 값 방지, 비노출 값 제거, 구조 미정·미등록 field의 중립 문구를 소유한다. 원문 JSON·secret·서버 field 코드 비노출은 각 mapper 테스트가 보장한다. 훅이 아니다.
 - 채택한 규칙: DTO↔렌더 입력 분리 경계, C/U/D 줄 규칙, `A > A` 방지, 원문 미노출·unsupported fallback. 제외한 구조: Accordion 결합, 컴포넌트 내부 i18n 기본값, 값 해석 옵션 bag, 도메인 formatter 훅, newline 단일 문자열.
 
 ### 상세 표면
@@ -79,11 +79,11 @@ generated (HTTP 함수·DTO)
 
 | 단위 | 단계 | 근거·consumer |
 | --- | --- | --- |
-| `useDetailQuery` / `resolveRequiredQueryOutcome` | provisional shared(api) | 상세·수정 2 consumer 일치, 결함 입력 4종 table test |
+| `useDetailQuery` / `resolveRequiredQueryOutcome` | provisional shared(api) | 상세와 수정이 같은 필수 조회 결말을 요구하고, 결함 입력 4종을 table test 로 닫았다 |
 | feature 훅 배치·API/workflow 의존 lint | 수정 채택 | API-only 실행 허용, 캐시 클라이언트·Router/Form·화면 역참조 금지; 의미 판정은 소비자 리뷰 |
-| `UpdateHistory` | shared 채택 | 운영자·회원·탈퇴회원·소명·공연·게시판 상세 6 consumer가 같은 `date/change/actor` 표시 계약을 사용 |
+| `UpdateHistory` | shared 채택 | 상세 화면들이 같은 `date/change/actor` 표시 계약을 쓰고 표시 책임이 화면별로 갈리지 않음을 확인 |
 | `toManagerHistoryEntries` 줄 조립 규칙 | feature-local | 두 번째 화면에서 같은 규칙이면 그때 `shared/lib` 승격 |
-| `PageHeader` / `SectionCard` / `DetailField` | provisional shared | 인벤토리 5 상세 화면 동일 구성, 코드 consumer 는 Managers 1 |
+| `PageHeader` / `SectionCard` / `DetailField` | provisional shared | 인벤토리 5 상세 화면 동일 구성. 코드 소비자는 아직 하나뿐이라 확정 단계가 아니다 |
 
 ## 미확인 (구현하지 않음)
 

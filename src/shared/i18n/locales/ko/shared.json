@@ -110,6 +110,7 @@
     "cancelled": "{{item}} 항목의 순서 변경을 취소했습니다."
   },
   "formError": {
+    "required": "필수 항목을 입력해주세요.",
     "rejectedByServer": "서버에서 사용할 수 없는 값입니다.",
     "validation": "입력한 값을 저장할 수 없습니다.",
     "connection": "네트워크 연결을 확인해 주세요.",

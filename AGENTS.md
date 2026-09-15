@@ -12,7 +12,7 @@
 
 ## 구현 진입
 
-화면, 화면 일부, 컴포넌트, hook, utility, API, 구조를 만들거나 바꾸는 요청은 먼저 [screen-loop](.agents/skills/screen-loop/SKILL.md)를 읽는다. 화면 결과는 그 skill의 `render` reference, 렌더 없이 입출력·전이·실패로 닫히는 결과는 `nonrender` reference를 선택한다. 그 뒤 `description`이 실제 책임과 맞는 API·feature·shared UI·folder skill의 진입 문서를 읽고, 연결된 reference는 이번 변경에 해당하는 것만 선택한다. 단순 질의·조회·명령 실행에는 이 루프를 적용하지 않는다.
+화면·component·hook·utility·API·구조 변경은 먼저 [screen-loop](.agents/skills/screen-loop/SKILL.md)로 들어간다. 결과 분기·의존 범위·근거 판독·책임별 계약 선택은 그 skill이 소유한다. 단순 질의·조회·명령 실행에는 적용하지 않는다.
 
 제품 근거 경로는 [product.json](docs/reference/product.json)이 소유하고, 기술 스택·버전·명령은 README와 package.json이 소유한다. 색인은 위치를 찾는 도구이지 제품 정책이 아니다. 요청에 필요한 원장만 따라가고 네 경로를 관례로 모두 열지 않는다. 화면은 실제 디자인·요구·시나리오, API는 snapshot과 실제 wire, 코드는 호출자와 테스트를 확인한다. 확인·추론·가정·미확인을 구별하고 기존 코드나 다른 화면으로 빈 제품 사실을 채우지 않는다. "X가 없다"는 X의 실제 소유자를 직접 확인했을 때만 쓴다.
 

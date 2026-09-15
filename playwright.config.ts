@@ -40,6 +40,8 @@ export default defineConfig({
   webServer: {
     command: webServerCommand,
     url: baseURL,
-    reuseExistingServer: !process.env.CI && !apiMock,
+    // 같은 포트에 다른 작업 트리의 서버가 떠 있으면 재사용은 그 화면을 조용히 검증한다.
+    // 충돌은 --strictPort 로 시끄럽게 실패시킨다.
+    reuseExistingServer: false,
   },
 })

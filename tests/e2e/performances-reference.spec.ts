@@ -27,8 +27,10 @@ test('@reference performance venue remains a single draft until search', async (
   await expect(page).toHaveURL(/venueId=reference-venue-b/);
   await expect(table.getByRole('row')).toHaveCount(2);
   await expect(table.getByRole('cell', { name: 'Reference Performance 2', exact: true })).toBeVisible();
+  // 초기화는 진입 계약을 다시 적용한다: 조건만 기본값으로 돌아가고 진입 결과는 남는다.
   await page.getByRole('button', { name: '초기화', exact: true }).click();
-  await expect(table).toHaveCount(0);
+  await expect(page).toHaveURL(/\/performances$/);
+  await expect(table).toHaveCount(1);
   await expect(lookup).toBeEnabled();
   await lookup.fill('Reference');
   await page.getByRole('button', { name: '초기화', exact: true }).click();

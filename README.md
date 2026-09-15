@@ -47,7 +47,7 @@ API 소비 화면은 `ManagerApiListScreen`이다. 두 검색 계약의 통합�
 
 전체 script는 `package.json`이 소유한다. CI(`.github/workflows/verify.yml`)는 `pnpm verify`와 같은 단계 집합을 static, unit 2개 shard, E2E의 네 runner로 병렬 실행하며, Chromium은 E2E runner만 설치한다. PR은 main과 합친 merge ref로 검사하므로 main push에서는 static만 다시 돌고, 문서(`**.md`, `docs/`, `.agents/`)만 바뀐 PR은 unit·E2E를 건너뛴다. pnpm store와 Chromium은 캐시한다.
 
-격리 worktree에서 검증할 때는 `PLAYWRIGHT_PORT=4184 pnpm verify`처럼 비어 있는 전용 포트를 지정한다. 로컬 Playwright는 같은 포트의 기존 서버를 재사용하므로, 기본 4173의 다른 작업 트리를 검사한 결과를 현재 diff의 증거로 쓰지 않는다. 포트·서버 실행 경로를 확인한 뒤 실패를 변경 전후에 귀속한다.
+격리 worktree에서 검증할 때는 `PLAYWRIGHT_PORT=4184 pnpm verify`처럼 비어 있는 전용 포트를 지정한다. Playwright는 기존 서버를 재사용하지 않으므로 포트가 겹치면 바로 실패한다.
 
 `pnpm verify` 통과는 완성의 **필요조건이지 충분조건이 아니다.** 화면이 디자인과 같은지, 상호작용이 실제로 동작하는지는 검사하지 않는다. 판정 기준은 [`AGENTS.md`](AGENTS.md#완료)에 있다.
 

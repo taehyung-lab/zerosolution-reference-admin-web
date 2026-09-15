@@ -27,7 +27,7 @@ Share stable behavior, not a guessed resource framework. Source-owned UI remains
 - Dialog primitive, Confirm, Alert, modal focus, or pending close policy: read [references/dialogs.md](references/dialogs.md).
 - `SectionCard` or the `Accordion` disclosure: read [references/disclosure-sections.md](references/disclosure-sections.md).
 - `PageHeader`, `DetailField`, `DetailStateBoundary`, or `EmptyState`: read [references/page-and-detail-surfaces.md](references/page-and-detail-surfaces.md).
-- Save orchestration (`useSaveForm`), dirty-navigation guard (`useUnsavedChangesGuard`), form action buttons, or `FormSaveDialogs`: read [references/form-fields.md](references/form-fields.md) §Form action and save surfaces together with [feature-contract form-workflow](../feature-contract/references/form-workflow.md).
+- Input feedback (`useFormFeedback`), dirty-navigation guard (`useUnsavedChangesGuard`), form action buttons, or `FormSaveDialogs`: read [references/form-fields.md](references/form-fields.md) §Form action and save surfaces together with [feature-contract form-workflow](../feature-contract/references/form-workflow.md).
 - A standalone `Checkbox` or `FormCheckboxField`: read [references/primitives-and-tokens.md](references/primitives-and-tokens.md) §Native passthrough and [references/form-fields.md](references/form-fields.md) §Adapter values.
 - `RadioGroup` or a form radio adapter: read [references/radio-group.md](references/radio-group.md).
 - App-wide blocking progress or inert loading surface: read [references/blocking-progress.md](references/blocking-progress.md).

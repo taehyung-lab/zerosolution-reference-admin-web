@@ -10,7 +10,7 @@ Read this file for create/edit form ownership, validation, conditional sections,
 - Bind the schema as `validators: { onDynamic: schema }` with `validationLogic: revalidateLogic()` (validate on submit; after the first rejected submit, revalidate on every change). Do not use a bare `onSubmit` validator: TanStack Form clears a field's `onSubmit` error when a blur/change run finds no validator, so leaving a failed field would silently remove its message (ADR 0010).
 - Create and edit share a schema only when fields and validation match. Otherwise share stable fragments and keep separate schemas.
 - Defaults and request mappers are explicit and separate. Do not add a schema `mode` switch.
-- 저장 확인·완료 쌍의 lifecycle이 맞으면 `useSaveForm`을 채택한다. API·resource 변경 reset·성공 기준선 갱신은 [form-fields의 Form action and save surfaces](../../shared-ui-contract/references/form-fields.md#form-action-and-save-surfaces)가 소유한다. feature는 schema·defaults·저장·이동과 `classifyFormError(e, fieldOrder)` 연결을 소유하고, `dialogs`는 한 번 렌더한다. 다른 lifecycle을 resource descriptor·mode·callback override로 흡수하지 않는다.
+- feature가 native `useForm`에 schema·validators·입력 기본값·유효 제출을 연결한다. 오류 노출은 [form-fields](../../shared-ui-contract/references/form-fields.md#form-action-and-save-surfaces)의 `useFormFeedback`, 확인은 기존 `useConfirmation`/Confirm, dirty 보호는 기존 guard를 필요한 소유자 한 곳에서 조립한다. 저장 결과는 이 문서의 Dirty and consequential changes가 소유한다. 다른 전이를 mode/descriptor로 흡수하지 않는다.
 - Do not mirror fields in component state, use Query cache as form state, or build a schema-driven renderer.
 - Conditional controls explicitly clear values when product behavior requires it; mapper whitelists do not fix dirty state or validation.
 - When the product instead requires restoring hidden input, keep values in the parent `useForm` and use React `Activity` only for the dependent group's visibility; the schema and confirmed-input mapper decide by the authoritative status, not DOM visibility, and clearing a dependent group must not mutate the editing draft. Hidden Activity cleans up child Effects, so test field hide/restore and validation with the real Form; do not replace every `keepMounted` section with Activity.
@@ -20,12 +20,8 @@ Read this file for create/edit form ownership, validation, conditional sections,
 
 A consuming form keeps its fields, schema, defaults, validation copy, conditional clearing, option sources, mapper, destination, and whether save uses the confirm/acknowledge pair. It adopts `SectionCard`, adapters, and `useUnsavedChangesGuard.leave()` through the contracts above; missing issue text does not justify a second cancel dialog, inline-form hook, or form controller.
 
-For an explicitly scoped pre-request scenario with no save implementation, compose `useForm`, the
-existing adapters/guard, `useConfirmation` and `ConfirmDialog`. Confirmation passes
-validated input to the required feature callback; it does not reset dirty state, acknowledge success or navigate.
-The explicit request handler and its observation rules are owned by [mutation-actions.md](mutation-actions.md#api-연결-전-시나리오-요청).
-Do not resolve a fake mutation, leave a promise pending forever, or add a second-contract mode switch to `useSaveForm`.
-Revisit shared validation composition when another real caller demonstrates the same lifecycle.
+API 미연결이면 위 입력·확인·보호 조립에서 검증된 입력을 필수 업무 callback에 전달한다. 성공·reset·완료 알림·이동은 만들지 않는다.
+그 종착점과 관찰은 [mutation-actions](mutation-actions.md#api-연결-전-시나리오-요청)가 소유한다. 실제 저장과 다른 lifecycle을 같은 hook의 mode로 표현하지 않는다.
 
 ## Composition index
 
@@ -37,8 +33,8 @@ Select only the surfaces the current form uses.
 | Sections                          | `SectionCard` + `useFormSections`                                                                                      | field-to-section mapping, failed field names                                  | this file                                                                                                                                       |
 | Repeating or editable rows        | form array field, `Table` primitives or `DataTable`                                                                    | row schema, min/max, add/remove policy                                        | [table-composition.md](table-composition.md) kind D                                                                                             |
 | Server-backed search or selection | `Combobox`, `MultiSelect`, or a dialog-hosted table                                                                    | search Query, candidate commit, unavailable labels                            | [table-composition.md](table-composition.md) kind E, or the control reference routed by [shared-ui-contract](../../shared-ui-contract/SKILL.md) |
-| Save flow                         | `useSaveForm` (its `dialogs` node renders the confirm → acknowledge pair), `FormSaveFailureMessage`, `FormSubmitButton`, `FormCancelButton` (default 저장/취소 labels) | mutation, destination, error classification (`classifyFormError`) | [mutation-actions.md](mutation-actions.md). A save without the pair composes `useForm` + adapters directly |
-| Cancel and dirty leave            | `useUnsavedChangesGuard` (Router blocker + both confirmed sentences), composed by `useSaveForm` with `when: isDirty`, dialog rendered inside `save.dialogs` | destination after leaving (`guard.leave(navigate)`) | this file |
+| Save flow | 기존 Confirm/Alert·버튼·실패 문구 | native Form, 확인 snapshot, mutation, 오류 분류, 기준선 갱신, 목적지 | [mutation-actions](mutation-actions.md)와 아래 Dirty and consequential changes |
+| Cancel and dirty leave | 기존 provider/guard | 보호 소유자 한 곳, Form dirty와 mutation pending, 폐기/이동 callback, guard.dialog 한 번 렌더 | 아래 Cancel and tabs |
 
 ## 형태
 
@@ -53,15 +49,22 @@ Select only the surfaces the current form uses.
 | `model/use*Mutation.ts` 또는 `*-requests.ts` | 저장 실행과 캐시 후속(API 연결 전이면 요청 함수 도달까지) |
 | `model/use*FormOptions.ts` | 선택지 투영 훅(선택지가 있을 때) |
 | `ui/*Form.tsx` | 위 재사용 조건을 만족하는 공통 입력 조립(있을 때). 다른 필드·검증은 공통 부분과 분리한다 |
-| `ui/*CreateScreen.tsx`·`*EditScreen.tsx` | 각자의 저장·입력 조립. 저장 쌍이면 `useSaveForm`, 요청 전 시나리오면 위 명시적 callback 흐름. 입력 어댑터를 분리해도 같은 역할이다 |
+| `ui/*CreateScreen.tsx`·`*EditScreen.tsx` | native Form·입력 feedback·확인·guard와 각자의 저장 결과를 조립한다. 렌더/focus adapter로 분리해도 같은 역할이다 |
 
 route 는 [Route file layout](router.md#route-file-layout) 을 따르고, 수정 route 는 상세 query 를 await 해 기본값을 준비할 수 있다.
 
+## Validation copy
+
+Every validator supplies a message; the schema owns it and `FormField` renders it with the invalid state.
+A screen whose own wording is not confirmed uses the product's default copy for that error kind rather than
+inventing wording or rendering an invalid state with no message. Which default applies is a product choice
+owned by the confirmed product ledger, not by this contract; the reusable strings and the rendering mechanic
+belong to [form-fields](../../shared-ui-contract/references/form-fields.md).
+
 ## Sections and error visibility
 
-A collapsed section can hide an invalid field and make submit appear silent. Form sections therefore stay mounted while closed (`useFormSections` → `keepMounted`), so TanStack Form never clears their errors. On rejected submit, reveal the sections containing errors and focus the first invalid control in declared order; no revalidation after reveal is needed because nothing remounted. While a section with errors is collapsed, its header shows the invalid-field count (`errorCount` from the same `fieldMeta.errors` selection). Shared UI owns disclosure and the count rendering; the feature owns field-to-section mapping and the invalid-field selection.
-
-Server field errors: `useSaveForm` writes `fieldMeta.errorMap.onServer` for the classified fields, reveals their sections, and focuses the first in declared order. Ordinary validation never clears `onServer`, so the hook clears every `onServer` at the start of the next submit — the server decides again. A failure with no field becomes `stage.kind === 'failed'`, replaced by the next valid submit. Preserve entered values; the real-Router test `useSaveForm.test.tsx` owns this transition.
+오류 선택·section 유지/개수/reveal·선언 순서 focus·onServer 표시/정리는 [form-fields](../../shared-ui-contract/references/form-fields.md#form-action-and-save-surfaces)의 입력 feedback API가 소유한다.
+feature는 field-to-section·복합 컨트롤 focus·inactive tab 노출을 연결한다. root 실패와 성공은 아래 저장 결과 전이가 소유하며 오류 시 입력·기준선은 보존한다.
 
 ## Cancel and tabs
 
@@ -75,6 +78,11 @@ Tabs inside a form (translation tabs, sub-tabs of a settings section) are presen
 
 ## Dirty and consequential changes
 
-provider의 blocker·beforeunload와 저장 reset API는 form-fields가 소유한다. 목적지나 입력을 global store에 복제하지 않는다. 성공 값은 feature가 서버 응답에서 투영하거나 제출 snapshot을 쓰며, 값·기준선 갱신 뒤 완료 acknowledgement를 연다. 같은 resource의 refetch는 draft를 덮지 않고 resource identity 변경만 새 입력으로 reset한다. 결과가 중대한 필드 변경은 확인 전 candidate 하나만 확정 Form 값 밖에 두고 승인 후 `setFieldValue`한다. 이 candidate는 form mirror가 아니다.
+값·기준선의 소유자는 같은 Form이다. resource identity가 바뀌면 새 Form 수명으로 시작하고 동일 resource refetch는 draft를 덮지 않는다. 살아 있는 Form의 defaults를 성공 값으로 갱신한 뒤 reset해야 이전 defaults로 되돌아가지 않는다.
+실 저장 확인은 parsed output과 exact input snapshot을 보관한다. pending은 실제 mutation 사실이며 시작 액션과 이탈을 막는다. 매 제출 시작에 onServer를 정리하고 root 실패는 다음 유효 제출이 대체한다.
+실 mutation 성공만 canonical input 또는 submitted input으로 값·default baseline을 함께 reset한다. 요청 중 입력 변경도 현행 저장 쌍에서는 이 기준값으로 대체한다. 미연결 callback 반환은 저장 성공이 아니다.
+실패는 feature/API classifier의 `{fields, root?} | undefined`로 배치한다. fields는 feedback에 전달하고 root는 호출부 실패 상태에 둔다. 무표시 incident는 app에 위임하며 입력·기준선은 유지한다.
+saved·완료 알림·onDone은 제품이 그 전이를 요구하는 호출부가 소유한다. baseline 갱신 후 saved를 열고 acknowledgement에서 닫고 onDone을 한 번 실행한다. 인라인/부모 닫기는 자기 전이를 쓰며 쌍을 강제하지 않는다.
+중대한 선택 candidate는 확인 전 Form 밖에 하나만 둔다. 성공 값·pending·dirty·목적지를 다른 store에 복제하지 않는다. 이전 Form 수명의 결과로 새 Form이나 onDone을 실행하지 않는다.
 
 Read [mutation-actions.md](mutation-actions.md) for pending, confirmation, feedback, and post-success navigation. Read [file-workflow.md](file-workflow.md) only when the form contains file workflow behavior.

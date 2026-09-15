@@ -19,7 +19,6 @@ export function usePerformanceListResult(
     onChange(
       performanceSearchSchema.parse({
         ...search,
-        searched: data.searched ? undefined : false,
         ...patch,
       }),
     );
