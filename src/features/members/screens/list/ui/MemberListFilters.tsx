@@ -2,12 +2,12 @@
  * 활성 회원의 기간·검색어·가입 방식과 화면별 상태/활동제한 필터를 표시한다.
  * API 연결 뒤에도 입력 UI는 유지한다. 실제 조회는 입력마다 실행하지 않고 필터 훅이 확정한 조건을 따른다.
  */
-import { standardPeriodPresetValues } from "@/shared/config/list";
+import { standardPeriodPresetValues } from "@/shared/model/list-options";
 import { usePeriodPresets } from "@/shared/i18n/use-period-presets";
-import { FilterField } from "@/shared/ui/patterns/FilterField";
-import { FilterPanel } from "@/shared/ui/patterns/FilterPanel";
-import { KeywordFilterField } from "@/shared/ui/patterns/KeywordFilterField";
-import { PeriodFilterField } from "@/shared/ui/patterns/PeriodFilterField";
+import { FilterField } from "@/shared/ui/filter/FilterField";
+import { FilterPanel } from "@/shared/ui/filter/FilterPanel";
+import { KeywordFilterField } from "@/shared/ui/filter/KeywordFilterField";
+import { PeriodFilterField } from "@/shared/ui/filter/PeriodFilterField";
 import { CheckboxTree } from "@/shared/ui/primitives/CheckboxTree";
 import { useTranslation } from "react-i18next";
 import { type MemberSearch } from "../../../model/member-search";

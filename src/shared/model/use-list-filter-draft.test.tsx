@@ -1,6 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, expectTypeOf, it } from "vitest";
-import type { FilterFieldKeys } from "./search-partition";
+import type { FilterFieldKeys } from "../lib/search-partition";
 import { useListFilterDraft } from "./use-list-filter-draft";
 
 const partition = {

@@ -1,4 +1,4 @@
-import type { PageRowSelection } from "@/shared/lib/use-page-row-selection";
+import type { PageRowSelection } from "@/shared/model/use-page-row-selection";
 import { Checkbox } from "@/shared/ui/primitives/Checkbox";
 import type { DataTableProps } from "./DataTable";
 

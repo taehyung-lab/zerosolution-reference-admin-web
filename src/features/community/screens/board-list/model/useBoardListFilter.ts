@@ -1,5 +1,5 @@
 import type { SubmitEvent } from 'react';
-import { useListFilterDraft } from '@/shared/lib/use-list-filter-draft';
+import { useListFilterDraft } from '@/shared/model/use-list-filter-draft';
 import { boardKeywordFields } from '@/features/community/model/board';
 import { toSubmittedSearch } from './board-list-policy';
 import { boardListSearchContract } from './board-list-search';

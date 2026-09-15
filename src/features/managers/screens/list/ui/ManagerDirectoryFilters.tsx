@@ -3,13 +3,13 @@
  * 입력과 옵션 조회 상태를 소비하고 조회 실행·URL 확정은 소유하지 않는다.
  * 서버가 주는 유형·권한 옵션은 AsyncFieldBoundary 안에서만 렌더해 실패를 빈 목록으로 숨기지 않는다.
  */
-import { standardPeriodPresetValues } from "@/shared/config/list";
+import { standardPeriodPresetValues } from "@/shared/model/list-options";
 import { usePeriodPresets } from "@/shared/i18n/use-period-presets";
-import { AsyncFieldBoundary } from "@/shared/ui/patterns/AsyncFieldBoundary";
-import { FilterField } from "@/shared/ui/patterns/FilterField";
-import { FilterPanel } from "@/shared/ui/patterns/FilterPanel";
-import { KeywordFilterField } from "@/shared/ui/patterns/KeywordFilterField";
-import { PeriodFilterField } from "@/shared/ui/patterns/PeriodFilterField";
+import { AsyncFieldBoundary } from "@/shared/ui/feedback/AsyncFieldBoundary";
+import { FilterField } from "@/shared/ui/filter/FilterField";
+import { FilterPanel } from "@/shared/ui/filter/FilterPanel";
+import { KeywordFilterField } from "@/shared/ui/filter/KeywordFilterField";
+import { PeriodFilterField } from "@/shared/ui/filter/PeriodFilterField";
 import { CheckboxTree } from "@/shared/ui/primitives/CheckboxTree";
 import { Select } from "@/shared/ui/primitives/Select";
 import { useTranslation } from "react-i18next";

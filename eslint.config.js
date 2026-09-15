@@ -226,7 +226,7 @@ export default tseslint.config(
       'src/app/**/*.tsx',
       'src/features/**/*.tsx',
       'src/routes/**/*.tsx',
-      'src/shared/ui/{form,patterns,primitives}/**/*.tsx',
+      'src/shared/ui/**/*.tsx',
     ],
     ignores: ['**/*.test.tsx'],
     rules: {
@@ -340,6 +340,38 @@ export default tseslint.config(
   {
     files: ['src/shared/ui/primitives/**/*.tsx'],
     rules: { 'no-restricted-imports': ['error', { paths: RESTRICTED.paths, patterns: [...relaxed(['radix']).patterns, { group: ['@tanstack/react-router'], message: 'shared는 Router를 모른다. UnsavedChangesGuard만 좁은 dirty-navigation 예외다.' }, { group: ['@tanstack/react-query'], message: 'shared는 Query를 모른다. feature가 Query를 plain facts로 바꿔 넘긴다(ADR 0009).' }] }] },
+  },
+  {
+    // `shared/lib` 은 결정적 계산만 소유한다. React 를 들이면 상태 수명을 소유하는 훅이 다시
+    // 들어앉고, 그 순간 `lib` 이 무엇을 담는 곳인지가 흐려진다(use-page-row-selection 이 그렇게 들어왔다).
+    // 상태를 소유하는 재사용 단위는 `shared/model` 이다.
+    files: ['src/shared/lib/**/*.{ts,tsx}'],
+    ignores: ['**/*.test.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        paths: RESTRICTED.paths,
+        patterns: [
+          ...RESTRICTED.patterns,
+          { group: ['react', 'react-dom', 'react-i18next', '@tanstack/react-*'], message: 'shared/lib 은 순수 계산만 소유한다. 상태 수명을 소유하면 shared/model 이다.' },
+        ],
+      }],
+      'no-restricted-syntax': ['error', {
+        selector: 'ExportNamedDeclaration > FunctionDeclaration > Identifier[name=/^use[A-Z]/]',
+        message: 'shared/lib 은 hook 을 export 하지 않는다. 상태 수명을 소유하면 shared/model 이다.',
+      }],
+    },
+  },
+  {
+    // `shared/model` 은 렌더를 소유하지 않는다. JSX 를 반환하기 시작하면 그것은 UI 계약이므로
+    // `shared/ui` 의 해당 family 로 간다(useSaveForm 이 UI 에 남는 이유다).
+    files: ['src/shared/model/**/*.{ts,tsx}'],
+    ignores: ['**/*.test.{ts,tsx}'],
+    rules: {
+      'no-restricted-syntax': ['error',
+        { selector: 'JSXElement', message: 'shared/model 은 렌더하지 않는다. JSX 를 반환하면 shared/ui 다.' },
+        { selector: 'JSXFragment', message: 'shared/model 은 렌더하지 않는다. JSX 를 반환하면 shared/ui 다.' },
+      ],
+    },
   },
   {
     // 런타임 예외는 UnsavedChangesGuard 하나. shared 테스트는 그 guard 계약을 실제 Router(memory history)로

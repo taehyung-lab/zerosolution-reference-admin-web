@@ -1,31 +1,33 @@
-import jaPerformances from '@/shared/i18n/locales/ja/performances.json'
-import enPerformances from '@/shared/i18n/locales/en/performances.json'
-import koPerformances from '@/shared/i18n/locales/ko/performances.json'
+import jaPerformances from '@/features/performances/i18n/locales/ja/performances.json'
+import enPerformances from '@/features/performances/i18n/locales/en/performances.json'
+import koPerformances from '@/features/performances/i18n/locales/ko/performances.json'
 import { i18n } from '@/shared/i18n/i18n'
 import { UI_LOCALES, type UiLocale } from '@/shared/i18n/locale'
-import enApp from '@/shared/i18n/locales/en/app.json'
-import enAuth from '@/shared/i18n/locales/en/auth.json'
-import enCommunity from '@/shared/i18n/locales/en/community.json'
-import enManagers from '@/shared/i18n/locales/en/managers.json'
-import enMembers from '@/shared/i18n/locales/en/members.json'
-import enMessaging from '@/shared/i18n/locales/en/messaging.json'
-import jaApp from '@/shared/i18n/locales/ja/app.json'
-import jaAuth from '@/shared/i18n/locales/ja/auth.json'
-import jaCommunity from '@/shared/i18n/locales/ja/community.json'
-import jaManagers from '@/shared/i18n/locales/ja/managers.json'
-import jaMembers from '@/shared/i18n/locales/ja/members.json'
-import jaMessaging from '@/shared/i18n/locales/ja/messaging.json'
-import koApp from '@/shared/i18n/locales/ko/app.json'
-import koAuth from '@/shared/i18n/locales/ko/auth.json'
-import koCommunity from '@/shared/i18n/locales/ko/community.json'
-import koManagers from '@/shared/i18n/locales/ko/managers.json'
-import koMembers from '@/shared/i18n/locales/ko/members.json'
-import koMessaging from '@/shared/i18n/locales/ko/messaging.json'
+import enApp from '@/app/i18n/locales/en/app.json'
+import enAuth from '@/features/auth/i18n/locales/en/auth.json'
+import enCommunity from '@/features/community/i18n/locales/en/community.json'
+import enManagers from '@/features/managers/i18n/locales/en/managers.json'
+import enMembers from '@/features/members/i18n/locales/en/members.json'
+import enMessaging from '@/features/messaging/i18n/locales/en/messaging.json'
+import jaApp from '@/app/i18n/locales/ja/app.json'
+import jaAuth from '@/features/auth/i18n/locales/ja/auth.json'
+import jaCommunity from '@/features/community/i18n/locales/ja/community.json'
+import jaManagers from '@/features/managers/i18n/locales/ja/managers.json'
+import jaMembers from '@/features/members/i18n/locales/ja/members.json'
+import jaMessaging from '@/features/messaging/i18n/locales/ja/messaging.json'
+import koApp from '@/app/i18n/locales/ko/app.json'
+import koAuth from '@/features/auth/i18n/locales/ko/auth.json'
+import koCommunity from '@/features/community/i18n/locales/ko/community.json'
+import koManagers from '@/features/managers/i18n/locales/ko/managers.json'
+import koMembers from '@/features/members/i18n/locales/ko/members.json'
+import koMessaging from '@/features/messaging/i18n/locales/ko/messaging.json'
 
 /**
  * shared i18n runtime은 `shared` namespace만 안다. app shell/route 카피(`app`), 로그인 feature(`auth`),
  * 도메인 feature(`managers`) namespace는 화면을 조립하는 app 층이 여기서 등록한다.
- * 파일은 `pnpm i18n:check`가 읽는 단일 root(`src/shared/i18n/locales`)에 남긴다.
+ * 각 namespace resource 는 그 namespace 를 소유한 곳에 둔다(`app` 은 `src/app/i18n/locales`,
+ * feature namespace 는 `src/features/<domain>/i18n/locales`). `pnpm i18n:check` 가 `src` 아래
+ * 모든 `i18n/locales` root 를 찾아 parity 와 소유자 일치를 함께 검사한다.
  */
 export const appI18nNamespaces = ['app', 'auth', 'community', 'managers', 'members', 'messaging', 'performances'] as const
 export type AppI18nNamespace = (typeof appI18nNamespaces)[number]

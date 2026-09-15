@@ -5,7 +5,7 @@
 import { classifyFormError } from "@/api/form-error";
 import { useLocale } from "@/shared/i18n/locale-context";
 import { useSaveForm } from "@/shared/ui/form/useSaveForm";
-import { PageHeader } from "@/shared/ui/patterns/PageHeader";
+import { PageHeader } from "@/shared/ui/layout/PageHeader";
 import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { managerCreateDefaults } from "../model/manager-form-defaults";

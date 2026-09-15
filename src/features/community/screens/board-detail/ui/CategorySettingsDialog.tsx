@@ -7,7 +7,7 @@ import { FormArrayField } from '@/shared/ui/form/FormArrayField'
 import { FormSelectField } from '@/shared/ui/form/FormSelectField'
 import { FormTextField } from '@/shared/ui/form/FormTextField'
 import { useUnsavedChangesGuard } from '@/shared/ui/form/UnsavedChangesGuard'
-import { SortableList } from '@/shared/ui/patterns/SortableList'
+import { SortableList } from '@/shared/ui/list/SortableList'
 import { Button } from '@/shared/ui/primitives/Button'
 import { Dialog } from '@/shared/ui/primitives/Dialog'
 

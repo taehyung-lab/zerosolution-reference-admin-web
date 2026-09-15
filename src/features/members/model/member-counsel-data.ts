@@ -1,4 +1,4 @@
-import type { ListResultData } from "@/shared/ui/patterns/ListResult";
+import type { ListResultData } from "@/shared/ui/list/ListResult";
 import type { MemberCounselRecord } from "./member-counsel";
 
 /**

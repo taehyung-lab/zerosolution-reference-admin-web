@@ -2,7 +2,7 @@
  * 운영자 목록의 페이지 크기·정렬·페이지 이동 시 URL 조건을 갱신하는 순수 정책이다.
  * API 이후에도 유지한다. 응답 목록을 직접 정렬/분할하는 서버 대역 코드와 구분한다.
  */
-import { standardPageSizeOptions } from "@/shared/config/list";
+import { standardPageSizeOptions } from "@/shared/model/list-options";
 import type { ManagerSearch } from "../../../api/manager-search";
 
 export const managerPageSizeOptions = standardPageSizeOptions;

@@ -1,4 +1,4 @@
-import { DetailStateBoundary } from "@/shared/ui/patterns/DetailStateBoundary";
+import { DetailStateBoundary } from "@/shared/ui/detail/DetailStateBoundary";
 import { useTranslation } from "react-i18next";
 import { type MemberCounselRequest } from "../model/member-counsel-request";
 /**

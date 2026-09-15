@@ -11,7 +11,7 @@ import {
   type ReactNode,
 } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ConfirmDialog } from '../patterns/ConfirmDialog'
+import { ConfirmDialog } from '../dialog/ConfirmDialog'
 
 interface GuardFacts {
   readonly when: boolean

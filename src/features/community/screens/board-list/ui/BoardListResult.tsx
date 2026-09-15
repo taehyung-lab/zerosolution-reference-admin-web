@@ -1,13 +1,13 @@
 import { useTranslation } from 'react-i18next';
 import type { BoardRow } from '@/features/community/model/board';
-import { DataTable } from '@/shared/ui/patterns/DataTable';
-import { ListResult } from '@/shared/ui/patterns/ListResult';
-import type { ListResultData } from '@/shared/ui/patterns/ListResult';
-import { Pagination } from '@/shared/ui/patterns/Pagination';
-import { PageSizeControl } from '@/shared/ui/patterns/PageSizeControl';
-import { ResultToolbar } from '@/shared/ui/patterns/ResultToolbar';
-import { ResultTotal } from '@/shared/ui/patterns/ResultTotal';
-import { SortControl } from '@/shared/ui/patterns/SortControl';
+import { DataTable } from '@/shared/ui/list/DataTable';
+import { ListResult } from '@/shared/ui/list/ListResult';
+import type { ListResultData } from '@/shared/ui/list/ListResult';
+import { Pagination } from '@/shared/ui/list/Pagination';
+import { PageSizeControl } from '@/shared/ui/list/PageSizeControl';
+import { ResultToolbar } from '@/shared/ui/list/ResultToolbar';
+import { ResultTotal } from '@/shared/ui/list/ResultTotal';
+import { SortControl } from '@/shared/ui/list/SortControl';
 import { Button } from '@/shared/ui/primitives/Button';
 import type { useBoardListResult } from './useBoardListResult';
 

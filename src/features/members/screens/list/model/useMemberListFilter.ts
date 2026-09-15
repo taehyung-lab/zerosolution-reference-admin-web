@@ -2,7 +2,7 @@
  * 확정 URL과 입력 중 필터를 연결하고 기간·검색어 초안을 검색/초기화 시 반영한다.
  * 실제 API에서도 유지할 UI workflow다. 공용 draft 훅을 사용하되 회원별 기본값과 URL 전이는 feature가 소유한다.
  */
-import { useListFilterDraft } from "@/shared/lib/use-list-filter-draft";
+import { useListFilterDraft } from "@/shared/model/use-list-filter-draft";
 import { type SubmitEvent } from "react";
 import {
   memberKeywordTypes,

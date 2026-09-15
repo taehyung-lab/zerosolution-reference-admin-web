@@ -1,4 +1,4 @@
-import { PageHeader } from "@/shared/ui/patterns/PageHeader";
+import { PageHeader } from "@/shared/ui/layout/PageHeader";
 import { useTranslation } from "react-i18next";
 import {
   resolvePerformanceSearch,

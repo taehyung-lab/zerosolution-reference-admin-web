@@ -5,7 +5,7 @@
 import { useListQuery } from "@/api/list-query";
 import { useLocale } from "@/shared/i18n/locale-context";
 import { toTotalPages } from "@/shared/lib/search";
-import type { ListResultData } from "@/shared/ui/patterns/ListResult";
+import type { ListResultData } from "@/shared/ui/list/ListResult";
 import { managerListQuery } from "../../../api/queries";
 import type { ManagerListItem } from "../../../model/manager";
 import { toManagerListItem } from "./manager-mapper";

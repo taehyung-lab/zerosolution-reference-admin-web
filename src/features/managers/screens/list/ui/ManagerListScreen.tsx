@@ -3,7 +3,7 @@
  * 필터 초안과 확정은 useManagerDirectoryFilter, 목록 조회는 useManagerDirectoryData,
  * 선택·컬럼·보기 설정은 useManagerDirectoryResult가 소유한다. 실제 API에서는 응답 공급과 매핑을 교체한다.
  */
-import { PageHeader } from "@/shared/ui/patterns/PageHeader";
+import { PageHeader } from "@/shared/ui/layout/PageHeader";
 import { useTranslation } from "react-i18next";
 import { managerListSearchSchema, resolveManagerListSearch, type ManagerListRouteSearch } from "../model/manager-list-search";
 import { useManagerDirectoryData } from "../model/useManagerDirectoryData";

@@ -2,7 +2,7 @@ import type { TFunction } from 'i18next';
 import type { BoardRow, BoardSortKey } from '@/features/community/model/board';
 import { formatDate } from '@/shared/lib/datetime';
 import { headerSortDirection } from '@/shared/lib/list-sort';
-import type { DataTableProps } from '@/shared/ui/patterns/DataTable';
+import type { DataTableProps } from '@/shared/ui/list/DataTable';
 import type { ResolvedBoardListSearch } from '../model/board-list-search';
 
 type BoardColumns = DataTableProps<BoardRow>['columns'];

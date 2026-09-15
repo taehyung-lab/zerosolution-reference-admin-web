@@ -4,10 +4,10 @@
  * 섹션은 접히지 않는 하나(`기본정보`)뿐이라 `useFormSections` 의 오류 펼치기가 필요하지 않다.
  */
 import type { BoardSettings } from '@/features/community/model/board';
-import { useConfirmation } from '@/shared/lib/use-confirmation';
+import { useConfirmation } from '@/shared/model/use-confirmation';
 import { formFieldControlId } from '@/shared/ui/form/FormField';
 import { useUnsavedChangesGuard } from '@/shared/ui/form/UnsavedChangesGuard';
-import { ConfirmDialog } from '@/shared/ui/patterns/ConfirmDialog';
+import { ConfirmDialog } from '@/shared/ui/dialog/ConfirmDialog';
 import { revalidateLogic, useForm, useSelector } from '@tanstack/react-form';
 import { useTranslation } from 'react-i18next';
 import { toBoardSettings } from '../model/board-form-defaults';

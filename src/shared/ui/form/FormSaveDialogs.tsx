@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
-import { AlertDialog } from '../patterns/AlertDialog'
-import { ConfirmDialog } from '../patterns/ConfirmDialog'
+import { AlertDialog } from '../dialog/AlertDialog'
+import { ConfirmDialog } from '../dialog/ConfirmDialog'
 
 export type FormSaveStage = 'idle' | 'confirming' | 'saved' | 'failed'
 

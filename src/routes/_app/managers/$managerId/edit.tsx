@@ -2,7 +2,7 @@ import { useManagerDirectoryDetail } from "@/features/managers/api/useManagerDir
 import { toManagerEditDefaults } from "@/features/managers/screens/form/model/manager-form-defaults";
 import { requestManagerEdit } from "@/features/managers/screens/form/model/manager-form-requests";
 import { ManagerEditInputScreen } from "@/features/managers/screens/form/ui/ManagerInputScreens";
-import { DetailStateBoundary } from "@/shared/ui/patterns/DetailStateBoundary";
+import { DetailStateBoundary } from "@/shared/ui/detail/DetailStateBoundary";
 import { loadRequired } from "@/app/router/required-loader";
 import { managerDirectoryDetailQuery } from "@/features/managers/api/directory-queries";
 import { createFileRoute } from "@tanstack/react-router";

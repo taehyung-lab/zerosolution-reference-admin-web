@@ -2,8 +2,8 @@
  * 저장된 소명 처리 결과를 기준으로 결과 알림 요청을 확인하는 액션이다.
  * API 이후에도 작성 중인 값과 저장 결과를 구분해야 하며, 발송 완료 여부는 실제 요청 응답의 책임이다.
  */
-import { ConfirmDialog } from "@/shared/ui/patterns/ConfirmDialog";
-import { DetailField } from "@/shared/ui/patterns/DetailField";
+import { ConfirmDialog } from "@/shared/ui/dialog/ConfirmDialog";
+import { DetailField } from "@/shared/ui/detail/DetailField";
 import { Button } from "@/shared/ui/primitives/Button";
 import { Dialog } from "@/shared/ui/primitives/Dialog";
 import { useState } from "react";

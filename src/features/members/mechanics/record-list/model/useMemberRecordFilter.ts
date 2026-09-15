@@ -4,7 +4,7 @@ import { memberKeywordTypes } from "../../../model/member-search";
  * 실제 API에서도 필요한 UI 상태다. 서버 행 필터링은 하지 않으며 기간·검색어 초안은 기존 공용 훅이 소유한다.
  */
 import { compactSearchValues } from "@/shared/lib/compact-search-values";
-import { useListFilterDraft } from "@/shared/lib/use-list-filter-draft";
+import { useListFilterDraft } from "@/shared/model/use-list-filter-draft";
 import type { SubmitEvent } from "react";
 import type { MemberRecordSearch } from "../../../model/member-record-search";
 

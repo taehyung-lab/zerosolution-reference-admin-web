@@ -3,7 +3,7 @@
  * 실제 API에서도 필요한 표시 변환이며 원본 개인정보나 서버 내부 메시지를 화면에 직접 노출하지 않는다.
  */
 import { formatDate } from "@/shared/lib/datetime";
-import type { UpdateHistoryEntry } from "@/shared/ui/patterns/UpdateHistory";
+import type { UpdateHistoryEntry } from "@/shared/ui/detail/UpdateHistory";
 import type { TFunction } from "i18next";
 import type {
   ManagerChangeLog,

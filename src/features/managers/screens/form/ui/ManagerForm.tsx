@@ -5,7 +5,7 @@ import { FormSelectField } from "@/shared/ui/form/FormSelectField";
 import { FormSubmitButton } from "@/shared/ui/form/FormSubmitButton";
 import { FormTextField } from "@/shared/ui/form/FormTextField";
 import type { useSaveForm } from "@/shared/ui/form/useSaveForm";
-import { SectionCard } from "@/shared/ui/patterns/SectionCard";
+import { SectionCard } from "@/shared/ui/layout/SectionCard";
 import { useSelector, type DeepValue } from "@tanstack/react-form";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";

@@ -4,7 +4,7 @@
  * 옵션은 이 화면이 제품 옵션 Query로 조회한다. 선택한 유형을 폼 store에서 읽어 종속 권한 조회 범위를 정한다.
  */
 import { FormTextField } from "@/shared/ui/form/FormTextField";
-import { PageHeader } from "@/shared/ui/patterns/PageHeader";
+import { PageHeader } from "@/shared/ui/layout/PageHeader";
 import { useSelector } from "@tanstack/react-form";
 import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";

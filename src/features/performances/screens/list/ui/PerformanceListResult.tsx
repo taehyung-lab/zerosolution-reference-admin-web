@@ -1,10 +1,10 @@
-import { DataTable } from "@/shared/ui/patterns/DataTable";
-import { ListResult } from "@/shared/ui/patterns/ListResult";
-import { PageSizeControl } from "@/shared/ui/patterns/PageSizeControl";
-import { Pagination } from "@/shared/ui/patterns/Pagination";
-import { ResultToolbar } from "@/shared/ui/patterns/ResultToolbar";
-import { ResultTotal } from "@/shared/ui/patterns/ResultTotal";
-import { SortControl } from "@/shared/ui/patterns/SortControl";
+import { DataTable } from "@/shared/ui/list/DataTable";
+import { ListResult } from "@/shared/ui/list/ListResult";
+import { PageSizeControl } from "@/shared/ui/list/PageSizeControl";
+import { Pagination } from "@/shared/ui/list/Pagination";
+import { ResultToolbar } from "@/shared/ui/list/ResultToolbar";
+import { ResultTotal } from "@/shared/ui/list/ResultTotal";
+import { SortControl } from "@/shared/ui/list/SortControl";
 import { useTranslation } from "react-i18next";
 import type { usePerformanceListData } from "../model/usePerformanceListData";
 import type { usePerformanceListResult } from "./usePerformanceListResult";

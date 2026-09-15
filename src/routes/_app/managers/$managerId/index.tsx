@@ -4,8 +4,8 @@ import { ManagerDetailContent } from "@/features/managers/screens/detail/ui/Mana
 import { requestMessageSend } from "@/features/messaging/screens/compose/model/message-request";
 import { useMessageComposer } from "@/features/messaging/screens/compose/model/useMessageComposer";
 import { MessageComposerDialog } from "@/features/messaging/screens/compose/ui/MessageComposerDialog";
-import { DetailStateBoundary } from "@/shared/ui/patterns/DetailStateBoundary";
-import { PageHeader } from "@/shared/ui/patterns/PageHeader";
+import { DetailStateBoundary } from "@/shared/ui/detail/DetailStateBoundary";
+import { PageHeader } from "@/shared/ui/layout/PageHeader";
 import { Button } from "@/shared/ui/primitives/Button";
 import { loadRequired } from "@/app/router/required-loader";
 import { managerDirectoryDetailQuery } from "@/features/managers/api/directory-queries";

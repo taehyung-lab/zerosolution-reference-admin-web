@@ -3,17 +3,7 @@ import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { I18nextProvider } from 'react-i18next';
 import { i18n } from '@/shared/i18n/i18n';
-import { DetailField } from './DetailField';
 import { SectionCard } from './SectionCard';
-
-describe('detail patterns', () => {
-  it('composes a semantic field inside a collapsible titled section', () => {
-    render(<SectionCard title="Information"><dl><DetailField label="Name">Kim</DetailField></dl></SectionCard>);
-    expect(screen.getByText('Kim')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Information' }));
-    expect(screen.queryByText('Kim')).not.toBeInTheDocument();
-  });
-});
 
 describe('SectionCard disclosure', () => {
   it('closing the section unmounts its content', () => {

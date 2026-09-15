@@ -1,11 +1,11 @@
 import type { ResolvedMemberRecordSearch } from "../model/member-record-search";
-import { ResultTotal } from "@/shared/ui/patterns/ResultTotal";
+import { ResultTotal } from "@/shared/ui/list/ResultTotal";
 import type { MemberRecordListData } from "../model/member-record-data";
 /** 회원 기록 목록의 결과 조립이다. 조회 상태는 데이터 훅이 소유하며 이 컴포넌트는 그대로 표시한다. */
-import { DataTable, type DataTableProps } from "@/shared/ui/patterns/DataTable";
-import { ListResult } from "@/shared/ui/patterns/ListResult";
-import { Pagination } from "@/shared/ui/patterns/Pagination";
-import { ResultToolbar } from "@/shared/ui/patterns/ResultToolbar";
+import { DataTable, type DataTableProps } from "@/shared/ui/list/DataTable";
+import { ListResult } from "@/shared/ui/list/ListResult";
+import { Pagination } from "@/shared/ui/list/Pagination";
+import { ResultToolbar } from "@/shared/ui/list/ResultToolbar";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import type { MemberRecordSearch } from "../../../model/member-record-search";

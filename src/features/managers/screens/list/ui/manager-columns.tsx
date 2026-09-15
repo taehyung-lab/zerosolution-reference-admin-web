@@ -2,9 +2,9 @@
  * 기존 API 운영자 목록의 행 표시·선택·상세 링크와 서버 정렬 요청 이벤트를 구성한다.
  * API 이후에도 컬럼 책임은 유지하며 서버 enum/표시값의 변경은 모델과 정렬 대응에서 대조한다.
  */
-import type { PageRowSelection } from "@/shared/lib/use-page-row-selection";
-import type { DataTableProps } from "@/shared/ui/patterns/DataTable";
-import { selectionColumn } from "@/shared/ui/patterns/selection-column";
+import type { PageRowSelection } from "@/shared/model/use-page-row-selection";
+import type { DataTableProps } from "@/shared/ui/list/DataTable";
+import { selectionColumn } from "@/shared/ui/list/selection-column";
 import { Badge } from "@/shared/ui/primitives/Badge";
 import { Link } from "@tanstack/react-router";
 import type { TFunction } from "i18next";

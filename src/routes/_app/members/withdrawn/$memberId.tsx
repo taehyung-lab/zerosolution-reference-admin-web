@@ -1,7 +1,7 @@
 import { requestMemberActivityDelete } from "@/features/members/screens/detail/model/member-detail-requests";
 import { useWithdrawnDetail } from "@/features/members/api/useWithdrawnDetail";
 import { WithdrawnMemberDetailScreen } from "@/features/members/screens/withdrawn/ui/WithdrawnMemberDetailScreen";
-import { DetailStateBoundary } from "@/shared/ui/patterns/DetailStateBoundary";
+import { DetailStateBoundary } from "@/shared/ui/detail/DetailStateBoundary";
 import { loadRequired } from "@/app/router/required-loader";
 import { withdrawnDetailQuery } from "@/features/members/api/detail-queries";
 import { createFileRoute } from "@tanstack/react-router";

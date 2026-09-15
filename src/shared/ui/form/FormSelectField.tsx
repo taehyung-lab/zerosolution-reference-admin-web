@@ -1,6 +1,6 @@
 import type { DeepKeysOfType, DeepValue } from '@tanstack/react-form'
 import { FormField, type FieldForm } from './FormField'
-import { AsyncFieldBoundary, type AsyncFieldState } from '../patterns/AsyncFieldBoundary'
+import { AsyncFieldBoundary, type AsyncFieldState } from '../feedback/AsyncFieldBoundary'
 import { Select } from '../primitives/Select'
 
 const noop = () => undefined

@@ -3,8 +3,8 @@
  * 실제 API에서도 필요한 표시/조작 책임이며 데이터 요청과 서버 행 정렬은 수행하지 않는다.
  */
 import { formatDate } from "@/shared/lib/datetime";
-import { usePageRowSelection } from "@/shared/lib/use-page-row-selection";
-import type { DataTableProps } from "@/shared/ui/patterns/DataTable";
+import { usePageRowSelection } from "@/shared/model/use-page-row-selection";
+import type { DataTableProps } from "@/shared/ui/list/DataTable";
 import { useTranslation } from "react-i18next";
 import { type ManagerSearch } from "../../../api/manager-search";
 import type { ManagerListItem } from "../../../model/manager";

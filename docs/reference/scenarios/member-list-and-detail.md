@@ -94,7 +94,7 @@ Chromium `search-contract.spec.ts`에서 활성 3 variant의 기본값 검색·�
 
 **3 variant를 한 route에 `status` search로 얹지 않는다.** 그 값은 필터인 동시에 화면 정체성이라 초기화가 그것까지 지워야 하는지 답할 수 없고, 필터 그룹과 컬럼이 화면마다 다르다는 사실(:27,:29,:30)이 `variant` 분기로 숨는다. ADR 0009:42가 목록에서, 0010:128-130이 폼에서 이미 거부한 형태다. Figma·Notion의 별도 화면 정체성과 2026-09-04 사용자 답에 따라 전체·일반·불량은 각각 별도 route다. `[확인]`
 
-**(b) 결과 상태는 화면이 쓰지 않고, 세 사실이 각자 표면에 닿는다.** feature는 plain facts만 만들고 `notSearched → loading → error → empty → ready` 판정은 한 곳에 있다([ListResult.tsx](../../../src/shared/ui/patterns/ListResult.tsx):27-33). **검색 전·빈 결과·오류 중 하나라도 그 표면에 도달하지 못하면 나머지로 위장된다**(F7·F8). 상세는 다른 대수라 같은 boundary를 쓰지 않고 `resolveRequiredQueryOutcome`의 우선순위를 쓴다([required-query.ts](../../../src/api/required-query.ts):22-41). **두 대수를 합치지 않는다** — F5·F6은 상세 축의 실패이고 목록에는 `not-found`·`delegated`가 없다. `[추론]`
+**(b) 결과 상태는 화면이 쓰지 않고, 세 사실이 각자 표면에 닿는다.** feature는 plain facts만 만들고 `notSearched → loading → error → empty → ready` 판정은 한 곳에 있다([ListResult.tsx](../../../src/shared/ui/list/ListResult.tsx):27-33). **검색 전·빈 결과·오류 중 하나라도 그 표면에 도달하지 못하면 나머지로 위장된다**(F7·F8). 상세는 다른 대수라 같은 boundary를 쓰지 않고 `resolveRequiredQueryOutcome`의 우선순위를 쓴다([required-query.ts](../../../src/api/required-query.ts):22-41). **두 대수를 합치지 않는다** — F5·F6은 상세 축의 실패이고 목록에는 `not-found`·`delegated`가 없다. `[추론]`
 
 **(c) 선택은 현재 보이는 결과 정체성에 종속되고, 선택 가능 여부의 소스는 하나다.** 헤더 전체선택은 2026-09-04 사용자 답에 따라 **현재 페이지에 보이는 선택 가능 행 전체**다. 페이지·page size·정렬·커밋된 검색 조건·목록 route가 바뀌면 선택을 지우고, draft 편집이나 같은 조건의 재검색·refetch에서는 여전히 존재하고 선택 가능한 ID만 남긴다. bulk 실패 시 재시도를 위해 유지하고 성공 후 cache consequence가 끝나면 지운다([bulk-actions.md](../../../.agents/skills/feature-contract/references/bulk-actions.md)). 그리고 **행이 선택 가능한가는 한 판정에서만 나오고**(F10), 그 판정이 행 밖 사실에 의존하면 그 사실이 렌더 identity에 들어가야 한다(F11). `[확인]` `[추론]`
 

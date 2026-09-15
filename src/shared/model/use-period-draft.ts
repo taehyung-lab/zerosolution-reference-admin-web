@@ -7,9 +7,9 @@ import {
   utcRangeToDateRange,
   type DateRange,
   type PeriodValue,
-} from "./datetime";
+} from "../lib/datetime";
 
-export type { PeriodPreset, PeriodValue } from "./datetime";
+export type { PeriodPreset, PeriodValue } from "../lib/datetime";
 
 export type DisplayDateRange = DateRange;
 

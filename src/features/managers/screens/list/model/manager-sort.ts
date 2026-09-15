@@ -2,7 +2,7 @@
  * 기존 운영자 목록에서 허용하는 화면 컬럼과 서버 정렬 필드의 대응을 정의한다.
  * API에서도 필요한 변환이며 생성 enum 전체를 사용자 정렬 옵션으로 노출하지 않는다.
  */
-import type { DataTableSortDirection } from "@/shared/ui/patterns/DataTable";
+import type { DataTableSortDirection } from "@/shared/ui/list/DataTable";
 import type {
   ManagerApiSortType,
   ManagerSortDirection,

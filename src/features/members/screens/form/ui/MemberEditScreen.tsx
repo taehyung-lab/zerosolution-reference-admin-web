@@ -3,7 +3,7 @@
  * API 이후에도 필요하며 초기값 조회와 최종 저장은 외부 경계다. 숨긴 활동제한 초안 보존과 제출값 제외를 구분한다.
  */
 import { formatDate } from "@/shared/lib/datetime";
-import { useConfirmation } from "@/shared/lib/use-confirmation";
+import { useConfirmation } from "@/shared/model/use-confirmation";
 import { FormCancelButton } from "@/shared/ui/form/FormCancelButton";
 import { FormDateField } from "@/shared/ui/form/FormDateField";
 import { formFieldControlId } from "@/shared/ui/form/FormField";
@@ -12,9 +12,9 @@ import { FormSelectField } from "@/shared/ui/form/FormSelectField";
 import { FormSubmitButton } from "@/shared/ui/form/FormSubmitButton";
 import { FormTextField } from "@/shared/ui/form/FormTextField";
 import { useUnsavedChangesGuard } from "@/shared/ui/form/UnsavedChangesGuard";
-import { ConfirmDialog } from "@/shared/ui/patterns/ConfirmDialog";
-import { PageHeader } from "@/shared/ui/patterns/PageHeader";
-import { SectionCard } from "@/shared/ui/patterns/SectionCard";
+import { ConfirmDialog } from "@/shared/ui/dialog/ConfirmDialog";
+import { PageHeader } from "@/shared/ui/layout/PageHeader";
+import { SectionCard } from "@/shared/ui/layout/SectionCard";
 import { revalidateLogic, useForm, useSelector } from "@tanstack/react-form";
 import { Activity } from "react";
 import { useTranslation } from "react-i18next";

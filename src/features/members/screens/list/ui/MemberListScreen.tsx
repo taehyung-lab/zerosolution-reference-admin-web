@@ -2,7 +2,7 @@
  * 전체·일반·불량 회원의 동일한 목록 workflow를 화면 정의로 조립한다.
  * 필터·데이터·결과·액션 소유자를 연결하는 역할은 API 연결 후에도 유지하고 조회 방식의 차이를 화면 종류로 만들지 않는다.
  */
-import { PageHeader } from "@/shared/ui/patterns/PageHeader";
+import { PageHeader } from "@/shared/ui/layout/PageHeader";
 import { useTranslation } from "react-i18next";
 import type { MemberListActionRequest } from "../../../model/member-list-action";
 import {

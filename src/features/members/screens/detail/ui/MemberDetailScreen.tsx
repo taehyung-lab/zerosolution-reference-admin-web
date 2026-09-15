@@ -10,13 +10,13 @@ import {
   formatTimeInTimeZone,
 } from "@/shared/lib/datetime";
 import { maskEmail, maskPhone } from "@/shared/lib/mask-contact";
-import { DetailField } from "@/shared/ui/patterns/DetailField";
-import { PageHeader } from "@/shared/ui/patterns/PageHeader";
-import { SectionCard } from "@/shared/ui/patterns/SectionCard";
+import { DetailField } from "@/shared/ui/detail/DetailField";
+import { PageHeader } from "@/shared/ui/layout/PageHeader";
+import { SectionCard } from "@/shared/ui/layout/SectionCard";
 import {
   UpdateHistory,
   type UpdateHistoryEntry,
-} from "@/shared/ui/patterns/UpdateHistory";
+} from "@/shared/ui/detail/UpdateHistory";
 import { Button } from "@/shared/ui/primitives/Button";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";

@@ -21,10 +21,10 @@ export const SEED_BUNDLES = [
   },
   {
     id: 'confirmation',
-    code: ['src/shared/lib/use-confirmation.ts', 'src/shared/ui/patterns/BulkActionDialogs.tsx'],
-    skills: [location('.agents/skills/shared-ui-contract/references/shared-values.md', 'State mechanics (`shared/lib`)', '`useConfirmation')],
+    code: ['src/shared/model/use-confirmation.ts', 'src/shared/model/use-selection-gate.ts', 'src/shared/ui/dialog/BulkActionDialogs.tsx'],
+    skills: [location('.agents/skills/shared-ui-contract/references/shared-values.md', 'State mechanics (`shared/model`)', '`useConfirmation')],
     adrs: [location('docs/decisions/0009-shared-boundaries.md', '단위별 단계와 소비자', '`useConfirmation')],
-    tests: ['src/shared/ui/patterns/BulkActionDialogs.test.tsx'],
+    tests: ['src/shared/ui/dialog/BulkActionDialogs.test.tsx'],
     ownership: { shared: 'Holds opaque confirmation values, invokes run after confirm, and renders selection rejection/confirmation surfaces; no form or API knowledge.', feature: 'Owns validation, copy, selection, callbacks, and all success/failure behavior.' },
   },
   {
@@ -43,10 +43,10 @@ export const SEED_BUNDLES = [
       doNotCopy: 'Performance toolbar visibility, columns, translated messages or navigation. This is a composition example, not evidence of real-server recovery.',
     }],
     code: [
-      'src/shared/ui/patterns/ListResult.tsx',
-      'src/shared/ui/patterns/ResultToolbar.tsx',
-      'src/shared/ui/patterns/ResultSummary.tsx',
-      'src/shared/ui/patterns/ResultTotal.tsx',
+      'src/shared/ui/list/ListResult.tsx',
+      'src/shared/ui/list/ResultToolbar.tsx',
+      'src/shared/ui/list/ResultSummary.tsx',
+      'src/shared/ui/list/ResultTotal.tsx',
     ],
     skills: [location(
       '.agents/skills/feature-contract/references/list-workflow.md',
@@ -59,9 +59,9 @@ export const SEED_BUNDLES = [
       '`ListResult`는 `notSearched | loading | error | empty | ready`',
     )],
     tests: [
-      'src/shared/ui/patterns/list-patterns.test.tsx',
-      'src/shared/ui/patterns/ListResult.test-d.ts',
-      'src/shared/ui/patterns/ResultTotal.test.tsx',
+      'src/shared/ui/list/list-patterns.test.tsx',
+      'src/shared/ui/list/ListResult.test-d.ts',
+      'src/shared/ui/list/ResultTotal.test.tsx',
     ],
     ownership: {
       shared: 'Receives plain list facts, resolves the five-state result, and owns shared error, retry, live region, and trace presentation.',
@@ -70,7 +70,7 @@ export const SEED_BUNDLES = [
   },
   {
     id: 'detail-state-boundary',
-    code: ['src/shared/ui/patterns/DetailStateBoundary.tsx'],
+    code: ['src/shared/ui/detail/DetailStateBoundary.tsx'],
     skills: [location(
       '.agents/skills/feature-contract/references/detail-workflow.md',
       'Detail state',
@@ -81,7 +81,7 @@ export const SEED_BUNDLES = [
       'API 호출 계층 (조회·목록·mutation 공통)',
       '`DetailStateBoundary` 는 `ready | error | notFound` 렌더',
     )],
-    tests: ['src/shared/ui/patterns/DetailStateBoundary.test.tsx'],
+    tests: ['src/shared/ui/detail/DetailStateBoundary.test.tsx'],
     ownership: {
       shared: 'Renders ready, error, and notFound with live error, retry, and trace slots.',
       feature: 'Owns which query runs, safe copy, retry behavior, and detail content; the state decision comes from api/useDetailQuery.',
@@ -108,7 +108,7 @@ export const SEED_BUNDLES = [
   },
   {
     id: 'update-history',
-    code: ['src/shared/ui/patterns/UpdateHistory.tsx'],
+    code: ['src/shared/ui/detail/UpdateHistory.tsx'],
     skills: [location(
       '.agents/skills/shared-ui-contract/references/page-and-detail-surfaces.md',
       'Page and detail surfaces',
@@ -119,7 +119,7 @@ export const SEED_BUNDLES = [
       '업데이트 이력 — 2층',
       '`UpdateHistory`',
     )],
-    tests: ['src/shared/ui/patterns/UpdateHistory.test.tsx'],
+    tests: ['src/shared/ui/detail/UpdateHistory.test.tsx'],
     ownership: {
       shared: 'Renders the three-column history table with one semantic line per change and the empty text.',
       feature: 'Owns the pure mapper from server change logs to localized safe lines: field labels, value formatting, redaction, unsupported/unknown copy, section title.',
@@ -155,7 +155,7 @@ export const SEED_BUNDLES = [
       doNotCopy: 'Rehearsal Manager fields, defaults, dependent options, request DTOs, route destinations or the optional internal options Query. Recheck the target product save policy.',
     }],
     code: [
-      'src/shared/ui/form/useFormSections.ts',
+      'src/shared/model/use-form-sections.ts',
       'src/shared/ui/form/FormField.tsx',
       'src/shared/ui/form/FormTextField.tsx',
       'src/shared/ui/form/FormSelectField.tsx',
@@ -172,7 +172,7 @@ export const SEED_BUNDLES = [
       'src/shared/ui/form/FormCancelButton.tsx',
       'src/shared/ui/form/UnsavedChangesGuard.tsx',
       'src/shared/ui/form/useSaveForm.tsx',
-      'src/shared/ui/patterns/SortableList.tsx',
+      'src/shared/ui/list/SortableList.tsx',
     ],
     skills: [
       location(
@@ -199,7 +199,7 @@ export const SEED_BUNDLES = [
       ),
     ],
     tests: [
-      'src/shared/ui/form/useFormSections.test.tsx',
+      'src/shared/model/use-form-sections.test.tsx',
       'src/shared/ui/form/useSaveForm.test.tsx',
       'src/shared/ui/form/FormField.test.tsx',
       'src/shared/ui/form/FormAdapters.test.tsx',
@@ -212,8 +212,8 @@ export const SEED_BUNDLES = [
       'src/shared/ui/form/UnsavedChangesGuard.test.tsx',
       'src/shared/ui/form/UnsavedChangesGuard.integration.test.tsx',
       'src/shared/ui/form/UnsavedChangesGuard.router.test.tsx',
-      'src/shared/ui/patterns/SortableList.test.tsx',
-      'src/shared/ui/patterns/dialogs.test.tsx',
+      'src/shared/ui/list/SortableList.test.tsx',
+      'src/shared/ui/dialog/dialogs.test.tsx',
     ],
     ownership: {
       shared: 'Owns typed field association, server-error placement and rendering, section disclosure, focus-target mechanics, and the save stage/guard lifecycle (useSaveForm).',
@@ -230,14 +230,14 @@ export const SEED_BUNDLES = [
       useWhen: 'Compare filter, period and keyword drafts that share a commit identity; callers collect input through prepareSubmit and retain URL transitions.',
       doNotCopy: 'Member explicit-search and performance immediate-search/reset policies, keyword fields or venueKeyword. Use individual primitives when input lifecycles differ.',
     }],
-    code: ['src/shared/lib/use-draft-commit.ts', 'src/shared/lib/use-list-filter-draft.ts'],
+    code: ['src/shared/model/use-draft-commit.ts', 'src/shared/model/use-list-filter-draft.ts'],
     skills: [location(
       '.agents/skills/shared-ui-contract/references/logic-promotion.md',
       'Shared logic admission',
       'draft preservation while a caller identity is equal',
     ), location(
       '.agents/skills/shared-ui-contract/references/shared-values.md',
-      'State mechanics (`shared/lib`)',
+      'State mechanics (`shared/model`)',
       '`useListFilterDraft` composes',
     )],
     adrs: [location(
@@ -249,7 +249,7 @@ export const SEED_BUNDLES = [
       '초안 조합 결정',
       '`useListFilterDraft`를 **provisional shared**로 채택한다',
     )],
-    tests: ['src/shared/lib/use-draft-commit.test.tsx', 'src/shared/lib/use-list-filter-draft.test.tsx'],
+    tests: ['src/shared/model/use-draft-commit.test.tsx', 'src/shared/model/use-list-filter-draft.test.tsx'],
     ownership: {
       shared: 'Owns preserve, rebuild, reset, and patch mechanics; composes declared filter identity, period and keyword drafts and input collection.',
       feature: 'Owns identity policy, field declarations, defaults, validation, keyword mapping, submit/reset destinations, navigation, and page policy.',
@@ -257,7 +257,7 @@ export const SEED_BUNDLES = [
   },
   {
     id: 'period-draft',
-    code: ['src/shared/lib/use-period-draft.ts'],
+    code: ['src/shared/model/use-period-draft.ts'],
     skills: [location(
       '.agents/skills/shared-ui-contract/references/logic-promotion.md',
       'Shared logic admission',
@@ -268,7 +268,7 @@ export const SEED_BUNDLES = [
       '현재 provisional 계약',
       '`usePeriodDraft`',
     )],
-    tests: ['src/shared/lib/use-period-draft.test.tsx'],
+    tests: ['src/shared/model/use-period-draft.test.tsx'],
     ownership: {
       shared: 'Owns preset/custom draft transitions and conversion from explicit timezone inputs.',
       feature: 'Owns period meaning, adopted presets, validation copy, provider use, and request boundaries.',
@@ -325,12 +325,12 @@ export const SEED_BUNDLES = [
     // The standard-preset assembly hook is an i18n entrypoint a renderer never imports, so the
     // import closure cannot reach it from `filter-surface`. Declaring it here keeps it exportable.
     code: [
-      'src/shared/config/list.ts',
+      'src/shared/model/list-options.ts',
       'src/shared/i18n/use-period-presets.ts',
     ],
     skills: [location(
       '.agents/skills/shared-ui-contract/references/shared-values.md',
-      'Config (`shared/config/list.ts`)',
+      'Config (`shared/model/list-options.ts`)',
       'standardPageSizeOptions',
     )],
     adrs: [location(
@@ -339,7 +339,7 @@ export const SEED_BUNDLES = [
       '`standardPageSizeOptions`, `standardPeriodPresetValues`',
     )],
     tests: [
-      'src/shared/config/list.test.ts',
+      'src/shared/model/list-options.test.ts',
       'src/shared/i18n/use-period-presets.test.tsx',
     ],
     ownership: {
@@ -349,7 +349,7 @@ export const SEED_BUNDLES = [
   },
   {
     id: 'keyword-draft',
-    code: ['src/shared/lib/use-keyword-draft.ts'],
+    code: ['src/shared/model/use-keyword-draft.ts'],
     skills: [location(
       '.agents/skills/shared-ui-contract/references/logic-promotion.md',
       'Shared logic admission',
@@ -360,7 +360,7 @@ export const SEED_BUNDLES = [
       '현재 provisional 계약',
       '`useKeywordDraft`',
     )],
-    tests: ['src/shared/lib/use-keyword-draft.test.tsx'],
+    tests: ['src/shared/model/use-keyword-draft.test.tsx'],
     ownership: {
       shared: 'Owns pending keyword add, remove, and trim mechanics.',
       feature: 'Owns keyword enum and field meaning, limits, URL state, and request mapping.',
@@ -405,11 +405,11 @@ export const SEED_BUNDLES = [
   {
     id: 'filter-surface',
     code: [
-      'src/shared/ui/patterns/FilterPanel.tsx',
-      'src/shared/ui/patterns/FilterField.tsx',
-      'src/shared/ui/patterns/PeriodFilterField.tsx',
-      'src/shared/ui/patterns/KeywordFilterField.tsx',
-      'src/shared/ui/patterns/AsyncFieldBoundary.tsx',
+      'src/shared/ui/filter/FilterPanel.tsx',
+      'src/shared/ui/filter/FilterField.tsx',
+      'src/shared/ui/filter/PeriodFilterField.tsx',
+      'src/shared/ui/filter/KeywordFilterField.tsx',
+      'src/shared/ui/feedback/AsyncFieldBoundary.tsx',
     ],
     skills: [location(
       '.agents/skills/shared-ui-contract/references/filter-fields.md',
@@ -422,8 +422,8 @@ export const SEED_BUNDLES = [
       '`FilterPanel`, `FilterField`, `AsyncFieldBoundary`',
     )],
     tests: [
-      'src/shared/ui/patterns/list-patterns.test.tsx',
-      'src/shared/ui/patterns/AsyncFieldBoundary.test.tsx',
+      'src/shared/ui/list/list-patterns.test.tsx',
+      'src/shared/ui/feedback/AsyncFieldBoundary.test.tsx',
     ],
     ownership: {
       shared: 'Owns the filter frame disclosure, label/control association, the optional select-plus-field row composition, and generic async field states.',
@@ -460,7 +460,7 @@ export const SEED_BUNDLES = [
       useWhen: 'Trace stable row IDs and controlled meta.sort from feature columns through a URL transition callback to DataTable rendering.',
       doNotCopy: 'Performance fields, sort keys, direction defaults, row numbers or destinations. This example has no selection column or bulk workflow.',
     }],
-    code: ['src/shared/ui/patterns/DataTable.tsx', 'src/shared/ui/patterns/selection-column.tsx'],
+    code: ['src/shared/ui/list/DataTable.tsx', 'src/shared/ui/list/selection-column.tsx'],
     skills: [location(
       '.agents/skills/shared-ui-contract/references/data-table.md',
       'Public contract',
@@ -471,7 +471,7 @@ export const SEED_BUNDLES = [
       '현재 provisional 계약',
       '`DataTable`, `Pagination`, `PageSizeControl`, `SortControl`',
     )],
-    tests: ['src/shared/ui/patterns/DataTable.test.tsx', 'src/shared/ui/patterns/selection-column.test.tsx'],
+    tests: ['src/shared/ui/list/DataTable.test.tsx', 'src/shared/ui/list/selection-column.test.tsx'],
     ownership: {
       shared: 'Owns native table semantics, stable row identity, and the controlled sort header (button, aria-sort, glyph) from meta.sort.',
       feature: 'Owns which columns sort, direction transitions, server sort keys, URL, Query, selection, and empty/error copy.',
@@ -480,9 +480,9 @@ export const SEED_BUNDLES = [
   {
     id: 'table-navigation',
     code: [
-      'src/shared/ui/patterns/Pagination.tsx',
-      'src/shared/ui/patterns/PageSizeControl.tsx',
-      'src/shared/ui/patterns/SortControl.tsx',
+      'src/shared/ui/list/Pagination.tsx',
+      'src/shared/ui/list/PageSizeControl.tsx',
+      'src/shared/ui/list/SortControl.tsx',
     ],
     skills: [location(
       '.agents/skills/shared-ui-contract/references/pagination.md',
@@ -494,7 +494,7 @@ export const SEED_BUNDLES = [
       '현재 provisional 계약',
       '`DataTable`, `Pagination`, `PageSizeControl`, `SortControl`',
     )],
-    tests: ['src/shared/ui/patterns/list-patterns.test.tsx'],
+    tests: ['src/shared/ui/list/list-patterns.test.tsx'],
     ownership: {
       shared: 'Owns controlled page window rendering, accessible current page, boundary buttons, and the controlled page-size/sort-field selects.',
       feature: 'Owns URL page state, default page size, out-of-range canonicalization, sort field vocabulary, and route navigation.',
@@ -502,7 +502,7 @@ export const SEED_BUNDLES = [
   },
   {
     id: 'page-header',
-    code: ['src/shared/ui/patterns/PageHeader.tsx'],
+    code: ['src/shared/ui/layout/PageHeader.tsx'],
     skills: [location(
       '.agents/skills/shared-ui-contract/references/page-and-detail-surfaces.md',
       'Page and detail surfaces',
@@ -513,7 +513,7 @@ export const SEED_BUNDLES = [
       '상세 표면',
       '`PageHeader`',
     )],
-    tests: ['src/shared/ui/patterns/PageHeader.test.tsx'],
+    tests: ['src/shared/ui/layout/PageHeader.test.tsx'],
     ownership: {
       shared: 'Owns the single h1 header row with optional breadcrumb and an end-aligned actions slot.',
       feature: 'Owns which actions exist, their permission and pending state, and navigation.',
@@ -521,7 +521,7 @@ export const SEED_BUNDLES = [
   },
   {
     id: 'section-card',
-    code: ['src/shared/ui/patterns/SectionCard.tsx'],
+    code: ['src/shared/ui/layout/SectionCard.tsx'],
     skills: [location(
       '.agents/skills/shared-ui-contract/references/disclosure-sections.md',
       'Which surface',
@@ -532,7 +532,7 @@ export const SEED_BUNDLES = [
       '상세 표면',
       '`SectionCard`',
     )],
-    tests: ['src/shared/ui/patterns/detail-patterns.test.tsx'],
+    tests: ['src/shared/ui/detail/DetailField.test.tsx'],
     ownership: {
       shared: 'Owns the titled disclosure block: header button with aria-expanded/aria-controls, controlled/uncontrolled open, keepMounted, and the error-count badge.',
       feature: 'Owns section titles, which fields belong to which section, initial open policy, and header actions.',
@@ -540,7 +540,7 @@ export const SEED_BUNDLES = [
   },
   {
     id: 'detail-field',
-    code: ['src/shared/ui/patterns/DetailField.tsx'],
+    code: ['src/shared/ui/detail/DetailField.tsx'],
     skills: [location(
       '.agents/skills/shared-ui-contract/references/page-and-detail-surfaces.md',
       'Page and detail surfaces',
@@ -551,7 +551,7 @@ export const SEED_BUNDLES = [
       '상세 표면',
       '`DetailField`',
     )],
-    tests: ['src/shared/ui/patterns/detail-patterns.test.tsx'],
+    tests: ['src/shared/ui/detail/DetailField.test.tsx'],
     ownership: {
       shared: 'Owns one dt/dd pair.',
       feature: 'Owns the enclosing dl grid, empty-value copy, formatting, masking, and interactive values.',
@@ -959,9 +959,9 @@ export const TRANSPLANT_MANIFEST = {
   ],
   app: [
     'src/app/i18n/resources.ts',
-    'src/shared/i18n/locales/ko/app.json',
-    'src/shared/i18n/locales/en/app.json',
-    'src/shared/i18n/locales/ja/app.json',
+    'src/app/i18n/locales/ko/app.json',
+    'src/app/i18n/locales/en/app.json',
+    'src/app/i18n/locales/ja/app.json',
   ],
   templates: ['package.json'],
 }

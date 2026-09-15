@@ -1,6 +1,6 @@
 # Shared values: pure utilities, mechanics, and config
 
-Read this file only for a `shared/lib` function or hook, a `shared/config` preset, or when deciding whether a helper belongs there ([logic-promotion.md](logic-promotion.md) owns the admission test).
+Read this file only for a `shared/lib` pure function, a `shared/model` state mechanic or policy value, or when deciding whether a helper belongs there ([logic-promotion.md](logic-promotion.md) owns the admission test).
 
 ## Pure utilities (`shared/lib`)
 
@@ -56,7 +56,7 @@ Every real consumer tests its adoption; helper tests alone do
 not establish product defaults or end-to-end behavior. This is a local reference contract, not completed
 new-product transplant evidence.
 
-## State mechanics (`shared/lib`)
+## State mechanics (`shared/model`)
 
 | Hook | Caller passes | Owns | Caller owns |
 | --- | --- | --- | --- |
@@ -82,7 +82,7 @@ reset destination. `localDefaults` cannot overlap search fields and is excluded 
 Initial keyword field and local defaults are configuration; if their meaning changes dynamically,
 the caller changes `scope`. Flows with different input lifecycles compose the primitives directly.
 
-## Config (`shared/config/list.ts`)
+## Config (`shared/model/list-options.ts`)
 
 `standardPageSizeOptions = [100, 200, 300, 400, 500, 700, 1000]` and `standardPeriodPresetValues` (8 presets, no `CUSTOM`) are repository-adopted option sets. A feature opts in explicitly and still owns its default and any exception; the config declares no default. Defaults remain facts of the consuming screen.
 

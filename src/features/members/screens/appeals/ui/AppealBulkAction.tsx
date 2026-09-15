@@ -6,8 +6,8 @@ import { type AppealBulkChange } from "../model/appeal-bulk-change";
 import {
   BulkActionDialogs,
   SelectionAlert,
-} from "@/shared/ui/patterns/BulkActionDialogs";
-import { FilterField } from "@/shared/ui/patterns/FilterField";
+} from "@/shared/ui/dialog/BulkActionDialogs";
+import { FilterField } from "@/shared/ui/filter/FilterField";
 import { Button } from "@/shared/ui/primitives/Button";
 import { CheckboxTree } from "@/shared/ui/primitives/CheckboxTree";
 import { Select } from "@/shared/ui/primitives/Select";

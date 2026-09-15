@@ -33,7 +33,11 @@ src/
           model/               # 검색·선택·폼·mutation 후속 처리
           lib/                 # 이 workflow의 순수 도우미 (필요할 때)
           config/              # 이 workflow의 정적 구성 (필요할 때)
-  shared/                      # 도메인·서버 계약을 모르는 UI·순수 공용 코드
+  shared/                      # 도메인·서버 계약을 모르는 공용 코드
+    ui/{family}/               # 렌더 계약. primitives, form, filter, list, detail, dialog, layout, feedback
+    model/                     # 렌더하지 않고 상태 수명·전이·정책 값을 소유
+    lib/                       # 상태도 렌더도 없는 결정적 계산
+    i18n/                      # 번역 runtime·locale·shared namespace resource
   api/                         # 공용 transport와 교체 가능한 generated
 ```
 
@@ -50,6 +54,7 @@ src/
 | 서버 호출·Query 키·옵션, 요청 실행과 조회 사실만 제공하는 훅 | `domain/api` |
 | 도메인 공통 값·데이터 타입·업무 규칙 | `domain/model` |
 | 상태·업무 전이를 소유하지 않는 날짜·문자열 등 순수 도우미 | 가장 가까운 소유자의 `lib` |
+| 도메인을 모르고 렌더하지 않으며 상태 수명·전이를 소유하는 재사용 단위 | `shared/model` |
 | 제목·필터·컬럼 노출 등 정적 구성 | 가장 가까운 소유자의 `config` |
 | URL·검색·폼·선택 정책을 결합한 조회·mutation workflow | `screens/X/model` |
 | 폼 스키마·초기값·요청 입력 변환 | 소비 화면의 `model`; 실제 공통 규칙만 domain model |
@@ -64,6 +69,13 @@ src/
 확장자로 분류하지 않는다. `use<Entity>ListResult.ts`는 컬럼과 표시 옵션을 조립하므로
 `screens/list/ui`다. `use<Entity>InputForm.tsx`는 JSX·focus·폼 연결을 반환하는 UI 어댑터다.
 검색 전이, 요청 입력, schema, mutation 후속 처리는 model에 남긴다. JSX를 없애려고 wrapper를 더하지 않는다.
+
+`shared` 안의 세그먼트는 **소유하는 계약**으로 갈린다. 렌더(JSX·focus·ARIA·component props 계약)를
+소유하면 `ui`, 렌더하지 않고 상태 수명·전이나 허용 값을 소유하면 `model`, 둘 다 아니면 `lib` 이다.
+`use` 접두사나 확장자는 판정 근거가 아니다 — `useSaveForm` 은 dialog 를 렌더하므로 `ui` 에 남고,
+`usePageRowSelection` 은 선택 수명만 소유하므로 `model` 이다. `ui` 아래 이름은 세그먼트가 아니라
+렌더 계약 family 이며, 한 파일이 둘 이상의 family 에 해당하면 우선순위를 만들지 말고 파일을 나눈다.
+`shared/lib` 의 React import·hook export 금지와 `shared/model` 의 JSX 금지는 `eslint.config.js` 가 본다.
 
 `mechanics`는 소유자가 애매한 파일을 넣는 곳이 아니다. 현재 소비자와 공유하는 계약을 확인한다.
 소비자가 둘이라는 숫자만으로 승격하지 않고, 의미가 달라지거나 단일 소비자로 좁아지면 재검토한다.

@@ -7,7 +7,7 @@ import {
  * 기존 API 운영자 목록의 필터 초안·기간·검색어와 URL 검색 확정을 연결한다.
  * 실제 API에서도 필요한 입력 workflow다. 서버 enum에 의존하는 기본값은 계약 교체 때 재검토한다.
  */
-import { useListFilterDraft } from "@/shared/lib/use-list-filter-draft";
+import { useListFilterDraft } from "@/shared/model/use-list-filter-draft";
 import { type SubmitEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { type ManagerSearch } from "../../../api/manager-search";

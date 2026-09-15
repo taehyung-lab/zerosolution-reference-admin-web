@@ -3,16 +3,16 @@
  * 현재는 onConfirm 호출까지이며 저장 성공은 만들지 않는다. API 연결 시 같은 입력 흐름 뒤에 mutation과 확인된 후처리를 연결한다.
  */
 import { formatDate } from "@/shared/lib/datetime";
-import { useConfirmation } from "@/shared/lib/use-confirmation";
+import { useConfirmation } from "@/shared/model/use-confirmation";
 import { FormCancelButton } from "@/shared/ui/form/FormCancelButton";
 import { FormDateField } from "@/shared/ui/form/FormDateField";
 import { formFieldControlId } from "@/shared/ui/form/FormField";
 import { FormSubmitButton } from "@/shared/ui/form/FormSubmitButton";
 import { FormTextField } from "@/shared/ui/form/FormTextField";
 import { useUnsavedChangesGuard } from "@/shared/ui/form/UnsavedChangesGuard";
-import { ConfirmDialog } from "@/shared/ui/patterns/ConfirmDialog";
-import { PageHeader } from "@/shared/ui/patterns/PageHeader";
-import { SectionCard } from "@/shared/ui/patterns/SectionCard";
+import { ConfirmDialog } from "@/shared/ui/dialog/ConfirmDialog";
+import { PageHeader } from "@/shared/ui/layout/PageHeader";
+import { SectionCard } from "@/shared/ui/layout/SectionCard";
 import { revalidateLogic, useForm, useSelector } from "@tanstack/react-form";
 import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";

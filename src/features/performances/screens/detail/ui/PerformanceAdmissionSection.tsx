@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
-import { DetailField } from "@/shared/ui/patterns/DetailField";
-import { SectionCard } from "@/shared/ui/patterns/SectionCard";
+import { DetailField } from "@/shared/ui/detail/DetailField";
+import { SectionCard } from "@/shared/ui/layout/SectionCard";
 import { Button } from "@/shared/ui/primitives/Button";
 import { Table, TableHead, TableCell } from "@/shared/ui/primitives/Table";
 import type { PerformanceAdmission } from "../../../model/performance-detail";

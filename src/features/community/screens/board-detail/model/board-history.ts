@@ -5,7 +5,7 @@
  * 날짜 표시·라벨·값 어휘를 이 feature 가 소유하고, 3열 렌더는 공용 표면이 소유한다.
  */
 import { formatDate } from '@/shared/lib/datetime';
-import type { UpdateHistoryEntry } from '@/shared/ui/patterns/UpdateHistory';
+import type { UpdateHistoryEntry } from '@/shared/ui/detail/UpdateHistory';
 import type { TFunction } from 'i18next';
 import type { BoardChange, BoardChangeLog } from '@/features/community/model/board';
 

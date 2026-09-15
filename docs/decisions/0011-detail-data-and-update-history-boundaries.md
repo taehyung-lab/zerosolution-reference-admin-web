@@ -55,7 +55,7 @@ generated (HTTP 함수·DTO)
 ```
 
 - `src/api/required-query.ts` 가 필수 단건 조회의 판정을 소유한다. 순수 함수 `resolveRequiredQueryOutcome(facts)` 가 `incident → not-found → usable data → pending → local error → settled-without-data` 우선순위로 `ready | pending | not-found | error | delegated` 를 돌려주고, 얇은 훅 `useDetailQuery(options)` 가 그것을 `{ data, state: ready|error|notFound, error, retry }` 로 투영한다. `pending`·`delegated` 는 content 없는 `ready` 다(전역 progress·incident boundary 가 자기 표면 소유).
-- `shared/ui/patterns/DetailStateBoundary` 는 `ready | error | notFound` 렌더 만 소유하고 API 변경이 없다. `DetailStateBoundary` 는 `ready | error | notFound` 렌더 이며 판정은 `useDetailQuery` 가 한다.
+- `shared/ui/detail/DetailStateBoundary` 는 `ready | error | notFound` 렌더 만 소유하고 API 변경이 없다. `DetailStateBoundary` 는 `ready | error | notFound` 렌더 이며 판정은 `useDetailQuery` 가 한다.
 - API-only 조회는 `api/useManagerDetail`, `api/useManagerEditDetail`처럼 ID·locale를 연결한다. 화면 정책을 소유하는 목록 훅 `screens/list/model/useManagerListData`와 캐시 후속 처리가 있는 `screens/form/model/useCreateManagerMutation`·`useUpdateManagerMutation`은 workflow에 둔다. `auth/api/useSignInMutation`은 옵션 실행만 하며 session·navigation은 로그인 workflow가 소유한다.
 - **선언과 실행의 분리**: generated 함수는 `features/*/api` 와 `src/api` 만 import 할 수 있다(기존 lint). 따라서 `api/mutations.ts` 는 `mutationOptions`(서버 호출·`retry: false`) 선언만 두고, workflow 훅이 `useMutation({ ...선언, onSuccess })` 로 실행하며 `useQueryClient` 와 awaited invalidation 을 소유한다. `queryClient` 를 인자로 받는 팩토리는 만들지 않는다.
 - `features/*/api/**`의 `useQuery`·`useMutation`은 허용한다. `useQueryClient`, 전역 진행 집계, Router/Form import는 lint가 막는다. API 훅의 화면 정책 혼입은 import 검사만으로 증명할 수 없으므로 소비자·callbacks를 리뷰한다. 정상 query/mutation 훅과 위반 cache-client/router 대조군은 `gates:negative`가 실행한다.
@@ -65,7 +65,7 @@ generated (HTTP 함수·DTO)
 
 ### 업데이트 이력 — 2층
 
-- `UpdateHistory`(`shared/ui/patterns/UpdateHistory.tsx`, props `{ entries, labels: { date, change, actor }, emptyText }`) 는 3열 `Table` primitive, stable key, 사항 셀의 `<ul><li>`(줄마다 한 항목) 만 소유한다. `UpdateHistoryEntry { id, date, lines: readonly string[], actor }` 는 이미 localized·safe 한 문자열이다. `actor`는 도메인 역할명이 아니라 변경을 수행한 행위자의 표시 문자열이다. `SectionCard` 감싸기·제목·빈 문구는 feature 가 쓴다. `ReactNode`·render callback·server DTO 는 받지 않는다. 정렬 계약이 없으므로 `DataTable` 이 아니다.
+- `UpdateHistory`(`shared/ui/detail/UpdateHistory.tsx`, props `{ entries, labels: { date, change, actor }, emptyText }`) 는 3열 `Table` primitive, stable key, 사항 셀의 `<ul><li>`(줄마다 한 항목) 만 소유한다. `UpdateHistoryEntry { id, date, lines: readonly string[], actor }` 는 이미 localized·safe 한 문자열이다. `actor`는 도메인 역할명이 아니라 변경을 수행한 행위자의 표시 문자열이다. `SectionCard` 감싸기·제목·빈 문구는 feature 가 쓴다. `ReactNode`·render callback·server DTO 는 받지 않는다. 정렬 계약이 없으므로 `DataTable` 이 아니다.
 - feature 순수 mapper가 서버의 담당자·운영자 필드를 `actor`로 투영하고 C/D 한 줄, U의 변경 줄, 동일 값 방지, 비노출 값 제거, 구조 미정·미등록 field의 중립 문구를 소유한다. 원문 JSON·secret·서버 field 코드 비노출은 각 mapper 테스트가 보장한다. 훅이 아니다.
 - 채택한 규칙: DTO↔렌더 입력 분리 경계, C/U/D 줄 규칙, `A > A` 방지, 원문 미노출·unsupported fallback. 제외한 구조: Accordion 결합, 컴포넌트 내부 i18n 기본값, 값 해석 옵션 bag, 도메인 formatter 훅, newline 단일 문자열.
 

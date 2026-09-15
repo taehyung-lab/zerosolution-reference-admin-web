@@ -1,5 +1,5 @@
 import type { MessageDialogProps } from "./message-dialog-props";
-import { AsyncFieldBoundary } from "@/shared/ui/patterns/AsyncFieldBoundary";
+import { AsyncFieldBoundary } from "@/shared/ui/feedback/AsyncFieldBoundary";
 import { Dialog } from "@/shared/ui/primitives/Dialog";
 import { useId } from "react";
 import { useTranslation } from "react-i18next";

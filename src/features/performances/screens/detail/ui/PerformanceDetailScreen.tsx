@@ -1,9 +1,9 @@
 import { useTranslation } from "react-i18next";
-import { DetailStateBoundary } from "@/shared/ui/patterns/DetailStateBoundary";
-import { ErrorTrace } from "@/shared/ui/patterns/ErrorTrace";
-import { PageHeader } from "@/shared/ui/patterns/PageHeader";
-import { SectionCard } from "@/shared/ui/patterns/SectionCard";
-import { UpdateHistory } from "@/shared/ui/patterns/UpdateHistory";
+import { DetailStateBoundary } from "@/shared/ui/detail/DetailStateBoundary";
+import { ErrorTrace } from "@/shared/ui/feedback/ErrorTrace";
+import { PageHeader } from "@/shared/ui/layout/PageHeader";
+import { SectionCard } from "@/shared/ui/layout/SectionCard";
+import { UpdateHistory } from "@/shared/ui/detail/UpdateHistory";
 import { usePerformanceDetail } from "../../../api/usePerformanceDetail";
 import { PerformanceBasicSection } from "./PerformanceBasicSection";
 import { PerformanceAdmissionSection } from "./PerformanceAdmissionSection";

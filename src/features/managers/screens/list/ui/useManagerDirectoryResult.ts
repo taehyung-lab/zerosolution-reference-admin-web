@@ -4,9 +4,9 @@ import type { useManagerDirectoryData } from "../model/useManagerDirectoryData";
  * 조회 실행과 서버 행 정렬은 하지 않는다. 헤더 정렬은 같은 컬럼을 다시 누를 때만 방향을 뒤집고,
  * 보기 정렬 선택은 방향을 유지한다(Figma에 방향 컨트롤이 없다).
  */
-import { standardPageSizeOptions } from "@/shared/config/list";
-import { usePageRowSelection } from "@/shared/lib/use-page-row-selection";
-import type { DataTableProps } from "@/shared/ui/patterns/DataTable";
+import { standardPageSizeOptions } from "@/shared/model/list-options";
+import { usePageRowSelection } from "@/shared/model/use-page-row-selection";
+import type { DataTableProps } from "@/shared/ui/list/DataTable";
 import { useTranslation } from "react-i18next";
 import { type ManagerListSearch } from "../../../model/manager-list-search";
 import {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { standardPageSizeOptions, standardPeriodPresetValues } from './list'
+import { standardPageSizeOptions, standardPeriodPresetValues } from './list-options'
 
 /**
  * These presets are the transplant contract, not a constant to re-type: a new product decides its
