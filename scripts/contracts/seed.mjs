@@ -135,8 +135,8 @@ export const SEED_BUNDLES = [
     )],
     adrs: [location(
       'docs/decisions/0010-form-boundaries.md',
-      '전역 진행 상태',
-      '`AppShell`이 `useIsMutating()`',
+      '결정과 이유',
+      '진행 표면은 요청의 역할로 구분했다',
     )],
     tests: ['src/app/shell/AppShell.test.tsx'],
     ownership: {
@@ -189,13 +189,13 @@ export const SEED_BUNDLES = [
     adrs: [
       location(
         'docs/decisions/0010-form-boundaries.md',
-        '소유권 경계',
-        'TanStack 어댑터의 `form` + typed `name`',
+        '결정과 이유',
+        '입력 값은 Form, 오류·접근성 연결은 어댑터',
       ),
       location(
         'docs/decisions/0010-form-boundaries.md',
-        '저장 오케스트레이션과 서버 오류의 거처 (2026-09-03 개정)',
-        'reveal → 첫 rejected field focus',
+        '보존할 실측 근거',
+        'form-level 서버 오류는 당시 Form 타입과 맞지 않았고',
       ),
     ],
     tests: [

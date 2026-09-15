@@ -40,7 +40,7 @@ const contract = defineSearchFields(fields);
 | `keywords` | `{ field, value }[]` — 검색 대상이 하나여도 이 모양이다. 축이 없는 `string[]` 을 만들지 않는다. kind `filter` |
 | 다중선택 | `string[]`(enum 항목), 빈 배열 = 전체. kind `filter` |
 | 단일 선택 | enum 값 또는 `undefined`(전체·조건 없음) |
-| `searched` | 표식이 있는 화면만. 극성과 수명은 [list-workflow 상태 절](list-workflow.md#state-and-url-lifecycle)이 정한다. 이 표식의 유무가 "검색을 눌러야 조회" 와 "진입 즉시 조회" 를 가르는 유일한 스위치다 — route loader 는 그 신호가 아니다([router 형태](router.md#형태)) |
+| `searched` | 해당 조회 정책에 필요한 화면만. 정책 선택과 표식의 극성·수명·유효 조건의 검색 의도는 [list-workflow 상태 절](list-workflow.md#state-and-url-lifecycle)이 소유한다. 필드 defaults·partition·요청·query key에서는 제외한다 |
 
 ### 기본값의 세 가지 역할
 
