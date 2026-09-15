@@ -4,7 +4,7 @@ import { FormField } from "@/shared/ui/form/FormField";
 import { FormRadioGroupField } from "@/shared/ui/form/FormRadioGroupField";
 import { FormTextField } from "@/shared/ui/form/FormTextField";
 import { useUnsavedChangesGuard } from "@/shared/ui/form/UnsavedChangesGuard";
-import { AlertDialog } from "@/shared/ui/patterns/AlertDialog";
+import { AlertDialog } from "@/shared/ui/dialog/AlertDialog";
 import { Button } from "@/shared/ui/primitives/Button";
 import { Dialog } from "@/shared/ui/primitives/Dialog";
 import { Input } from "@/shared/ui/primitives/Input";

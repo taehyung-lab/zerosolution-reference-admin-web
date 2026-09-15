@@ -1,14 +1,14 @@
-import { ResultTotal } from "@/shared/ui/patterns/ResultTotal";
+import { ResultTotal } from "@/shared/ui/list/ResultTotal";
 /**
  * 제품 운영자 목록의 건수·보기 설정·표·페이지와 조회 상태를 표시한다.
  * 조회 상태 판정은 ListResult가 소유하고, 액션 노드는 외부에서 받아 확인창 소유자의 수명을 보존한다.
  */
-import { DataTable } from "@/shared/ui/patterns/DataTable";
-import { ListResult } from "@/shared/ui/patterns/ListResult";
-import { PageSizeControl } from "@/shared/ui/patterns/PageSizeControl";
-import { Pagination } from "@/shared/ui/patterns/Pagination";
-import { ResultToolbar } from "@/shared/ui/patterns/ResultToolbar";
-import { SortControl } from "@/shared/ui/patterns/SortControl";
+import { DataTable } from "@/shared/ui/list/DataTable";
+import { ListResult } from "@/shared/ui/list/ListResult";
+import { PageSizeControl } from "@/shared/ui/list/PageSizeControl";
+import { Pagination } from "@/shared/ui/list/Pagination";
+import { ResultToolbar } from "@/shared/ui/list/ResultToolbar";
+import { SortControl } from "@/shared/ui/list/SortControl";
 import { useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";

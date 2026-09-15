@@ -6,7 +6,7 @@ import type { useManagerDirectoryData } from "../model/useManagerDirectoryData";
  */
 import { standardPageSizeOptions } from "@/shared/model/list-options";
 import { usePageRowSelection } from "@/shared/model/use-page-row-selection";
-import type { DataTableProps } from "@/shared/ui/patterns/DataTable";
+import type { DataTableProps } from "@/shared/ui/list/DataTable";
 import { useTranslation } from "react-i18next";
 import { type ManagerListSearch } from "../../../model/manager-list-search";
 import {

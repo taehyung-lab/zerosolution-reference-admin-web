@@ -45,7 +45,7 @@ File creation, relocation and feature-local reuse placement follow [folder-struc
 ## UI layers
 
 1. `shared/ui/primitives`: source-owned Radix primitive plus Tailwind tokens and accessibility behavior.
-2. `shared/ui/patterns`: domain-neutral composition proven by real screens.
+2. `shared/ui/{dialog,feedback,filter,list,detail,layout}`: domain-neutral composition proven by real screens, grouped by the render contract it owns.
 3. `shared/ui/form`: thin TanStack Form adapters around primitives and `FormField`.
 4. `features/*/**`: columns, status UI, forms, permissions, workflow dialogs, and all domain-aware components.
 

@@ -3,8 +3,8 @@ import { type MemberCounselRecords } from "../../../model/member-counsel-data";
  * 회원 상세 안의 상담 작성·기록 편집·삭제 영역이다.
  * 폼과 편집 상태는 API 이후에도 유지하며 레코드 저장소나 서버 성공 상태는 이 section에서 만들지 않는다.
  */
-import { ConfirmDialog } from "@/shared/ui/patterns/ConfirmDialog";
-import { ListResult } from "@/shared/ui/patterns/ListResult";
+import { ConfirmDialog } from "@/shared/ui/dialog/ConfirmDialog";
+import { ListResult } from "@/shared/ui/list/ListResult";
 import { Button } from "@/shared/ui/primitives/Button";
 import { useTranslation } from "react-i18next";
 import { type MemberCounselInput } from "../../../model/member-counsel";

@@ -715,7 +715,7 @@ describe('transplant manifest and seed negative controls', () => {
   })
   it('flags feature code, rehearsal output, and domain translations inside the seed', () => {
     expect(findForbiddenSeedFiles([
-      'src/shared/ui/patterns/ListResult.tsx',
+      'src/shared/ui/list/ListResult.tsx',
       'src/features/managers/screens/form/ui/ManagerForm.tsx',
       'src/routes/_app/managers/index.tsx',
       'src/api/generated/index.ts',

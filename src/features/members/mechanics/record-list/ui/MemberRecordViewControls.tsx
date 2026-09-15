@@ -4,8 +4,8 @@ import type { ResolvedMemberRecordSearch } from "../model/member-record-search";
  * 실제 API에서도 유지한다. 데이터를 직접 자르거나 정렬하지 않고 변경된 조건의 재조회는 데이터 흐름에 맡긴다.
  */
 import { standardPageSizeOptions } from "@/shared/model/list-options";
-import { PageSizeControl } from "@/shared/ui/patterns/PageSizeControl";
-import { SortControl } from "@/shared/ui/patterns/SortControl";
+import { PageSizeControl } from "@/shared/ui/list/PageSizeControl";
+import { SortControl } from "@/shared/ui/list/SortControl";
 import { useTranslation } from "react-i18next";
 import type { MemberRecordSearch } from "../../../model/member-record-search";
 

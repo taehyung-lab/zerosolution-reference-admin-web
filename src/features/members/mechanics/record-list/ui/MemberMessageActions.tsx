@@ -4,7 +4,7 @@
  */
 import {
   SelectionAlert,
-} from "@/shared/ui/patterns/BulkActionDialogs";
+} from "@/shared/ui/dialog/BulkActionDialogs";
 import { useSelectionGate } from "@/shared/model/use-selection-gate";
 import { Button } from "@/shared/ui/primitives/Button";
 import { useTranslation } from "react-i18next";

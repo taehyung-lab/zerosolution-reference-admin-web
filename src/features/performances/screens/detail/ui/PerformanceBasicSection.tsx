@@ -5,8 +5,8 @@ import {
   formatDate,
   formatTimeInTimeZone,
 } from "@/shared/lib/datetime";
-import { DetailField } from "@/shared/ui/patterns/DetailField";
-import { SectionCard } from "@/shared/ui/patterns/SectionCard";
+import { DetailField } from "@/shared/ui/detail/DetailField";
+import { SectionCard } from "@/shared/ui/layout/SectionCard";
 import {
   Tabs,
   TabsContent,

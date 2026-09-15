@@ -6,7 +6,7 @@ import { useConfirmation } from "@/shared/model/use-confirmation";
 import { formFieldControlId } from "@/shared/ui/form/FormField";
 import { useUnsavedChangesGuard } from "@/shared/ui/form/UnsavedChangesGuard";
 import { useFormSections } from "@/shared/model/use-form-sections";
-import { ConfirmDialog } from "@/shared/ui/patterns/ConfirmDialog";
+import { ConfirmDialog } from "@/shared/ui/dialog/ConfirmDialog";
 import {
   revalidateLogic,
   useForm,

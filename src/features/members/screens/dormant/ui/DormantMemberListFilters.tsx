@@ -2,7 +2,7 @@
  * 휴면 목록에서 허용하는 기간·검색 필드와 개별 필터를 공용 입력 컴포넌트에 연결한다.
  * 실제 API에서도 입력 UI는 필요하며 행 필터링이나 서버 조회는 수행하지 않는다.
  */
-import { FilterPanel } from "@/shared/ui/patterns/FilterPanel";
+import { FilterPanel } from "@/shared/ui/filter/FilterPanel";
 import { useTranslation } from "react-i18next";
 import type { useMemberRecordFilter } from "../../../mechanics/record-list/model/useMemberRecordFilter";
 import {

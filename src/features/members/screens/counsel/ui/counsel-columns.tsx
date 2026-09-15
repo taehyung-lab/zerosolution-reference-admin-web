@@ -6,8 +6,8 @@ import type { ResolvedMemberRecordSearch } from "../../../mechanics/record-list/
 import { maskEmail, maskPhone } from "@/shared/lib/mask-contact";
 import { headerSortDirection } from "@/shared/lib/list-sort";
 import type { PageRowSelection } from "@/shared/model/use-page-row-selection";
-import type { DataTableProps } from "@/shared/ui/patterns/DataTable";
-import { selectionColumn } from "@/shared/ui/patterns/selection-column";
+import type { DataTableProps } from "@/shared/ui/list/DataTable";
+import { selectionColumn } from "@/shared/ui/list/selection-column";
 import type { TFunction } from "i18next";
 import { formatMemberInstant } from "../../../lib/format-member-instant";
 

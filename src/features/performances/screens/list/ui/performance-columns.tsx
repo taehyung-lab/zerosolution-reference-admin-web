@@ -1,6 +1,6 @@
 import { formatDate } from "@/shared/lib/datetime";
 import { headerSortDirection } from "@/shared/lib/list-sort";
-import type { DataTableProps } from "@/shared/ui/patterns/DataTable";
+import type { DataTableProps } from "@/shared/ui/list/DataTable";
 import type { TFunction } from "i18next";
 import type { PerformanceRow } from "../../../model/performance";
 import { type PerformanceSearch } from "../../../model/performance-search";

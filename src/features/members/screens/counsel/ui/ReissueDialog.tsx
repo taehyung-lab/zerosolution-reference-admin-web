@@ -2,8 +2,8 @@
  * 프린터 선택·사용 가능 여부와 테스트/재발행 요청 입력을 다루는 팝업이다.
  * 실제 API에서도 선택 검증은 필요하다. 현재 미리보기와 프린터 예시는 실제 장비 조회·인쇄 성공을 증명하지 않는다.
  */
-import { AlertDialog } from "@/shared/ui/patterns/AlertDialog";
-import { AsyncFieldBoundary } from "@/shared/ui/patterns/AsyncFieldBoundary";
+import { AlertDialog } from "@/shared/ui/dialog/AlertDialog";
+import { AsyncFieldBoundary } from "@/shared/ui/feedback/AsyncFieldBoundary";
 import { Button } from "@/shared/ui/primitives/Button";
 import { Dialog } from "@/shared/ui/primitives/Dialog";
 import { Select } from "@/shared/ui/primitives/Select";

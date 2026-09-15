@@ -4,8 +4,8 @@
  */
 import { headerSortDirection } from "@/shared/lib/list-sort";
 import type { PageRowSelection } from "@/shared/model/use-page-row-selection";
-import type { DataTableProps } from "@/shared/ui/patterns/DataTable";
-import { selectionColumn } from "@/shared/ui/patterns/selection-column";
+import type { DataTableProps } from "@/shared/ui/list/DataTable";
+import { selectionColumn } from "@/shared/ui/list/selection-column";
 import type { TFunction } from "i18next";
 import type { MemberSearch } from "../../../model/member-search";
 import type { MemberListDefinition } from "../config/member-list-definition";

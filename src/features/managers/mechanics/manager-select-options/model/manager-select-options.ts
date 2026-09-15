@@ -2,7 +2,7 @@
  * 옵션 조회 하나를 선택 필드 하나의 표시 상태로 바꾼다. 목록 필터와 등록·수정 폼이 같은 표시 계약을 쓰므로
  * 두 소비자의 가장 가까운 공통 소유자에 둔다. 조회 출처·선행 조건·라벨 의미는 각 소비 훅이 소유한다.
  */
-import type { AsyncFieldState } from "@/shared/ui/patterns/AsyncFieldBoundary";
+import type { AsyncFieldState } from "@/shared/ui/feedback/AsyncFieldBoundary";
 
 export interface ManagerSelectOptions {
   readonly state: AsyncFieldState;

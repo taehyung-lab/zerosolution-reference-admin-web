@@ -2,13 +2,13 @@
  * 기존 API 목록의 요약·보기 설정·테이블·페이지와 조회 상태를 표시하는 컴포넌트다.
  * 실제 API에서도 유지할 표시 책임이며 action 노드는 외부에서 받아 확인창 소유자의 수명을 보존한다.
  */
-import { DataTable } from "@/shared/ui/patterns/DataTable";
-import { ListResult } from "@/shared/ui/patterns/ListResult";
-import { PageSizeControl } from "@/shared/ui/patterns/PageSizeControl";
-import { Pagination } from "@/shared/ui/patterns/Pagination";
-import { ResultToolbar } from "@/shared/ui/patterns/ResultToolbar";
-import { ResultTotal } from "@/shared/ui/patterns/ResultTotal";
-import { SortControl } from "@/shared/ui/patterns/SortControl";
+import { DataTable } from "@/shared/ui/list/DataTable";
+import { ListResult } from "@/shared/ui/list/ListResult";
+import { PageSizeControl } from "@/shared/ui/list/PageSizeControl";
+import { Pagination } from "@/shared/ui/list/Pagination";
+import { ResultToolbar } from "@/shared/ui/list/ResultToolbar";
+import { ResultTotal } from "@/shared/ui/list/ResultTotal";
+import { SortControl } from "@/shared/ui/list/SortControl";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import type { ManagerListData } from "../model/useManagerListData";

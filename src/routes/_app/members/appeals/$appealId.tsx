@@ -7,7 +7,7 @@ import { AppealDetailScreen } from "@/features/members/screens/appeals/ui/Appeal
 import { requestMessageSend } from "@/features/messaging/screens/compose/model/message-request";
 import { useMessageComposer } from "@/features/messaging/screens/compose/model/useMessageComposer";
 import { MessageComposerDialog } from "@/features/messaging/screens/compose/ui/MessageComposerDialog";
-import { DetailStateBoundary } from "@/shared/ui/patterns/DetailStateBoundary";
+import { DetailStateBoundary } from "@/shared/ui/detail/DetailStateBoundary";
 import { loadRequired } from "@/app/router/required-loader";
 import { appealDetailQuery } from "@/features/members/api/detail-queries";
 import { createFileRoute } from "@tanstack/react-router";

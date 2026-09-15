@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { EmptyState } from './EmptyState';
-import { ErrorTrace, type ErrorTraceValue } from './ErrorTrace';
+import { EmptyState } from '../feedback/EmptyState';
+import { ErrorTrace, type ErrorTraceValue } from '../feedback/ErrorTrace';
 
 export type ListResultState = 'notSearched' | 'loading' | 'error' | 'empty' | 'ready';
 

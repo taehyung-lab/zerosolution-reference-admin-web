@@ -36,7 +36,7 @@ export const CASES = [
   { fixture: 'i18n-literal/feature-hardcoded.tsx', target: 'src/features/gate-a/list/user-facing.tsx', expectedRule: 'local/no-user-facing-literal' },
   { fixture: 'i18n-literal/valid.tsx', target: 'src/features/gate-a/list/i18n-valid.tsx', expectedRule: null },
   { fixture: 'i18n-literal/route-expression.tsx', target: 'src/routes/copy-negative.tsx', expectedRule: 'local/no-user-facing-literal' },
-  { fixture: 'i18n-literal/shared-placeholder.tsx', target: 'src/shared/ui/patterns/copy-negative.tsx', expectedRule: 'local/no-user-facing-literal' },
+  { fixture: 'i18n-literal/shared-placeholder.tsx', target: 'src/shared/ui/list/copy-negative.tsx', expectedRule: 'local/no-user-facing-literal' },
   { fixture: 'imports/route-imports-generated.ts', target: 'src/routes/gate-negative.ts', expectedRule: 'no-restricted-imports' },
   { fixture: 'imports/screen-imports-axios.tsx', target: 'src/features/gate-a/list/screen.tsx', expectedRule: 'no-restricted-imports' },
   { fixture: 'imports/feature-imports-other-feature.ts', target: 'src/features/gate-a/model/cross-feature.ts', expectedRule: 'import-x/no-restricted-paths' },

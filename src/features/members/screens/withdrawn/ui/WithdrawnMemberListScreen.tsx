@@ -9,7 +9,7 @@ import { withdrawnDataQuery } from "../../../api/list-queries";
  * 탈퇴 목록의 필터·데이터·결과·업무 액션을 연결하는 화면 조립 컴포넌트다.
  * 실제 API에서도 조립 책임은 유지한다. Query가 예시 응답과 로딩/실패를 전달하며 실제 API에서는 응답 공급 연결부를 교체한다.
  */
-import { PageHeader } from "@/shared/ui/patterns/PageHeader";
+import { PageHeader } from "@/shared/ui/layout/PageHeader";
 import { Button } from "@/shared/ui/primitives/Button";
 import { useTranslation } from "react-i18next";
 import { useMemberRecordListData } from "../../../mechanics/record-list/model/member-record-data";

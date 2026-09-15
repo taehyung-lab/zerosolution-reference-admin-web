@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { PageHeader } from '@/shared/ui/patterns/PageHeader';
+import { PageHeader } from '@/shared/ui/layout/PageHeader';
 import { resolveBoardListSearch } from '../model/board-list-search';
 import type { BoardListSearch } from '../model/board-list-search';
 import { useBoardListData } from '../model/useBoardListData';

@@ -4,7 +4,7 @@
  */
 import { formatDate } from "@/shared/lib/datetime";
 import { usePageRowSelection } from "@/shared/model/use-page-row-selection";
-import type { DataTableProps } from "@/shared/ui/patterns/DataTable";
+import type { DataTableProps } from "@/shared/ui/list/DataTable";
 import { useTranslation } from "react-i18next";
 import { type ManagerSearch } from "../../../api/manager-search";
 import type { ManagerListItem } from "../../../model/manager";

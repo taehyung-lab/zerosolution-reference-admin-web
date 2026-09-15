@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { BoardSettings } from '@/features/community/model/board';
-import { PageHeader } from '@/shared/ui/patterns/PageHeader';
+import { PageHeader } from '@/shared/ui/layout/PageHeader';
 import { boardCreateDefaults } from '../model/board-form-defaults';
 import { BoardForm } from './BoardForm';
 import { useBoardInputForm } from './useBoardInputForm';

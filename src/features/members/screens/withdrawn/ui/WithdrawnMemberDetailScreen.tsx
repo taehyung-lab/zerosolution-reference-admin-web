@@ -3,10 +3,10 @@
  * 활동 조회는 탭·검색·페이지 상태를 가진 이 화면이 자기 Query로 실행한다. 비어 있는 업데이트 이력을 실제 없음으로 단정하지 않는다.
  */
 import { maskEmail } from "@/shared/lib/mask-contact";
-import { DetailField } from "@/shared/ui/patterns/DetailField";
-import { PageHeader } from "@/shared/ui/patterns/PageHeader";
-import { SectionCard } from "@/shared/ui/patterns/SectionCard";
-import { UpdateHistory } from "@/shared/ui/patterns/UpdateHistory";
+import { DetailField } from "@/shared/ui/detail/DetailField";
+import { PageHeader } from "@/shared/ui/layout/PageHeader";
+import { SectionCard } from "@/shared/ui/layout/SectionCard";
+import { UpdateHistory } from "@/shared/ui/detail/UpdateHistory";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useMemberActivity } from "../../../api/useMemberActivity";

@@ -25,7 +25,7 @@ import { formFieldControlId } from '@/shared/ui/form/FormField';
 import { FormSelectField } from '@/shared/ui/form/FormSelectField';
 import { FormSubmitButton } from '@/shared/ui/form/FormSubmitButton';
 import { FormTextField } from '@/shared/ui/form/FormTextField';
-import { SectionCard } from '@/shared/ui/patterns/SectionCard';
+import { SectionCard } from '@/shared/ui/layout/SectionCard';
 import { Button } from '@/shared/ui/primitives/Button';
 import { Input } from '@/shared/ui/primitives/Input';
 import type { BoardFormInput } from '../model/board-form-schema';

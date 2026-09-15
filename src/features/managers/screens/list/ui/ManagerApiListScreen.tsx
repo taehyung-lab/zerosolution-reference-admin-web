@@ -2,7 +2,7 @@
  * 기존 OpenAPI 계약으로 동작하는 운영자 목록의 필터·조회·결과·액션을 조립한다.
  * 제품용 ManagerListScreen과 검색/행 모델이 다르며 리허설 API 회귀 테스트의 소비자로 유지한다. 제품 route는 ManagerListScreen 한 경로를 사용한다.
  */
-import { PageHeader } from "@/shared/ui/patterns/PageHeader";
+import { PageHeader } from "@/shared/ui/layout/PageHeader";
 import { useTranslation } from "react-i18next";
 import { requestManagerBulkChange } from "../model/manager-list-requests";
 import {

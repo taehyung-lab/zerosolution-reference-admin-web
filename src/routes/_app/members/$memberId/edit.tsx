@@ -1,7 +1,7 @@
 import { useMemberDetail } from "@/features/members/api/useMemberDetail";
 import { requestMemberEdit } from "@/features/members/screens/form/model/member-form-requests";
 import { MemberEditScreen } from "@/features/members/screens/form/ui/MemberEditScreen";
-import { DetailStateBoundary } from "@/shared/ui/patterns/DetailStateBoundary";
+import { DetailStateBoundary } from "@/shared/ui/detail/DetailStateBoundary";
 import { loadRequired } from "@/app/router/required-loader";
 import { memberDetailQuery } from "@/features/members/api/detail-queries";
 import { createFileRoute } from "@tanstack/react-router";

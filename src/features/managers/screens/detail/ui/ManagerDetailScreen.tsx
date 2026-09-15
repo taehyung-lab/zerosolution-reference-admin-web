@@ -4,13 +4,13 @@
  */
 import { formatDate } from "@/shared/lib/datetime";
 import { maskEmail, maskPhone } from "@/shared/lib/mask-contact";
-import { ConfirmDialog } from "@/shared/ui/patterns/ConfirmDialog";
-import { DetailField } from "@/shared/ui/patterns/DetailField";
-import { DetailStateBoundary } from "@/shared/ui/patterns/DetailStateBoundary";
-import { ErrorTrace } from "@/shared/ui/patterns/ErrorTrace";
-import { PageHeader } from "@/shared/ui/patterns/PageHeader";
-import { SectionCard } from "@/shared/ui/patterns/SectionCard";
-import { UpdateHistory } from "@/shared/ui/patterns/UpdateHistory";
+import { ConfirmDialog } from "@/shared/ui/dialog/ConfirmDialog";
+import { DetailField } from "@/shared/ui/detail/DetailField";
+import { DetailStateBoundary } from "@/shared/ui/detail/DetailStateBoundary";
+import { ErrorTrace } from "@/shared/ui/feedback/ErrorTrace";
+import { PageHeader } from "@/shared/ui/layout/PageHeader";
+import { SectionCard } from "@/shared/ui/layout/SectionCard";
+import { UpdateHistory } from "@/shared/ui/detail/UpdateHistory";
 import { Badge } from "@/shared/ui/primitives/Badge";
 import { Button } from "@/shared/ui/primitives/Button";
 import { Link } from "@tanstack/react-router";

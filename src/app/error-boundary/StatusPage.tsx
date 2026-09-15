@@ -2,7 +2,7 @@ import { useId, type ReactNode } from 'react'
 import { Link, useCanGoBack, useRouter } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import type { ApiError } from '@/api/error'
-import { ErrorTrace } from '@/shared/ui/patterns/ErrorTrace'
+import { ErrorTrace } from '@/shared/ui/feedback/ErrorTrace'
 import { ModalCover } from '@/shared/ui/primitives/ModalCover'
 
 /**

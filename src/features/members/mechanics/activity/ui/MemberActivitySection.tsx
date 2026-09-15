@@ -19,10 +19,10 @@ import { usePageRowSelection } from "@/shared/model/use-page-row-selection";
 import {
   BulkActionDialogs,
   SelectionAlert,
-} from "@/shared/ui/patterns/BulkActionDialogs";
+} from "@/shared/ui/dialog/BulkActionDialogs";
 import { useSelectionGate } from "@/shared/model/use-selection-gate";
-import { ListResult } from "@/shared/ui/patterns/ListResult";
-import { Pagination } from "@/shared/ui/patterns/Pagination";
+import { ListResult } from "@/shared/ui/list/ListResult";
+import { Pagination } from "@/shared/ui/list/Pagination";
 import { Button } from "@/shared/ui/primitives/Button";
 import { Checkbox } from "@/shared/ui/primitives/Checkbox";
 import { Input } from "@/shared/ui/primitives/Input";

@@ -3,8 +3,8 @@
  * 표시 책임은 API 이후에도 유지하며 조회·저장·발송은 수행하지 않는다.
  */
 import { maskEmail, maskPhone } from "@/shared/lib/mask-contact";
-import { DetailField } from "@/shared/ui/patterns/DetailField";
-import { SectionCard } from "@/shared/ui/patterns/SectionCard";
+import { DetailField } from "@/shared/ui/detail/DetailField";
+import { SectionCard } from "@/shared/ui/layout/SectionCard";
 import { useTranslation } from "react-i18next";
 import { formatMemberInstant } from "../../../lib/format-member-instant";
 

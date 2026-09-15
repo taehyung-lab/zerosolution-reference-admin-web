@@ -5,7 +5,7 @@
 import {
   BulkActionDialogs,
   SelectionAlert,
-} from "@/shared/ui/patterns/BulkActionDialogs";
+} from "@/shared/ui/dialog/BulkActionDialogs";
 import { Button } from "@/shared/ui/primitives/Button";
 import { Select } from "@/shared/ui/primitives/Select";
 import { Link } from "@tanstack/react-router";

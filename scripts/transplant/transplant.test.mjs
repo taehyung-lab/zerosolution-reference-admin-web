@@ -208,7 +208,7 @@ describe('limitSeedCatalog', () => {
     '  },',
     '  {',
     "    id: 'data-table',",
-    "    code: ['src/shared/ui/patterns/DataTable.tsx'],",
+    "    code: ['src/shared/ui/list/DataTable.tsx'],",
     '  },',
     ']',
     '',
@@ -287,13 +287,13 @@ describe('plan / stage / apply against a target directory', () => {
   it('classifies files, stages a renumbered product-neutral copy with a pending list, and never overwrites the target', () => {
     const target = temporaryDirectory('transplant-target-')
     const out = temporaryDirectory('transplant-stage-')
-    write(target, 'src/shared/ui/patterns/PageHeader.tsx', 'export const PageHeader = () => null\n')
+    write(target, 'src/shared/ui/layout/PageHeader.tsx', 'export const PageHeader = () => null\n')
     write(target, 'package.json', '{"name":"target"}\n')
 
     const plan = planTransplant(target)
     const byFile = new Map(plan.map((item) => [item.file, item]))
-    expect(byFile.get('src/shared/ui/patterns/PageHeader.tsx').action).toBe('merge')
-    expect(byFile.get('src/shared/ui/patterns/DetailField.tsx').action).toBe('copy')
+    expect(byFile.get('src/shared/ui/layout/PageHeader.tsx').action).toBe('merge')
+    expect(byFile.get('src/shared/ui/detail/DetailField.tsx').action).toBe('copy')
     expect(byFile.get('package.json').action).toBe('merge')
     expect(byFile.get('CLAUDE.md').action).toBe('copy')
     expect(byFile.has('.claude/settings.json')).toBe(false)
@@ -357,9 +357,9 @@ describe('plan / stage / apply against a target directory', () => {
     expect(readFileSync(join(out, 'PENDING.md'), 'utf8')).toContain('## 레퍼런스 저장소에만 있는 근거')
 
     const applied = applyTransplant(target, out)
-    expect(readFileSync(join(target, 'src/shared/ui/patterns/PageHeader.tsx'), 'utf8')).toBe('export const PageHeader = () => null\n')
+    expect(readFileSync(join(target, 'src/shared/ui/layout/PageHeader.tsx'), 'utf8')).toBe('export const PageHeader = () => null\n')
     expect(readFileSync(join(target, 'package.json'), 'utf8')).toBe('{"name":"target"}\n')
-    expect(existsSync(join(target, 'src/shared/ui/patterns/DetailField.tsx'))).toBe(true)
+    expect(existsSync(join(target, 'src/shared/ui/detail/DetailField.tsx'))).toBe(true)
     expect(existsSync(join(target, 'docs/decisions/0005-shared-boundaries.md'))).toBe(true)
     expect(existsSync(join(target, 'CLAUDE.md'))).toBe(true)
     expect(existsSync(join(target, '.claude/settings.json'))).toBe(false)
@@ -370,8 +370,8 @@ describe('plan / stage / apply against a target directory', () => {
     expect(targetAgents).not.toContain('이 저장소는 다른 제품으로 옮길 레퍼런스다.')
     expect(readFileSync(join(target, 'docs/reference/product/README.md'), 'utf8')).toContain('TRANSPLANT_PENDING_FACTS')
     expect(readFileSync(join(target, 'README.md'), 'utf8')).toContain('TRANSPLANT_PENDING_README')
-    expect(applied.copied).toEqual(expect.arrayContaining(['src/shared/ui/patterns/DetailField.tsx', 'CLAUDE.md', 'docs/reference/product.json', 'docs/reference/scenarios/README.md']))
-    expect(applied.skipped.map((item) => item.targetPath)).toEqual(expect.arrayContaining(['src/shared/ui/patterns/PageHeader.tsx', 'package.json']))
+    expect(applied.copied).toEqual(expect.arrayContaining(['src/shared/ui/detail/DetailField.tsx', 'CLAUDE.md', 'docs/reference/product.json', 'docs/reference/scenarios/README.md']))
+    expect(applied.skipped.map((item) => item.targetPath)).toEqual(expect.arrayContaining(['src/shared/ui/layout/PageHeader.tsx', 'package.json']))
     expect(existsSync(join(target, 'src/features'))).toBe(false)
     expect(existsSync(join(target, 'openapi/admin.snapshot.json'))).toBe(false)
     expect(existsSync(join(target, 'docs/reference/zero-sol'))).toBe(false)
@@ -440,7 +440,7 @@ describe('plan / stage / apply against a target directory', () => {
     const files = new Set(plan.map((item) => item.file))
     expect(files.has('src/shared/lib/ascii-triplet.ts')).toBe(true)
     expect(files.has('src/shared/lib/ascii-triplet.test.ts')).toBe(true)
-    expect(files.has('src/shared/ui/patterns/ListResult.tsx')).toBe(false)
+    expect(files.has('src/shared/ui/list/ListResult.tsx')).toBe(false)
     expect(files.has('.agents/skills/feature-contract/SKILL.md')).toBe(true)
     // The skills and eslint.config.js travel whole and name these decisions, so the decisions travel with them.
     for (const adr of [
@@ -501,7 +501,7 @@ describe('plan / stage / apply against a target directory', () => {
     const target = temporaryDirectory('transplant-target-')
     const out = temporaryDirectory('transplant-stage-')
     stageTransplant(target, out)
-    writeFileSync(join(out, 'src/shared/ui/patterns/DetailField.tsx'), '// tampered\n')
+    writeFileSync(join(out, 'src/shared/ui/detail/DetailField.tsx'), '// tampered\n')
 
     expect(() => applyTransplant(target, out)).toThrow(/MANIFEST/)
     expect(readdirSync(target)).toEqual([])

@@ -4,10 +4,10 @@
  */
 import { standardPeriodPresetValues } from "@/shared/model/list-options";
 import { usePeriodPresets } from "@/shared/i18n/use-period-presets";
-import { FilterField } from "@/shared/ui/patterns/FilterField";
-import { FilterPanel } from "@/shared/ui/patterns/FilterPanel";
-import { KeywordFilterField } from "@/shared/ui/patterns/KeywordFilterField";
-import { PeriodFilterField } from "@/shared/ui/patterns/PeriodFilterField";
+import { FilterField } from "@/shared/ui/filter/FilterField";
+import { FilterPanel } from "@/shared/ui/filter/FilterPanel";
+import { KeywordFilterField } from "@/shared/ui/filter/KeywordFilterField";
+import { PeriodFilterField } from "@/shared/ui/filter/PeriodFilterField";
 import { CheckboxTree } from "@/shared/ui/primitives/CheckboxTree";
 import { useTranslation } from "react-i18next";
 import { type MemberSearch } from "../../../model/member-search";
