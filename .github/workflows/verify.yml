@@ -11,25 +11,48 @@ concurrency:
 
 permissions:
   contents: read
+  pull-requests: read
 
+# PR 이벤트는 main 과 합친 merge ref 로 검사하므로 main push 에서는 static 만 다시 돈다.
+# 문서만 바뀐 PR 은 unit·e2e 를 건너뛴다. contracts:check 는 static 에 있어 문서 링크·앵커 검사는 그대로다.
 jobs:
+  changes:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            code:
+              - '**'
+              - '!**.md'
+              - '!docs/**'
+              - '!.agents/**'
+              - '!.ai-work/**'
+
   static:
     runs-on: ubuntu-latest
     env:
       TZ: Asia/Seoul
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version-file: .node-version
-      - name: Enable Corepack
-        run: corepack enable
+          cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Verify static stages
         run: pnpm run ci:static
 
   unit:
+    needs: changes
+    if: github.event_name == 'pull_request' && needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -39,29 +62,36 @@ jobs:
       TZ: Asia/Seoul
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version-file: .node-version
-      - name: Enable Corepack
-        run: corepack enable
+          cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Verify unit shard
         run: pnpm run ci:unit --shard=${{ matrix.shard }}/2
 
   e2e:
+    needs: changes
+    if: github.event_name == 'pull_request' && needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     env:
       TZ: Asia/Seoul
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version-file: .node-version
-      - name: Enable Corepack
-        run: corepack enable
+          cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Cache Chromium
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Install Chromium
         run: pnpm exec playwright install --with-deps chromium
       - name: Verify E2E smoke
