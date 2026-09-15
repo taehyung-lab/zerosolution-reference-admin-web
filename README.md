@@ -2,7 +2,7 @@
 
 공연·전시 티켓 운영 어드민(BOOSTER LAB)의 프런트엔드다. 내부 운영자가 회원·공연·발권·전시·프로모션·커뮤니티·통계·설정을 처리한다.
 
-> **현재 상태: bootstrap.** 배포 환경과 Admin OpenAPI URL이 미확정이고, `openapi/admin.snapshot.json`은 제품 계약이 아니라 격리된 리허설 계약이다. 미확인 항목은 [`AGENTS.md`](AGENTS.md) §1이 소유한다.
+> **현재 상태: bootstrap.** 배포 환경과 Admin OpenAPI URL이 미확정이고, `openapi/admin.snapshot.json`은 제품 계약이 아니라 격리된 리허설 계약이다. 미확인 항목은 [`product.json`](docs/reference/product.json)이 연결한 제품 인벤토리의 `프로젝트 사실` 절이 소유한다.
 
 ## 요구 런타임
 
@@ -38,7 +38,7 @@ API 소비 화면은 `ManagerApiListScreen`이다. 두 검색 계약의 통합�
 | `pnpm dev` | 개발 서버 |
 | `pnpm verify` | **단일 검증 진입점.** api:check → contracts:check → typecheck → lint → test:unit → i18n:check → gates:negative → build → test:e2e:verify |
 | `pnpm api:check` | snapshot 검증 + Orval 생성 + 생성물 typecheck |
-| `pnpm contracts:check` | 규범 문서와 저장소 설정의 기계적 정합성. verify 체인 투영, `pnpm` 명령·로컬 link 실존, 에이전트 문서 200줄 예산, 루트 포인터, 삭제 문서 이름·§번호·금지 추상화 근거 drift, 이관 sentinel, transport 포트 이음매 tripwire와 이름 붙은 요청 경로 상수의 계약 일치, seed 4-part 폐쇄·오염·부수 반출, 이관 manifest 실존. `--mode target`은 이관된 저장소용(코드 sentinel도 실패) |
+| `pnpm contracts:check` | 규범 문서와 저장소 설정의 기계적 정합성. verify 체인 투영, `pnpm` 명령·로컬 link 실존, 에이전트 문서 200줄 예산, 루트 포인터, 삭제 문서 이름·금지 추상화 근거 drift, 이관 sentinel, transport 포트 이음매 tripwire와 이름 붙은 요청 경로 상수의 계약 일치, seed 4-part 폐쇄·오염·부수 반출, 이관 manifest 실존. `--mode target`은 이관된 저장소용(코드 sentinel도 실패) |
 | `pnpm transplant:plan` · `transplant:stage` · `transplant:apply` · `transplant:verify` | 신규 저장소 이관 명령(`--target <repo>`). plan은 copy/merge/conditional/template/exclude 분류만, stage는 ADR 재번호·예시 치환을 적용한 사본과 `PENDING.md`, apply는 대상에 없는 파일만 복사(덮어쓰기 없음), verify는 대상에서 `contracts:check --mode target`→typecheck→lint→test:unit |
 | `pnpm api:pull` / `api:diff` | 원격 Swagger 수집·차이 분석. 네트워크가 필요하므로 `verify` 밖의 별도 작업이다 |
 | `pnpm build` / `preview` | 프로덕션 빌드 및 미리보기 |
@@ -49,7 +49,7 @@ API 소비 화면은 `ManagerApiListScreen`이다. 두 검색 계약의 통합�
 
 격리 worktree에서 검증할 때는 `PLAYWRIGHT_PORT=4184 pnpm verify`처럼 비어 있는 전용 포트를 지정한다. 로컬 Playwright는 같은 포트의 기존 서버를 재사용하므로, 기본 4173의 다른 작업 트리를 검사한 결과를 현재 diff의 증거로 쓰지 않는다. 포트·서버 실행 경로를 확인한 뒤 실패를 변경 전후에 귀속한다.
 
-`pnpm verify` 통과는 완성의 **필요조건이지 충분조건이 아니다.** 화면이 디자인과 같은지, 상호작용이 실제로 동작하는지는 검사하지 않는다. 판정 기준은 [`AGENTS.md`](AGENTS.md) §4에 있다.
+`pnpm verify` 통과는 완성의 **필요조건이지 충분조건이 아니다.** 화면이 디자인과 같은지, 상호작용이 실제로 동작하는지는 검사하지 않는다. 판정 기준은 [`AGENTS.md`](AGENTS.md#완료)에 있다.
 
 ## 기술 스택
 
@@ -65,14 +65,14 @@ src/api/          transport, 오류 정규화, OpenAPI 생성물
 src/shared/       도메인·서버 계약을 모르는 UI와 순수 공용 코드
 ```
 
-의존 방향과 예외는 [`AGENTS.md`](AGENTS.md) §3이 소유한다. 별도 `pages` 레이어는 만들지 않는다.
+의존 방향과 예외는 [`folder-structure-contract`](.agents/skills/folder-structure-contract/SKILL.md)와 `eslint.config.js`가 소유한다. 별도 `pages` 레이어는 만들지 않는다.
 
 ## 문서 지도
 
 | 위치 | 내용 |
 | ---- | ---- |
-| [`AGENTS.md`](AGENTS.md) | 프로젝트 사실, 전역 경계, 스킬 라우팅, 완료 기준. 사람과 에이전트 모두 여기서 시작한다 |
-| `.agents/skills/screen-loop/` | 구현 요청의 분류·모드·증거 순서·복귀 지점. 범위가 정해지기 전에 읽는 유일한 skill |
+| [`AGENTS.md`](AGENTS.md) | 전역 라우팅, 저장소 함정, 완료 기준. 사람과 에이전트 모두 여기서 시작한다 |
+| `.agents/skills/screen-loop/` | 구현 요청의 요구 고정·증거 선택·설계·구현·검증·복귀 지점. 범위가 정해지기 전에 읽는 진입 skill |
 | `.agents/skills/{folder-structure-contract,api-contract,feature-contract,shared-ui-contract}/` | 반복 구현 절차의 정본. 편집 범위가 정해진 뒤 필요한 reference만 읽는다 |
 | `docs/decisions/` | 결정 이유·대안·상태·재검토 조건을 보존하는 ADR |
 | [`docs/decisions/0009-shared-boundaries.md`](docs/decisions/0009-shared-boundaries.md) | 목록 공용화의 결정과 provisional 검증 상태. 구현법은 연결된 Skill reference가 소유한다 |

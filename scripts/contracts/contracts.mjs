@@ -19,7 +19,6 @@ const DOCUMENT_FILES = [
   'CLAUDE.md',
   '.github/copilot-instructions.md',
   'openapi/README.md',
-  'scripts/agents/README.md',
   'scripts/contracts/README.md',
 ]
 
@@ -236,6 +235,7 @@ export function transplantSentinelFailures(files) {
  * 주석·표·근거 문자열 속 이름은 이 목록으로 잡는다. 이름을 지울 때 여기서도 지운다.
  */
 export const RETIRED_DOCUMENT_NAMES = [
+  '2026-09-14-reference-document-loop-redesign.md',
   'list-detail.md',
   'screen-anatomy.md',
   'form-actions.md',
@@ -251,30 +251,6 @@ export function retiredDocumentNameFailures(files, names = RETIRED_DOCUMENT_NAME
     lines.forEach((line, index) => {
       for (const name of names) {
         if (line.includes(name)) failures.push(`${file}:${index + 1}: 삭제된 문서 이름 → ${name}`)
-      }
-    })
-  }
-  return failures
-}
-
-/** `AGENTS.md §N` 참조는 실제 heading 번호(`## N.`)와 일치해야 한다. */
-export function agentsSectionNumbers(agents) {
-  return new Set(
-    [...agents.matchAll(/^##\s+(\d+)\./gm)].map((match) => Number(match[1])),
-  )
-}
-
-export function agentsSectionReferenceFailures(files, agents) {
-  const numbers = agentsSectionNumbers(agents)
-  const failures = []
-  for (const file of files) {
-    if (!existsSync(resolve(file))) continue
-    const lines = readFileSync(resolve(file), 'utf8').split('\n')
-    lines.forEach((line, index) => {
-      for (const [, section] of line.matchAll(/AGENTS\.md[^§\n]{0,12}§\s?(\d+)/g)) {
-        if (!numbers.has(Number(section))) {
-          failures.push(`${file}:${index + 1}: AGENTS.md §${section} 절이 없다`)
-        }
       }
     })
   }
@@ -328,9 +304,6 @@ export function documentBudgetNotices(files, budget = DOCUMENT_LINE_BUDGET, byte
   return notices
 }
 
-/** 스킬 reference 안에서 이 저장소 화면의 관찰·이탈·소비자 표가 모이는 절. 규칙이 아니라 관찰이며 이관 시 비운다. */
-export const OBSERVATION_HEADING = '이 저장소의 관찰'
-
 /**
  * 이 저장소 제품의 도메인 명사와 식별자 접두. 규칙 문장에 이 낱말이 있으면 규칙이 한 화면의 인스턴스로
  * 읽힌다(2026-09-10 게시판 드릴이 형제 값을 복사한 원인, 2026-09-11 판정 오류). 이관 시 대상 제품 값으로 바꾼다.
@@ -371,34 +344,19 @@ export function productTermsInLine(line, terms = PRODUCT_DOMAIN_TERMS, featureDi
 }
 
 /**
- * 스킬 Markdown 의 규칙 문장에 남은 제품 이름을 notice 로 낸다. `OBSERVATION_HEADING` 을 담은 heading 의 절(같은
- * 깊이의 다음 heading 전까지)은 관찰이므로 보지 않는다. heading 문장 자체도 본다. fence 안의 `#` 은 heading 이
- * 아니다. 실패가 아닌 이유: 어휘가 부분 문자열·일반어(`운영자`, `전시`)와 겹쳐 오탐이 있고, 그 판단은 리뷰 몫이다.
+ * 스킬 Markdown 어디에든 남은 제품 이름을 notice 로 낸다. 예시와 fence도 이관 시 복사되는 지시이므로 함께 본다.
+ * 실패가 아닌 이유: 어휘가 부분 문자열·일반어(`운영자`, `전시`)와 겹쳐 오탐이 있고, 그 판단은 리뷰 몫이다.
  * 0 이 목표이고, 남은 것은 이유가 있어야 한다.
  */
 export function productNameNotices(files, { terms = PRODUCT_DOMAIN_TERMS, featureDirs = readFeatureDirectories(), read = (file) => readFileSync(resolve(file), 'utf8') } = {}) {
   const notices = []
   for (const file of files) {
     const hits = []
-    let skipLevel = null
-    let fence = null
     read(file).split('\n').forEach((line, index) => {
-      const fenceMark = line.match(/^\s*(`{3,}|~{3,})/)
-      if (fenceMark) {
-        if (fence === null) fence = fenceMark[1][0]
-        else if (fenceMark[1][0] === fence) fence = null
-      }
-      const heading = fence === null ? line.match(/^(#{1,6}) +(.+?)\s*#*$/) : null
-      if (heading) {
-        const level = heading[1].length
-        if (skipLevel !== null && level <= skipLevel) skipLevel = null
-        if (heading[2].includes(OBSERVATION_HEADING)) { skipLevel = level; return }
-      }
-      if (skipLevel !== null) return
       const found = productTermsInLine(line, terms, featureDirs)
       if (found.length) hits.push(`${index + 1}: ${found.join('·')}`)
     })
-    if (hits.length) notices.push(`스킬 규칙 문장에 제품 이름 ${hits.length}줄: ${file} — ${hits.join(' / ')}. 규칙은 도메인 없이 쓰고 관찰은 \`## ${OBSERVATION_HEADING}\` 절로 옮긴다.`)
+    if (hits.length) notices.push(`공용 skill에 제품 이름 ${hits.length}줄: ${file} — ${hits.join(' / ')}. 제품 사실은 product reference·ADR 근거·consumer 코드와 테스트로 옮긴다.`)
   }
   return notices
 }

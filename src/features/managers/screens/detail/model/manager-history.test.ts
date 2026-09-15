@@ -42,7 +42,7 @@ describe("toManagerHistoryEntries", () => {
       ["삭제"],
       ["수정", "이름: 김체로 > 김영영", "권한: 일반관리자 > 최고관리자"],
     ]);
-    expect(entries[1]!.manager).toBe("-");
+    expect(entries[1]!.actor).toBe("-");
     expect(entries.map((entry) => entry.id)).toEqual(["1", "2", "3"]);
   });
 

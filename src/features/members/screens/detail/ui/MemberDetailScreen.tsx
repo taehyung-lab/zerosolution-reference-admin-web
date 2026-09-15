@@ -154,7 +154,7 @@ export function MemberDetailScreen({
           labels={{
             date: t("detail.updatedAt"),
             change: t("detail.change"),
-            manager: t("counsel.operatorName"),
+            actor: t("counsel.operatorName"),
           }}
           emptyText={t("detail.historyEmpty")}
         />

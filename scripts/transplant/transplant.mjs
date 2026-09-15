@@ -23,7 +23,7 @@ import { createHash } from 'node:crypto'
 import { cpSync, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join, posix, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { headingAnchors, productTermsInLine, TRANSPLANT_SENTINEL } from '../contracts/contracts.mjs'
+import { productTermsInLine, TRANSPLANT_SENTINEL } from '../contracts/contracts.mjs'
 import { PRODUCT_POINTER, productPaths } from '../contracts/product-paths.mjs'
 import {
   FORBIDDEN_SEED_PATTERNS,
@@ -68,31 +68,10 @@ export const EXAMPLE_SYMBOL_SUBSTITUTIONS = [
   ['ManagerForm', '{Domain}Form'],
 ]
 
-/**
- * 이전 AGENTS §1 사실 목록과의 호환: 라벨 → sentinel ID. 현행 제품 사실은 원장 README가 소유한다.
- * 값은 나가지 않는다 — 이 제품의 사실은 다른 제품의 기본값이 아니다.
- */
-export const PRODUCT_FACT_SLOTS = [
-  ['제품과 사용자', 'PRODUCT_USERS'],
-  ['배포 환경', 'DEPLOY_ENV'],
-  ['Admin OpenAPI URL', 'OPENAPI_URL'],
-  ['계약 snapshot', 'CONTRACT_SNAPSHOT'],
-  ['기술 스택', 'STACK'],
-  ['다국어', 'LOCALES'],
-  ['날짜·시간', 'DATETIME'],
-  ['권한 기준선', 'PERMISSIONS'],
-]
-
 /** 대상과 병합해야 하는 파일. 이미 있으면 절대 덮어쓰지 않는다. */
 const MERGE_GROUPS = new Set(['templates', 'app', 'config'])
 /** stage 가 만드는 빈 원장 뼈대. `--with-ledger` 의 `ledger` 그룹(레퍼런스 원장 복사)과 다르다. */
 const LEDGER_GROUP = 'ledger-shell'
-
-/**
- * 이 저장소의 실측 기록이라 대상의 사실이 아니고, 그렇다고 지울 수도 없는 문서. 인용하는 문서가 앵커로 가리키므로
- * heading 골격만 남기고 본문을 비운다. 대상은 자기 드릴로 다시 채운다(파일 자신의 서문이 그렇게 지시한다).
- */
-const HISTORICAL_STUBS = ['.agents/skills/screen-loop/references/observations.md']
 
 /** 대상 저장소는 자기 자신을 대상 모드로 검사한다. source 모드는 이 레퍼런스의 seed·manifest 폐쇄 검사다. */
 const TARGET_CONTRACTS_CHECK = ['node scripts/contracts/check.mjs', 'node scripts/contracts/check.mjs --mode target']
@@ -204,46 +183,6 @@ export function restoreSourcePaths(text, collected) {
   let out = text
   collected.forEach((item, index) => { out = out.split(sourcePlaceholder(index)).join(item.link) })
   return out
-}
-
-/**
- * 이 저장소의 실측 기록을 중립 뼈대로 만든다. 본문·표·수치는 내보내지 않고, 문서 제목과 **다른 문서가 앵커로
- * 가리키는 절 제목**만 남긴다. 아무도 가리키지 않는 절 제목은 남길 이유가 없다 — 그 날짜의 드릴은 대상 저장소에서
- * 일어난 적이 없다. 코드 fence 안의 `#` 은 heading 이 아니다.
- */
-export function historicalStub(text, cited = new Set()) {
-  const out = []
-  let fence = null
-  for (const line of text.split('\n')) {
-    const fenceMark = line.match(/^\s*(`{3,}|~{3,})/)
-    if (fenceMark) {
-      if (fence === null) fence = fenceMark[1][0]
-      else if (fenceMark[1][0] === fence) fence = null
-      continue
-    }
-    if (fence !== null || !/^#{1,6} /.test(line)) continue
-    if (out.length === 0) {
-      out.push(line, '', '레퍼런스 저장소의 실측 기록은 이관되지 않았다. 이 저장소에는 아직 관찰이 없다. 아래 절 제목은 이 파일을 앵커로 인용하는 문서를 위해 남겨 둔 자리이며, 이 저장소의 드릴로 채운다.', '')
-      continue
-    }
-    if (cited.has([...headingAnchors(line)][0])) out.push(line, '')
-  }
-  return out.join('\n')
-}
-
-/** 이번 stage 의 다른 문서가 `#앵커` 로 가리키는 절. 뼈대가 남겨야 하는 제목의 근거다. */
-function citedAnchors(items, sourceRoot, file) {
-  const anchors = new Set()
-  for (const item of items) {
-    if (item.action === 'exclude' || item.file === file || !item.file.endsWith('.md')) continue
-    const path = join(sourceRoot, item.file)
-    if (!existsSync(path)) continue
-    const directory = posix.dirname(item.file)
-    for (const [, target, anchor] of readFileSync(path, 'utf8').matchAll(/\]\(([^)\s#]+)(#[^)]*)\)/g)) {
-      if (posix.normalize(posix.join(directory, target)) === file) anchors.add(anchor.slice(1).toLowerCase())
-    }
-  }
-  return anchors
 }
 
 /**
@@ -419,64 +358,23 @@ function isTextFile(path) {
     || /(^|\/)\.(nvmrc|node-version|env\.example)$/.test(path)
 }
 
-/**
- * AGENTS.md의 운영 모드와 제품 근거 포인터를 대상용으로 바꾼다. 이전 루트에 §1 사실 목록이 있으면
- * sentinel로 바꾸며, 현행 루트의 제품 사실은 ledgerTemplates가 빈 대상 원장으로 교체한다.
- */
+/** AGENTS.md의 운영 모드와 제품 근거 포인터를 대상용으로 바꾼다. */
 export function rewriteAgentsForTarget(agents, { source, target, finish } = {}) {
   const sourcePointer = source ?? productPaths(SOURCE_ROOT)
   const targetPointer = target ?? productPaths(join(SOURCE_ROOT, '.ai-work', 'transplant-no-target'))
   const close = finish ?? ((text) => rewriteProductPaths(rewriteText(text), sourcePointer, targetPointer))
-  const lines = agents.split('\n')
-  const out = []
-  let section = null
-  let factIndex = 0
-  for (const line of lines) {
-    if (/^## 0\. /.test(line)) {
-      section = 0
-      out.push('## 0. 저장소 운영 모드: 제품 저장소')
-      out.push('')
-      out.push('이 저장소는 레퍼런스에서 검증된 UI·상태·URL·API·화면 조립 계약을 이관해 시작한 제품 저장소다. 이관된 skill·ADR·공용 코드는 설계 입력이고, 제품 진실은 이 제품의 요구사항·디자인 원문·OpenAPI·정책이다. 각 계약은 첫 실제 consumer 에서 `채택 / 수정 / 제외`로 판정하고 두 번째 consumer 에서 confirm 하거나 demote 한다. 레퍼런스 제품의 화면·정책·판정을 이 제품의 사실로 복사하지 않는다.')
-      out.push('')
-      out.push('문서는 100% 기준이 아니다. 근거는 코드·계약·검사·제품 증거와 실측한 결함이다. 문서와 더 나은 설계가 어긋나면 설계를 먼저 고치고 문서·skill·검사를 같은 작업에서 따라 바꾼다.')
-      out.push('')
-      out.push(`제품 전체의 관찰 증거는 화면 구성·정책이 [인벤토리](${targetPointer.inventory}/README.md), 런타임 상태 전이·실패·복구가 [시나리오](${targetPointer.scenarios}/README.md), 그 증거로 내린 공용/feature 판정과 미확인 질문이 \`${targetPointer.judgment}\`로 나뉜다. 네 위치(원장·판정·시나리오·색인)의 경로는 \`${PRODUCT_POINTER}\` 한 곳이 가리키고 scripts와 skill은 그 포인터로 읽는다. 각 원장의 읽기 범위·표 형식·재관찰 조건은 그 \`README.md\`가 소유한다. 화면을 조립하거나 공용화를 판단할 때 그 화면의 인벤토리 절과 색인이 연결한 판정·확정 답·미확인 질문을 먼저 대조하고, 없는 증거는 현재 코드로 채우지 않는다.`)
-      out.push('')
-      continue
-    }
-    if (/^## 1\. /.test(line)) {
-      section = 1
-      out.push(line)
-      continue
-    }
-    if (/^## \d+\. /.test(line)) section = null
-    if (section === 0) continue
-    if (section === 1) {
-      const fact = line.match(/^- ([^:]+): /)
-      if (fact) {
-        const label = fact[1].trim()
-        const slot = PRODUCT_FACT_SLOTS.find(([known]) => label.startsWith(known))?.[1] ?? String(factIndex + 1)
-        factIndex += 1
-        out.push(`- ${label}: TRANSPLANT_PENDING_FACT_${slot} — 이 제품에서 확인한 값으로 바꾼다. 확정 전에는 추측해 채우지 않는다.`)
-        continue
-      }
-      out.push(line)
-      continue
-    }
-    if (/^- 신규 프로젝트 seed는 /.test(line)) {
-      out.push('- 이관 결정이 필요한 자리에는 `TRANSPLANT_PENDING_<ID>`를 남기며 하나라도 있으면 bootstrap 완료가 아니다. `pnpm contracts:check --mode target`이 문서와 코드 전체에서 이를 검사한다. 채택 후보의 code 진입점·skill 문장·ADR 결정·focused test 4-part 와 shared/feature 소유권은 레퍼런스 `scripts/contracts/seed.mjs` 가 기록한 값을 입력으로 삼되, 이 저장소에서는 실제 consumer 가 채택 여부를 판정한다.')
-      continue
-    }
-    out.push(line)
-  }
-  return close(out.join('\n'))
+  const sourceMode = '이 저장소는 다른 제품으로 옮길 레퍼런스다.'
+  const productMode = '이 저장소는 제품 저장소다. 이관된 문서·skill·공용 코드는 설계 입력이며, 제품 사실은 이 저장소의 요구사항·원문·서버 계약·정책이 소유한다. 레퍼런스 제품의 도메인 값·예시 화면·판정을 이 제품의 사실로 복사하지 않는다. 공용 계약은 실제 소비자에서 같은 의미·상태 전이·실패가 확인될 때만 채택한다.'
+  const matchingLines = agents.split('\n').filter((line) => line.startsWith(sourceMode))
+  if (matchingLines.length !== 1) throw new Error(`AGENTS.md 레퍼런스 운영 모드 문장은 정확히 하나여야 한다: ${matchingLines.length}`)
+  return close(agents.split('\n').map((line) => line.startsWith(sourceMode) ? productMode : line).join('\n'))
 }
 
 function selectBundles(ids) {
   if (ids === undefined) return SEED_BUNDLES
   return ids.map((id) => {
     const bundle = SEED_BUNDLES.find((candidate) => candidate.id === id)
-    if (!bundle) throw new Error(`알 수 없는 seed bundle: ${id}. node scripts/agents/cli.mjs bundle 로 목록을 본다.`)
+    if (!bundle) throw new Error(`알 수 없는 seed bundle: ${id}. node scripts/evidence/cli.mjs bundle 로 목록을 본다.`)
     return bundle
   })
 }
@@ -614,8 +512,6 @@ export function stageTransplant(targetRoot, outRoot, sourceRoot = SOURCE_ROOT, o
       writeFileSync(stagedPath, `TRANSPLANT_PENDING_README: 대상 저장소의 이름·런타임·scripts·verify 투영·문서 지도를 사람이 다시 쓴다. 레퍼런스 README 는 구조만 참고한다.\n\n${rewrite(readFileSync(sourcePath, 'utf8'), item.file, item.targetPath)}`)
     } else if (item.action === 'conditional') {
       writeFileSync(stagedPath, `> TRANSPLANT_PENDING_ADR_PIN: 레퍼런스 ${item.file} 의 버전 근거다. 대상 package.json·lockfile 과 대조해 채택하면 이 줄을 지우고 개정하며, 다르면 대상 결정으로 다시 쓴다.\n\n${rewrite(readFileSync(sourcePath, 'utf8'), item.file, item.targetPath)}`)
-    } else if (HISTORICAL_STUBS.includes(item.file)) {
-      writeFileSync(stagedPath, historicalStub(readFileSync(sourcePath, 'utf8'), citedAnchors(items, sourceRoot, item.file)))
     } else if (isTextFile(item.file)) {
       writeFileSync(stagedPath, rewrite(sourceText(sourcePath, item.file, selected, stagedPaths), item.file, item.targetPath))
     } else {

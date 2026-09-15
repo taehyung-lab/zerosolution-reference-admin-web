@@ -8,7 +8,7 @@ Read this file for an ID-backed detail screen, detail state, sections, actions, 
 - Use an ID-based query key. A partial list row is not authoritative detail data.
 - Sections remain feature-local. Every collection inside the detail (history, child records, paged child lists) is classified by [table-composition.md](table-composition.md); a detail DTO array is kind A and a paged child list is kind C, not this file's ID query.
 - Product permission, missing-resource meaning, and post-action navigation come from confirmed contracts, not Figma or an isolated non-product server contract.
-- The product's detail screens share one archetype (inventory 2026-09-02, four detail screens compared; see [이 저장소의 관찰](#이-저장소의-관찰)): header actions, collapsible sections of read-only fields, child collections, an update-history table, and a bottom action row whose set depends on the record status. Compose it per feature from `PageHeader.actions`, `SectionCard`, `DetailField`, and the collection kinds; do not build a `DetailPage`/`ResourceDetail` shell or a status-to-action catalog in shared.
+- When confirmed detail screens share an archetype, compose it per feature from `PageHeader.actions`, `SectionCard`, `DetailField`, and the applicable collection kinds. Do not build a `DetailPage`/`ResourceDetail` shell or a status-to-action catalog in shared.
 - An editable section inside a detail is one form of its own: it follows [form-workflow.md](form-workflow.md) with its own TanStack Form instance, save flow, and dirty state, and invalidates the detail query on success. When the record status makes the section read-only, render the read-only surface from the authoritative status instead of disabling the form.
 
 ## Detail state
@@ -43,14 +43,14 @@ Select only the surfaces the current detail uses.
 
 | 파일 | 담는 것 |
 | --- | --- |
-| `<domain>/api/*queries.ts` 의 상세 options | route loader 가 기다리므로 `meta.progress` 를 선언하지 않는다(대기 표면은 `RoutePending`). 목록 options 와 다르다(현재 이탈은 [이 저장소의 관찰](#이-저장소의-관찰)) |
+| `<domain>/api/*queries.ts` 의 상세 options | route loader 가 기다리므로 `meta.progress` 를 선언하지 않는다(대기 표면은 `RoutePending`). 목록 options 와 다르다. |
 | `<domain>/api/use*Detail.ts` | 위 [Detail ownership](#detail-ownership) 의 options + 실행 훅. `locale` 은 `UiLocale` |
 | `src/routes/_app/<path>/$<id>/index.tsx`(·`edit.tsx`) | `loader: ({ context, params, preload }) => loadRequired(...)` + 화면 mount([router 형태](router.md#형태)). 검사기가 loader 유무를 본다 |
 | `model/*-requests.ts` | 액션의 요청 경계(액션이 있을 때) |
 | `model/*-actions.ts` | 액션 가시성·확인·후속 정책(있을 때) |
 | `model/*-history.ts` | 위 표의 이력 mapper(이력이 있을 때) |
 | `ui/*DetailScreen.tsx` | 헤더·상태 경계·섹션 조립. 오류 문구는 `safeErrorKey(detail.error?.kind)`(`src/api/error-copy.ts`) 로 종류별 shared 문장 |
-| `ui/*Section.tsx` | 섹션 단위로 정한다: 자기 query·폼·액션을 가진 섹션은 파일로. 읽기 전용 표시 섹션은 Screen 안 인라인이 기본이고, 읽기 전용 섹션이 셋 이상이라 Screen 이 길어지면 파일로 묶어도 된다. 2026-09-11 판정(적용 예는 [이 저장소의 관찰](#이-저장소의-관찰)) |
+| `ui/*Section.tsx` | 섹션 단위로 정한다: 자기 query·폼·액션을 가진 섹션은 파일로. 읽기 전용 표시 섹션은 Screen 안 인라인이 기본이고, 읽기 전용 섹션이 셋 이상이라 Screen 이 길어지면 파일로 묶어도 된다. |
 | `ui/*ActionForm.tsx`·`*ActionDialog.tsx` | 액션 입력(있을 때) |
 
 ## Actions and verification
@@ -58,12 +58,3 @@ Select only the surfaces the current detail uses.
 The feature owns edit/back/delete visibility, confirmation, mutation outcome, cache consequence, and destination. Read [form-workflow.md](form-workflow.md) only when entering or changing a form, [mutation-actions.md](mutation-actions.md) when an action mutates or confirms, and [bulk-actions.md](bulk-actions.md) only for multi-row work.
 
 Test ID/query identity, ready/error/not-found mapping, retry, permission-visible actions, safe trace presentation, and navigation actually changed by the task. Browser evidence names the exact detail state and action exercised.
-
-## 이 저장소의 관찰
-
-규칙이 아니라 이 저장소 화면에서 위 규칙을 적용한 기록이다. 신규 프로젝트는 이 절을 비우고 자기 화면으로 다시 채운다.
-
-- 원형 비교(2026-09-02 인벤토리): 회원·발권·소명·운영자 조회 네 상세가 같은 골격이었다.
-- 상세 안의 편집 섹션: 회원상담, 소명 처리 결과, 공연 입장안내정보. 상태로 읽기 전용이 되는 예: 소명 통보 완료.
-- 상세 options 의 현재 이탈: 리허설 운영자 `managerDetailQuery`·`managerEditDetailQuery`(`managers/api/queries.ts`)는 loader 없는 리허설 화면이 쓰므로 `blockingProgress` 를 유지한다.
-- `ui/*Section.tsx` 판정 예(2026-09-11): 자기 query·폼·액션을 가진 섹션 파일은 공연 상세, 소명 처리 폼. 인라인 읽기 전용은 회원·운영자·게시판 상세. 셋 이상을 묶은 파일은 소명 상세 `AppealDetailSections.tsx`.

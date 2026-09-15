@@ -510,7 +510,7 @@ export const SEED_BUNDLES = [
     )],
     adrs: [location(
       'docs/decisions/0011-detail-data-and-update-history-boundaries.md',
-      '상세 표면 — provisional',
+      '상세 표면',
       '`PageHeader`',
     )],
     tests: ['src/shared/ui/patterns/PageHeader.test.tsx'],
@@ -529,7 +529,7 @@ export const SEED_BUNDLES = [
     )],
     adrs: [location(
       'docs/decisions/0011-detail-data-and-update-history-boundaries.md',
-      '상세 표면 — provisional',
+      '상세 표면',
       '`SectionCard`',
     )],
     tests: ['src/shared/ui/patterns/detail-patterns.test.tsx'],
@@ -548,7 +548,7 @@ export const SEED_BUNDLES = [
     )],
     adrs: [location(
       'docs/decisions/0011-detail-data-and-update-history-boundaries.md',
-      '상세 표면 — provisional',
+      '상세 표면',
       '`DetailField`',
     )],
     tests: ['src/shared/ui/patterns/detail-patterns.test.tsx'],
@@ -889,10 +889,10 @@ export function findBundleClosureLeaks(bundles = SEED_BUNDLES) {
  * 대상 버전과 대조해야 하는 핀 ADR(`conditional`)·게이트·설정·test harness·스타일 배선과,
  * 계약이 아니라 런타임인 i18n core(`core`)·같은 제품의 app shell 카피(`app`, 대상과 병합)를 사람이 명시한다.
  * 디렉터리는 반출 시 재귀로 펼친다. `templates`는 복사가 아니라 대상과 병합할 파일이다.
- * `entrypoints`는 각 런타임이 AGENTS.md 로 들어오는 루트 포인터, `runtime`은 게이트를 실제로 부르는 hook 설정이다.
+ * `entrypoints`는 각 런타임이 AGENTS.md 로 들어오는 루트 포인터다.
  * 대상에 없으면 복사하고 있으면 병합 대상으로 보고한다.
  *
- * 이 제품의 활성 원장(인벤토리·판정·시나리오·색인)은 기본 이관 재료가 아니다(docs/design/2026-09-14-reference-document-loop-redesign.md §8). 다른 제품의
+ * 이 제품의 활성 원장(인벤토리·판정·시나리오·색인)은 기본 이관 재료가 아니다(ADR 0013). 다른 제품의
  * 기본값이 될 수 없으므로 `productLedgerManifest` 로 명시 요청할 때만 나가고, 기본 stage 는 대상 포인터 경로에
  * 빈 원장 뼈대를 만든다.
  */
@@ -921,11 +921,10 @@ export const TRANSPLANT_MANIFEST = {
     'docs/decisions/0004-runtime-version-pin.md',
   ],
   entrypoints: ['CLAUDE.md', '.github/copilot-instructions.md'],
-  runtime: ['.claude/settings.json', '.codex/hooks.json', '.github/hooks/reference.json'],
   gates: [
     'eslint.config.js',
     'scripts/gates',
-    'scripts/agents',
+    'scripts/evidence',
     'tests/gates',
     'scripts/verify-negative-controls.mjs',
     'scripts/verify-negative-controls.test.mjs',

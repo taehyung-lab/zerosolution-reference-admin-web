@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { pointerState, renderRows, rowsForSurface, screenRows, summarize } from './screen-contract.mjs'
+import { pointerState, renderRows, rowsForSurface, screenRows, summarize } from './screen-rows.mjs'
 
 const roots = []
 const HEADER = '| id | 종류 | 화면 | surface | Figma 관찰 | Notion 동작·정책 | 미확인 | 현재 코드 |\n| --- | --- | --- | --- | --- | --- | --- | --- |\n'

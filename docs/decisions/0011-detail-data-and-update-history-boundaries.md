@@ -1,6 +1,6 @@
 # 0011. 상세 조회 경계, API 소비 계층, 업데이트 이력 공용화
 
-- 상태: 채택 — 상세·수정 조회의 상태 판정, API 호출 계층, 업데이트 이력 표시의 공용 계약. Managers 상세/수정이 검증하는 첫 consumer 다
+- 상태: 채택 — 상세·수정 조회의 상태 판정, API 호출 계층, 업데이트 이력 표시의 공용 계약
 - 날짜: 2026-09-03. 방식: 사용자 grilling 으로 요구사항 잠금 → Claude·Codex 독립 설계안 → 교차 리뷰 2라운드(Orca run `run_881d4a85a564`) → 단일 결론 → 사용자 컨펌
 - 적용 범위: 레퍼런스 프로젝트의 ID 기반 상세·수정 조회, feature API 소비 계층, 상세 안 업데이트 이력 표
 - 관찰 근거: [ZEROsol 인벤토리](../reference/zero-sol/04-members.md) 4.1.4 회원 조회 · 4.4 소명신청 조회 · [5.1 콘텐츠 조회](../reference/zero-sol/05-performances.md) · [6.6 발권 조회](../reference/zero-sol/06-ticketing.md) · 11.1 운영자 조회. 판정 기록은 [ZEROsol 공용화 판정 §8](../reference/zero-sol-figma-analysis.md)
@@ -14,7 +14,7 @@
 `eslint.config.js` 의 API/workflow 의존 규칙과 `gates:negative` 대조군이 소유한다.
 
 이 결정은 "detail-workflow 가 feature 소유라고 썼다"는 문장이 아니라 코드에서 실측한 복제와 결함 입력을 근거로 기존 문장을
-바꿨다. 문서가 기준이 아니라는 원칙은 `AGENTS.md` §0(저장소 운영 모드)이 소유한다.
+바꿨다. 문서가 기준이 아니라는 원칙은 `AGENTS.md`의 저장소 함정 절이 소유한다.
 
 ## 맥락 (코드와 인벤토리에서 실측한 사실)
 
@@ -65,14 +65,14 @@ generated (HTTP 함수·DTO)
 
 ### 업데이트 이력 — 2층
 
-- `UpdateHistory`(`shared/ui/patterns/UpdateHistory.tsx`, props `{ entries, labels: { date, change, manager }, emptyText }`) 는 3열 `Table` primitive, stable key, 사항 셀의 `<ul><li>`(줄마다 한 항목) 만 소유한다. `UpdateHistoryEntry { id, date, lines: readonly string[], manager }` 는 이미 localized·safe 한 문자열이다. `SectionCard` 감싸기·제목·빈 문구는 feature 가 쓴다. `ReactNode`·render callback·server DTO 는 받지 않는다. 정렬 계약이 없으므로 `DataTable` 이 아니다.
-- feature 순수 함수 `screens/detail/model/manager-history.ts: toManagerHistoryEntries(logs, t)` 가 C/D 한 줄, U 는 `수정` + field 별 `필드: before > after`, 같은 값이면 필드명만, 비밀번호 등 비노출 field 는 값 없는 한 줄, 구조 미정 값은 공용 미지 문구, 미등록 field 는 중립 문구, 담당자 없음은 `-` 를 만든다. 원문 JSON·secret·서버 field 코드 비노출은 이 함수의 테스트가 보장한다. 훅이 아니다.
+- `UpdateHistory`(`shared/ui/patterns/UpdateHistory.tsx`, props `{ entries, labels: { date, change, actor }, emptyText }`) 는 3열 `Table` primitive, stable key, 사항 셀의 `<ul><li>`(줄마다 한 항목) 만 소유한다. `UpdateHistoryEntry { id, date, lines: readonly string[], actor }` 는 이미 localized·safe 한 문자열이다. `actor`는 도메인 역할명이 아니라 변경을 수행한 행위자의 표시 문자열이다. `SectionCard` 감싸기·제목·빈 문구는 feature 가 쓴다. `ReactNode`·render callback·server DTO 는 받지 않는다. 정렬 계약이 없으므로 `DataTable` 이 아니다.
+- feature 순수 mapper가 서버의 담당자·운영자 필드를 `actor`로 투영하고 C/D 한 줄, U의 변경 줄, 동일 값 방지, 비노출 값 제거, 구조 미정·미등록 field의 중립 문구를 소유한다. 원문 JSON·secret·서버 field 코드 비노출은 각 mapper 테스트가 보장한다. 훅이 아니다.
 - 채택한 규칙: DTO↔렌더 입력 분리 경계, C/U/D 줄 규칙, `A > A` 방지, 원문 미노출·unsupported fallback. 제외한 구조: Accordion 결합, 컴포넌트 내부 i18n 기본값, 값 해석 옵션 bag, 도메인 formatter 훅, newline 단일 문자열.
 
-### 상세 표면 — provisional
+### 상세 표면
 
 - `PageHeader`(제목 `h1`·선택적 breadcrumb·끝 정렬 actions slot), `SectionCard`(제목 disclosure 블록: `aria-expanded`/`aria-controls`, controlled/uncontrolled, `keepMounted`, 오류 수 badge), `DetailField`(`dt`/`dd` 한 쌍)는 인벤토리 5 상세 화면(회원·소명·발권·운영자·콘텐츠 조회)이 같은 구성으로 반복하는 provisional shared 다. 상세는 `PageHeader`를 `DetailStateBoundary` 밖에, `SectionCard`·`DetailField`를 안에 조립한다.
-- shared 가 소유하는 것은 위 표면의 markup·접근성·개폐 mechanic 뿐이다. 어떤 action 이 있는지, 섹션 제목과 field 배치, 빈 값 문구, 값의 마스킹·링크는 feature 가 쓴다. 코드 consumer 는 Managers 1 이며 두 번째 상세에서 confirm/demote 한다. 계약 문장은 `page-and-detail-surfaces.md`·`disclosure-sections.md` 가 소유한다.
+- shared 가 소유하는 것은 위 표면의 markup·접근성·개폐 mechanic 뿐이다. 어떤 action 이 있는지, 섹션 제목과 field 배치, 빈 값 문구, 값의 마스킹·링크는 feature 가 쓴다. 현재 여러 feature의 목록·상세·폼 consumer가 이 좁은 표면을 사용하며, 계약 문장은 `page-and-detail-surfaces.md`·`disclosure-sections.md` 가 소유한다.
 - 빈 값 `-`는 인벤토리 9곳에서 반복돼 표현 후보가 됐지만, absence 판정은 caller에 남고 두 번째 코드 consumer가 생기기 전에는 shared API를 만들지 않는다. 회원가입 이력의 빈 담당자를 `-`로 표시할지 빈칸으로 보존할지도 미확인이다.
 
 ### 검증 단계
@@ -81,7 +81,7 @@ generated (HTTP 함수·DTO)
 | --- | --- | --- |
 | `useDetailQuery` / `resolveRequiredQueryOutcome` | provisional shared(api) | 상세·수정 2 consumer 일치, 결함 입력 4종 table test |
 | feature 훅 배치·API/workflow 의존 lint | 수정 채택 | API-only 실행 허용, 캐시 클라이언트·Router/Form·화면 역참조 금지; 의미 판정은 소비자 리뷰 |
-| `UpdateHistory` | provisional shared | 인벤토리 5 화면 동일 3열, 코드 consumer 는 Managers 1 |
+| `UpdateHistory` | shared 채택 | 운영자·회원·탈퇴회원·소명·공연·게시판 상세 6 consumer가 같은 `date/change/actor` 표시 계약을 사용 |
 | `toManagerHistoryEntries` 줄 조립 규칙 | feature-local | 두 번째 화면에서 같은 규칙이면 그때 `shared/lib` 승격 |
 | `PageHeader` / `SectionCard` / `DetailField` | provisional shared | 인벤토리 5 상세 화면 동일 구성, 코드 consumer 는 Managers 1 |
 
@@ -91,15 +91,14 @@ generated (HTTP 함수·DTO)
 - 상세·수정 DTO/endpoint 통합 여부. 리허설의 `get8`/`getForEdit1`, `staleTime: Infinity`, `gcTime: 0` 을 제품 결정으로 복사하지 않는다.
 - update 성공 시 정확한 invalidate 범위. 현행 Manager family invalidation 은 리허설 안전안이다.
 - background 404 → `not-found` 로 stale 표시를 끊는 정책이 신규 제품의 삭제·비활성 의미와 맞는지.
-- 담당자 계정 식별자의 서버 필드와 마스킹 정책, 담당자 없음의 빈칸/`-` 표시 규칙.
+- 행위자 계정 식별자의 서버 필드와 마스킹 정책, 값 없음의 빈칸/`-` 표시 규칙.
 
 ## 신규 프로젝트 채택 경계
 
-가져갈 것은 4칸 계층, `resolveRequiredQueryOutcome` 의 우선순위와 결함 입력 테스트, API/workflow 의존 lint 와 대조군, `UpdateHistory` 의 좁은 계약, 선언/실행 분리 원칙이다. Manager field 라벨 맵·비노출 field 목록·리허설 DTO 이름·Manager family invalidation 은 제품 사실로 가져가지 않는다. 4-part bundle 은 `scripts/contracts/seed.mjs` 의 `detail-query`·`detail-state-boundary`·`update-history`·`page-header`·`section-card`·`detail-field` 가 선언한다.
+가져갈 것은 4칸 계층, `resolveRequiredQueryOutcome` 의 우선순위와 결함 입력 테스트, API/workflow 의존 lint 와 대조군, `UpdateHistory` 의 `date/change/actor` 계약, 선언/실행 분리 원칙이다. 도메인 field 라벨 맵·비노출 field 목록·리허설 DTO 이름·특정 Query family invalidation 은 제품 사실로 가져가지 않는다. bundle은 `scripts/contracts/seed.mjs` 의 `detail-query`·`detail-state-boundary`·`update-history`·`page-header`·`section-card`·`detail-field` 가 선언한다.
 
 ## 재검토 조건
 
-- 두 번째 상세 화면이 `useDetailQuery`·`UpdateHistory` 를 소비해 semantics·lifecycle·failure behavior 를 비교할 수 있을 때
 - 두 번째 consumer 가 이력 항목에 kind 별 스타일·동작(before/after 개별 노드, 링크)이나 paging 을 요구할 때 — API 를 넓히지 않고 좁히거나 demote 한다
 - 신규 서버 계약이 `before/after` 인코딩과 상세·수정 endpoint 를 확정할 때
 - `useDetailQuery` 가 Router·permission·domain mode 인자를 요구하게 될 때(demotion 신호)

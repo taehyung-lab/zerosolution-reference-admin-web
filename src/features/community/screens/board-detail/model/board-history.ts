@@ -75,6 +75,6 @@ export function toBoardHistoryEntries(
       log.kind === 'CREATE'
         ? [t('board.detail.historyCreated')]
         : [t('board.detail.historyUpdated'), ...log.changes.map((change) => changeLine(change, t))],
-    manager: log.manager || empty,
+      actor: log.manager || empty,
   }));
 }

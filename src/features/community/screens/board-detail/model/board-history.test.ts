@@ -31,7 +31,7 @@ describe('board history mapper (Figma 9.1.2 업데이트 이력)', () => {
       '글쓰기 설정 > HTML : 사용안함 > 사용',
     ]);
     expect(entries[1]?.lines).toEqual(['등록']);
-    expect(entries[0]?.manager).toBe('김제로(admin)');
+    expect(entries[0]?.actor).toBe('김제로(admin)');
   });
 
   it('모르는 항목 코드는 코드를 노출하지 않고 접는다', () => {
@@ -41,6 +41,6 @@ describe('board history mapper (Figma 9.1.2 업데이트 이력)', () => {
     );
     expect(entry?.lines).toEqual(['수정', '알 수 없는 항목이 변경되었습니다.']);
     expect(entry?.lines.join(' ')).not.toContain('mystery');
-    expect(entry?.manager).toBe('-');
+    expect(entry?.actor).toBe('-');
   });
 });

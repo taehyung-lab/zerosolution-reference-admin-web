@@ -34,6 +34,6 @@ describe("performance history projection", () => {
       "업데이트 사항",
     ]);
     expect(JSON.stringify(entries)).not.toMatch(/private-|same.txt/);
-    expect(entries[0]?.manager).toBe("-");
+    expect(entries[0]?.actor).toBe("-");
   });
 });

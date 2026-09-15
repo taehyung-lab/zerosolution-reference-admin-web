@@ -4,13 +4,12 @@ import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { ledgerIndexFailures } from '../contracts/contracts.mjs'
 import { productPaths } from '../contracts/product-paths.mjs'
-import { productLedgerManifest, TRANSPLANT_MANIFEST } from '../contracts/seed.mjs'
-import { surfaceIndexFailures } from '../agents/surface-context.mjs'
+import { listTransplantManifestFiles, productLedgerManifest, TRANSPLANT_MANIFEST } from '../contracts/seed.mjs'
+import { surfaceIndexFailures } from '../evidence/context.mjs'
 import {
   applyTransplant,
   delinkUntravelled,
   findRetiredAdrCitations,
-  historicalStub,
   limitSeedCatalog,
   planTransplant,
   rewriteAgentsForTarget,
@@ -234,90 +233,27 @@ describe('limitSeedCatalog', () => {
   })
 })
 
-describe('historicalStub', () => {
-  it('keeps the cited headings so their anchors resolve, drops the rest, and carries no source record', () => {
-    const stub = historicalStub([
-      '# 이 저장소의 관찰',
-      '',
-      '원본은 `.ai-work/`의 각 디렉터리다.',
-      '',
-      '## 간선을 만든 사건',
-      '',
-      '| 간선 | 실측 |',
-      '| --- | --- |',
-      '| E1 | `context managers` 실패, 게시판 드릴 A |',
-      '',
-      '```md',
-      '# fenced heading is not a heading',
-      '```',
-      '',
-      '## 읽기 비용 실측',
-      '',
-      '2026-09-10: 약 5.4KB.',
-    ].join('\n'), new Set(['간선을-만든-사건']))
-
-    expect(stub).toContain('# 이 저장소의 관찰')
-    expect(stub).toContain('## 간선을 만든 사건')
-    expect(stub).not.toContain('## 읽기 비용 실측')
-    expect(stub).not.toContain('# fenced heading is not a heading')
-    expect(stub).not.toContain('게시판')
-    expect(stub).not.toContain('5.4KB')
-    expect(stub).not.toContain('E1')
-  })
-})
-
 describe('rewriteAgentsForTarget', () => {
-  const agents = [
-    '# 루트',
-    '',
-    '답을 받기 전 그 부분을 구현하지 않는 규칙은 [원장 근거 규칙](docs/reference/zero-sol/README.md#근거의-수명과-읽기-범위)이 소유한다.',
-    '',
-    '## 0. 저장소 운영 모드: 제품 레퍼런스 설계',
-    '',
-    '이 저장소는 Manager 한 화면의 납품물이 아니라 ZERO PLUS+ 레퍼런스다.',
-    '',
-    '## 1. 프로젝트 사실',
-    '',
-    '확인되지 않은 값은 추측해 채우지 않는다.',
-    '',
-    '- 제품과 사용자: ZERO PLUS+ 공연·전시 티켓 운영 어드민(BOOSTER LAB).',
-    '- Admin OpenAPI URL: 미확인.',
-    '- 계약 snapshot: `openapi/admin.snapshot.json`. 리허설 계약이다.',
-    '- 다국어: UI 카피는 `ko`, `en`, `ja` parity.',
-    '',
-    '## 2. 스킬 라우팅',
-    '',
-    '| 인증 | 해당 시나리오 카드(`docs/reference/scenarios/`) 먼저 |',
-    '',
-    '## 7. 규칙 수명주기',
-    '',
-    '- 신규 프로젝트 seed는 채택 후보마다 bundle로 선언한다.',
-    '- 다른 규칙',
-  ].join('\n')
+  it('switches the current compact root from reference mode to product mode', () => {
+    const compact = [
+      '# 프로젝트 에이전트 실행 기준',
+      '',
+      '## 이 저장소의 함정',
+      '',
+      '이 저장소는 다른 제품으로 옮길 레퍼런스다. 현재 제품의 도메인 값을 새 제품 사실로 복사하지 않는다.',
+      '',
+      '상태는 한 곳만 소유한다.',
+    ].join('\n')
 
-  it('removes the source product name and facts, keeps the neutral rules, and points at the product pointer', () => {
-    const rewritten = rewriteAgentsForTarget(agents, { source: SOURCE_POINTER, target: NEUTRAL_POINTER })
+    const rewritten = rewriteAgentsForTarget(compact, { source: SOURCE_POINTER, target: NEUTRAL_POINTER })
 
-    expect(rewritten).toContain('## 0. 저장소 운영 모드: 제품 저장소')
-    expect(rewritten).toContain('docs/reference/product.json')
-    expect(rewritten).not.toMatch(/ZERO|BOOSTER|Manager|zero-sol/)
-    expect(rewritten).toContain('확인되지 않은 값은 추측해 채우지 않는다.')
-    expect(rewritten).toContain('- 제품과 사용자: TRANSPLANT_PENDING_FACT_PRODUCT_USERS')
-    expect(rewritten).toContain('- Admin OpenAPI URL: TRANSPLANT_PENDING_FACT_OPENAPI_URL')
-    expect(rewritten).toContain('- 계약 snapshot: TRANSPLANT_PENDING_FACT_CONTRACT_SNAPSHOT')
-    expect(rewritten).toContain('- 다국어: TRANSPLANT_PENDING_FACT_LOCALES')
-    expect(rewritten).not.toContain('`openapi/admin.snapshot.json`. 리허설 계약이다.')
-    expect(rewritten).toContain('[원장 근거 규칙](docs/reference/product/README.md#근거의-수명과-읽기-범위)')
-    expect(rewritten).toContain('## 2. 스킬 라우팅')
-    expect(rewritten).toContain('해당 시나리오 카드(`docs/reference/scenarios/`) 먼저')
-    expect(rewritten).not.toContain('- 신규 프로젝트 seed는')
-    expect(rewritten).toContain('contracts:check --mode target')
-    expect(rewritten).toContain('- 다른 규칙')
+    expect(rewritten).toContain('이 저장소는 제품 저장소다.')
+    expect(rewritten).not.toContain('이 저장소는 다른 제품으로 옮길 레퍼런스다.')
+    expect(rewritten).toContain('상태는 한 곳만 소유한다.')
   })
 
-  it('gives an unknown fact label a positional sentinel instead of dropping it', () => {
-    const rewritten = rewriteAgentsForTarget(agents.replace('- 다국어:', '- 새 사실:'), { source: SOURCE_POINTER, target: NEUTRAL_POINTER })
-    expect(rewritten).toMatch(/- 새 사실: TRANSPLANT_PENDING_FACT_\d+/)
+  it('fails instead of silently staging when the source mode contract drifts', () => {
+    expect(() => rewriteAgentsForTarget('# no source mode', { source: SOURCE_POINTER, target: NEUTRAL_POINTER })).toThrow(/정확히 하나/)
   })
 })
 
@@ -327,13 +263,15 @@ describe('transplant manifest', () => {
     const sourceRoot = temporaryDirectory('transplant-source-')
     expect(() => planTransplant(target, { sourceRoot, bundles: ['ascii-triplet'] })).toThrow(/reference repository root/)
   })
-  it('does not carry the active product ledger by default but does carry both runtime entry points and hook configs', () => {
+  it('does not carry the active product ledger or any runtime hook config, but does carry both entry points', () => {
     const files = Object.values(TRANSPLANT_MANIFEST).flat()
     expect(files.some((file) => file === 'docs/reference' || file.startsWith('docs/reference/'))).toBe(false)
     expect(TRANSPLANT_MANIFEST.entrypoints).toEqual(expect.arrayContaining(['CLAUDE.md', '.github/copilot-instructions.md']))
-    expect(TRANSPLANT_MANIFEST.runtime).toEqual(expect.arrayContaining(['.claude/settings.json', '.codex/hooks.json', '.github/hooks/reference.json']))
+    expect(TRANSPLANT_MANIFEST.runtime).toBeUndefined()
+    expect(files.some((file) => file.endsWith('hooks.json') || file === '.claude/settings.json')).toBe(false)
     expect(TRANSPLANT_MANIFEST.templates).toContain('package.json')
     expect(TRANSPLANT_MANIFEST.templates).not.toContain('.claude/settings.json')
+    expect(listTransplantManifestFiles()).not.toContain('tests/reference/manager-evidence.test.mjs')
   })
 
   it('derives the opt-in ledger manifest from the product pointer', () => {
@@ -358,8 +296,8 @@ describe('plan / stage / apply against a target directory', () => {
     expect(byFile.get('src/shared/ui/patterns/DetailField.tsx').action).toBe('copy')
     expect(byFile.get('package.json').action).toBe('merge')
     expect(byFile.get('CLAUDE.md').action).toBe('copy')
-    expect(byFile.get('.claude/settings.json').action).toBe('copy')
-    expect(byFile.get('.codex/hooks.json').action).toBe('copy')
+    expect(byFile.has('.claude/settings.json')).toBe(false)
+    expect(byFile.has('.codex/hooks.json')).toBe(false)
     expect(byFile.get('docs/decisions/0009-shared-boundaries.md').targetPath).toBe('docs/decisions/0005-shared-boundaries.md')
     expect(byFile.get('docs/decisions/0002-typescript-version-pin.md').action).toBe('conditional')
     expect(byFile.get('AGENTS.md').action).toBe('template')
@@ -424,9 +362,12 @@ describe('plan / stage / apply against a target directory', () => {
     expect(existsSync(join(target, 'src/shared/ui/patterns/DetailField.tsx'))).toBe(true)
     expect(existsSync(join(target, 'docs/decisions/0005-shared-boundaries.md'))).toBe(true)
     expect(existsSync(join(target, 'CLAUDE.md'))).toBe(true)
-    expect(existsSync(join(target, '.claude/settings.json'))).toBe(true)
+    expect(existsSync(join(target, '.claude/settings.json'))).toBe(false)
     // The common root points at product-owned facts, whose unresolved status survives apply.
-    expect(readFileSync(join(target, 'AGENTS.md'), 'utf8')).toContain('docs/reference/product.json')
+    const targetAgents = readFileSync(join(target, 'AGENTS.md'), 'utf8')
+    expect(targetAgents).toContain('docs/reference/product.json')
+    expect(targetAgents).toContain('이 저장소는 제품 저장소다.')
+    expect(targetAgents).not.toContain('이 저장소는 다른 제품으로 옮길 레퍼런스다.')
     expect(readFileSync(join(target, 'docs/reference/product/README.md'), 'utf8')).toContain('TRANSPLANT_PENDING_FACTS')
     expect(readFileSync(join(target, 'README.md'), 'utf8')).toContain('TRANSPLANT_PENDING_README')
     expect(applied.copied).toEqual(expect.arrayContaining(['src/shared/ui/patterns/DetailField.tsx', 'CLAUDE.md', 'docs/reference/product.json', 'docs/reference/scenarios/README.md']))
@@ -459,11 +400,11 @@ describe('plan / stage / apply against a target directory', () => {
     const skill = readFileSync(join(out, '.agents/skills/screen-loop/SKILL.md'), 'utf8')
     expect(skill).toContain('docs/reference/product.json')
     expect(skill).not.toContain('zero-sol')
-    expect(readFileSync(join(out, 'AGENTS.md'), 'utf8')).toContain('docs/product/README.md')
+    expect(readFileSync(join(out, 'AGENTS.md'), 'utf8')).toContain('docs/reference/product.json')
+    expect(JSON.parse(readFileSync(join(out, 'docs/reference/product.json'), 'utf8')).inventory).toBe('docs/product')
     // The inventory README shell sits two directories deep here, so the copied rule links climb two, not three.
     const inventoryReadme = readFileSync(join(out, 'docs/product/README.md'), 'utf8')
-    expect(inventoryReadme).toContain('](../../scripts/agents/README.md#read-the-migrated-rows)')
-    expect(inventoryReadme).not.toContain('../../../scripts/agents/README.md')
+    expect(inventoryReadme).not.toContain('scripts/agents')
 
     applyTransplant(target, out)
     expect(readFileSync(join(target, 'docs/product/README.md'), 'utf8')).toBe('# 대상 원장\n')
@@ -533,12 +474,12 @@ describe('plan / stage / apply against a target directory', () => {
     expect(JSON.parse(readFileSync(join(out, 'package.json'), 'utf8')).transplantReview)
       .toContain('scripts/openapi/pull.mjs')
     expect(readFileSync(join(out, 'scripts/contracts/check.mjs'), 'utf8')).toContain("const DEFAULT_MODE = 'target'")
-    expect(existsSync(join(out, 'scripts/agents/reference-product.test.mjs'))).toBe(false)
+    expect(existsSync(join(out, 'scripts/agents'))).toBe(false)
     // The negative-control harness copies this domain-neutral type into its isolated workspace.
     expect(existsSync(join(out, 'src/api/error.ts'))).toBe(true)
   })
 
-  it('stages source-only evidence as a plain reference path and the drill record as a neutral stub', () => {
+  it('stages source-only evidence as a plain reference path', () => {
     const target = temporaryDirectory('transplant-target-')
     const out = temporaryDirectory('transplant-stage-')
     const staged = stageTransplant(target, out, undefined, { bundles: ['ascii-triplet'] })
@@ -554,14 +495,6 @@ describe('plan / stage / apply against a target directory', () => {
     expect(staged.productTerms.some((item) => item.file === 'docs/decisions/0005-shared-boundaries.md')).toBe(true)
     expect(staged.danglingLinks).toEqual([])
     expect(readFileSync(join(out, 'PENDING.md'), 'utf8')).toContain('## 레퍼런스 저장소에만 있는 근거')
-
-    const observations = readFileSync(join(out, '.agents/skills/screen-loop/references/observations.md'), 'utf8')
-    expect(observations).not.toMatch(/2026-09-10|BOARD-DRILL/)
-    // Nothing links to the other drill sections, so the target does not inherit their dates either.
-    expect(observations).not.toContain('## 2026-09-13 드릴 세 건')
-    expect(observations).not.toContain('## 읽기 비용 실측')
-    expect(observations).not.toContain('게시판')
-    expect(observations).not.toContain('BOARD-DRILL')
   })
 
   it('refuses to apply when the stage copy no longer matches its manifest', () => {

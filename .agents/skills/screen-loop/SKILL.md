@@ -1,108 +1,117 @@
 ---
 name: screen-loop
-description: Use when a request asks to implement something ("** 구현해주세요", a screen, one component, one structure, or a contract) and no edit scope is confirmed yet. This is the only skill read before scope is known; it classifies grain and kind, then decides the mode, the entry, the evidence order, the return points on failure, and how differences found against the reference are routed back to their owners. Not for copy/style maintenance, script-only work, or a task that arrived with a prepared checkpoint.
+description: Use for any request to implement or change a screen, part of a screen, component, hook, utility, API behavior, or source structure, before its edit scope is settled. Owns the request→design→verify→return loop and the completion rubric, then routes to the contract skill that owns the boundary being changed. Not for a question, a read-only review, or a command run.
 ---
 
 # Screen Loop
 
-한 문장 구현 요청의 **노드·간선·복귀**만 소유한다. 제품 증거의 진입점은 [제품 포인터](../../../docs/reference/product.json)다. 그 파일의 `inventory`에서 원장과 증거 순위를, `judgment`에서 판정을, `scenarios`에서 상태 전이를, `index`에서 요청의 context를 찾는다. 신규 프로젝트는 자기 제품의 정본 경로로 이 포인터를 설정한다. 아래 원장 링크는 현재 체크아웃의 참조이며, 원본 제품 이름이나 형제 화면을 새 제품의 기준으로 삼지 않는다. 파일 집합은 역할 **형태** 절, 준비·리뷰 필드는 [준비 절차](../../../scripts/agents/README.md#prepare-before-editing)가 소유한다.
+한 문장 구현 요청이 완료 보고에 닿기까지의 **단계·갈림·복귀**를 소유한다. 제품 근거의 경로는
+[제품 포인터](../../../docs/reference/product.json)가 소유하며, 요청에 필요한 원장만 따라간다 —
+`inventory`·`judgment`·`scenarios`·`index` 네 경로를 관례로 모두 열지 않는다.
 
-## 알갱이
+**이 루프는 파일을 만들지 않는다.** 단계의 산출물은 대화에 공개하는 판단과 실제 diff다.
+기록을 저장소에 남기는 것은 사용자가 요청했거나 세션을 넘겨야 할 때뿐이다.
 
-| 알갱이 | 단서 | 진입 | 하지 않는 일 |
-| --- | --- | --- | --- |
-| **screen** | 목록·상세·조회·등록·수정 화면 | `context <id>` | 형제 제품 값 복사. 빈 역할 파일 |
-| **slice** | 한 surface (필터만, 이력만, 팝업만) | 부모 `context` + 그 역할 형태. 승격된 화면이면 checkpoint `rows`에 그 surface 행 id를 적고 그 행만 받는다 | 화면 나머지 재구현 |
-| **component** | 컴포넌트·패턴 이름 | 공용이면 `bundle`, 아니면 부모 context + 역할 절 | 한 호출자 때문에 공용 확대 (E6) |
-| **logic** | 훅·순수 유틸·mechanic 이름 | 공용이면 `bundle` + [logic-promotion](../shared-ui-contract/references/logic-promotion.md), 아니면 부모 context + 역할 절 | 도메인 차이를 인자로 흡수 (E6) |
-| **structure** | 형태·폴더·파일 집합 | 역할 `형태` + folder-structure | 원장 옵션·문구·권한 |
+## 요청의 종류
 
-섞이면 **한 slice만**. 안 갈리면 화면 이름→screen, 컴포넌트 이름→component, `use*`·유틸 이름→logic, `형태`/`구조`/`폴더`→structure.
+| 종류 | 단서 | 하지 않는 일 |
+| --- | --- | --- |
+| **screen** | 목록·상세·조회·등록·수정 화면 | 형제 화면의 제품 값 복사. 빈 역할 파일 |
+| **slice** | 한 surface (필터만, 이력만, 팝업만) | 화면 나머지 재구현 |
+| **component** | 컴포넌트·패턴 이름 | 한 호출자 때문에 공용 확대 |
+| **logic** | 훅·순수 유틸·mechanic 이름 | 도메인 차이를 인자로 흡수 |
+| **structure** | 파일 집합·폴더·import 경계 | 원장 옵션·문구·권한 판단 |
 
-워크플로 작업은 checkpoint에 `grain`, `entry`, `mode`(`implement`|`drill`), `design.{flow,ownership,reuse,simplicity}`를 적는다. 없으면 `prepare`가 거절한다. `src/shared` 범위도 같다 — 면제는 `work.kind` maintenance/infrastructure와 이유이고, `mode`를 비우는 것은 면제가 아니라 거절이다. `entry`는 해석돼야 한다(context id · bundle id · `<reference>#형태` · structure/logic의 실존 경로). slice·component·logic은 화면 디렉터리 전체를 scope로 잡지 못한다. `work.kind`는 `workflow`|`maintenance`|`infrastructure`만 — `drill`은 kind가 아니라 `mode`다.
+섞이면 **한 slice만** 잡는다. 안 갈리면 화면 이름→screen, 컴포넌트 이름→component,
+`use*`·유틸 이름→logic, `형태`·`구조`·`폴더`→structure.
 
-기본 모드는 implement. drill은 사용자가 "드릴"이라고 했거나 이 저장소 문서 루프 시험일 때만. 기존 route만으로 드릴하지 않는다. drill은 N3까지 대상 코드를 열지 않는다 — 화면이면 그 feature·route, 공용 component·logic이면 그 bundle의 `code`와 `tests`(테스트가 계약이자 답지다).
+## 화면인가 아닌가 — 2단계의 유일한 갈림
 
-## 그래프
+**결과 계약이 기준이지 파일 형태가 아니다.**
 
-| 노드 | 소유자 | 나가는 조건 | 실패하면 |
-| --- | --- | --- | --- |
-| **N0 분류** | [진입 구분](../../../scripts/agents/README.md#know-which-entry-the-request-is) | `grain`·`entry`·`mode`가 checkpoint에 있다. mixed는 한 slice | — |
-| **N1 진입** | `cli context <id>` / `cli bundle <id>` ([문맥 찾기](../../../scripts/agents/README.md#find-the-task-context)) | 종류가 요구하는 진입이 해석됐다. 화면이면 내부 surface 목록이 나왔다 | E0 · E1 |
-| **N2 증거** | [문맥 찾기](../../../scripts/agents/README.md#find-the-task-context), [판독 규칙](../../../docs/reference/zero-sol/README.md#판독-규칙), [feature-contract 라우팅](../feature-contract/SKILL.md#read-only-what-applies) | `확정 / 미확인 / 충돌`이 갈렸고 역할 **형태**가 references에 있다. 화면 implement에서 Figma 관찰이 구성을 열거하지 않으면 그 경로 `unresolved` | E3 · E4 · E8 |
-| **N3 설계 선언** | [준비 절차](../../../scripts/agents/README.md#prepare-before-editing) | `prepare` 통과 — `design` 네 칸이 있다. `unresolved[].paths`는 답이 오면 만들 파일 | E7 |
-| **N4 구현** | 있는 역할의 **형태 절**([목록](../feature-contract/references/list-workflow.md#형태)·[URL 필드](../feature-contract/references/list-search-contract.md#형태)·[route](../feature-contract/references/router.md#형태)·[상세](../feature-contract/references/detail-workflow.md#형태)·[폼](../feature-contract/references/form-workflow.md#형태)), 없으면 해당 path skill. 배치는 [folder-structure-contract](../folder-structure-contract/SKILL.md) | 있는 역할만 그 형태 절의 파일·URL·route로 시작했고, 없는 책임을 빈 파일로 만들지 않았다. 미확인 밖 요구사항 전부에 코드와 **소유자 옆 테스트**가 있다. 화면이면 `contracts:check` 형태 검사가 통과한다 | E6 |
-| **N5 검증** | [리뷰 절차](../../../scripts/agents/README.md#review-the-actual-output), [완료 상태](../../../scripts/agents/README.md#completion-states), [관찰 범위](../feature-contract/references/mutation-actions.md#시나리오-상태와-관찰-범위) | 요구사항별 증거가 실측으로 있다. 공용화·소유권·단순성 결함은 [복귀](#n5-복귀)로 돌아갔다. 이 저장소의 상한은 완료 상태 절이 정한다 | E5 |
-| **N6 판정** | `cli review` + [AGENTS §5](../../../AGENTS.md#5-실행협업-모델) 독립 검토 | review 통과. **모든 implement·drill**에서 다른 모델(새 컨텍스트) 또는 사람이 diff와 정본을 열어 동의·반박·놓친 것을 냈고 그 기록이 review.json `independentReview`에 있다 — 게이트는 이 필드가 없으면 거절한다. 게이트·루트·공용 계약 변경은 §5대로 필수 | 반박이 맞으면 해당 노드로 |
-| **N4′ 답지 대조** | 이 문서 [답지 대조](#답지-대조) | 형태 절에서 벗어난 곳과 그 이유, 그리고 형태 절이 정하지 않아 답지에서 가져온 것이 표로 남았다 | — |
-| **N5′ 차이 반영** | 이 문서 [차이 라우팅 표](#차이-라우팅-표) | 차이마다 소유자 반영(같은 작업) 또는 사용자 질문으로 갈렸다 | 소유자 없음 → 보고만 |
+- 결과를 판정하려면 렌더·포커스·키보드·문구·navigation·부모 화면 상태를 봐야 하면 → [render](references/render.md)
+- 시각 surface 없이 호출자·입출력·부작용·실패로 닫을 수 있으면 → [nonrender](references/nonrender.md)
 
-순서 — implement: N0 N1 N2 N3 N4 (형제 답지가 있으면 N4′ N5′) N5 N6. drill: N0 N1 N2 N3 **N4′ N5′** 그다음 반영할 것마다 N4 N5 N6.
+화면 workflow 결정을 소유하는 headless hook은 파일 형태가 logic이어도 `render`다.
+서버 wire나 cache identity가 바뀌면 둘과 무관하게 [api-contract](../api-contract/SKILL.md)를 함께 조립한다.
 
-`design.flow` 누가 무엇을 호출하는가. `ownership` Query / URL / Form / 로컬 하나. `reuse` seed bundle 밖 feature mechanic·화면 내부 재사용(무엇을 쓰는지). seed `채택 / 수정 / 제외`는 checkpoint `contracts[]`가 소유한다. `simplicity` 새 파일·계층이 추적 비용을 줄이는 이유(없으면 만들지 않는다). 게이트는 네 칸의 **존재**와 `entry` 해석·scope 크기만 본다. 내용은 N5·N6이고, N6은 선택이 아니다.
+## 7단계
 
-### N5 복귀
+| 단계 | 읽는 것 | 공개하는 것 | 다음 | 실패 시 복귀 |
+| --- | --- | --- | --- | --- |
+| **1 요청 고정** | 요청 본문. 루트 기준은 [AGENTS.md](../../../AGENTS.md)이며 런타임이 주입하지 않았을 때만 연다 | 요구 번호, 관측 가능한 성공 조건, 현재 흐름·영향 범위, 편집 후보, 검증 방법 | 2 | 요청 오해·새 요구 → **1** |
+| **2 라우팅·근거** | 이 문서 → `render` 또는 `nonrender` → **제품 값**(문구·옵션·권한·기본값·컬럼)이 바뀌면 필요한 원장만(`node scripts/evidence/cli.mjs context <id>`가 절·시나리오·코드 경로를 준다. 색인 전체를 열지 않고, 색인에 없으면 원장 소유자를 직접 찾는다), 바뀌지 않으면 실제 호출자·설치된 버전의 타입·가장 가까운 테스트 → 범위가 잡힌 뒤 `description`이 맞는 계약 skill의 **해당 절만** | 확인/추론/가정/미확인, 제품 값 변경 여부, 계약 `채택 / 수정 / 제외` | 3 | 종류 오판 → **1**, 근거·wire 부족 → **2**, 선택한 계약 절이 바뀌는 경계를 소유하지 않음 → **2** |
+| **3 설계** | 2의 근거, 변경 경계 코드, 설치된 버전의 타입 | 호출 흐름, 단일 상태 소유자, 재사용 근거, 파일·API·cache 영향, 실패·복구, vertical slice, 검사 계획 | 4 | 근거 부족 → **2**, 범위가 바뀌면 → **1**에서 확인 |
+| **4 요구 대조** | 1의 성공 조건 + 3의 설계 | 요구별 `충족 / 불충족 / 다르게 설계 / 미확인`과 근거. 불필요한 파일·계층 제거 | 5 | 요청 오해 → **1**, 근거 오류 → **2**, 설계 누락 → **3** |
+| **5 구현** | 변경 지점, 가까운 호출자·테스트, 선택한 reference | 최소 코드 + 소유자 옆 테스트 | 6 | 계약·제품 사실 발견 → **2**, 소유권·흐름 → **3** |
+| **6 검증** | 변경 diff, 성공 조건, `package.json`의 검사 | 아래 완료 rubric의 각 열 | 7 | 요청 불일치 → **1**, 잘못된 사실·잘못된 계약 절 → **2**, 설계 결함 → **3**, 구현 결함 → **5** |
+| **7 보고** | 실제 diff, 정본, 검사 원출력 | 채워진 rubric + 남은 차단 조건. 멈추거나 제외한 것은 그렇게 만든 정본을 파일·절로 지목한다 | 종료 | 검토가 찾은 원인 단계 |
 
-| 발견 | 어디로 |
+루트·skill·공용 계약을 바꾸는 작업은 7단계에서 **독립 검토**를 받는다. 검토자는 보고서가 아니라
+실제 diff와 정본을 열어 동의·반박·놓친 것을 낸다.
+
+## 완료 rubric
+
+6단계에서 요구마다 이 표를 채운다. **빈 칸은 미확인이지 통과가 아니다.**
+
+| 요구 | 성공 조건 | 실행한 명령 | 실제 출력 | 관찰 방법 | 판정 |
+| --- | --- | --- | --- | --- | --- |
+| R1 | 관측 가능한 문장 | 실제 명령 | exit·핵심 출력 | 화면이면 무엇을 열어 무엇을 눌렀는지, 로직이면 어떤 입력으로 어떤 출력을 봤는지 | `구현됨 / 미구현 / 다르게 구현됨 / 미확인` |
+
+- `실제 출력`이 비면 그 행은 자동으로 `미확인`이다. 선언으로 채우지 않는다.
+- `미구현`·`다르게 구현됨`이 하나라도 있으면 원인 단계로 복귀한다.
+- 실 서버가 연결되지 않은 저장소에서 `완료`라고 쓰면 다음 사람이 고칠 게 없다고 읽는다. 실제로 그렇게 됐다.
+  도달 가능한 상한은 아래 [도달 상태](#도달-상태)가 정한다.
+- 실측할 수 없으면 추측으로 채우지 말고 **무엇을 왜 확인하지 못했는지** 적는다.
+
+### 도달 상태
+
+rubric의 행 판정과 별개로, 보고는 이 요청이 어디까지 실측됐는지를 아래 네 단어 중 하나로 말한다.
+시나리오 카드·mutation-actions·ADR이 이 어휘를 쓴다. 상태는 검증된 사실을 말하는 단어이지 새 산출물
+요구가 아니며, component·logic·structure에는 화면 상태 기계를 씌우지 않고 각자의 요구 증거로 닫는다.
+
+| 상태 | 뜻 |
 | --- | --- |
-| 공용 계약을 한 소비자를 위해 넓힘 · admission 미답 | E6 |
-| 같은 값을 Query·URL·Form·로컬에 복제 | N3 |
-| 형태 절과 다른데 이유가 없음 | N4 |
-| 단순 조립을 계층·wrapper로 감쌈 | N3 |
-| 요구사항 미구현·다르게 구현 | E5 → N3 |
+| **시나리오 확정됨** | 관련 상호작용·입력·결과·실패·복구 조건이 확정된 제품 근거에 닿았다 |
+| **시나리오 구현 완료** | 구현된 상호작용과 내부 전이를 실제 렌더 상태(URL이 바뀌는 전이면 그 URL까지)로 눌러 봤다. API가 mock·미연결이면 그 사실을 적는다. 요청 함수 로그는 그 호출 하나만 증명한다 |
+| **완료** | 요청의 실제 수용 조건(필요한 시각 결과·실 API 동작 포함)이 통과했다. 제품 사실 부재, mock-only, 미실행 검사가 하나라도 있으면 쓰지 못한다 |
+| **이관 검증됨** | 대상 제품의 첫 실제 소비자와 필수 실행 검사가 채택을 증명했다. 원본 fixture와 staged 복사만으로는 아니다 |
 
-## 실패 간선 — 실측된 것만
+실제 backend가 연결되지 않은 환경의 상한은 **시나리오 구현 완료**(요청 함수 도달과 내부 전이의
+URL·상태까지)다. fixture·mock은 실제 backend 수용을 증명하지 못한다. `완료`·`이관 검증됨`을 쓰기 전에
+원장 README의 프로젝트 사실(배포 환경·API 계약의 미확인)을 다시 확인한다. 시각 작업을 제외한 이전
+시험이 새 요청의 시각 수용 조건을 없애지 않는다.
 
-| 간선 | 무엇이 일어나면 | 어디로 |
-| --- | --- | --- |
-| **E0** | 요청한 화면 이름이 `context` 목록에 없다 | N1. 원장 파일에서 절을 찾아 [없는 증거에서 시작](../../../scripts/agents/README.md#start-from-missing-evidence). checkpoint `entry`는 그 화면 바깥 역할의 `<reference>#형태`, `surfaces: []`, 코드 경로는 `evidenceGaps` |
-| **E1** | 진입 id가 해석되지 않거나, `group`이라 화면 하나를 가리키지 않는다 | N1. 원장 표 본문에서 화면을 직접 분해. group id 자체는 `entry`로 유효하고 `prepare`가 받는다 — 분해는 사람 몫이다 |
-| **E2** | `contract.rows`가 비어 있다 | **진행.** 구조는 skill 소유라 막지 않고 없는 제품 사실만 원문 관찰. 단 N2 나가는 조건(관찰 열이 구성을 열거하는가)은 이 행과 무관하게 따로 본다 |
-| **E3** | 표 셀·산문·판정 문서가 다른 시점을 말한다 | N2. 정본은 [승격 행 읽기](../../../scripts/agents/README.md#read-the-migrated-rows), 셀을 같은 작업에서 갱신 |
-| **E4** | 이름이 소유를 오도한다 | N2. [route 단위로 걷기](../../../scripts/agents/README.md#know-which-entry-the-request-is) |
-| **E5** | 요구사항이 미구현·다르게 구현됐다 | N3. [리뷰 절차](../../../scripts/agents/README.md#review-the-actual-output)가 대체 ID 또는 차단 조건을 강제 |
-| **E6** | 공용 계약을 넓혀야만 요청을 만족한다 | **구현 이탈.** [승격 심사](../shared-ui-contract/references/promotion.md#admission-test)에 답하지 못하면 feature-local |
-| **E7** | `prepare`는 통과했는데 구현 파일이 훅에 막힌다 | N3. `unresolved[].paths`가 화면 전체를 덮었다. 답이 만들 파일로 좁힌다 |
-| **E8** | 원문에만 있는 요구를 발견한다 | N2로 요구사항 추가 + N5′로 원장 행 추가 |
+## 실패 복귀 — 실측된 것만
 
-각 간선을 만든 실측 사건은 [이 저장소의 관찰](references/observations.md)에 있다. 실측 없는 간선은 넣지 않는다.
+| 무엇이 일어나면 | 어디로 |
+| --- | --- |
+| 요청한 화면이 원장 색인에 없다 | **2.** 원장 파일에서 절을 직접 찾는다. 없으면 `미확인`이지 부재가 아니다 |
+| 색인 id가 `group`이라 화면 하나를 가리키지 않는다 | **2.** 원장 표 본문에서 화면을 직접 분해한다 |
+| 표 셀·산문·판정 문서가 다른 시점을 말한다 | **2.** `product.json`이 연결한 inventory README의 판독 규칙을 적용하고 셀을 같은 작업에서 갱신 |
+| 이름이 소유를 오도한다 | **2.** route 단위로 걸어 실제 소유자를 찾는다 |
+| 선택한 계약 절이 바뀌는 경계를 소유하지 않는다 | **2.** `description`으로 소유자를 다시 고른다 |
+| 같은 값을 Query·URL·Form·로컬에 복제했다 | **3** |
+| 단순 조립을 계층·wrapper로 감쌌다 | **3** |
+| 형태가 계약과 다른데 이유가 없다 | **5** |
+| 공용 계약을 한 소비자를 위해 넓혀야만 요청이 만족된다 | **구현 이탈.** [승격 심사](../shared-ui-contract/references/promotion.md#admission-test)에 답하지 못하면 feature-local |
+| 원문에만 있는 요구를 발견했다 | **1**에 요구 추가 + 원장 행 추가 |
 
-## 답지 대조
+## 차이를 발견하면 소유자로 되돌린다
 
-드릴에서만 N3 전에 대상 코드를 닫아 둔다. implement는 대상 코드를 열어 고친다. 형제 답지 대조(N4′)는 두 모드 모두 쓸 수 있다.
+| 차이 | 소유자 |
+| --- | --- |
+| 원장 행 없음·낡음·원문 행 누락 | `product.json`이 연결한 inventory의 해당 문서와 표 형식 |
+| 표 ↔ 산문 ↔ 판정 문서 충돌 | 판정 문서 + 원장 셀. 답 없으면 사용자 질문 |
+| 제품 사실 부재 | 사용자 질문. 그 경로는 답 전까지 구현하지 않는다 |
+| 계약 문장이 없거나 모호 | 해당 계약 skill의 reference. 도메인 이름 소비자 표는 만들지 않는다 |
+| 공용 semantics 드리프트 | [ADR 0009](../../../docs/decisions/0009-shared-boundaries.md) + shared-ui-contract |
 
-- **형태는 형태 절에서, 제품 값은 원장·원문에서.** 구조(파일 집합·URL 모양·route 본문·훅 반환 모양)는 N4 에서 역할별 형태 절을 읽고 그대로 시작한다. 형제 화면은 형태 절이 아직 정하지 않은 구조를 잡는 보조다. 금지되는 것은 형제의 **제품 값**(옵션·문구·권한·기본값·컬럼 집합)을 근거 없이 가져오는 것이다.
-- **drill 모드는 N3까지 대상 코드를 열지 않는다.** 화면이면 `src/features/<domain>`·`src/routes/_app/<domain>`, 공용 component·logic이면 bundle의 `code`·`tests`다. 대상 코드는 답지이므로 설계 선언 뒤에 연다. 저장소에 이를 관찰하는 장치는 없다 — 열었으면 보고서 첫머리에 "오염"으로 적는다.
-- **N4′**: 표 두 개. ① 형태 절과의 차이 — `형태 절 항목 | 내 구현 | 같음·다름 | 다르면 이유`(이유 없는 다름은 고친다). ② 답지에서 가져온 것 — `답지 파일 | 가져온 구조 | 형태 절에 없어서인가`. "예"인 항목은 그 형태 절에 추가할 후보이고 N5′ 라우팅 표의 "skill 문장 없음" 행으로 간다. 답지끼리 다른 것(드리프트)도 여기 적는다.
-- **N5′**: 아래 표로 소유자를 정하고 같은 작업에서 고친다. 반영 대상 파일을 checkpoint `scope`에 넣고 재준비한다. 제품 미확인만 사용자 질문으로 남기고 그 경로는 `unresolved`로 막는다. 소유자가 없는 차이는 새 정본을 만들지 말고 보고서에 남긴다.
-- **산출물**: `.ai-work/YYYY-MM-DD-NN-drill-<id>/`에 `checkpoint.json`, `observations.md`, `DRILL.md`(절: 진입·배달 / 설계·prepare / 답지 대조 / 차이·반영 / 미확인 / 검증 yes·no). 보고서는 기록이고 **반영된 diff가 산출물**이다. 답지에서 얻은 사실을 원장·skill에 옮길 때는 답지가 아니라 원문·확정 답을 근거로 적는다.
-
-## 차이 라우팅 표
-
-| 차이 | 소유자 | 반영 |
-| --- | --- | --- |
-| 원장 행 없음 · `현재 코드` 낡음 · `(대기)` · 원문 행 누락 | `docs/reference/zero-sol/NN-*.md`, `notion/NN-*.md` | 같은 작업에서 셀 갱신·행 추가. 승격하면 `id`·`종류`([표 형식](../../../docs/reference/zero-sol/README.md#표-형식)) |
-| 표 ↔ 산문 ↔ 판정 문서 충돌 | 판정 문서 §5 + 원장 셀 | 판독 규칙 적용 후 채택 결과를 셀에 기록. 답 없으면 질문 |
-| 제품 사실 부재 | 판정 문서 §5 | 사용자 질문, 해당 경로 `unresolved` |
-| skill 문장 없음·모호 (배치 분리 근거, 테스트 의무 등) | 해당 skill reference | 규칙 문장 추가. 도메인 이름 소비자 표는 만들지 않는다 |
-| 형태 절이 정하지 않은 구조(파일·URL·route·훅 모양) | 그 역할 reference 의 `형태` 절 + `scripts/contracts/screen-shape.mjs` | 형태 절에 행 추가, 기계가 볼 수 있으면 검사기에도 |
-| 답지끼리 드리프트 | 공용 semantics면 [ADR 0009](../../../docs/decisions/0009-shared-boundaries.md)·shared-ui-contract, feature 정책이면 그 화면 | 판정 후 한쪽 수정. 독립 검토 |
-| 게이트 사각 | `scripts/agents/` + `preflight.test.mjs` | 장치로만 막는다. 못 잡는 종류는 아래에 한계로 적는다. 독립 검토 필수 |
-| 도구·런타임 | [runtime-adapters.md](../../../scripts/agents/runtime-adapters.md) 또는 저장소 밖 | 보고만 |
+소유자가 없는 차이는 새 정본을 만들지 말고 보고에 남긴다.
 
 ## 한계
 
-- 게이트는 선언·범위·인용·형태를 검사한다. 실제 드릴의 실행 범위와 통과한 잘못된 선언은 [관찰 기록](references/observations.md)이 소유한다. 선언 검사만으로 의미적 타당성을 증명할 수 없으므로 N6의 독립 검토 기록(`independentReview`)을 review 게이트가 요구한다. 기록의 존재를 볼 뿐 검토의 질은 보지 못한다.
-- `prepare`가 이 스킬을 필수 참조로 요구하는 것은 `work.kind`가 없거나 `workflow`인 `src/features`·`src/routes`·`src/shared` 범위다. `src/api`와 선언된 maintenance/infrastructure는 강제하지 않는다.
-- 공용 API 확대(E6)는 bundle code root의 export **이름 집합** 변화만 게이트가 잡는다(prepare 시점 코드 ↔ review 시점 코드, `contracts[] modify` 필요). 같은 이름의 props·인자가 넓어지는 것은 N5·N6이 본다.
-- `independentReview` 기록은 implement/drill 전부와 게이트·루트·스킬 scope(`scripts/agents`·`scripts/contracts`·`.agents/skills`·`AGENTS.md`)에 요구된다. 기록의 존재를 볼 뿐 검토자가 실제로 다른 컨텍스트였는지는 못 본다.
-- `settled`는 포함 surface의 원장 표에 `id` 행이 있어야 통과한다. 원장 파서는 `frame 존재`만 적힌 관찰 셀을 미열거로 읽어 unresolved에 넣는다. 그 밖의 "열거하지 않은 셀"은 파서가 모른다.
-- slice 의 행 단위 배달은 승격된 화면에서만 된다. 미승격 화면의 slice 는 원장 절 전체를 받고, 그 절에서 행을 고르는 것은 사람이다.
-- 화면 형태 검사(`scripts/contracts/screen-shape.mjs`)는 파일 이름·위치·존재, 목록 route 의 e2e 배열 합류, 그리고 소스 두 가지(`$param` route 의 `loader`, columns 파일의 aria 어휘 리터럴·`headerSortDirection` import)만 본다. 보지 않는 것: 이름 관례(`*Filters.tsx`·`use*Result.ts`·`*DetailScreen.tsx`·`*CreateScreen.tsx`)를 따르지 않는 화면(역할이 없어 무검사), 한 디렉터리의 두 스택, mechanic 위임 뒤 그 mechanic 의 실제 파일, URL 필드 이름·값 모양, `locale` 타입. 그 다섯은 N4′ 표와 리뷰가 본다.
-- 도구가 원문을 잘라 낼 수 있다. 읽는 방법은 [runtime-adapters.md](../../../scripts/agents/runtime-adapters.md)가 소유한다.
-- 형제 화면의 제품 값을 근거 없이 가져오지 않고, 답지 사실을 규칙으로 승격하지 않고, 원장에 없는 문구·상태·권한·기본값을 추측하지 않는다. 구조는 형태 절이 정하고 검사기가 본다. 이 절차는 설명 없이 진행하기 위한 것이지 사용자 질문을 대신하는 것이 아니다.
-- 읽기 비용: 화면에 있는 역할의 형태 절만 읽으면 구조를 시작할 수 있다(목록이면 목록·URL 필드·route 세 절, 2026-09-10 실측 약 5.4KB). 그 앞에 AGENTS §2 가 요구하는 SKILL 전체 읽기(feature·folder-structure·이 문서, 약 33KB)가 있으므로 형태 절은 Read 의 offset 으로 절만 읽는다. 검사 실패 문구가 읽을 절을 지목하므로 다른 절을 미리 열지 않는다.
-
-## 이 저장소의 관찰
-
-사건·수치·원본 위치는 [기존 관찰 기록](references/observations.md)이 소유한다. 이관 시 이 기록은 빈 관찰 shell로 대체하며, 원본 제품 사실을 새 프로젝트의 운영 근거로 옮기지 않는다.
+- 이 루프는 의미를 증명하지 않는다. 기계가 잡는 것은 타입·lint·테스트·`contracts:check`이고,
+  요구 해석·범위 관련성·단순성·공용화 판단·"없다"의 직접 확인은 3~7단계의 대조와 독립 검토가 본다.
+- 계약 skill은 **이번 변경에 해당하는 절만** 읽는다. 전체를 읽는 것이 기본값이 아니다.
+- 도구가 원문을 잘라 내거나 거부를 성공 종료로 되돌릴 수 있다. 빈 출력은 부재가 아니라 미확인이다.

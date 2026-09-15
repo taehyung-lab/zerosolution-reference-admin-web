@@ -9,7 +9,7 @@ Routes and feature screens compose visible parts explicitly. Repeated JSX is acc
 Sibling lists inside one feature may reuse one feature-owned result component for an identical
 toolbar/count/table/pagination assembly; columns, sort options, search gating and row actions remain
 explicit caller inputs, and the composition has no resource mode, query, endpoint or schema descriptor
-(current example: [이 저장소의 관찰](#이-저장소의-관찰)).
+(the owning feature decides this from its actual consumers).
 
 Within one feature, screens with the same workflow may share an explicit screen and a small typed definition for actual field/column differences. If state transitions, selection, actions or query gates differ, keep separate screen/filter/result assembly and reuse the repeated mechanics. Props alone are not a reason to combine hooks; a pure feature-local transition is enough when only the sort/page update repeats.
 
@@ -54,10 +54,3 @@ Screen의 props는 조회/URL/업무 연결과 표시 책임을 분리하는 경
 - Shared screen shells or schema/config-driven universal pages
 - Feature-to-feature imports for permission or navigation catalogs
 - Screen-specific copy, permissions, Query, or mutations inside shared UI
-
-## 이 저장소의 관찰
-
-규칙이 아니라 이 저장소 화면에서 위 규칙을 적용한 기록이다. 신규 프로젝트는 이 절을 비우고 자기 화면으로 다시 채운다.
-
-- feature 소유 결과 컴포넌트 재사용: 회원 기록 목록들이 `MemberRecordResult` 를 공유한다.
-- 같은 workflow 의 변형이 한 화면과 작은 타입 정의를 공유하는 예: 활성 회원 전체·일반·불량.

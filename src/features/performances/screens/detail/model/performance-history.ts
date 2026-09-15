@@ -13,7 +13,7 @@ export function toPerformanceHistoryEntries(
   return history.map((entry) => ({
     id: entry.id,
     date: `${formatDate(entry.occurredAt)} ${formatTimeInTimeZone(entry.occurredAt, displayTimeZone(), "second")}`,
-    manager: entry.operator
+    actor: entry.operator
       ? `${entry.operator.name} (${entry.operator.account})`
       : t("detail.emptyValue"),
     lines: [

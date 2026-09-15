@@ -111,7 +111,7 @@ Figma는 별도 OS 창이나 origin 전체에 하나뿐인 경고 UI를 요구�
 
 ### 4.4 어느 레이어에 붙나 `[추론]`
 
-AGENTS.md §3의 상태 소유권 표에서 "인증·권한·locale·timezone 같은 앱 수명주기"는 app boundary/provider가 단일 소유자다. 세션 마감은 그 범주다. `shared/`는 서버 계약을 알 수 없으므로 소유할 수 없고, `features/`에는 소비자가 없다.
+[AGENTS.md 의 상태 소유권 표](../../../AGENTS.md#이-저장소의-함정)에서 "인증·권한·locale·timezone 같은 앱 수명주기"는 app boundary/provider가 단일 소유자다. 세션 마감은 그 범주다. `shared/`는 서버 계약을 알 수 없으므로 소유할 수 없고, `features/`에는 소비자가 없다.
 
 최소 구조 — **새 파일 4개 수준, 새 공용 컴포넌트 0개**:
 
@@ -140,7 +140,7 @@ AGENTS.md §3의 상태 소유권 표에서 "인증·권한·locale·timezone �
 | 연장 중 진행 표시 | 있다. `연장`은 화면 진입 primary 요청이 아니므로 overlay 금지, 버튼 pending만 | `.agents/skills/shared-ui-contract/references/blocking-progress.md:6,8` | 커버됨(제외 판정) |
 | 유휴 시 배경 인증 트래픽 억제 | 없다. `refetchOnWindowFocus:false`는 있으나 polling·유휴 억제를 소유한 규칙이 없다 | `src/app/providers/AppProviders.tsx:12-14`, `query-cache.md` 전문 | 아예 없음 |
 | `SESSION_EXPIRED(4004)`의 kind 매핑 | 있다. ADR이 `401`·`4004` → `unauthorized`를 선언하고 구현이 그 표를 따른다. 봉투 실패 경로는 `DECLARED_FAILURE_KINDS`가, HTTP 401 경로는 `classifyHttpStatus`가 같은 kind를 낸다 | `docs/decisions/0001-rehearsal-api-contract.md:114-120`, `src/api/http/envelope.ts:19-27`, `src/api/http/client.ts:80-88` | 커버됨 — 남은 것은 kind가 아니라 어느 HTTP status로 오는가다(미확인 7) |
-| 세션 마감 상태의 단일 소유자 | 있다. 앱 수명주기 → app boundary/provider | `AGENTS.md` §3 상태 소유권 표 | 커버됨 |
+| 세션 마감 상태의 단일 소유자 | 있다. 앱 수명주기 → app boundary/provider | `AGENTS.md`의 상태 소유 표 상태 소유권 표 | 커버됨 |
 | 롤링 TTL과 만료 권위의 재검토 조건 | 있다. ADR이 이 작업으로 명시적으로 넘긴다 | `docs/decisions/0006-auth-token-storage.md:41-43` | 커버됨 |
 
 ## 6. 미확인
@@ -148,7 +148,7 @@ AGENTS.md §3의 상태 소유권 표에서 "인증·권한·locale·timezone �
 답이 없으면 구현이 갈리는 것만 적는다.
 
 1. **서버가 세션 만료 시각을 어떤 형태로 알려주는가.** `[확인]` 스냅샷은 `X-Session-Expires`(ISO-8601)를 **응답 헤더**로, `info.description`과 `sign-in`·`ping` 엔드포인트 설명의 **산문**으로만 선언한다(`openapi/admin.snapshot.json:5,6915,6991`). 스냅샷 전체에 OpenAPI `responses.headers` 선언은 **0건**이고, `ping`·`sign-out`·`password`의 200 본문은 모두 `rs.Ja.Void`다. 따라서 **응답 본문에 만료 필드는 없고, 생성물이 타입으로 보증하는 헤더도 없다.** 이 헤더를 읽는 코드는 계약이 아니라 산문에 의존한다. 신규 백엔드 계약에서 이 헤더를 스키마로 선언받지 못하면, 그 사실을 코드 한 곳에 고립시키고 `contract` 실패로 다룰지 결정해야 한다.
-2. **cross-origin 배포에서 `X-Session-Expires`가 CORS로 노출되는가.** 배포 환경 자체가 미확인이다(`AGENTS.md` §1). 노출되지 않으면 헤더는 존재해도 읽히지 않고, 이 설계 전체의 권위가 사라진다. 대안(응답 본문 필드)은 신규 계약 협상 대상이다.
+2. **cross-origin 배포에서 `X-Session-Expires`가 CORS로 노출되는가.** 배포 환경 자체가 미확인이다(`AGENTS.md`의 구현 진입 절). 노출되지 않으면 헤더는 존재해도 읽히지 않고, 이 설계 전체의 권위가 사라진다. 대안(응답 본문 필드)은 신규 계약 협상 대상이다.
 3. **측정된 access token TTL과 선언값 30분 중 무엇이 배포 사실인가.** 불일치가 보고됐다(§3). access token TTL, 서버 세션 TTL, refresh cookie 수명 셋이 서로 어떤 관계여야 하는지 확정되기 전에는 "만료 전 경고"의 시점을 정할 수 없다.
 4. **경고 임계값.** Figma `1.4.4`가 미판독이고 Notion의 "5분0초"는 인증코드 카운터 문맥이다. 5분(상단 바 색 변화 시점 후보)인지 1분인지에 따라 사용자가 반응할 시간과 dialog 카피가 달라진다.
 5. **유휴 로그아웃이 제품 정책인가.** 롤링 TTL 아래에서 "유휴 30분 후 로그아웃"을 지키려면 유휴 중 배경 인증 요청을 금지해야 하고, 이는 자동 갱신이 필요한 화면(대시보드·발권 현황 등)의 요구와 정면으로 충돌한다. 정책이 확정되기 전에는 폴링을 도입하지 않는다.

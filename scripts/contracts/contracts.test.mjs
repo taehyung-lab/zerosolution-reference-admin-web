@@ -20,7 +20,6 @@ import {
   parseVerifyChain,
   pnpmCommandFailures,
   readLocalLinkFailures,
-  agentsSectionReferenceFailures,
   prohibitedAbstractionSourceFailures,
   retiredDocumentNameFailures,
   transplantSentinelFailures,
@@ -327,7 +326,7 @@ describe('local markdown links', () => {
 })
 
 describe('product names inside skill rule text', () => {
-  it('notices domain nouns, identifiers and feature directories in rule lines, and skips the observation section', () => {
+  it('notices domain nouns, identifiers and feature directories anywhere in a portable skill', () => {
     // `auth` is filtered out by readFeatureDirectories in production; here the caller passes the list.
     const dirs = ['members', 'managers']
     expect(productTermsInLine('회원 목록은 즉시 조회한다', undefined, dirs)).toEqual(['회원'])
@@ -336,7 +335,7 @@ describe('product names inside skill rule text', () => {
     expect(productTermsInLine('auth session refresh keeps the draft; remember it', undefined, dirs)).toEqual([])
     // English prose names the domain too, in any case and plural; `performance` is left out (React performance docs).
     expect(productTermsInLine('the rehearsal manager list and member lists; performance boundaries', undefined, dirs)).toEqual(['rehearsal', 'manager', 'member'])
-    // camelCase-embedded identifiers count; a heading counts; `#` inside a fence is not a heading and cannot end the skip.
+    // camelCase-embedded identifiers and fenced examples count because examples also become copied instructions.
     expect(productTermsInLine('`usePerformanceDetail` stays in api', undefined, dirs)).toEqual(['PerformanceDetail'])
     const files = createDocuments({
       'rule.md': '# Rule\n\n회원·운영자 목록은 명시 검색이다.\n\n## 이 저장소의 관찰\n\n회원 목록은 `MemberListScreen` 이다.\n\n```md\n# 운영자 fence heading\n```\n\n회원 관찰 계속.\n\n## Another rule\n\n공연 목록은 즉시 조회.\n\n### 게시판 heading\n',
@@ -348,9 +347,9 @@ describe('product names inside skill rule text', () => {
     expect(notices[0]).toContain('3: 회원·운영자')
     expect(notices[0]).toContain('17: 공연')
     expect(notices[0]).toContain('19: 게시판')
-    expect(notices[0]).not.toContain('MemberListScreen')
-    expect(notices[0]).not.toContain('fence')
-    expect(notices[0]).not.toContain('13:')
+    expect(notices[0]).toContain('7: 회원·MemberListScreen')
+    expect(notices[0]).toContain('10: 운영자')
+    expect(notices[0]).toContain('13: 회원')
   })
 })
 
@@ -788,26 +787,16 @@ describe('sentinel occurrences and citation drift', () => {
 
   it('rejects a retired document name wherever it is cited', () => {
     const [stale, clean] = createDocuments({
-      'eslint.config.js': "['useListTable', 'list-detail.md, react-performance.md'],\n",
+      'eslint.config.js': "['useListTable', 'list-detail.md, react-performance.md'],\n// docs/design/2026-09-14-reference-document-loop-redesign.md\n",
       'src/ok.ts': '// see select.md\n',
     })
 
     expect(retiredDocumentNameFailures([stale, clean])).toEqual([
       `${stale}:1: 삭제된 문서 이름 → list-detail.md`,
+      `${stale}:2: 삭제된 문서 이름 → 2026-09-14-reference-document-loop-redesign.md`,
     ])
   })
 
-  it('rejects an AGENTS.md section number that no longer exists', () => {
-    const agents = '# root\n\n## 0. 모드\n\n## 3. 아키텍처\n\n## 7. 규칙 수명주기\n'
-    const [stale, ok] = createDocuments({
-      'docs/decisions/0001.md': '`AGENTS.md` §5의 bootstrap 계약과 §11 판단\n',
-      'docs/decisions/0002.md': 'AGENTS.md §3 레이어 경계\n',
-    })
-
-    expect(agentsSectionReferenceFailures([stale, ok], agents)).toEqual([
-      `${stale}:1: AGENTS.md §5 절이 없다`,
-    ])
-  })
 
   it('requires every prohibited-abstraction source to be a real skill, reference, or ADR', () => {
     const config = `

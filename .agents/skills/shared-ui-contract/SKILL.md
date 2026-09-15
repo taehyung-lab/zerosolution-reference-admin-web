@@ -5,14 +5,14 @@ description: Use when adding or changing shared Radix and Tailwind UI, DataTable
 
 # Shared UI Contract
 
-구현 요청이면 이 문서로 오기 전에 [screen-loop](../screen-loop/SKILL.md) N0에서 `grain`·`entry`·`mode`를 적었는지 본다. 공용 컴포넌트 구현은 `grain` component, `entry`는 bundle id.
+구현 요청이면 이 문서로 오기 전에 [screen-loop](../screen-loop/SKILL.md)에서 요구사항·결과 경계·근거·검증 방법을 고정한다.
 
 Share stable behavior, not a guessed resource framework. Source-owned UI remains replaceable only when it has no domain, API, router, cache, permission, or workflow knowledge.
 
 ## Read only what applies
 
 - Source-owned shadcn-style/Radix primitive, Tailwind token, focus, keyboard, or primitive accessibility: read [references/primitives-and-tokens.md](references/primitives-and-tokens.md).
-- Promoting, confirming, narrowing, or demoting shared UI/pattern composition: read [references/promotion.md](references/promotion.md). Count screens and quote Notion sentences from `docs/reference/zero-sol/` as the evidence; the current verdicts live in `docs/reference/zero-sol-figma-analysis.md`.
+- Promoting, confirming, narrowing, or demoting shared UI/pattern composition: read [references/promotion.md](references/promotion.md). Use the target inventory and judgment document located through `docs/reference/product.json`; the skill does not name a product domain.
 - Promoting or demoting a shared state mechanic or pure utility: read [references/logic-promotion.md](references/logic-promotion.md).
 - Any `shared/lib` function or hook or `shared/config` preset: read [references/shared-values.md](references/shared-values.md).
 - Translation namespace, adding a key, product-generic copy ownership, or locale parity: read [references/i18n.md](references/i18n.md).

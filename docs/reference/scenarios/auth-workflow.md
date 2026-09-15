@@ -80,7 +80,7 @@ anonymous ──sign-in 200 (accessToken 없음)──▶ challenge-pending ─�
 
 담는 것은 로그인 ID, 1차 성공 시각(30분 마감 계산용), 선택한 2차 방식뿐이다. 토큰·roles·permission·프로필은 담지 않는다 — 아직 서버가 인정한 주체가 아니다.
 
-AGENTS.md §3 상태 소유권 표의 어느 칸도 이것을 받지 못한다.
+[AGENTS.md 의 상태 소유권 표](../../../AGENTS.md#이-저장소의-함정)의 어느 칸도 이것을 받지 못한다.
 
 - **서버 데이터/캐시(Query)** — 아니다. 진행 중인 workflow이지 조회 결과가 아니다.
 - **Router search** — 아니다. URL에 실으면 공유·복원 대상이 되고, 아직 인증되지 않은 주체의 진행 상태가 링크로 새어 나간다.
@@ -131,7 +131,7 @@ AGENTS.md §3 상태 소유권 표의 어느 칸도 이것을 받지 못한다.
 | 2FA 경로에 `Authorization` 미부착 | `src/api/http/credential.ts:117`(`/auth/2fa/` 포함, 이관 sentinel 표시됨) | 커버됨 |
 | 2차 인증 4개 operation 생성물 | `src/api/generated/endpoints.ts:2352,2366,2382,2396`(`verifyGoogleOtp`·`generateGoogleOtp`·`verifyEmail`·`sendEmail`) | 커버됨 |
 | `accessToken` 없는 sign-in 200을 정상 흐름으로 다루기 | `src/features/auth/model/session.ts:12-14`가 예외를 던진다. 계약은 그 경우를 정상으로 선언(`openapi/admin.snapshot.json:6909`) | 수정 필요 |
-| 성립 전 challenge 상태의 소유자 칸 | `AGENTS.md` §3 상태 소유권 표에 해당 칸 없음(4.2) | 아예 없음 |
+| 성립 전 challenge 상태의 소유자 칸 | `AGENTS.md`의 상태 소유 표 상태 소유권 표에 해당 칸 없음(4.2) | 아예 없음 |
 | 인증코드 카운트다운 표시 | `src/`(생성물 제외)에 countdown/남은시간 심볼 0건 | 아예 없음 |
 | 비밀번호 변경 요구 화면 | `src/features/auth/screens/login/ui/LoginScreen.tsx:36-40`이 자리표시자 오류만 낸다 | 아예 없음 |
 | 미루기 상태를 저장할 클라이언트 칸 | 없고, **만들지 않는다**. 소유자는 서버 `extend`(`openapi/admin.snapshot.json:14558`) | 아예 없음(제외 판정) |

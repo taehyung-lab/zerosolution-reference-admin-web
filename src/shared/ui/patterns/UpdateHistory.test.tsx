@@ -2,7 +2,7 @@ import { render, screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { UpdateHistory } from './UpdateHistory'
 
-const labels = { date: 'Updated at', change: 'Change', manager: 'Manager' }
+const labels = { date: 'Updated at', change: 'Change', actor: 'Manager' }
 
 describe('UpdateHistory', () => {
   it('renders the empty text instead of a table when there are no entries', () => {
@@ -15,8 +15,8 @@ describe('UpdateHistory', () => {
     render(
       <UpdateHistory
         entries={[
-          { id: '1', date: '2026-08-28', lines: ['Updated', 'Name: A > B'], manager: 'Admin' },
-          { id: '2', date: '2026-08-27', lines: ['Created'], manager: '-' },
+          { id: '1', date: '2026-08-28', lines: ['Updated', 'Name: A > B'], actor: 'Admin' },
+          { id: '2', date: '2026-08-27', lines: ['Created'], actor: '-' },
         ]}
         labels={labels}
         emptyText="No history"
