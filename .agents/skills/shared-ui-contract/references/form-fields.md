@@ -6,7 +6,7 @@ Read this file only for `FormField`, a TanStack Form adapter, typed field names,
 
 - `FormField` registers `form.Field`, normalizes the first string or Standard Schema issue, and injects control ID, `aria-describedby`, and `aria-invalid`.
 - Thin adapters take `form` plus a typed `name`, bind through `form.Field`, and read `field.state.meta.errors`; they do not accept an `error` prop.
-- `FieldForm<T>` exposes `Field` and the installed Form API's `formId`; `formFieldControlId(form, name)` keeps labels/errors/focus unique across simultaneous forms. `FormField` preserves the selected name's `DeepValue` rather than widening values to every field in the form. `DeepKeys` and `DeepKeysOfType` reject misspelled or wrong-value-kind names.
+- `FieldForm<T>` exposes React `Field` and the installed Form API's `formId`; a core-only `AnyFormApi` is not that binding. Use the declared React Form dependency, not a direct import from transitive `@tanstack/form-core`. `formFieldControlId(form, name)` keeps labels/errors/focus unique across simultaneous forms. `FormField` preserves the selected name's `DeepValue`; `DeepKeys` and `DeepKeysOfType` reject misspelled or wrong-value-kind names.
 - Server errors written to `errorMap.onServer` render through the same association.
 - Standard Schema validation does not replace submit values with the transformed output; the feature schema `parse`s the submitted values before the request mapper (form-workflow).
 - Primitives remain form-library-neutral. Feature schema, defaults, options Query, conditional behavior, normalization, copy, and payload mapping remain outside adapters.
