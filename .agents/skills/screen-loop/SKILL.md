@@ -35,6 +35,11 @@ description: Use for any request to implement or change a screen, part of a scre
 화면 workflow 결정을 소유하는 headless hook은 파일 형태가 logic이어도 `render`다.
 서버 wire나 cache identity가 바뀌면 둘과 무관하게 [api-contract](../api-contract/SKILL.md)를 함께 조립한다.
 
+**공용 계약이 없는 control은 그것을 품은 surface의 workflow가 소유한다.** 버튼처럼 전용 reference가
+없는 control은 폼 안이면 form, 목록 툴바면 list, 상세 액션이면 detail의 절을 읽는다. control 이름만
+보고 [shared-ui-contract](../shared-ui-contract/SKILL.md)로 가지 않는다 — 그쪽은 그 control 자체의
+공용 계약(select·dialog·table 등 전용 reference가 있는 것)을 바꿀 때다.
+
 ## 7단계
 
 | 단계 | 읽는 것 | 공개하는 것 | 다음 | 실패 시 복귀 |
