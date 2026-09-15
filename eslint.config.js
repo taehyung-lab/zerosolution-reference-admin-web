@@ -226,7 +226,7 @@ export default tseslint.config(
       'src/app/**/*.tsx',
       'src/features/**/*.tsx',
       'src/routes/**/*.tsx',
-      'src/shared/ui/{form,patterns,primitives}/**/*.tsx',
+      'src/shared/ui/**/*.tsx',
     ],
     ignores: ['**/*.test.tsx'],
     rules: {
