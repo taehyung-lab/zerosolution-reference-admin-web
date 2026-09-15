@@ -161,7 +161,7 @@ function BoardDetailContent({
           labels={{
             date: t('board.detail.historyDate'),
             change: t('board.detail.historyChange'),
-            manager: t('board.detail.historyManager'),
+            actor: t('board.detail.historyManager'),
           }}
           emptyText={t('board.detail.historyEmpty')}
         />

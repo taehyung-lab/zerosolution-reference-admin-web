@@ -79,19 +79,6 @@ describe('screen shape', () => {
     expect(screenShapeFailures(root)).toEqual([])
   })
 
-  it('reports ui/model confusion at any depth and leaves lib and config to the placement table', () => {
-    const root = fixture({
-      ...list(),
-      'src/features/things/screens/list/model/nested/ThingListActions.tsx': '',
-      'src/features/things/mechanics/record-list/ui/thing-record-policy.ts': '',
-      'src/features/things/screens/list/lib/format-date-mapper.ts': '',
-      'src/features/things/screens/list/config/thing-columns.tsx': '',
-    })
-    expect(screenShapeFailures(root)).toEqual([
-      expect.stringMatching(/mechanics\/record-list\/ui\/thing-record-policy\.ts 는 model\/ 에 있어야 한다/),
-      expect.stringMatching(/screens\/list\/model\/nested\/ThingListActions\.tsx 는 ui\/ 에 있어야 한다/),
-    ])
-  })
 
   it('requires every list route to join the list-contract e2e arrays, counting only array literals', () => {
     const route = "import { ThingListScreen } from '@/features/things/screens/list/ui/ThingListScreen'\nexport const Route = createFileRoute('/_app/things/')({})\n"

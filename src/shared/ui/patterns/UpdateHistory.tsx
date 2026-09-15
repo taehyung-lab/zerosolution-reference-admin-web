@@ -5,7 +5,7 @@ export interface UpdateHistoryEntry {
   readonly id: string;
   readonly date: string;
   readonly lines: readonly string[];
-  readonly manager: string;
+  readonly actor: string;
 }
 
 /**
@@ -21,7 +21,7 @@ export function UpdateHistory({
   readonly labels: {
     readonly date: string;
     readonly change: string;
-    readonly manager: string;
+    readonly actor: string;
   };
   readonly emptyText: string;
 }) {
@@ -34,7 +34,7 @@ export function UpdateHistory({
         <tr>
           <TableHead>{labels.date}</TableHead>
           <TableHead>{labels.change}</TableHead>
-          <TableHead>{labels.manager}</TableHead>
+          <TableHead>{labels.actor}</TableHead>
         </tr>
       </thead>
       <tbody>
@@ -48,7 +48,7 @@ export function UpdateHistory({
                 ))}
               </ul>
             </TableCell>
-            <TableCell className="whitespace-nowrap">{entry.manager}</TableCell>
+            <TableCell className="whitespace-nowrap">{entry.actor}</TableCell>
           </tr>
         ))}
       </tbody>

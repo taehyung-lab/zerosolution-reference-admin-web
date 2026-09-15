@@ -52,7 +52,7 @@ export function PerformanceDetailScreen({
                   labels={{
                     date: t("detail.historyDate"),
                     change: t("detail.historyChange"),
-                    manager: t("detail.historyManager"),
+          actor: t("detail.historyManager"),
                   }}
                   emptyText={t("detail.emptyValue")}
                 />

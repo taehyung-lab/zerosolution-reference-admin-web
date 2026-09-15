@@ -89,7 +89,7 @@ mechanic 은 form errors 객체나 스키마를 받지 않는다. 필드↔섹�
 
 ### 폼 라이브러리 경계
 
-`AGENTS.md` §3 의 상태 소유권 표가 폼 값과 검증 상태의 소유자를 TanStack Form 으로 선언한다. Query·Router·Table 과
+`AGENTS.md`의 상태 소유 표 의 상태 소유권 표가 폼 값과 검증 상태의 소유자를 TanStack Form 으로 선언한다. Query·Router·Table 과
 같은 TanStack 계열로 맞추고, Zod 4 Standard Schema 를 resolver 없이 직접 연결하며, 호출부 제네릭 없이
 `form` + `DeepKeys` name 을 검사할 수 있어 React Hook Form 에서 전환했다. `FormField` 가
 `form.Field` 등록과 Zod issue/server string 오류 정규화, label/control/error ARIA 연결을 한 곳에서

@@ -8,7 +8,7 @@
 bootstrap 시점의 npm `latest`는 TypeScript **7.0.2**이고 6.0.3도 정식 릴리스되어 있다.
 그러나 `typescript-eslint@8.68.0`의 peer 범위는 `typescript >=4.8.4 <6.1.0`이다.
 
-TypeScript 7에서는 typescript-eslint가 동작하지 않으며, 그러면 `AGENTS.md` §3(아키텍처)과 §4(완료 증거)가 요구하는
+TypeScript 7에서는 typescript-eslint가 동작하지 않으며, 그러면 `AGENTS.md`의 상태 소유 표과 완료 절가 요구하는
 **레이어 import 경계 lint 게이트 자체가 성립하지 않는다.** 이는 이 프로젝트에서
 타입 최신성보다 우선하는 요구사항이다.
 

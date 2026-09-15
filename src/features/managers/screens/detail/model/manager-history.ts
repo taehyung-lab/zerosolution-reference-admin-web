@@ -88,6 +88,6 @@ export function toManagerHistoryEntries(
       log.id === undefined ? `${log.createdAt ?? ""}#${index}` : String(log.id),
     date: formatDate(log.createdAt) || empty,
     lines: lines(log, t),
-    manager: log.manager?.name ?? empty,
+      actor: log.manager?.name ?? empty,
   }));
 }

@@ -37,7 +37,7 @@ src/
   api/                         # 공용 transport와 교체 가능한 generated
 ```
 
-`screens`는 전체 페이지뿐 아니라 route가 다른 도메인과 조립하는 기능 진입도 포함한다. 도메인의 대표 엔티티는 `list`·`detail`·`form` 그대로 쓰고(`<domain>/screens/list`), 대표가 아닌 엔티티나 두 엔티티가 같은 workflow 이름을 다투는 도메인은 엔티티를 접두한다(`<domain>/screens/<entity>-list`·`<entity>-detail`·`<entity>-form`, 2026-09-11). route 가 여는 다이얼로그 하나도 `screens/<workflow>` 다. 한 목록의 URL 변형들은 같은 `screens/list`를 쓰며 URL 계층을 그대로 복제하지 않는다. 별도 `pages` 레이어는 없다. 이 저장소의 실제 배치는 [이 저장소의 관찰](#이-저장소의-관찰)에 있다.
+`screens`는 전체 페이지뿐 아니라 route가 다른 도메인과 조립하는 기능 진입도 포함한다. 도메인의 대표 엔티티는 `list`·`detail`·`form` 그대로 쓰고(`<domain>/screens/list`), 대표가 아닌 엔티티나 두 엔티티가 같은 workflow 이름을 다투는 도메인은 엔티티를 접두한다(`<domain>/screens/<entity>-list`·`<entity>-detail`·`<entity>-form`). route 가 여는 다이얼로그 하나도 `screens/<workflow>` 다. 한 목록의 URL 변형들은 같은 `screens/list`를 쓰며 URL 계층을 그대로 복제하지 않는다. 별도 `pages` 레이어는 없다.
 
 화면과 mechanic 안에는 필요한 `ui`·`model`·`lib`·`config`만 만든다. API는 domain/api에 모아
 서버 계약의 탐색 위치를 고정한다. 단일 화면 전용 API도 여기 두되 화면 상태는 가져오지 않는다.
@@ -56,10 +56,10 @@ src/
 | 화면·표시용 컴포넌트·컬럼·렌더와 결합된 훅 | 소비 화면 또는 mechanic의 `ui` |
 | 여러 화면이 같은 의미·상태·실패 계약으로 쓰는 기능 | `mechanics/{기능명}/{ui,model}` |
 
-화면 안의 파일 집합(목록·상세·폼이 어떤 파일을 어떤 이름으로 갖는가)은 각 역할 reference 의 `형태` 절이
-소유하고([목록](../feature-contract/references/list-workflow.md#형태), [상세](../feature-contract/references/detail-workflow.md#형태),
-[폼](../feature-contract/references/form-workflow.md#형태), [route](../feature-contract/references/router.md#형태)),
-`contracts:check` 가 이름·위치를 대조한다. 이 표는 그 파일이 어느 segment 에 놓이는가만 정한다.
+화면 안의 파일 집합(목록·상세·폼이 어떤 파일을 어떤 이름으로 갖는가)은 각 역할 reference의 `형태` 절
+([목록](../feature-contract/references/list-workflow.md#형태), [상세](../feature-contract/references/detail-workflow.md#형태),
+[폼](../feature-contract/references/form-workflow.md#형태), [route](../feature-contract/references/router.md#형태))이 소유한다.
+이름·위치는 실제 소비자와 해당 형태 표로 리뷰하며, 이 표는 그 파일이 어느 segment 에 놓이는가만 정한다.
 
 확장자로 분류하지 않는다. `use<Entity>ListResult.ts`는 컬럼과 표시 옵션을 조립하므로
 `screens/list/ui`다. `use<Entity>InputForm.tsx`는 JSX·focus·폼 연결을 반환하는 UI 어댑터다.
@@ -102,25 +102,3 @@ UI·URL·권한·번역·payload·Query 키는 폴더 이동을 이유로 바꾸
 
 자동 검사는 import 경계·React 실행 의존·API의 Router/Form/캐시 클라이언트 접근을 확인한다.
 훅이 업무 정책을 숨겼는지와 helper/config의 의미는 실제 소비자와 코드 리뷰로 확인한다.
-
-## 이 저장소의 관찰
-
-규칙이 아니라 이 저장소의 현재 배치다. 신규 프로젝트는 이 절을 비우고 자기 도메인으로 다시 채운다.
-
-- 접두 엔티티 예: `members/screens/appeals`·`counsel`, `community/screens/board-list`·`board-detail`·`board-form`(게시판과 게시물이 둘 다 목록·조회·폼을 갖는다). route 가 여는 다이얼로그: `messaging/screens/compose`. URL 변형이 한 화면을 쓰는 예: 회원 all/general/flagged 의 `members/screens/list`.
-- `api` 훅 예: `usePerformanceVenues`, `useManagerOptions`, `useMemberDetail`, `useMessagePolicy`. `model` 훅 예: `useMemberListData`, `useMemberListRecipients`, `useManagerFormOptions`, `useUpdateManagerMutation`. API-only mutation: `auth/api/useSignInMutation`.
-- lib/config 배치 예: 회원 날짜 formatter·운영자 오류 번역 키 변환은 domain/lib, 회원 목록 노출 정의는 screens/list/config, 메시지 공통 타입은 domain/model, 작성 schema/defaults 는 compose/model, dialog props 는 compose/ui, 전화번호 표시 함수는 compose/lib.
-
-| 도메인 | screens | mechanics |
-| --- | --- | --- |
-| members | list, detail, form, counsel, appeals, access, dormant, withdrawn | record-list, activity, counsel-record |
-| managers | list, detail, form | manager-select-options |
-| performances | list, detail | 현재 필요 없음; form은 입력 정책 확인 대기 |
-| community | board-list | — |
-| messaging | compose | 현재 필요 없음 |
-| auth | login | 현재 필요 없음 |
-
-`record-list`는 기록 목록의 결과·필터와 회원 목록에서 공유하는 선택 액션을,
-`activity`는 일반 상세·탈퇴 상세의 활동 목록을, `counsel-record`는 상세·상담의 상담 기록 편집을 소유한다.
-`dormant`의 현재 파일은 표시 조립이므로 ui만 두고 조회·필터는 record-list mechanic을 소비한다.
-운영자는 제품 계약과 격리 리허설 계약 두 구현이 같은 list/detail/form 업무군 안에 있다.

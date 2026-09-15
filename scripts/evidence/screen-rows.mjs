@@ -7,7 +7,7 @@ import { resolve } from 'node:path'
  * so gates can compare against product facts instead of only checking declaration shape. A table
  * without an `id` column, or a row with an empty one, is simply not migrated yet.
  *
- * Ownership stays where `docs/reference/zero-sol/README.md` puts it: these rows are the denominator
+ * Ownership stays in the inventory README linked by `docs/reference/product.json`: these rows are the denominator
  * of completeness, scenario cards own verification, and `현재 코드` is a discovery pointer. Nothing
  * here reports implementation completeness.
  */
@@ -17,7 +17,7 @@ const EMPTY = new Set(['', '—', '-', '없음'])
 const OBSERVATION_PENDING = '(미판독)'
 /**
  * An observation cell that only says the frame exists enumerates nothing, so the screen's composition is
- * unobserved (`docs/reference/zero-sol/README.md` 판독 규칙 "구성은 Figma frame 만이 열거한다"). The 2026-09-11
+ * unobserved (the product inventory's reading rule says only its designated source enumerates composition). The 2026-09-11
  * board redesign started from such a cell passing as confirmed.
  */
 const OBSERVATION_UNENUMERATED = /frame 존재(?!하지)/

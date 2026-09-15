@@ -30,7 +30,7 @@
   제목부터 `추론한 실패 위험`으로 표시하고, 재현한 뒤 조건·결과를 별도 관찰로 남긴다.
 - 한 사람이 순차 구현해도 각 내부 액션과 화면 간 연결의 종착점·취소·입력 보존을 원래 요구사항에 대조한다.
   각 화면의 성공을 합쳐 업무군 성공으로 선언하지 않는다. 실행 절차는
-  [요청 전체 추적](../../../scripts/agents/README.md#trace-the-whole-request)이 소유한다.
+  [screen-loop 7단계](../../../.agents/skills/screen-loop/SKILL.md#7단계)가 소유한다.
 
 - 근거는 **"이 실패가 관측됐다"**이지 "어느 제품이 이렇게 한다"가 아니다. 다른 제품의 구현은 실패를
   발견하는 데만 쓰고, 대응은 우리 계약과 인벤토리로 다시 설계한다. 현재 비교 가능한 `dt-admin-web`도
@@ -41,7 +41,7 @@
 - 관측 사실에는 시점과 방법을 밝힌다. 저장소 밖 경로로 Markdown 링크를 걸지 않는다.
 - 확인과 추론을 구분한다. 제품 정책은 Figma·Notion 원문과 사용자 확정이 근거다. 격리된 리허설
   스냅샷은 리허설 API의 동작만 증명하며 ZERO PLUS+의 제품 정책이나 신규 서버 계약을 확정하지 않는다.
-- 시나리오의 상태 어휘와 정의는 [완료 상태](../../../scripts/agents/README.md#completion-states), 상태별 관찰 범위는 [mutation-actions.md](../../../.agents/skills/feature-contract/references/mutation-actions.md#시나리오-상태와-관찰-범위), API 연결 전 실행은 같은 문서의 [시나리오 요청](../../../.agents/skills/feature-contract/references/mutation-actions.md#api-연결-전-시나리오-요청)이 소유한다. 각 카드는 적용 상태와 실제 관찰 증거를 기록하며, 문서 대조·요청 직전 실행·실제 서버 성공을 구분한다.
+- 시나리오의 상태 어휘와 정의는 [도달 상태](../../../.agents/skills/screen-loop/SKILL.md#도달-상태), 상태별 관찰 범위는 [mutation-actions.md](../../../.agents/skills/feature-contract/references/mutation-actions.md#시나리오-상태와-관찰-범위), API 연결 전 실행은 같은 문서의 [시나리오 요청](../../../.agents/skills/feature-contract/references/mutation-actions.md#api-연결-전-시나리오-요청)이 소유한다. 각 카드는 적용 상태와 실제 관찰 증거를 기록하며, 문서 대조·요청 직전 실행·실제 서버 성공을 구분한다.
 
 ## 현재 카드
 
@@ -55,5 +55,6 @@
 | [performance-and-content.md](performance-and-content.md) | 공연·콘텐츠의 읽기 목록, 반복 행, 섹션 편집, 언어·파일·미리보기 | #8 #9 #24 #25 #26 #27 |
 | [ticketing-lists-and-detail.md](ticketing-lists-and-detail.md) | 발권 목록 5종의 lookup·종속 선택·summary·variant와 상세 겹침 | #10 #11 #30 |
 | [settings-and-permissions.md](settings-and-permissions.md) | 설정 tab, 로그 6종, 화면별 권한 기능, 편집 표·반복·조건부 섹션 | #12 #28 #29 #31 #32 #33 |
+| [manager-workflow.md](manager-workflow.md) | 운영자 목록·상세·등록·수정의 검색, 상태별 action, option, 저장·이탈 경계 | #12의 구현된 네 결과 |
 | [exhibition-promotion-community.md](exhibition-promotion-community.md) | 전시·PUSH·커뮤니티의 게시 상태, 업로드, 행 action, 상세·팝업 | #35 #36 #37 #38 |
 | [aggregation-and-search.md](aggregation-and-search.md) | 통계 interval·회차 선택·전치 표와 통합검색의 독립 결과 축 | #34 #39 #40 #41 |

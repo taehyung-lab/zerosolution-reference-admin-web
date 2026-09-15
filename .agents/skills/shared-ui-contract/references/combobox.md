@@ -13,11 +13,4 @@ Read [form-fields.md](form-fields.md) for `FormComboboxField` and [primitives-an
 
 `InlineSearchSelect` is the provisional native input + matching option buttons + removable selection contract used by a lookup filter over a reference entity. Its controlled `searchValue` and `value: string | undefined` remain caller-owned. It locally filters `{ value, label }` options; empty search hides candidates, picking one clears search and locks the input until removal. The caller supplies `selectedLabel` independently so a selected value is not silently erased when absent from options. Labels, lookup sources, remote pending/error states, reset, URL/form commit and domain policy stay outside. It has no popup, async query or entity-specific mode.
 
-Whole entity search dialogs are domain widgets composed from Dialog/table/filter primitives, not variants of this input. Their candidate/confirm/cancel, query and dependent-selection rules belong to the owning feature; routes connect them to other features. A comparable product's search dialogs demonstrate that reuse boundary, not a server contract for this project.
-
-## 이 저장소의 관찰
-
-규칙이 아니라 이 저장소의 소비자 기록이다. 신규 프로젝트는 이 절을 비우고 자기 소비자로 다시 채운다.
-
-- `InlineSearchSelect` 의 현재 소비자는 공연 목록의 공연장 필터다. 미구현 후보의 근거인 lookup 필터는 원장의 공연 검색·공연장이다.
-- 재사용 경계를 보여 준 비교 제품은 dt-admin-web 의 공연장 검색과 공연 선택 다이얼로그다.
+Whole entity search dialogs are domain widgets composed from Dialog/table/filter primitives, not variants of this input. Their candidate/confirm/cancel, query and dependent-selection rules belong to the owning feature; routes connect them to other features. Another product may demonstrate a reuse boundary, but never establishes this product's server contract.

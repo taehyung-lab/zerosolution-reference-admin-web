@@ -948,6 +948,130 @@
       "related": []
     },
     {
+      "id": "manager-list",
+      "title": "운영자 목록",
+      "coverage": "surface",
+      "inventory": {
+        "file": "docs/reference/zero-sol/11-settings.md",
+        "heading": "11.1 운영자 — 목록"
+      },
+      "scenarios": [
+        {
+          "file": "docs/reference/scenarios/manager-workflow.md",
+          "heading": "목록"
+        },
+        {
+          "file": "docs/reference/scenarios/manager-workflow.md",
+          "heading": "목록 검증"
+        }
+      ],
+      "paths": [
+        "src/features/managers/screens/list/",
+        "src/routes/_app/managers/index.tsx"
+      ],
+      "references": [
+        {
+          "file": "docs/reference/zero-sol/notion/11-settings.md",
+          "heading": "설정 > 운영자 목록"
+        }
+      ],
+      "related": []
+    },
+    {
+      "id": "manager-detail",
+      "title": "운영자 상세",
+      "coverage": "surface",
+      "inventory": {
+        "file": "docs/reference/zero-sol/11-settings.md",
+        "heading": "11.1 운영자 — 상세"
+      },
+      "scenarios": [
+        {
+          "file": "docs/reference/scenarios/manager-workflow.md",
+          "heading": "상세"
+        },
+        {
+          "file": "docs/reference/scenarios/manager-workflow.md",
+          "heading": "상세 검증"
+        }
+      ],
+      "paths": [
+        "src/features/managers/screens/detail/",
+        "src/routes/_app/managers/$managerId/index.tsx"
+      ],
+      "references": [
+        {
+          "file": "docs/reference/zero-sol/notion/11-settings.md",
+          "heading": "설정 > 운영자 상세"
+        },
+        {
+          "file": "docs/reference/zero-sol-figma-analysis.md",
+          "heading": "운영자 상태 판독"
+        }
+      ],
+      "related": []
+    },
+    {
+      "id": "manager-create",
+      "title": "운영자 등록",
+      "coverage": "surface",
+      "inventory": {
+        "file": "docs/reference/zero-sol/11-settings.md",
+        "heading": "11.1 운영자 — 등록"
+      },
+      "scenarios": [
+        {
+          "file": "docs/reference/scenarios/manager-workflow.md",
+          "heading": "등록"
+        },
+        {
+          "file": "docs/reference/scenarios/manager-workflow.md",
+          "heading": "등록 검증"
+        }
+      ],
+      "paths": [
+        "src/features/managers/screens/form/",
+        "src/routes/_app/managers/new.tsx"
+      ],
+      "references": [
+        {
+          "file": "docs/reference/zero-sol/notion/11-settings.md",
+          "heading": "설정 > 운영자 등록"
+        }
+      ],
+      "related": []
+    },
+    {
+      "id": "manager-edit",
+      "title": "운영자 수정",
+      "coverage": "surface",
+      "inventory": {
+        "file": "docs/reference/zero-sol/11-settings.md",
+        "heading": "11.1 운영자 — 수정"
+      },
+      "scenarios": [
+        {
+          "file": "docs/reference/scenarios/manager-workflow.md",
+          "heading": "수정"
+        },
+        {
+          "file": "docs/reference/scenarios/manager-workflow.md",
+          "heading": "수정 검증"
+        }
+      ],
+      "paths": [
+        "src/features/managers/screens/form/",
+        "src/routes/_app/managers/$managerId/edit.tsx"
+      ],
+      "references": [
+        {
+          "file": "docs/reference/zero-sol/notion/11-settings.md",
+          "heading": "설정 > 운영자 수정"
+        }
+      ],
+      "related": []
+    },
+    {
       "id": "settings",
       "title": "운영자·약관·정책·권한·로그",
       "coverage": "group",
@@ -1014,7 +1138,19 @@
         },
         {
           "file": "docs/reference/zero-sol/notion/11-settings.md",
-          "heading": "설정 > 운영자"
+          "heading": "설정 > 운영자 목록"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/11-settings.md",
+          "heading": "설정 > 운영자 상세"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/11-settings.md",
+          "heading": "설정 > 운영자 등록"
+        },
+        {
+          "file": "docs/reference/zero-sol/notion/11-settings.md",
+          "heading": "설정 > 운영자 수정"
         },
         {
           "file": "docs/reference/zero-sol/notion/11-settings.md",

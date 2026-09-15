@@ -41,7 +41,7 @@ and returned defaults are immutable configuration: consumers replace draft array
 | `recoverArray(item)` | Validate the whole array; one invalid item, invalid array, or missing array → undefined. Empty array stays empty. |
 | `recoverArrayItems(item)` | Keep parsed valid items in order; drop invalid items. Invalid/missing array → undefined; all-invalid array → empty array. |
 
-Both recovery contracts have consumers today (which is which: [이 저장소의 관찰](#이-저장소의-관찰)). Keyword trimming, enum meaning, page-size acceptance,
+Choose between the two recovery contracts from the consumer's confirmed invalid-item behavior. Keyword trimming, enum meaning, page-size acceptance,
 search discriminator, and which declared defaults may be omitted remain feature choices; the structural omission algorithm is shared. These codecs do not know field names.
 Every list consumer adopts `normalizeClosedInstantRange` after codecs and `omitSearchDefaults` after any explicit-intent detection. These pure functions own neither Router nor Query and never choose defaults or whether to query. Screen consumers receive resolved types; optional dates remain optional by declaration. Search metadata is not included in `defineSearchFields` or its defaults/partition.
 
@@ -52,7 +52,7 @@ consumer workflow and current default inventory live in
 
 Tests cover exact keys after remove/add/override, default compatibility, literal enum and optional output,
 filter-only draft typing, sparse vs resolved values, and the two distinct array failure contracts.
-Every real list variant and the record lists test adoption ([이 저장소의 관찰](#이-저장소의-관찰)); helper tests alone do
+Every real consumer tests its adoption; helper tests alone do
 not establish product defaults or end-to-end behavior. This is a local reference contract, not completed
 new-product transplant evidence.
 
@@ -60,14 +60,13 @@ new-product transplant evidence.
 
 | Hook | Caller passes | Owns | Caller owns |
 | --- | --- | --- | --- |
-| `useConfirmation({ run })` | opaque validated value via `requestConfirmation` | closed/confirm state, cancel, confirmed callback | validation, copy, API, success/failure, navigation; extracted from bulk and reused by two features' forms |
+| `useConfirmation({ run })` | opaque validated value via `requestConfirmation` | closed/confirm state, cancel, confirmed callback | validation, copy, API, success/failure, navigation |
 | `useDraftCommit({ committed, keyOf, createDraft })` | committed value, identity function, draft factory | `draft`, `setDraft`, `patchDraft`, `resetDraft`; preserves the draft while `keyOf(committed)` is `Object.is`-equal and rebuilds when it changes | what counts as identity (filter vs view fields), when to commit |
 | `useListFilterDraft({ search, partition, scope?, keywords, initialKeywordField, localDefaults? })` | resolved search, declared filter/view partition, optional caller scope, neutral keywords, optional local-only defaults | one identity for filter/period/keyword drafts, filter projection, `prepareSubmit`, `resetDrafts` | partition and scope meaning, keyword mapping, validation, submit/reset destination, page policy, Query |
 | `usePeriodDraft({ committed: { startDateTime?, endDateTime? }, resetKey })` | committed UTC range | `preset`, browser-zone `range`, `utcRange`, `setPreset` (writes UTC day boundaries), `setRange` (nonempty draft → `CUSTOM`, empty → `ALL`), `reset` | period criterion, adopted presets, committed closed-range validation, validation copy |
-| `useKeywordDraft<TField>({ committedItems, initialField, resetKey })` | committed `{ field, value }[]`, initial target | `items`, `pending`, `setPendingField/Value`, `addPending` (trims; empty is ignored), `removeAt`, `clear` (empties `items`, keeps `pending`), `reset` (rebuilds both from committed), `itemsIncludingPending` | target enum, server mapping, duplicate policy (unconfirmed product rule) |
+| `useKeywordDraft<TField>({ committedItems, initialField, resetKey })` | committed `{ field, value }[]`, initial target | `items`, `pending`, `setPendingField/Value`, `addPending` (trims; empty is ignored), `removeAt`, `clear` (empties `items`, keeps `pending`), `reset` (rebuilds both from committed), `itemsIncludingPending` | target enum, server mapping, duplicate policy |
 
-`useListFilterDraft` composes the three primitives for every list filter in this repository (five consumers,
-listed in [이 저장소의 관찰](#이-저장소의-관찰)). View-only changes preserve input; filter or `scope` changes
+`useListFilterDraft` composes the three primitives for compatible list filters. View-only changes preserve input; filter or `scope` changes
 rebuild it. Explicit-search consumers pass their committed search discriminator as `scope`.
 The caller may supply URL-resolved or host-local committed values; the hook does not select their owner.
 Use the [Draft commit adoption criteria](../../feature-contract/references/list-workflow.md#draft-commit) for every host, not the names of these existing consumers.
@@ -85,19 +84,10 @@ the caller changes `scope`. Flows with different input lifecycles compose the pr
 
 ## Config (`shared/config/list.ts`)
 
-`standardPageSizeOptions = [100, 200, 300, 400, 500, 700, 1000]` and `standardPeriodPresetValues` (8 presets, no `CUSTOM`) are provisional product presets observed on every list. A feature opts in explicitly and still owns its default and any exception; the config declares no default. Defaults are per-screen inventory facts (see [이 저장소의 관찰](#이-저장소의-관찰)).
+`standardPageSizeOptions = [100, 200, 300, 400, 500, 700, 1000]` and `standardPeriodPresetValues` (8 presets, no `CUSTOM`) are repository-adopted option sets. A feature opts in explicitly and still owns its default and any exception; the config declares no default. Defaults remain facts of the consuming screen.
 
 `usePeriodPresets(values)` (`shared/i18n/use-period-presets.ts`) is the one place that joins adopted preset values to their shared translations and returns the `{ presets, customLabel }` pair `PeriodField` takes. It holds no default, selected value, range or request shape — only the value-to-label projection — and takes no default `values`, so the argument at the call site is the feature's opt-in rather than a transfer of period policy.
 
 Adding a period preset *value* is not a config or hook change alone. `periodPresetRange` computes each range from the literal value, so a new preset means `PeriodPreset`, `periodPresetRange`, the `inferPeriodPreset` candidate list (all `datetime.ts`), the `shared:list.periodPresets` keys in three locales, and `standardPeriodPresetValues` change together. That is the transplant decision a new product makes once; it never grows a second hook.
 
 Test the pure transformation or transition that changed; do not add a config value or helper without a consuming feature.
-
-## 이 저장소의 관찰
-
-규칙이 아니라 이 저장소 원장에서 읽은 값이다. 신규 프로젝트는 이 절을 비우고 자기 원장으로 다시 채운다.
-
-- 인벤토리가 적은 기본값: 목록 100·전체, 발권 등록 화면 200, 통계 1개월 전, 로그 7일 전.
-- 배열 codec 채택: 회원·기록·리허설 운영자 목록은 항목 단위 복구(`recoverArrayItems`), 공연·제품 운영자 목록은 배열 전체 복구(`recoverArray`).
-- `useListFilterDraft` 소비자 다섯: 공연, 회원, 회원 기록, 제품 운영자, 리허설 운영자 필터.
-- 채택 테스트를 가진 소비자: 회원 목록 변형들, 공연, 운영자, 기록 목록 다섯. `maskEmail`·`maskPhone` 과 `hasRepeatedOrSequentialAsciiTriplet` 은 회원·운영자 두 feature 가 공유하고, `useConfirmation` 은 일괄 액션에서 추출돼 회원·운영자 폼이 재사용한다.

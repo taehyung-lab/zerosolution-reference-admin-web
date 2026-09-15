@@ -20,7 +20,7 @@
 
 ## 맥락
 
-저장소 운영 모드와 Managers의 consumer 지위는 [AGENTS.md §0](../../AGENTS.md)가 소유한다.
+저장소 운영 모드(다른 제품으로 옮길 레퍼런스)는 [AGENTS.md 함정](../../AGENTS.md#이-저장소의-함정)이 소유한다. Manager는 첫 검증 consumer일 뿐 공용 설계의 기준이나 소유자가 아니며, 그 지위는 이 ADR이 소유한다.
 
 Figma에서 filter frame, 기간 선택, 검색 전·후 상태, toolbar, table, pagination의 반복을 관찰했다. 이 관찰은 domain-free mechanic을 provisional shared로 검증할 근거는 되지만 Query `enabled`, endpoint, enum, 권한, payload, 실패 semantics를 증명하지 않는다. 리허설 OpenAPI도 실제 복잡도를 시험할 근거일 뿐 신규 제품 계약이나 두 번째 실제 consumer가 아니다.
 
@@ -81,7 +81,7 @@ shared는 feature, Router, Query, endpoint, server DTO, permission을 알지 않
 **실서버 연결은 confirm의 조건이 아니다.** 이 저장소의 검증 경계는 API 호출 직전이므로 실서버 실패
 비교를 요구하면 어떤 계약도 confirmed가 될 수 없고, 그 정의는 이 단계표를 죽은 칸으로 만든다. 실 API로
 workflow를 실측하는 것은 `완료`, 신규 제품에서 채택까지 한 것은 `이관 검증됨`이며 둘 다 별도 단계다
-([완료 상태](../../scripts/agents/README.md#completion-states)가 어휘를 소유한다).
+([도달 상태](../../.agents/skills/screen-loop/SKILL.md#도달-상태)가 어휘를 소유한다).
 
 기계가 증명하는 필요조건(하나라도 거짓이면 confirmed가 아니다):
 
@@ -225,7 +225,7 @@ matrix·알림처럼 미구현 화면 유형은 후보로 추측하지 않는다
 - 새 제품의 요구사항과 레퍼런스 가정이 구분되고, 각 요구사항의 소유 레이어와 채택 판정 근거가 추적된다.
 - Manager schema, 리허설 endpoint·DTO·enum·permission, 사용하지 않는 provisional code가 제품 사실로 유입되지 않는다.
 - 선택한 공용 계약이 도메인 mode, resource config, Router·Query·API·permission 분기로 제품 차이를 숨기지 않는다.
-- 완료 보고가 [AGENTS.md §4](../../AGENTS.md)의 필드를 갖춘다.
+- 완료 보고가 [AGENTS.md 완료](../../AGENTS.md#완료)의 필드를 갖춘다.
 
 문서가 존재하거나 코드를 복사했다는 사실만으로는 성공이 아니다. 실제 신규 프로젝트에서 이 절차만으로 요구사항에 맞는 vertical slice를 구현·검증하고, 그 과정에서 발견한 기준의 누락을 단일 소유 문서·코드·검사에 되돌려 반영했을 때 인계 가능성이 검증된다. 목록·필터 외 화면 유형은 이 ADR을 범용 근거로 삼지 않고 처음 필요할 때 자체 관찰 근거와 경계 결정을 만든다.
 

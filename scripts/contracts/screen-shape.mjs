@@ -1,15 +1,16 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { basename, join, relative, resolve } from 'node:path'
 
-/** Naming/placement and selected source checks; these do not prove workflow correctness.
- * Do not require a file per role: a partial request may legitimately own only a filter, and
- * coherent responsibilities may share a file. Actual state and request boundaries are reviewed.
+/** Source-level structural checks only. Naming and placement are not checked: a name heuristic
+ * exempts every file that ignores the convention, so a passing run guarantees nothing about the
+ * files it skipped. What remains reads the source itself — shared sort reuse, detail-route
+ * loaders, list-route e2e joins. These do not prove workflow correctness; state and request
+ * boundaries are reviewed.
  */
 export const SHAPE_SECTIONS = {
   detailRoute: '.agents/skills/feature-contract/references/router.md#형태',
   sorting: '.agents/skills/feature-contract/references/list-workflow.md#sorting',
   list: '.agents/skills/feature-contract/references/list-workflow.md#형태',
-  placement: '.agents/skills/folder-structure-contract/SKILL.md#배치-판단',
 }
 
 /** 리허설 운영자 목록은 서버 어휘 ASC/DESC 를 model/manager-sort.ts 에서 옮기므로 headerSortDirection('asc'|'desc') 을 받을 수 없다. */
@@ -21,11 +22,7 @@ const withoutComments = (source) => source.replace(/\/\*[\s\S]*?\*\//g, '').repl
 
 const TEST_FILE = /\.(test|test-d)\.[jt]sx?$/
 
-// 파일 이름이 말하는 역할과 그 파일이 놓여야 할 segment. 이름이 규칙과 다르면 검사 대상이 아니다.
-const UI_NAMES = [/^use\w+Result\.tsx?$/, /-columns\.tsx?$/, /Screen\.tsx$/, /Filters\.tsx$/, /Result\.tsx$/, /Actions\.tsx$/, /Form\.tsx$/, /Section\.tsx$/, /Dialog\.tsx$/]
-const MODEL_NAMES = [/search.*\.ts$/, /-policy\.ts$/, /^use\w+Filter\.ts$/, /^use\w+Data\.ts$/, /-requests?\.ts$/, /-schema\.ts$/, /^use\w+Mutation\.ts$/, /^use\w+Actions\.ts$/, /^use\w+Options\.ts$/, /-actions\.ts$/, /-mapper\.ts$/, /-sort\.ts$/, /-defaults\.ts$/, /-history\.ts$/]
 
-const matches = (name, patterns) => patterns.some((pattern) => pattern.test(name))
 
 function listFiles(dir) {
   if (!existsSync(dir)) return []
@@ -80,24 +77,11 @@ function behaviorFailures(entry, files) {
   return failures
 }
 
-/** ui 와 model 사이의 착오만 본다. lib·config 같은 다른 segment 는 folder-structure 표가 따로 정한다. */
-function placementFailures(entry, files) {
-  const failures = []
-  for (const file of files) {
-    const segment = file.split('/')[0]
-    if (segment !== 'ui' && segment !== 'model') continue
-    const name = basename(file)
-    if (segment === 'model' && matches(name, UI_NAMES)) failures.push(`화면 형태: ${entry.path}/${file} 는 ui/ 에 있어야 한다 → ${SHAPE_SECTIONS.placement}`)
-    if (segment === 'ui' && matches(name, MODEL_NAMES)) failures.push(`화면 형태: ${entry.path}/${file} 는 model/ 에 있어야 한다 → ${SHAPE_SECTIONS.placement}`)
-  }
-  return failures
-}
-
+/** 기존 역할 파일에서 자동화 가능한 정렬 계약만 본다. 파일 배치와 소유권은 계약 문서와 리뷰가 판단한다. */
 export function screenShapeFailures(root) {
   const failures = []
   for (const entry of screenDirs(root)) {
     const files = listFiles(entry.dir)
-    failures.push(...placementFailures(entry, files))
     if (entry.kind === 'screens') failures.push(...behaviorFailures(entry, files))
   }
   return failures

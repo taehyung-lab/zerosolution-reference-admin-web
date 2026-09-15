@@ -13,7 +13,7 @@ const resolverProject = process.env.ESLINT_PROJECT_TSCONFIG
 
 /**
  * 레이어 import 경계를 실제 import graph 위에서 검사한다.
- * 키워드나 파일 이름 검사가 아니다 (`AGENTS.md` §3 아키텍처·상태 소유권).
+ * 키워드나 파일 이름 검사가 아니다 (`folder-structure-contract`의 의존 방향 계약).
  *
  *   app / routes  ->  features  ->  shared, api  ->  generated
  */

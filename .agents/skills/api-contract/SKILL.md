@@ -5,7 +5,7 @@ description: Use when changing OpenAPI snapshots, generated clients, Axios trans
 
 # API Contract
 
-구현 요청이면 이 문서로 오기 전에 [screen-loop](../screen-loop/SKILL.md) N0에서 왔는지 본다. `src/api`는 infrastructure, `src/features/*/api`는 화면 workflow의 일부라 그 화면 grain을 따른다.
+구현 요청이면 이 문서로 오기 전에 [screen-loop](../screen-loop/SKILL.md)에서 결과 유형과 편집 범위를 정했는지 본다. `src/api`는 infrastructure, `src/features/*/api`는 화면 workflow의 일부라 그 화면 grain을 따른다.
 
 Treat the committed OpenAPI snapshot as the declared server contract and keep generated code replaceable.
 

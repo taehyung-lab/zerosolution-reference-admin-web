@@ -8,14 +8,14 @@
 
 신규 제품 ZERO PLUS+ 어드민은 Figma 시안은 있으나 **백엔드가 아직 없다.**
 
-`AGENTS.md` §4(완료 증거)의 bootstrap 계약은 OpenAPI generate, transport, 실제 workflow와 contract gate를
+`AGENTS.md`의 완료 절의 bootstrap 계약은 OpenAPI generate, transport, 실제 workflow와 contract gate를
 함께 검증하도록 요구한다. 동시에 §6(판단·안전)은 불확실한 서버 계약을 추측하지 말라고 한다.
 백엔드가 없는 상태에서는 이 둘이 동시에 만족되지 않는다.
 
 검토한 대안:
 
 1. **프론트가 신규 스펙을 직접 저작** — 더 깔끔한 추측일 뿐이며, 상상한 것만 증명한다.
-2. **백엔드가 나올 때까지 셸만 구성** — `AGENTS.md` §4의 기계 게이트를 실제로 만들 수 없다.
+2. **백엔드가 나올 때까지 셸만 구성** — `AGENTS.md`의 완료 절의 기계 게이트를 실제로 만들 수 없다.
 3. **별개 제품의 실제 계약으로 리허설** — 실제 401·재발급·필드 오류·페이지네이션을 통과시킬 수 있다.
 
 ## 결정

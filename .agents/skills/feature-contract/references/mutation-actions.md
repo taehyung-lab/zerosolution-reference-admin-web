@@ -21,7 +21,7 @@ Read the API mutation reference when changing payload/cache behavior. Read [form
 
 ## 시나리오 상태와 관찰 범위
 
-상태 어휘와 각 상태의 정의는 [완료 상태](../../../../scripts/agents/README.md#completion-states)가 소유한다.
+상태 어휘와 각 상태의 정의는 [도달 상태](../../screen-loop/SKILL.md#도달-상태)가 소유한다.
 여기는 화면 액션별로 무엇을 어디까지 관찰해야 그 상태를 주장할 수 있는가만 적는다.
 
 - **시나리오 확정됨**의 대조 범위 — 검색은 조건 조립·URL commit·요청 전 검증까지, 저장은 폼 검증·확인

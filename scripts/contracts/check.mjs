@@ -10,10 +10,9 @@
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { surfaceIndexFailures } from '../agents/surface-context.mjs'
+import { surfaceIndexFailures } from '../evidence/context.mjs'
 import { productPaths } from './product-paths.mjs'
 import {
-  agentsSectionReferenceFailures,
   claudeAgentsImportFailure,
   ciVerifyStageFailures,
   ciWorkflowConcurrencyFailures,
@@ -98,7 +97,6 @@ failures.push(...readLocalLinkFailures(documents))
 const budgetNotices = documentBudgetNotices(documents)
 notes.push(...productNameNotices(documents.filter((file) => file.startsWith('.agents/skills/'))))
 
-const agents = readFileSync(resolve('AGENTS.md'), 'utf8')
 const claudeImport = claudeAgentsImportFailure(readFileSync(resolve('CLAUDE.md'), 'utf8'))
 if (claudeImport !== null) failures.push(claudeImport)
 
@@ -110,7 +108,7 @@ if (copilotChecked) {
   if (copilotPointer !== null) failures.push(copilotPointer)
 }
 
-/** 문서 밖에서 규범 이름·§번호를 인용하는 설정과 소스. */
+/** 문서 밖에서 규범 이름을 인용하는 설정과 소스. */
 function listSourceFiles(root) {
   if (!existsSync(resolve(root))) return []
   return readdirSync(resolve(root), { recursive: true, withFileTypes: true })
@@ -128,7 +126,6 @@ const citingFiles = [
   ...listSourceFiles('scripts').filter((file) => !file.startsWith('scripts/contracts/')),
 ].filter((file) => existsSync(resolve(file)))
 failures.push(...retiredDocumentNameFailures(citingFiles))
-failures.push(...agentsSectionReferenceFailures(citingFiles, agents))
 failures.push(...prohibitedAbstractionSourceFailures(readFileSync(resolve('eslint.config.js'), 'utf8')))
 try { failures.push(...ledgerIndexFailures(productPaths(process.cwd()).scenarios)) } catch (error) { failures.push(error.message) }
 failures.push(...surfaceIndexFailures(process.cwd()))
@@ -200,11 +197,11 @@ if (budgetNotices.length === 0) {
 }
 console.log('  ✓ CLAUDE.md 가 AGENTS.md 를 첫 지시로 import')
 if (copilotChecked) console.log('  ✓ Copilot 첫 본문 지시가 AGENTS.md 를 가리킴')
-console.log(`  ✓ 삭제된 문서 이름·옛 AGENTS §번호·금지 추상화 근거 파일 drift 없음 (${citingFiles.length}파일)`)
+console.log(`  ✓ 삭제된 문서 이름·금지 추상화 근거 파일 drift 없음 (${citingFiles.length}파일)`)
 console.log('  ✓ 시나리오 원장 색인과 카드가 서로를 덮음')
 console.log('  ✓ 화면 context 색인의 인벤토리·시나리오·절·관련 surface 연결 실존 (의미·내부 구성 완전성은 리뷰)')
 console.log(`  ✓ 문서 안 미해소 이관 sentinel 없음${mode === 'target' ? ' (target: 코드 포함)' : ''}`)
-console.log('  ✓ 화면 보조 검사: 기존 역할 파일의 위치·정렬, route loader·e2e 합류 (파일 집합·동작 완전성은 판정하지 않음)')
+console.log('  ✓ 화면 보조 검사: 정렬 계약, route loader·e2e 합류 (파일 집합·동작 완전성은 판정하지 않음)')
 console.log(
   declaredPaths === null
     ? '  ✓ transport 포트 등록됨 (계약 snapshot 없음: 경로 대조 건너뜀)'

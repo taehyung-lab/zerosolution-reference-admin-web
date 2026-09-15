@@ -4,20 +4,34 @@
 
 2026-09-06 구현 대조: 아래 운영자 현재 코드는 제품 기본 경로의 **API 호출 직전 입력 경계**를 가리킨다. 기본값 false의 리허설 API 화면은 별도로 유지된다. 예시 옵션·행은 제품 서버 데이터가 아니며 실제 저장·발송·재인증 성공은 구현하지 않았다. 미연결 action은 업무별 요청 함수의 한글 로그까지 연결하며, 제품 상태를 받는 상세는 요청 callback도 필수다. 구현·검증 상태는 [설정 시나리오](../scenarios/settings-and-permissions.md)가 소유한다.
 
-## 11.1 운영자 · 11.2 약관 · 11.3.2 접근권한 — 리스트
+## 11.1 운영자 — 목록
+
+surface: `manager-list`
+
+| id | 종류 | 화면 | surface | Figma 관찰 | Notion 동작·정책 | 미확인 | 현재 코드 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `manager-list.entry` | 열거 | 11.1 | 검색 전 상태 | 검색전(`126:61627`)·검색후(`126:61392`)·Case(`126:61314`) 3 frame | (대기) | — | `src/features/managers/screens/list/ui/ManagerListScreen.tsx` |
+| `manager-list.period` | 열거 | 11.1 | 기간 | 기준 가입일·최근접속일 + preset(기본 전체) + range | (대기) | — | `src/features/managers/screens/list/ui/ManagerDirectoryFilters.tsx` |
+| `manager-list.keyword` | 열거 | 11.1 | 검색어 | 대상 아이디·이름·휴대폰번호·이메일 + chip("이름 : 김영영") | (대기) | — | `src/features/managers/screens/list/ui/ManagerDirectoryFilters.tsx` |
+| `manager-list.permission-filter` | 서술 | 11.1 | **option-source select** | 권한: 단일 select, 옵션 = 서버 권한명 목록(`{권한명}` 반복) | 목록은 사용 상태인 전체 권한 중 택1; 등록·수정만 선택 유형에 종속 | 실제 옵션 계약 | `src/features/managers/screens/list/model/useManagerDirectoryFilterOptions.ts` |
+| `manager-list.filters` | 열거 | 11.1 | 다중선택 | 유형(전체·기획사·매표처), 가입경로(전체·WEB·APP), 계정 상태(전체·대기·거절·활성·비활성·잠금…) | (대기) | 리허설 `INACTIVE`와 거절·비활성·잠금 대응 | `src/features/managers/screens/list/ui/ManagerDirectoryFilters.tsx` |
+| `manager-list.toolbar` | 열거 | 11.1 | toolbar | 보기·정렬(가입일·최근접속일·유형·소속·아이디·이름·휴대폰번호·이메일·권한·가입경로·계정 상태). 우측 `선택▾`+`변경` · `등록` | 변경 대상은 계정 상태 > 활성/비활성, 대기·거절·잠금은 제외 | 전부 변경 불가인 선택의 후속 UX | `src/features/managers/screens/list/ui/useManagerDirectoryResult.ts` · `src/features/managers/screens/list/ui/ManagerListActions.tsx` |
+| `manager-list.table` | 열거 | 11.1 | table | checkbox. 유형·소속·아이디·이름·휴대폰번호·이메일·권한·가입경로·계정 상태·가입일(정렬)·최근접속일 | 행 클릭→상세 | 실제 정렬·검색 응답 계약 | `src/features/managers/screens/list/ui/manager-directory-columns.tsx` · `src/features/managers/screens/list/ui/ManagerDirectoryResult.tsx` |
+| `manager-list.empty` | 서술 | 11.1 | 빈 결과 | (미판독) | 메시지 `일치하는 검색결과가 없습니다.` — [원문](notion/99-cross-screen.md) 등장 화면에 설정 > 운영자 | — | `src/features/managers/screens/list/ui/ManagerDirectoryResult.tsx` |
+
+## 11.1 운영자 — 상세
+
+surface: `manager-detail`
+
+| id | 종류 | 화면 | surface | Figma 관찰 | Notion 동작·정책 | 미확인 | 현재 코드 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `manager-detail.states` | 열거 | 11.1 | 상세 상태 | 운영자 조회 **5 variant**: 대기(`126:61280`)·거절(`126:61243`)·활성(`126:61199`)·비활성(`216:24789`)·잠금(`216:24996`) | 아래 상태별 action 표 참조 | 서버 상태 enum 대응 | `src/features/managers/screens/detail/ui/ManagerDetailScreen.tsx` |
+| `manager-detail.alerts` | 열거 | 11.1 | alert | 개인정보 전체보기(`126:61153`)·회원 탈퇴(`126:61146`)·탈퇴 알림(`126:61138`)·계정잠금해제(`126:61132`)·가입거절 사유(`216:25221`) | 재인증 입력·잠금해제 비밀번호·거절 사유 | 재인증 성공 이후 공개/탈퇴 처리 | `src/features/managers/screens/detail/ui/ManagerActionForm.tsx` |
+
+## 11.2 약관 · 11.3.2 접근권한 — 리스트
 
 | 화면 | surface | Figma 관찰 | Notion 동작·정책 | 미확인 | 현재 코드 |
 | --- | --- | --- | --- | --- | --- |
-| 11.1 | 검색 전 상태 | 검색전(`126:61627`)·검색후(`126:61392`)·Case(`126:61314`) 3 frame | (대기) | — | `ListResult.notSearched` (구현됨) |
-| 11.1 | 기간 | 기준 가입일·최근접속일 + preset(기본 전체) + range | (대기) | — | `PeriodField` + feature select (구현됨) |
-| 11.1 | 검색어 | 대상 아이디·이름·휴대폰번호·이메일 + chip("이름 : 김영영") | (대기) | — | `KeywordChipField` (구현됨) |
-| 11.1 | **option-source select** | 권한: 단일 select, 옵션 = 서버 권한명 목록(`{권한명}` 반복) | 목록은 사용 상태인 전체 권한 중 택1; 등록·수정만 선택 유형에 종속 | 실제 옵션 계약 | `ManagerDirectoryFilters` + `useManagerDirectoryFilterOptions`; 독립 옵션 Query의 loading/error/retry |
-| 11.1 | 다중선택 | 유형(전체·기획사·매표처), 가입경로(전체·WEB·APP), 계정 상태(전체·대기·거절·활성·비활성·잠금…) | (대기) | 리허설 `INACTIVE`와 거절·비활성·잠금 대응 | Managers filters |
-| 11.1 | toolbar | 보기·정렬(가입일·최근접속일·유형·소속·아이디·이름·휴대폰번호·이메일·권한·가입경로·계정 상태). 우측 `선택▾`+`변경` · `등록` | 변경 대상은 계정 상태 > 활성/비활성, 대기·거절·잠금은 제외 | 전부 변경 불가인 선택의 후속 UX | `useManagerDirectoryResult` 11정렬·URL commit / `ManagerListActions` 선택 검증→확인→대상 callback / 등록 Link |
-| 11.1 | table | checkbox. 유형·소속·아이디·이름·휴대폰번호·이메일·권한·가입경로·계정 상태·가입일(정렬)·최근접속일 | 행 클릭→상세 | 실제 정렬·검색 응답 계약 | `manager-directory-columns` + `ManagerDirectoryResult`; 11컬럼·`DataTable.meta.sort`·현재 페이지 선택. 리허설 `manager-columns`는 기존 8정렬 유지 |
-| 11.1 | 빈 결과 | (미판독) | 메시지 `일치하는 검색결과가 없습니다.` — [원문](notion/99-cross-screen.md) 등장 화면에 설정 > 운영자 | — | `managers:result.empty` (구현됨) |
-| 11.1 | 상세 상태 | 운영자 조회 **5 variant**: 대기(`126:61280`)·거절(`126:61243`)·활성(`126:61199`)·비활성(`216:24789`)·잠금(`216:24996`) | 아래 상태별 action 표 참조 | 서버 상태 enum 대응 | `ManagerDetailContent`가 별도 제품 상태를 받아 조립; 리허설 status로 추론하지 않음 |
-| 11.1 | alert | 개인정보 전체보기(`126:61153`)·회원 탈퇴(`126:61146`)·탈퇴 알림(`126:61138`)·계정잠금해제(`126:61132`)·가입거절 사유(`216:25221`) | 재인증 입력·잠금해제 비밀번호·거절 사유 | 재인증 성공 이후 공개/탈퇴 처리 | `ManagerActionForm` 입력 검증→callback. 인증 성공·최종 탈퇴 완료 alert는 만들지 않음 |
 | 11.2 약관 | 구조 | 리스트(검색전 없음)·Case·조회·등록·수정. 미판독 | (대기) | — | — |
 | 11.3.2 접근권한 | 리스트 | 검색전 없음. 기간 등록일·최근업데이트일, 검색어 권한 1개, 유형(기획사·매표처)·사용 상태. toolbar `선택▾`+`변경` · `선택복사` · `등록`. table 유형·권한·사용 상태·등록일/최근업데이트일 | (대기) | — | — |
 | 11.3.2 접근권한 | 상세·등록·수정 | 조회·등록·수정 frame. 권한은 화면 행마다 가능한 기능 집합이 다른 `화면 × 기능` 조합 | (대기) | 서버 권한 식별자 | `CheckboxTree`가 `nodes/values/onValueChange/selectAllLabel/emptyMeansAll`로 controlled leaf 선택을 소유하며 matrix 의미는 소유하지 않음 |
@@ -46,12 +60,26 @@
 | 11.3.4 마케팅 | 구조 | 메시지 설정(+Case)·자동 발송 등록(+Case)·수정·팝업 메시지 변수. 미판독 | (대기) | — | — |
 | 11.4 로그 | 구조 | 6개 리스트 frame(로그인·조회·다운로드·등록·수정·삭제) + 각 Case. 한 화면 안의 종류별 리스트(tab 추정, 미판독) | Notion 요점 참조 | tab vs 별도 route | — |
 
-## 상세·폼·팝업 판독 (2026-09-02 ①′)
+## 11.1 운영자 — 등록
+
+surface: `manager-create`
+
+| id | 종류 | 화면 | surface | Figma 관찰 | Notion 동작·정책 | 미확인 | 현재 코드 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `manager-create.form` | 열거 | 11.1 운영자 등록 | 단일 접이식 섹션 폼 | "운영자정보" `^`. 2열: 유형*·권한*(select) / 아이디* / 비밀번호*·비밀번호 확인* / 이름* / 휴대폰번호*·이메일* / 소속. `저장`·`취소` | 유형 옵션은 정책 설정 목록; 권한은 선택 유형에 종속되고 유형 변경 시 초기화 | 실제 옵션·서버 중복검사 계약 | `src/features/managers/screens/form/ui/ManagerCreateScreen.tsx` · `src/features/managers/screens/form/ui/ManagerForm.tsx` |
+
+## 11.1 운영자 — 수정
+
+surface: `manager-edit`
+
+| id | 종류 | 화면 | surface | Figma 관찰 | Notion 동작·정책 | 미확인 | 현재 코드 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `manager-edit.form` | 열거 | 11.1 운영자 수정 | 단일 접이식 섹션 폼 | 등록과 같은 필드 골격, 아이디 읽기 전용 | 등록과 같은 option-source 계약 | 수정 전체 구성·실제 저장 API | `src/features/managers/screens/form/ui/ManagerEditScreen.tsx` · `src/features/managers/screens/form/ui/ManagerForm.tsx` |
+
+## 기타 설정 — 상세·폼·팝업 판독 (2026-09-02 ①′)
 
 | 화면 | surface | Figma 관찰 | Notion 동작·정책 | 미확인 | 현재 코드 |
 | --- | --- | --- | --- | --- | --- |
-| 11.1 운영자 등록 | 단일 접이식 섹션 폼 | "운영자정보" `^`. 2열: 유형*·권한*(select) / 아이디*("영문+숫자 조합, 6~20자 내외") / 비밀번호*("영문 대/소문자+숫자+특수문자 중 3종류 이상, 8~20자 내외")·비밀번호 확인* / 이름*("10자 내외") / 휴대폰번호*("20자 내외")·이메일*("3~100자 내외") / 소속("20자 내외"). placeholder = 제약 문구. `저장`·`취소` | 유형 옵션은 정책 설정 목록; 권한은 선택 유형에 종속되고 유형 변경 시 초기화 | 실제 옵션·서버 중복검사 계약 | `ManagerCreateInputScreen`·`ManagerEditInputScreen`이 `ManagerForm` 필드를 재사용. 검증→확인→입력 callback, dirty 취소는 guard |
-| 11.1 운영자 조회 | **5 상태 variant** | 대기·거절·활성·비활성·잠금 frame 5개. alert 구성은 위 절 | Notion 직접 대조한 아래 상태별 action | API 이후 처리 | `ManagerDetailContent`·`ManagerActionForm`; SMS/이메일은 `features/messaging` 조립 |
 | 11.3.2 접근권한 등록 (`129:72959`) | 폼 + **권한 matrix** | 기본정보(유형*·권한*·사용 상태*) + "ZEROPLUS Admin" 섹션. 헤더 `기능1~8`은 익명 슬롯이며 실제 기능 집합은 행마다 다르다: 대시보드=조회, 전체·일반·불량회원=조회·등록·수정·탈퇴·SMS/이메일·일괄변경, 휴면회원=조회·수정·탈퇴·SMS/이메일, 탈퇴회원=조회, 회원상담=조회·등록·수정·삭제·다운로드, 회원접속=조회·다운로드 등 | Notion: 상위 레벨 선택 시 하위 전체 선택/해제 | 서버 권한 식별자 | `CheckboxTree`가 controlled leaf 선택과 `emptyMeansAll` 표현을 소유; 화면별 기능 집합은 caller 소유 |
 | 11.3.4 마케팅 | **page tab + 조건부 섹션 + sub-tab** | tab(메시지 설정·자동 발송). 자동 발송 설정(SMS·카카오 알림톡·이메일 select). Case: 사용 시 "메시지 사용 설정" 섹션 노출 + sub-tab(SMS·카카오 알림톡·이메일) + 조건부 필수 필드(발송 예외설정*, 이름*, 발신용 연락처* / 채널*, 업종 카테고리* cascade, 휴대폰번호* + `인증` + 인증코드*) | (notion/11 참조) | 인증 흐름 | 없음 |
 | 11.3.6 다국어 | **편집 가능 테이블 폼** | 검색어(chip) + 검색/초기화 → 표(No.·KEY·한국어·일본어·영어 input) → 하단 `저장`·`취소`. paging 없음(`- 이하 생략 -`) | Notion: 초기화 문장 존재 | 행 수 상한·저장 단위 | `table-composition.md` kind D |

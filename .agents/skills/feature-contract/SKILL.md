@@ -16,7 +16,7 @@ Select references by the surfaces actually present, not by the page type alone. 
 For screen/workflow work, locate the target through the product evidence entry point before selecting
 references. `context` is an optional discovery helper; its inventory-owned index connects evidence and
 inner surfaces, while group entries still require decomposition. Explain scope and requirement evidence
-in conversation. Only recorded work uses [prepare/review](../../../scripts/agents/README.md#prepare-before-editing).
+in conversation.
 A code path is a routing hint, not a screen template. Keep missing evidence explicit.
 
 - Before composing a screen, read its relevant inventory, scenarios and confirmed/open decisions, or observe the original sources where those are missing. The index routes evidence, not policy: decompose group entries and follow linked rules when they affect ownership, exceptions or failure behavior. Read a reference in full only when the work spans it; preserve applicable ancestor constraints. Do not invent product facts from existing code.

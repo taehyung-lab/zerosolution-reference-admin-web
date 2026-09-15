@@ -21,9 +21,3 @@ Test the rendered state, live error/retry contract, slot composition, and access
 or loading/error facts; a consumer with an additional confirmed visibility gate supplies that boolean.
 It does not hide action/dialog owners or merge summary, toolbar and result lifetimes. Multi-metric totals
 still use `ResultSummary` with complete feature-owned sentences. Never use `total > 0` as the search gate.
-
-## 이 저장소의 관찰
-
-규칙이 아니라 이 저장소 화면에서 위 규칙을 적용한 기록이다. 신규 프로젝트는 이 절을 비우고 자기 화면으로 다시 채운다.
-
-- 다이얼로그 소유자 rerender 테스트는 회원·운영자 목록에 있다. 검색 전 toolbar 에 등록 액션만 두는 예는 운영자 목록. 상태별 요약 여러 개의 예는 발권(총·발권대기·발권완료).

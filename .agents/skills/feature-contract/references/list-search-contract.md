@@ -30,7 +30,7 @@ const contract = defineSearchFields(fields);
 
 ### 형태
 
-새 제품 목록의 URL 필드 이름과 값 모양이다. 새 화면은 이 표를 따르고 이탈을 늘리지 않는다. 현재 소비자와 이탈은 [이 저장소의 관찰](#이-저장소의-관찰)에 있다. `contracts:check` 는 이 표를 보지 않는다 — 리뷰가 본다.
+새 제품 목록의 URL 필드 이름과 값 모양이다. 새 화면은 이 표를 따르고 이탈을 늘리지 않는다. 실제 소비자와 이탈은 제품 reference·ADR·consumer 테스트가 소유한다. `contracts:check` 는 이 표를 보지 않는다 — 리뷰가 본다.
 
 | 필드 | 모양 |
 | --- | --- |
@@ -85,37 +85,3 @@ partition을 재사용하지 않는다. 각 변형의 세 결과는 정확히 �
 빈/불량 URL, 검색 전·후, 초기화 2회, 뒤로/앞으로, 정렬·보기 후 재검색을 실제 소비자에서 검증한다.
 동일 요청 의미의 생략값/명시값은 요청 입력과 Query 캐시가 같고, 다른 page 등은 달라야 한다.
 green은 실행한 시나리오 범위의 증거이며 실 API·제품 전체 이관 완료를 뜻하지 않는다.
-
-## 이 저장소의 관찰
-
-규칙이 아니라 이 저장소 목록에서 위 계약을 적용한 기록이다. 신규 제품의 정책 근거로 복사하지 않으며, 신규 프로젝트는 이 절을 비우고 자기 소비자로 다시 채운다. 실제 숫자·enum의 단일 원본은 각 search 필드 선언이며 변경 시 이 표도 대조한다.
-
-### 형태 절의 현재 이탈 (2026-09-10 3차 검토 실측)
-
-제품 운영자 목록은 `sort`/`direction`(`manager-list-search.ts`)과 `permission` 기본값 `""`(아래 "중복 정리" 표가 확정)를 쓴다 — 표에 맞추는 것은 별도 작업이다. 리허설 운영자의 `{keywordType, keyword}`·`ASC/DESC` 는 서버 어휘라 그대로 둔다. 형태 표 그대로인 소비자는 회원·공연 목록이다.
-
-### 현재 소비자의 기본값과 보존한 차이
-
-| 소비자 | 기간 기준 / 정렬 기본값 | 진입·초기화 |
-| --- | --- | --- |
-| 운영자 제품 | joinedAt / joinedAt·desc | 명시 검색: 빈 URL 대기, 유효 조건 직접 접근 또는 searched=true 조회, 초기화 `{}` |
-| 운영자 리허설 | CREATED_AT / CREATED_AT·DESC | 명시 검색: 제품과 같은 searched 표식, 서버 enum 어휘는 별도 유지 |
-| 활성 회원 전체·일반·불량 | joinedAt / joinedAt·desc | 명시 검색; 해당 변형에서 숨긴 필드만 있는 URL은 대기 |
-| 공연 | performedAt / registeredAt·방향 미지정 | 진입 즉시 조회, 초기화 `{ searched: false }`, 검색 시 false 제거 |
-| 휴면 | joinedAt / joinedAt·desc | 명시 검색, 초기화 `{}` |
-| 탈퇴 | joinedAt / withdrawnAt·desc | 명시 검색, 초기화 `{}`. 기간 생략은 직접 접근/버튼 검색 모두 같은 joinedAt 기본값 |
-| 접속 | accessedAt / accessedAt·desc | 명시 검색, 초기화 `{}` |
-| 상담·소명 | receivedAt·appliedAt / 각각 같은 필드·desc | 진입과 초기화 `{}` 모두 조회 |
-
-위 소비자의 page 기본값은 1, pageSize는 100이며 기간 양끝은 미지정이다. 공연의 초기화 표식만 feature 정책으로 다르다. 변형이 필드가 다른 예는 회원 일반/불량이다.
-
-### 중복 정리의 소유자 (2026-09-07)
-
-| 검토 항목 | 현재 단일 출처·처리 |
-| --- | --- |
-| 제품 운영자 enum/옵션 4쌍 | search model의 허용 목록을 schema와 옵션 UI가 함께 소비 |
-| 리허설 운영자 enum 재선언 | API enum 상수를 옵션에서 참조. UI 순서·번역은 feature에 유지; keyword 목록은 search model 공유 |
-| pageSize 허용 목록 | 제품 목록은 `standardPageSizeOptions` 채택. 리허설 양의 정수는 다른 계약이므로 유지 |
-| keyword 초기 대상 리터럴 | feature 허용 목록의 첫 항목에서 파생. 빈 keywords 기본값과는 다른 책임 |
-| 기간 preset 기본값 | 무기간에서 ALL 파생을 유지. 별도 기본값 선언·상태를 추가하지 않음 |
-| permission 빈 문자열 잔류 | 필드 schema가 빈 문자열을 복구하므로 별도 `if (permission === '')` 삭제. 기본값 검색 표식만 유지 |
