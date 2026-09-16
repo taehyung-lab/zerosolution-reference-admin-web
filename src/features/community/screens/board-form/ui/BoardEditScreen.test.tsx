@@ -35,21 +35,23 @@ describe('board edit (Figma 9.1.4 수정)', () => {
     expect(screen.getByRole('combobox', { name: '중복 허용' })).toBeDisabled();
   });
 
-  it('저장은 확인을 지나 실행되고, 미연결 실패는 폼 위 문구로 남아 이동하지 않는다', async () => {
+  it('저장은 확인 → 요청 함수 → 저장 완료 → 조회 이동으로 이어진다', async () => {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
     const { onSaved } = setup();
     const name = await screen.findByDisplayValue('Reference Board 2');
 
     fireEvent.change(name, { target: { value: 'Reference Board 2 수정' } });
     fireEvent.click(screen.getByRole('button', { name: '저장' }));
 
-    const dialog = await screen.findByRole('dialog');
-    expect(dialog).toHaveTextContent('저장하시겠습니까?');
-    fireEvent.click(within(dialog).getByRole('button', { name: '확인' }));
+    const confirm = await screen.findByRole('dialog');
+    expect(confirm).toHaveTextContent('저장하시겠습니까?');
+    fireEvent.click(within(confirm).getByRole('button', { name: '확인' }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      '저장하지 못했습니다. 잠시 후 다시 시도해 주세요.',
-    );
-    expect(onSaved).not.toHaveBeenCalled();
+    const saved = await screen.findByText('저장되었습니다.');
+    expect(log).toHaveBeenCalledWith(expect.stringContaining('[시나리오] 게시판 수정 reference-board-2'));
+    fireEvent.click(within(saved.closest('[role="dialog"]')!).getByRole('button', { name: '확인' }));
+    await waitFor(() => expect(onSaved).toHaveBeenCalledWith('reference-board-2'));
+    log.mockRestore();
   });
 
   it('게시판명을 비우면 저장이 확인창까지 가지 않는다', async () => {

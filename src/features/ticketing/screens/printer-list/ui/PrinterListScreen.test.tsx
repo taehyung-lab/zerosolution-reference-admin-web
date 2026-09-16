@@ -24,7 +24,6 @@ function renderScreen(sparse: PrinterListSearch = {}) {
 }
 
 const firstRowName = '003-31500210';
-const notConnectedMessage = '요청을 처리하지 못했습니다. 다시 시도해 주세요.';
 
 describe('PrinterListScreen (6.7.1 스마트프린터 목록)', () => {
   it('검색을 기다리지 않고 진입 즉시 결과를 그린다', async () => {
@@ -148,7 +147,8 @@ describe('PrinterListScreen (6.7.1 스마트프린터 목록)', () => {
     expect(await screen.findByText('변경할 항목을 선택해주세요.')).toBeInTheDocument();
   });
 
-  it('선택 + 변경 값 + 확인까지 통과하면 일괄변경을 실행하고, 미연결 실패는 확인창에 남는다 — 원문 Case02', async () => {
+  it('선택 + 변경 값 + 확인까지 통과하면 일괄변경 요청 함수에 닿고 확인창이 닫힌다 — 원문 Case02', async () => {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
     renderScreen();
     await screen.findByRole('cell', { name: firstRowName });
 
@@ -158,19 +158,26 @@ describe('PrinterListScreen (6.7.1 스마트프린터 목록)', () => {
 
     const dialog = await screen.findByRole('dialog');
     expect(dialog).toHaveTextContent('선택 항목을 변경하시겠습니까?');
+    expect(log).not.toHaveBeenCalled();
     fireEvent.click(within(dialog).getByRole('button', { name: '확인' }));
 
-    expect(await within(dialog).findByRole('alert')).toHaveTextContent(notConnectedMessage);
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(log).toHaveBeenCalledWith(expect.stringContaining('[시나리오] 스마트프린터 일괄변경'));
+    log.mockRestore();
   });
 
-  it('선택복사는 선택만 있으면 실행하고, 미연결 실패는 같은 alert 로 알린다', async () => {
+  it('선택복사는 선택만 있으면 요청 함수에 닿는다', async () => {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
     renderScreen();
     await screen.findByRole('cell', { name: firstRowName });
 
     fireEvent.click(screen.getByRole('checkbox', { name: `${firstRowName} 선택` }));
     fireEvent.click(screen.getByRole('button', { name: '선택복사' }));
 
-    expect(await screen.findByText(notConnectedMessage)).toBeInTheDocument();
+    await waitFor(() =>
+      expect(log).toHaveBeenCalledWith(expect.stringContaining('[시나리오] 스마트프린터 선택복사')),
+    );
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    log.mockRestore();
   });
 });

@@ -58,7 +58,8 @@ describe('printer create (Figma 6.7.1.3 등록)', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
-  it('검증을 통과하면 저장 확인을 지나 저장을 실행하고, 미연결 실패는 폼 위 문구로 남는다', async () => {
+  it('검증을 통과하면 저장 확인 → 요청 함수 → 저장 완료 → 목록 이동으로 이어진다', async () => {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
     const { onSaved } = setup();
 
     fireEvent.change(screen.getByLabelText('기기명*'), { target: { value: '001-12345648' } });
@@ -69,15 +70,18 @@ describe('printer create (Figma 6.7.1.3 등록)', () => {
     await chooseOptionIn('상태', '수리중');
     fireEvent.click(screen.getByRole('button', { name: '저장' }));
 
-    const dialog = await screen.findByRole('dialog');
-    expect(dialog).toHaveTextContent('저장하시겠습니까?');
-    fireEvent.click(within(dialog).getByRole('button', { name: '확인' }));
+    const confirm = await screen.findByRole('dialog');
+    expect(confirm).toHaveTextContent('저장하시겠습니까?');
+    expect(log).not.toHaveBeenCalled();
+    fireEvent.click(within(confirm).getByRole('button', { name: '확인' }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      '저장하지 못했습니다. 잠시 후 다시 시도해 주세요.',
-    );
+    const saved = await screen.findByText('저장되었습니다.');
+    expect(log).toHaveBeenCalledWith(expect.stringContaining('[시나리오] 스마트프린터 등록'));
+    expect(log.mock.calls[0]?.[0]).not.toContain('001-12345648');
     expect(onSaved).not.toHaveBeenCalled();
-    expect(screen.queryByText('저장되었습니다.')).not.toBeInTheDocument();
+    fireEvent.click(within(saved.closest('[role="dialog"]')!).getByRole('button', { name: '확인' }));
+    await waitFor(() => expect(onSaved).toHaveBeenCalledOnce());
+    log.mockRestore();
   });
 
   it('입력이 없으면 취소가 바로 나가고, 입력이 있으면 이탈 보호가 켜진다', async () => {

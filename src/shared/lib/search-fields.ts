@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { compactSearchValues } from "./compact-search-values";
 import {
   normalizeClosedInstantRange,
   omitSearchDefaults,
@@ -59,5 +60,40 @@ export function defineSearchFields<const T extends Record<string, SearchField>>(
     canonical: schema.transform((value) =>
       omitSearchDefaults(normalizeClosedInstantRange(value), defaults),
     ),
+  };
+}
+
+/**
+ * The same declaration for a list that waits for the user's first search. The URL carries a
+ * `searched` marker: the empty URL is the pre-search state, any valid condition (even a default
+ * written out) means a search happened, and committing writes the marker exactly once.
+ * `resolve` exposes the marker as a boolean the screen passes to its query and controls.
+ */
+export function defineGatedSearchFields<const T extends Record<string, SearchField>>(
+  fields: T & {
+    [K in keyof T]: {
+      readonly defaultValue: Readonly<z.output<T[K]["schema"]>>;
+    };
+  },
+) {
+  const base = defineSearchFields(fields);
+  const schema = base.schema.extend({
+    searched: z.literal(true).optional().catch(undefined),
+  });
+  type Sparse = z.output<typeof schema>;
+  type Full = ReturnType<typeof base.resolve> & { readonly searched: boolean };
+
+  return {
+    ...base,
+    schema,
+    resolve: (sparse: Sparse): Full => ({
+      ...base.resolve(sparse),
+      searched: sparse.searched === true,
+    }),
+    canonical: schema.transform(({ searched, ...rest }): Sparse => {
+      const valid = compactSearchValues(normalizeClosedInstantRange(rest));
+      if (searched !== true && Object.keys(valid).length === 0) return {};
+      return { ...omitSearchDefaults(valid, base.defaults), searched: true };
+    }),
   };
 }

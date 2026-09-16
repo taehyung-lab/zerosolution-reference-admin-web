@@ -31,8 +31,6 @@ vi.mock('@tanstack/react-router', () => ({
   useBlocker: () => ({ status: 'idle' }),
 }));
 
-const notConnectedMessage = '요청을 처리하지 못했습니다. 다시 시도해 주세요.';
-
 function renderScreen(boardId = 'reference-board-1') {
   const onEdit = vi.fn();
   const onDeleted = vi.fn();
@@ -99,7 +97,8 @@ describe('BoardDetailScreen (Figma 9.1.2)', () => {
     expect(screen.getByText('등록')).toBeInTheDocument();
   });
 
-  it('카테고리 설정 팝업은 행을 편집·추가·삭제하고, 저장의 미연결 실패는 팝업 안에 남는다', async () => {
+  it('카테고리 설정 팝업은 행을 편집·추가·삭제하고 저장에서 요청 함수에 닿은 뒤 닫힌다', async () => {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
     renderScreen();
     await screen.findByText('Reference Board 1');
 
@@ -117,9 +116,13 @@ describe('BoardDetailScreen (Figma 9.1.2)', () => {
     await waitFor(() => expect(within(dialog).getByRole('button', { name: '저장' })).toBeEnabled());
     fireEvent.click(within(dialog).getByRole('button', { name: '저장' }));
 
-    expect(await within(dialog).findByRole('alert')).toHaveTextContent(notConnectedMessage);
-    expect(screen.getByRole('dialog', { name: '카테고리 설정' })).toBeInTheDocument();
-    expect(within(dialog).getByRole('textbox', { name: '1번 카테고리명' })).toHaveValue('이벤트');
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: '카테고리 설정' })).not.toBeInTheDocument(),
+    );
+    expect(log).toHaveBeenCalledWith(
+      expect.stringContaining('[시나리오] 게시판 카테고리 설정 저장 reference-board-1'),
+    );
+    log.mockRestore();
   });
 
   it('카테고리 순서는 접근 가능한 DnD 핸들로 바꾸고 마지막 행의 삭제는 숨긴다', async () => {
@@ -153,7 +156,8 @@ describe('BoardDetailScreen (Figma 9.1.2)', () => {
     expect(onEdit).toHaveBeenCalledWith('reference-board-1');
   });
 
-  it('삭제는 공통 삭제 확인을 거쳐 실행되고, 취소하면 나가지 않으며, 미연결 실패는 확인창에 남는다', async () => {
+  it('삭제는 공통 삭제 확인을 거쳐 요청 함수에 닿고, 취소하면 나가지 않으며, 성공 뒤 목록으로 나간다', async () => {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
     const { onDeleted } = renderScreen();
     await screen.findByText('Reference Board 1');
 
@@ -161,12 +165,14 @@ describe('BoardDetailScreen (Figma 9.1.2)', () => {
     expect(await screen.findByText('삭제하시겠습니까?')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '취소' }));
     await waitFor(() => expect(screen.queryByText('삭제하시겠습니까?')).toBeNull());
+    expect(log).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole('button', { name: '삭제' }));
     const dialog = await screen.findByRole('dialog');
     fireEvent.click(within(dialog).getByRole('button', { name: '확인' }));
-    expect(await within(dialog).findByRole('alert')).toHaveTextContent(notConnectedMessage);
-    expect(onDeleted).not.toHaveBeenCalled();
+    await waitFor(() => expect(onDeleted).toHaveBeenCalledOnce());
+    expect(log).toHaveBeenCalledWith(expect.stringContaining('[시나리오] 게시판 삭제'));
+    log.mockRestore();
   });
 
   it('진입 후 없는 게시판은 notFound 로 선다', async () => {

@@ -34,7 +34,8 @@ describe('printer edit (Figma 6.7.1.4 수정)', () => {
     expect(screen.getByRole('combobox', { name: '사용상태' })).toHaveTextContent('사용안함');
   });
 
-  it('저장은 확인을 지나 실행되고, 미연결 실패는 폼 위 문구로 남아 이동하지 않는다', async () => {
+  it('저장은 확인 → 요청 함수 → 저장 완료 → 조회 이동으로 이어진다', async () => {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
     const { onSaved } = setup();
     await waitFor(() => {
       expect(screen.getByLabelText('기기명*')).toHaveValue('001-12345649');
@@ -42,14 +43,17 @@ describe('printer edit (Figma 6.7.1.4 수정)', () => {
 
     fireEvent.change(screen.getByLabelText('보관위치'), { target: { value: '창고 C' } });
     fireEvent.click(screen.getByRole('button', { name: '저장' }));
-    const dialog = await screen.findByRole('dialog');
-    expect(dialog).toHaveTextContent('저장하시겠습니까?');
-    fireEvent.click(within(dialog).getByRole('button', { name: '확인' }));
+    const confirm = await screen.findByRole('dialog');
+    expect(confirm).toHaveTextContent('저장하시겠습니까?');
+    fireEvent.click(within(confirm).getByRole('button', { name: '확인' }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      '저장하지 못했습니다. 잠시 후 다시 시도해 주세요.',
+    const saved = await screen.findByText('저장되었습니다.');
+    expect(log).toHaveBeenCalledWith(
+      expect.stringContaining('[시나리오] 스마트프린터 수정 reference-printer-2'),
     );
-    expect(onSaved).not.toHaveBeenCalled();
+    fireEvent.click(within(saved.closest('[role="dialog"]')!).getByRole('button', { name: '확인' }));
+    await waitFor(() => expect(onSaved).toHaveBeenCalledWith('reference-printer-2'));
+    log.mockRestore();
   });
 
   it('없는 ID 는 not-found 문구로 닫고 폼을 그리지 않는다', async () => {

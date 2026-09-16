@@ -1,6 +1,6 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 import { z } from "zod";
-import { defineSearchFields } from "./search-fields";
+import { defineGatedSearchFields, defineSearchFields } from "./search-fields";
 import { resolveSearchDefaults } from "./search";
 import { filterPartitionValues } from "./search-partition";
 
@@ -132,6 +132,23 @@ describe("search field declaration", () => {
       startDateTime: "2026-01-01T00:00:00.000Z",
       endDateTime: "2026-01-02T00:00:00.000Z",
     });
+  });
+
+  it("gates a search-before list behind an explicit URL marker", () => {
+    const gated = defineGatedSearchFields(fields);
+    expect(gated.canonical.parse({})).toEqual({});
+    expect(gated.canonical.parse({ searched: true })).toEqual({ searched: true });
+    // Any valid condition, even a written-out default, means a search happened.
+    expect(gated.canonical.parse({ page: 1 })).toEqual({ searched: true });
+    expect(gated.canonical.parse({ status: "closed", page: 2 })).toEqual({
+      status: "closed",
+      page: 2,
+      searched: true,
+    });
+    expect(gated.canonical.parse({ searched: false as never })).toEqual({});
+    expect(gated.resolve({})).toMatchObject({ page: 1, searched: false });
+    expect(gated.resolve({ searched: true, page: 3 })).toMatchObject({ page: 3, searched: true });
+    expectTypeOf(gated.resolve({}).searched).toEqualTypeOf<boolean>();
   });
 
   it('rejects invalid defaults and missing metadata at compile time', () => {

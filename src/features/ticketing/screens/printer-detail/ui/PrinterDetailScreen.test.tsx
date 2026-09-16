@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { TestQueryLocaleProvider } from '@/test/query-locale';
 import { PrinterDetailScreen } from './PrinterDetailScreen';
@@ -56,20 +56,22 @@ describe('PrinterDetailScreen (6.7.1.2 스마트프린터 조회)', () => {
     expect(onEdit).toHaveBeenCalledWith('reference-printer-1');
   });
 
-  it('삭제는 확인 alert 를 지나 실행되고, 미연결 실패는 확인창에 남아 이동하지 않는다 — 원문 Case02', async () => {
+  it('삭제는 확인 alert 를 지나 요청 함수에 닿고 성공 뒤 목록으로 나간다 — 원문 Case02', async () => {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
     const { onDeleted } = renderScreen();
     await screen.findByText('001-12345648');
 
     fireEvent.click(screen.getByRole('button', { name: '삭제' }));
     const dialog = await screen.findByRole('dialog');
     expect(dialog).toHaveTextContent('삭제하시겠습니까?');
+    expect(onDeleted).not.toHaveBeenCalled();
 
     fireEvent.click(within(dialog).getByRole('button', { name: '확인' }));
 
-    expect(await within(dialog).findByRole('alert')).toHaveTextContent(
-      '요청을 처리하지 못했습니다. 다시 시도해 주세요.',
-    );
-    expect(onDeleted).not.toHaveBeenCalled();
+    await waitFor(() => expect(onDeleted).toHaveBeenCalledOnce());
+    expect(log).toHaveBeenCalledWith(expect.stringContaining('[시나리오] 스마트프린터 삭제'));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    log.mockRestore();
   });
 
   it('없는 ID 의 재조회 실패는 not-found 문구로 닫는다', async () => {

@@ -91,7 +91,8 @@ describe('board create (Figma 9.1.3 등록)', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
-  it('유효한 입력은 저장 확인을 거쳐 저장을 실행하고, 미연결 실패는 폼 위 문구로 남는다', async () => {
+  it('유효한 입력은 저장 확인 → 요청 함수 → 저장 완료 → 목록 이동으로 이어진다', async () => {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
     const { onSaved } = setup();
 
     fireEvent.change(screen.getByLabelText('게시판명*'), { target: { value: '공지 게시판' } });
@@ -100,15 +101,17 @@ describe('board create (Figma 9.1.3 등록)', () => {
     await choose('게시글 제목 지정', '작성자가 직접입력');
     fireEvent.click(screen.getByRole('button', { name: '저장' }));
 
-    const dialog = await screen.findByRole('dialog');
-    expect(dialog).toHaveTextContent('저장하시겠습니까?');
-    fireEvent.click(within(dialog).getByRole('button', { name: '확인' }));
+    const confirm = await screen.findByRole('dialog');
+    expect(confirm).toHaveTextContent('저장하시겠습니까?');
+    expect(log).not.toHaveBeenCalled();
+    fireEvent.click(within(confirm).getByRole('button', { name: '확인' }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      '저장하지 못했습니다. 잠시 후 다시 시도해 주세요.',
-    );
+    const saved = await screen.findByText('저장되었습니다.');
+    expect(log).toHaveBeenCalledWith(expect.stringContaining('[시나리오] 게시판 등록'));
     expect(onSaved).not.toHaveBeenCalled();
-    expect(screen.queryByText('저장되었습니다.')).not.toBeInTheDocument();
+    fireEvent.click(within(saved.closest('[role="dialog"]')!).getByRole('button', { name: '확인' }));
+    await waitFor(() => expect(onSaved).toHaveBeenCalledOnce());
+    log.mockRestore();
   });
 
   it('입력 전에는 이탈 가드가 꺼져 있고 입력하면 켜진다', () => {
