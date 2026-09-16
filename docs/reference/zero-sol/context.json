@@ -578,7 +578,10 @@
         "docs/reference/scenarios/ticketing-lists-and-detail.md",
         "docs/reference/scenarios/ticketing-realtime.md"
       ],
-      "paths": [],
+      "paths": [
+        "src/features/ticketing/",
+        "src/routes/_app/ticketing/"
+      ],
       "references": [
         {
           "file": ".agents/skills/feature-contract/references/list-workflow.md",

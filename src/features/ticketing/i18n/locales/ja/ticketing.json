@@ -1,0 +1,158 @@
+{
+  "printer": {
+    "title": "スマートプリンター",
+    "breadcrumb": {
+      "ticketing": "発券",
+      "extras": "付加機能",
+      "printers": "スマートプリンター",
+      "detail": "照会",
+      "create": "登録",
+      "edit": "修正"
+    },
+    "filter": {
+      "title": "検索",
+      "collapse": "検索を閉じる",
+      "expand": "検索を開く",
+      "submit": "検索",
+      "reset": "初期化",
+      "all": "全体",
+      "status": "状態",
+      "purpose": "用途",
+      "usage": "使用状態",
+      "period": {
+        "label": "期間",
+        "criterion": "期間基準",
+        "presetGroup": "期間選択",
+        "from": "開始日",
+        "to": "終了日",
+        "calendar": "カレンダー"
+      },
+      "keyword": {
+        "label": "検索語",
+        "field": "検索対象",
+        "add": "追加",
+        "remove": "{{value}} を削除",
+        "chip": "{{field}} : {{value}}"
+      }
+    },
+    "columns": {
+      "name": "機器名",
+      "serialNo": "シリアル番号",
+      "model": "モデル名",
+      "manufacturer": "製造社",
+      "location": "保管場所",
+      "status": "機器状態",
+      "measures": "対応事項",
+      "purchasedAt": "購入日",
+      "purpose": "用途",
+      "usage": "使用状態",
+      "timestamps": "登録日/最終更新日"
+    },
+    "sort": {
+      "registeredAt": "登録日",
+      "updatedAt": "更新日",
+      "name": "機器名",
+      "serialNo": "シリアル番号",
+      "model": "モデル名",
+      "manufacturer": "製造社",
+      "location": "保管場所",
+      "status": "機器状態",
+      "measures": "対応事項",
+      "purchasedAt": "購入日",
+      "purpose": "用途",
+      "usage": "使用状態"
+    },
+    "result": {
+      "pageSize": "表示",
+      "sort": "並び替え",
+      "empty": "一致する検索結果がありません。",
+      "selectAll": "このページのスマートプリンターをすべて選択",
+      "selectRow": "{{name}} を選択",
+      "bulkField": "一括変更項目",
+      "bulkPlaceholder": "選択",
+      "bulkOption": {
+        "purpose": "用途 > {{value}}",
+        "usage": "使用状態 > {{value}}"
+      },
+      "bulkChange": "変更",
+      "copy": "選択コピー",
+      "create": "登録",
+      "pagination": {
+        "label": "ページ移動",
+        "previous": "前へ",
+        "next": "次へ"
+      }
+    },
+    "detail": {
+      "title": "スマートプリンター照会",
+      "section": "基本情報",
+      "emptyValue": "-",
+      "history": "更新履歴",
+      "historyDate": "更新日",
+      "historyChange": "更新内容",
+      "historyManager": "担当者",
+      "historyEmpty": "更新履歴がありません。",
+      "historyCreated": "登録",
+      "historyUpdated": "修正",
+      "historyLine": "{{field}} : {{before}} > {{after}}",
+      "historyUnknownField": "不明な項目が変更されました。",
+      "edit": "修正",
+      "delete": "削除"
+    },
+    "form": {
+      "createTitle": "スマートプリンター登録",
+      "editTitle": "スマートプリンター修正",
+      "section": "基本情報",
+      "name": "機器名",
+      "namePlaceholder": "機器名 (1~{{max}}文字程度)",
+      "serialNo": "シリアル番号",
+      "serialNoPlaceholder": "シリアル番号 (1~{{max}}文字程度)",
+      "model": "モデル名",
+      "modelPlaceholder": "モデル名 ({{max}}文字程度)",
+      "manufacturer": "製造社",
+      "purchasedAt": "購入日",
+      "location": "保管場所",
+      "status": "状態",
+      "measures": "対応事項",
+      "purpose": "用途",
+      "usage": "使用状態",
+      "errors": {
+        "name": "機器名を入力してください。",
+        "nameLength": "機器名は100文字以内で入力してください。",
+        "serialNo": "シリアル番号を入力してください。",
+        "serialNoLength": "シリアル番号は100文字以内で入力してください。",
+        "modelLength": "モデル名は100文字以内で入力してください。",
+        "status": "状態を選択してください。",
+        "purpose": "用途を選択してください。",
+        "usage": "使用状態を選択してください。"
+      }
+    },
+    "values": {
+      "periodType": {
+        "registeredAt": "登録日",
+        "updatedAt": "最終更新日"
+      },
+      "keywordField": {
+        "name": "機器名",
+        "serialNo": "シリアル番号",
+        "model": "モデル名",
+        "manufacturer": "製造社",
+        "location": "保管場所",
+        "measures": "対応事項"
+      },
+      "status": {
+        "NORMAL": "正常",
+        "BROKEN": "故障",
+        "REPAIR": "修理中"
+      },
+      "purpose": {
+        "INTERNAL": "内部発券用",
+        "EXTERNAL": "現場発券用"
+      },
+      "usage": {
+        "IN_USE": "使用",
+        "NOT_IN_USE": "使用しない"
+      }
+    }
+  }
+}
