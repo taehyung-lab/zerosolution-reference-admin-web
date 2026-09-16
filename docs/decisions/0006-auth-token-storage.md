@@ -54,13 +54,13 @@ resultCode 표가 정한다. 실패처럼 들리는 코드를 그 자리에서 �
 로그인과 사용자 조작 ping으로 좁혀야 한다. 배경 조회가 세션을 밀어 만료 경고가 스스로 닫히는 실패가
 실측된 바 있다. 타이머·연장 UI는 이 결정의 범위 밖이며, 그 작업이 만료 권위와 ping 주기를 확정한다.
 
-refresh cookie의 배포 조건은 더 이상 공백이 아니라 격리된 리허설 계약이 선언한 값이다. 그 계약은
+refresh cookie의 배포 조건은 더 이상 공백이 아니라 격리 계약이 선언한 값이다. 그 계약은
 `refreshToken`(HttpOnly 세션 쿠키)과 `isLoggedIn`(JS에서 읽을 수 있는 브라우저 종료 감지용 세션 쿠키),
 STG·PROD Domain `.zeroplussolution.com`, SameSite LOCAL·DEV `None` / STG·PROD `Lax`를 선언한다
 ([ADR 0001](0001-rehearsal-api-contract.md)). 미확인은 그 값이 신규 제품의 실제 배포(CORS, domain, SameSite)에서
 그대로인지이며, 확인 전에는 제품 정책으로 복사하지 않는다. `isLoggedIn`을 라우트 가드가 함께 읽을지는
 이 결정의 범위 밖이고 별도 판단이 필요하다. 신규 backend의 business code 의미도 미확인이다. transport는
-response body를 access token으로 바꾸는 adapter shape만 제공하고, 현재 연결된 reader는 격리된 리허설 계약의
+response body를 access token으로 바꾸는 adapter shape만 제공하고, 현재 연결된 reader는 격리 계약의
 봉투를 읽는다. 코드의 이관 sentinel이 그 자리를 표시한다. 신규 OpenAPI가 확정되면 endpoint·request body·reader를
 그 계약으로 다시 확인하고 cookie 배포 조건(CORS, domain, SameSite)을 실제 환경에서 검증해야 bootstrap 완료를 판정할 수 있다.
 

@@ -5,7 +5,7 @@ description: Use when changing routes, feature screens, hooks, list search or fi
 
 # Feature Contract
 
-Keep URL, server, form, and UI state under one clear owner. A screen may orchestrate a use case; it must not become a second router or API layer. Every list, detail, and form in every domain has one shape; the product facts inside it come from that screen's ledger.
+Keep URL, server, form, and UI state under one clear owner. A screen may orchestrate a use case; it must not become a second router or API layer. Every list, detail, and form in every domain classifies its responsibilities the same way and names each one the same; how many files that produces depends on which responsibilities the screen actually has. The product facts inside them come from that screen's ledger.
 
 ## Read only what applies
 

@@ -102,12 +102,17 @@ notes.push(...productNameNotices(documents.filter((file) => file.startsWith('.ag
  * 옮겨 가고, 대상 제품은 그것을 규범으로 읽는다. `src/app/**` 은 제외한다 — navigation·i18n 등록처럼
  * 대상이 자기 것으로 교체하는 배선이라 제품 이름이 있는 것이 정상이고 manifest 가 `merge` 로 표시한다.
  */
-export function portableProductNameScope(seedFiles, manifestFiles) {
+export function portableProductNameScope(seedFiles, manifestFiles, read = (file) => readFileSync(resolve(file), 'utf8')) {
   return [...new Set([...seedFiles, ...manifestFiles])]
     .filter((file) => /\.(md|ts|tsx)$/.test(file))
     .filter((file) => !file.startsWith('src/app/'))
     .filter((file) => !file.startsWith('src/test/workflows/'))
     .filter((file) => !file.startsWith('.agents/skills/'))
+    // 이 검사의 어휘를 설명하는 문서는 자기 자신을 예로 든다.
+    .filter((file) => file !== 'scripts/contracts/README.md')
+    // 이관 결정이 이미 표시된 자리는 sentinel 이 소유한다. 그쪽은 target 모드에서 **실패**하므로
+    // 같은 줄을 notice 로 한 번 더 세면 닫힌 것과 열린 것이 구별되지 않는다.
+    .filter((file) => !existsSync(resolve(file)) || !read(file).includes('TRANSPLANT_PENDING_'))
     .sort()
 }
 

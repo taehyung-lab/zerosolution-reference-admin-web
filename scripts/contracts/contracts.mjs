@@ -352,6 +352,11 @@ export const PRODUCT_DOMAIN_TERMS = {
   english: ['member', 'manager', 'board', 'rehearsal', 'venue', 'appeal', 'counsel', 'dormant', 'withdrawn'],
   /** 제품 도메인이 아니라 모든 어드민이 갖는 관심사인 디렉터리. `auth/reissue` 같은 transport 경로가 여기 걸린다. */
   ignoreDirectories: ['auth'],
+  /**
+   * 도메인 낱말을 부분 문자열로 품었지만 제품 사실이 아닌 토큰. 정규식으로는 `useManagerDetail` 과
+   * 구별되지 않아(둘 다 소문자 뒤의 `Manager`) 이름으로 적는다. 추가할 때는 왜 제품 사실이 아닌지 적는다.
+   */
+  allow: ['packageManager'],
 }
 
 function readFeatureDirectories(root = 'src/features', ignore = PRODUCT_DOMAIN_TERMS.ignoreDirectories) {
@@ -364,6 +369,8 @@ function readFeatureDirectories(root = 'src/features', ignore = PRODUCT_DOMAIN_T
 /** 한 줄에서 찍힌 제품 이름들. 코드 fence 안도 본다 — 예시도 인스턴스다. */
 export function productTermsInLine(line, terms = PRODUCT_DOMAIN_TERMS, featureDirs = []) {
   const found = new Set()
+  // 허용 토큰은 그 자리를 비워 두고 본다. 그래야 `packageManager` 안의 `Manager` 가 잡히지 않는다.
+  for (const token of terms.allow ?? []) line = line.split(token).join(' ')
   for (const noun of terms.nouns) if (line.includes(noun)) found.add(noun)
   const identifier = new RegExp(`(?:${terms.identifiers.join('|')})\\w*`, 'g')
   for (const [match] of line.matchAll(identifier)) found.add(match)

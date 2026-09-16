@@ -10,9 +10,9 @@ Routes and feature screens compose visible parts explicitly. Repeated JSX is acc
 - The feature composes only the visible surfaces its selected workflow reference requires.
 - Cross-domain navigation and permission-evaluator metadata lives in `app/config`, not `shared` or another feature.
 
-## One shape per role
+## One responsibility map per role
 
-Every list, detail, and form in every domain uses the same file set and the same wiring ([list 형태](list.md#형태), [detail 형태](detail.md#형태), [form 형태](form.md#형태)). The shape is fixed so that a reader who knows one screen knows them all; the product facts inside the files (fields, copy, defaults, policy) come from that screen's ledger, never from a sibling.
+Every list, detail, and form in every domain classifies its responsibilities the same way and gives each one the same name and place ([list 형태](list.md#형태), [detail 형태](detail.md#형태), [form 형태](form.md#형태)). **The map is fixed; the file set is not.** A screen creates only the responsibilities it actually has, so two lists can differ in file count and still have the same shape — what a reader carries from one screen to the next is where to look, not how many files to expect. The product facts inside those files (fields, copy, defaults, policy) come from that screen's ledger, never from a sibling.
 
 - A Screen is the composition entry. It receives the URL (or ID) and navigation callbacks as props, calls the role hooks in order, and wires their results into the role components. It holds no state of its own.
 - State lives with its owner: `model/` hooks own URL transitions, drafts, query facts, and action policy; `ui/` hooks own only what the renderer consumes (columns, view controls, selection). Pure render-local formatting stays with its renderer.
