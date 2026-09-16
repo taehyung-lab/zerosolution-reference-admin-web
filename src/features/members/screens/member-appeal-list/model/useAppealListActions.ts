@@ -2,7 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { bulkChangeAppealsMutation } from '@/features/members/api/mutations';
 import { useMemberBulkChange } from '@/features/members/mechanics/bulk-change/model/useMemberBulkChange';
-import type { MemberMessageChannel } from '@/features/members/model/member';
+import type { MemberBulkChangeRequest, MemberMessageChannel } from '@/features/members/model/member';
 import { useLocale } from '@/shared/i18n/locale-context';
 import { useSelectionGate } from '@/shared/model/use-selection-gate';
 
@@ -15,11 +15,12 @@ export function useAppealListActions(
   const { locale } = useLocale();
   const gate = useSelectionGate(selectedIds.length);
   const bulkChange = useMutation(bulkChangeAppealsMutation(locale));
-  const bulk = useMemberBulkChange({ selectedIds, gate, run: (request) => bulkChange.mutateAsync(request) });
+  const bulk = useMemberBulkChange({ selectedIds, gate });
 
   return {
     gate,
     bulk,
+    runBulkChange: (request: MemberBulkChangeRequest) => bulkChange.mutateAsync(request),
     requestMessage: (channel: MemberMessageChannel) => {
       if (gate.requireSelection(t(`actions.${channel}Missing`))) onMessage(channel, selectedIds);
     },

@@ -14,7 +14,7 @@ import {
 import { useLocale } from '@/shared/i18n/locale-context';
 import { errorMessageKey, errorTraceOf } from '@/shared/lib/error-copy';
 import { useSelectionGate } from '@/shared/model/use-selection-gate';
-import { useConfirmation } from '@/shared/ui/dialog/useConfirmation';
+
 
 /**
  * Figma Case 정의의 cascade `선택 ▾ > 용도 > … / 사용상태 > …` 가 가진 leaf 전부.
@@ -36,9 +36,10 @@ export function parsePrinterBulkChange(value: string | null): PrinterBulkChange 
 }
 
 /**
- * 결과 toolbar 의 `선택 ▾ + 변경` 과 `선택복사` 두 액션의 선택 전제·확인·실행을 소유한다.
- * 원문 Case01(미선택 오류 alert)은 두 액션 모두, Case02(변경 확인 alert)는 일괄변경에만 있다.
- * 실행은 feature mutation 이고 실패는 확인창(일괄변경) 또는 같은 alert(선택복사)에 공용 문구로 남는다.
+ * 결과 toolbar 의 `선택 ▾ + 변경` 과 `선택복사` 두 액션의 **선택 전제와 실행**을 소유한다. 확인창의 상태와
+ * 렌더는 늘 mount 되는 Actions 컴포넌트가 갖는다 — 이 훅은 JSX 를 모른다.
+ * 원문 Case01(미선택 오류 alert)은 두 액션 모두, Case02(변경 확인 alert)는 일괄변경에만 있다. 선택복사는
+ * 확인 없이 바로 실행하므로 그 lifecycle 에 억지로 합치지 않고 여기서 끝낸다.
  */
 export function usePrinterListActions(selectedIds: readonly string[]) {
   const { t } = useTranslation('shared');
@@ -47,22 +48,18 @@ export function usePrinterListActions(selectedIds: readonly string[]) {
   const gate = useSelectionGate(selectedIds.length);
   const bulkChange = useMutation(bulkChangePrintersMutation(locale));
   const copy = useMutation(copyPrintersMutation(locale));
-  const confirmation = useConfirmation<PrinterBulkChangeRequest>({
-    run: (request) => bulkChange.mutateAsync(request),
-    description: t('bulkAction.confirm'),
-  });
 
   return {
     gate,
     target,
     setTarget,
-    dialog: confirmation.dialog,
-    /** 변경할 값을 고르지 않았으면 보낼 업무가 없으므로 확인창도 열지 않는다. */
-    requestBulkChange: () => {
-      if (!gate.requireSelection(t('bulkAction.missingSelection'))) return;
-      if (target === undefined) return;
-      confirmation.request({ targetIds: [...selectedIds], change: target });
+    /** 변경할 값을 고르지 않았으면 보낼 업무가 없으므로 요청도 만들지 않는다. */
+    prepareBulkChange: (): PrinterBulkChangeRequest | undefined => {
+      if (!gate.requireSelection(t('bulkAction.missingSelection'))) return undefined;
+      if (target === undefined) return undefined;
+      return { targetIds: [...selectedIds], change: target };
     },
+    runBulkChange: (request: PrinterBulkChangeRequest) => bulkChange.mutateAsync(request),
     requestCopy: () => {
       if (!gate.requireSelection(t('bulkAction.missingSelection'))) return;
       copy.mutate(

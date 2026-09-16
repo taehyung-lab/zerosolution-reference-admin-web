@@ -7,15 +7,18 @@ import { Select } from '@/shared/ui/primitives/Select';
 import type { MemberBulkChangeControls } from '../model/useMemberBulkChange';
 
 /**
- * 일괄변경 입력: 계정 상태 select 와, 불량회원일 때만 열리는 활동제한 tree, `변경`. 확인창(`bulk.dialog`)은
- * 이 컨트롤이 검색 전에 숨겨져도 남아야 하므로 호출한 toolbar 가 렌더한다. 고를 수 있는 활동제한은 화면이 준다.
+ * 일괄변경 입력: 계정 상태 select 와, 불량회원일 때만 열리는 활동제한 tree, `변경`. **이 컨트롤은 검색 전에
+ * 숨겨지므로** 확인 lifecycle 을 여기 두지 않는다 — 늘 mount 되는 toolbar 가 확인창을 소유하고 여기는
+ * `onRequestChange` 로 그 시작만 알린다. 고를 수 있는 활동제한은 화면이 준다.
  */
 export function MemberBulkChangeControl({
   bulk,
   restrictions,
+  onRequestChange,
 }: {
   readonly bulk: MemberBulkChangeControls;
   readonly restrictions: readonly MemberRestriction[];
+  readonly onRequestChange: () => void;
 }) {
   const { t } = useTranslation('members');
   const change = bulk.change;
@@ -55,7 +58,7 @@ export function MemberBulkChangeControl({
           </FilterField>
         ) : null}
       </div>
-      <Button onClick={bulk.request}>{t('bulk.change')}</Button>
+      <Button onClick={onRequestChange}>{t('bulk.change')}</Button>
     </>
   );
 }
