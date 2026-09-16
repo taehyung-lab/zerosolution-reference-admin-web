@@ -1,14 +1,17 @@
-import { safeErrorKey } from '@/api/error-copy';
+import { useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { classifyFormError } from '@/api/form-error';
+import { updateBoardMutation } from '@/features/community/api/mutations';
 import { useBoardDetail } from '@/features/community/api/useBoardDetail';
-import type { BoardSettings } from '@/features/community/model/board';
+import type { BoardDetail } from '@/features/community/model/board';
+import { useLocale } from '@/shared/i18n/locale-context';
 import { DetailStateBoundary } from '@/shared/ui/detail/DetailStateBoundary';
-import { ErrorTrace } from '@/shared/ui/feedback/ErrorTrace';
+import { useSaveForm } from '@/shared/ui/form/useSaveForm';
 import { PageHeader } from '@/shared/ui/layout/PageHeader';
 import { toBoardEditDefaults } from '../model/board-form-defaults';
-import type { BoardFormInput } from '../model/board-form-schema';
+import { toBoardSettings } from '../model/board-form-request';
+import { boardFormFieldOrder, boardFormSchema } from '../model/board-form-schema';
 import { BoardForm } from './BoardForm';
-import { useBoardInputForm } from './useBoardInputForm';
 
 /**
  * 9.1.4 게시판 수정(Figma, 2026-09-11 실측): 등록과 같은 항목을 조회 값으로 채워 보여 준다.
@@ -17,15 +20,14 @@ import { useBoardInputForm } from './useBoardInputForm';
  */
 export function BoardEditScreen({
   boardId,
-  onConfirm,
+  onSaved,
   onCancel,
 }: {
   readonly boardId: string;
-  readonly onConfirm: (request: { boardId: string; input: BoardSettings }) => void;
+  readonly onSaved: (boardId: string) => void;
   readonly onCancel: () => void;
 }) {
   const { t } = useTranslation('community');
-  const { t: shared } = useTranslation('shared');
   const detail = useBoardDetail(boardId);
 
   return (
@@ -39,45 +41,36 @@ export function BoardEditScreen({
         ]}
         title={t('board.form.editTitle')}
       />
-      <DetailStateBoundary
-        state={detail.state}
-        labels={{
-          error: shared(safeErrorKey(detail.error?.kind)),
-          notFound: shared('error.kind.notFound'),
-        }}
-        retryLabel={shared('error.unexpected.retry')}
-        onRetry={() => void detail.retry()}
-        trace={detail.error ? <ErrorTrace value={detail.error} /> : null}
-      >
-        {detail.data ? (
-          <BoardEditForm
-            key={boardId}
-            defaults={toBoardEditDefaults(detail.data)}
-            onConfirm={(input) => onConfirm({ boardId, input })}
-            onCancel={onCancel}
-          />
-        ) : null}
+      <DetailStateBoundary query={detail}>
+        {(board) => (
+          <BoardEditForm key={board.id} board={board} onSaved={() => onSaved(board.id)} onCancel={onCancel} />
+        )}
       </DetailStateBoundary>
     </section>
   );
 }
 
 function BoardEditForm({
-  defaults,
-  onConfirm,
+  board,
+  onSaved,
   onCancel,
 }: {
-  readonly defaults: BoardFormInput;
-  readonly onConfirm: (values: BoardSettings) => void;
+  readonly board: BoardDetail;
+  readonly onSaved: () => void;
   readonly onCancel: () => void;
 }) {
-  const input = useBoardInputForm({ defaults, onConfirm });
-  return (
-    <BoardForm
-      dialogs={input.dialogs}
-      form={input.form}
-      onSubmit={input.submit}
-      onCancel={() => input.guard.leave(onCancel)}
-    />
-  );
+  const { locale } = useLocale();
+  const update = useMutation(updateBoardMutation(locale, board.id));
+  const save = useSaveForm({
+    schema: boardFormSchema,
+    defaultValues: toBoardEditDefaults(board),
+    sections: { info: boardFormFieldOrder },
+    save: {
+      run: (values) => update.mutateAsync(toBoardSettings(values)),
+      isPending: update.isPending,
+    },
+    mapError: (error) => classifyFormError(error, boardFormFieldOrder),
+    onDone: onSaved,
+  });
+  return <BoardForm save={save} onCancel={onCancel} />;
 }

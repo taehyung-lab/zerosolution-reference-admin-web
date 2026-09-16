@@ -3,6 +3,8 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BOARD_CATEGORY_NAME_MAX_LENGTH, boardUsages, type BoardCategoryItem } from '@/features/community/model/board'
 import { categorySettingsSchema, type CategorySettingsValues } from '../model/category-settings-schema'
+import { errorMessageKey, errorTraceOf } from '@/shared/lib/error-copy'
+import type { ErrorTraceValue } from '@/shared/ui/feedback/ErrorTrace'
 import { FormArrayField } from '@/shared/ui/form/FormArrayField'
 import { FormSelectField } from '@/shared/ui/form/FormSelectField'
 import { FormTextField } from '@/shared/ui/form/FormTextField'
@@ -11,25 +13,42 @@ import { SortableList } from '@/shared/ui/list/SortableList'
 import { Button } from '@/shared/ui/primitives/Button'
 import { Dialog } from '@/shared/ui/primitives/Dialog'
 
+/**
+ * Figma 9.1.5.1 카테고리 설정 팝업. `저장` 은 유효한 행들을 `onSave` 에 넘기고, 그 약속이 이행되면 닫는다.
+ * 거부되면 팝업은 열린 채 공용 실패 문구를 보여 준다 — 입력을 잃지 않고 다시 시도하거나 취소할 수 있다.
+ */
 export function CategorySettingsDialog({ open, categories, onOpenChange, onSave }: {
   readonly open: boolean
   readonly categories: readonly BoardCategoryItem[]
   readonly onOpenChange: (open: boolean) => void
-  readonly onSave: (categories: readonly BoardCategoryItem[]) => void
+  readonly onSave: (categories: readonly BoardCategoryItem[]) => Promise<unknown>
 }) {
   const { t } = useTranslation('community')
   const { t: shared } = useTranslation('shared')
   const [defaultValues] = useState<CategorySettingsValues>(() => ({ categories: [...categories] }))
+  const [pending, setPending] = useState(false)
+  const [failure, setFailure] = useState<ErrorTraceValue>()
   const schema = categorySettingsSchema(t('board.categories.required'))
   const form = useForm({
     defaultValues,
     validationLogic: revalidateLogic(),
     validators: { onDynamic: schema },
-    onSubmit: ({ value }) => onSave(schema.parse(value).categories),
+    onSubmit: async ({ value }) => {
+      setPending(true)
+      setFailure(undefined)
+      try {
+        await onSave(schema.parse(value).categories)
+        onOpenChange(false)
+      } catch (error: unknown) {
+        setFailure(errorTraceOf(error))
+      } finally {
+        setPending(false)
+      }
+    },
   })
   const dirty = useSelector(form.store, (state) => state.isDirty && !state.isDefaultValue)
   const valid = useSelector(form.store, (state) => schema.safeParse(state.values).success)
-  const guard = useUnsavedChangesGuard({ when: dirty })
+  const guard = useUnsavedChangesGuard({ when: dirty, refuseSilently: pending })
   const close = () => guard.close(() => onOpenChange(false))
   const usageOptions = boardUsages.map((value) => ({ value, label: t(`board.values.usage.${value}`) }))
 
@@ -41,10 +60,11 @@ export function CategorySettingsDialog({ open, categories, onOpenChange, onSave 
         title={t('board.categories.title')}
         closeLabel={t('board.categories.close')}
         footer={<>
-          <Button type="button" disabled={!valid} onClick={() => void form.handleSubmit()}>{shared('formAction.save')}</Button>
-          <Button type="button" className="bg-neutral-200 text-neutral-900" onClick={close}>{shared('formAction.cancel')}</Button>
+          <Button type="button" disabled={!valid || pending} onClick={() => void form.handleSubmit()}>{shared('formAction.save')}</Button>
+          <Button type="button" className="bg-neutral-200 text-neutral-900" disabled={pending} onClick={close}>{shared('formAction.cancel')}</Button>
         </>}
       >
+        {failure ? <p className="mb-3 text-sm text-red-700" role="alert">{shared(errorMessageKey(failure.kind))}</p> : null}
         <FormArrayField form={form} name="categories" minItems={1}>
           {(array) => <>
             <div className="flex items-center justify-between rounded-md bg-neutral-100 px-3 py-2">

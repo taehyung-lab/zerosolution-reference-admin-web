@@ -31,18 +31,19 @@ vi.mock('@tanstack/react-router', () => ({
   useBlocker: () => ({ status: 'idle' }),
 }));
 
+const notConnectedMessage = '요청을 처리하지 못했습니다. 다시 시도해 주세요.';
+
 function renderScreen(boardId = 'reference-board-1') {
   const onEdit = vi.fn();
-  const onDelete = vi.fn();
-  const onSaveCategories = vi.fn();
+  const onDeleted = vi.fn();
   render(
     <TestQueryLocaleProvider>
       <UnsavedChangesProvider>
-        <BoardDetailScreen boardId={boardId} onEdit={onEdit} onDelete={onDelete} onSaveCategories={onSaveCategories} />
+        <BoardDetailScreen boardId={boardId} onEdit={onEdit} onDeleted={onDeleted} />
       </UnsavedChangesProvider>
     </TestQueryLocaleProvider>,
   );
-  return { onEdit, onDelete, onSaveCategories };
+  return { onEdit, onDeleted };
 }
 
 describe('BoardDetailScreen (Figma 9.1.2)', () => {
@@ -71,7 +72,6 @@ describe('BoardDetailScreen (Figma 9.1.2)', () => {
       '사용상태',
     ]);
     expect(screen.queryByText('팝업')).toBeNull();
-    // 그룹 소제목은 dl 밖 heading 이고 dl 은 dt/dd 만 담는다.
     expect(screen.getAllByRole('heading', { level: 4 }).map((node) => node.textContent)).toEqual(['권한', '글쓰기 설정', '피드백 설정', '조회수 설정']);
     for (const list of document.querySelectorAll('dl')) {
       for (const child of list.children) expect(child.querySelector(':scope > dt') && child.querySelector(':scope > dd')).toBeTruthy();
@@ -99,8 +99,8 @@ describe('BoardDetailScreen (Figma 9.1.2)', () => {
     expect(screen.getByText('등록')).toBeInTheDocument();
   });
 
-  it('카테고리 설정 팝업은 행을 편집·추가·삭제하고 저장에서 요청에 닿는다', async () => {
-    const { onSaveCategories } = renderScreen();
+  it('카테고리 설정 팝업은 행을 편집·추가·삭제하고, 저장의 미연결 실패는 팝업 안에 남는다', async () => {
+    renderScreen();
     await screen.findByText('Reference Board 1');
 
     fireEvent.click(screen.getByRole('button', { name: '카테고리 설정' }));
@@ -117,15 +117,9 @@ describe('BoardDetailScreen (Figma 9.1.2)', () => {
     await waitFor(() => expect(within(dialog).getByRole('button', { name: '저장' })).toBeEnabled());
     fireEvent.click(within(dialog).getByRole('button', { name: '저장' }));
 
-    await waitFor(() => expect(onSaveCategories).toHaveBeenCalledWith({
-      boardId: 'reference-board-1',
-      categories: [
-        expect.objectContaining({ name: '이벤트', usage: 'IN_USE' }),
-        expect.objectContaining({ name: '회원가입' }),
-        expect.objectContaining({ name: '티켓인증' }),
-      ],
-    }));
-    expect(screen.queryByRole('dialog', { name: '카테고리 설정' })).toBeNull();
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent(notConnectedMessage);
+    expect(screen.getByRole('dialog', { name: '카테고리 설정' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('textbox', { name: '1번 카테고리명' })).toHaveValue('이벤트');
   });
 
   it('카테고리 순서는 접근 가능한 DnD 핸들로 바꾸고 마지막 행의 삭제는 숨긴다', async () => {
@@ -159,19 +153,20 @@ describe('BoardDetailScreen (Figma 9.1.2)', () => {
     expect(onEdit).toHaveBeenCalledWith('reference-board-1');
   });
 
-  it('삭제는 공통 삭제 확인을 거쳐야 업무 요청에 닿고, 취소하면 나가지 않는다', async () => {
-    const { onDelete } = renderScreen();
+  it('삭제는 공통 삭제 확인을 거쳐 실행되고, 취소하면 나가지 않으며, 미연결 실패는 확인창에 남는다', async () => {
+    const { onDeleted } = renderScreen();
     await screen.findByText('Reference Board 1');
 
     fireEvent.click(screen.getByRole('button', { name: '삭제' }));
-    expect(onDelete).not.toHaveBeenCalled();
     expect(await screen.findByText('삭제하시겠습니까?')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '취소' }));
-    expect(onDelete).not.toHaveBeenCalled();
+    await waitFor(() => expect(screen.queryByText('삭제하시겠습니까?')).toBeNull());
 
     fireEvent.click(screen.getByRole('button', { name: '삭제' }));
-    fireEvent.click(await screen.findByRole('button', { name: '확인' }));
-    expect(onDelete).toHaveBeenCalledWith('reference-board-1');
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.click(within(dialog).getByRole('button', { name: '확인' }));
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent(notConnectedMessage);
+    expect(onDeleted).not.toHaveBeenCalled();
   });
 
   it('진입 후 없는 게시판은 notFound 로 선다', async () => {

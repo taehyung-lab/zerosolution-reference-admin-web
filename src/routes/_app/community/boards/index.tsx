@@ -1,18 +1,15 @@
 import { createFileRoute } from '@tanstack/react-router';
-import {
-  boardListCanonicalSchema,
-  boardListSearchContract,
-} from '@/features/community/screens/board-list/model/board-list-search';
-import { BoardListScreen } from '@/features/community/screens/board-list/ui/BoardListScreen';
 import { canonicalSearchGuard } from '@/app/router/canonical-search-guard';
+import { boardListSearch } from '@/features/community/screens/board-list/model/board-list-search';
+import { BoardListScreen } from '@/features/community/screens/board-list/ui/BoardListScreen';
 
 /**
- * 이 화면에는 선택지 query 가 없으므로 loader 도 없다. 목록 query 는 진입 즉시 조회여도
- * loader 에서 기다리지 않는다(router.md 형태). 해소는 화면이 한 번 한다.
+ * 선택지가 전부 도메인 상수라 예열할 옵션 query 가 없고, 목록 query 는 진입 즉시 조회여도 loader 에서
+ * 기다리지 않는다. URL 해소는 화면이 한 번 한다.
  */
 export const Route = createFileRoute('/_app/community/boards/')({
-  validateSearch: boardListSearchContract.schema,
-  beforeLoad: canonicalSearchGuard(boardListCanonicalSchema),
+  validateSearch: boardListSearch.schema,
+  beforeLoad: canonicalSearchGuard(boardListSearch.canonical),
   component: BoardListRoute,
 });
 

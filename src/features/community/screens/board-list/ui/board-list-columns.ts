@@ -3,7 +3,7 @@ import type { BoardRow, BoardSortKey } from '@/features/community/model/board';
 import { formatDate } from '@/shared/lib/datetime';
 import { headerSortDirection } from '@/shared/lib/list-sort';
 import type { DataTableProps } from '@/shared/ui/list/DataTable';
-import type { ResolvedBoardListSearch } from '../model/board-list-search';
+import type { BoardListView } from '../model/board-list-search';
 
 type BoardColumns = DataTableProps<BoardRow>['columns'];
 /**
@@ -23,7 +23,7 @@ export function boardListColumns({
   onHeaderSort,
 }: {
   readonly t: TFunction<'community'>;
-  readonly search: ResolvedBoardListSearch;
+  readonly search: BoardListView;
   readonly offset: number;
   readonly onHeaderSort: (key: BoardSortKey) => void;
 }): BoardColumns {
