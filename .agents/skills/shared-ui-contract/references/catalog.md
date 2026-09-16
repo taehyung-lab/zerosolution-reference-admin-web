@@ -104,7 +104,9 @@
 | `useConfirmation<TValues>({ run, description, confirmLabel? })` | `run(values)`(promise), 문구(값에 따라 함수 가능) | `request(values)` → 열림 → 확정 → `run` → 닫힘, pending guard, `run` 거부 시 실패 한 줄과 열린 채 재시도·취소, `dialog` 노드 | 어떤 값·무슨 요청·성공 뒤 이동 |
 | `SelectionAlert({ controller })` | `useSelectionGate` 결과 | 거절 문구의 alert 하나(`shared:alert.title`, `bulkAction.acknowledge`) | 무엇이 거절인가 |
 
-전역 imperative confirm 서비스, 숨은 JSX 를 돌려주는 훅, router 타입 props, CRUD 문구, dialog 안의 mutation·오류 처리는 만들지 않는다.
+전역 imperative confirm 서비스, router 타입 props, CRUD 문구, dialog 안의 mutation·오류 처리는 만들지 않는다.
+
+**`dialog`·`dialogs` 노드를 돌려주는 훅은 명시적 예외다.** `useConfirmation`·`useSaveForm`·`useUnsavedChangesGuard` 만 해당하며, 이유는 열림 상태와 그 상태를 그리는 표면이 갈라지면 한쪽만 살아남기 때문이다(guard 가 이동을 막는데 질문이 렌더되지 않으면 사용자가 화면에 갇힌다). 조건은 셋이다: 노드가 반환값의 이름 있는 필드여서 **호출자가 어디에 그릴지 고른다**, 그 훅이 소유한 lifecycle 하나만 그린다, 도메인 문구·mutation·이동을 모른다. 이 셋을 만족하지 않는 훅이 JSX 를 돌려주면 그것이 금지하는 "숨은 JSX" 다 — 렌더 위치를 훅이 정하거나, 화면 조각을 훅이 조립하거나, 반환 JSX 가 도메인을 알면 컴포넌트로 되돌린다.
 
 ## Feedback
 

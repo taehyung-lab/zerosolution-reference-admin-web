@@ -289,7 +289,7 @@
         "docs/reference/scenarios/performance-and-content.md"
       ],
       "paths": [
-        "src/features/performances/screens/list/",
+        "src/features/performances/screens/performance-list/",
         "src/features/performances/api/",
         "src/features/performances/model/",
         "src/features/performances/fixtures/",
@@ -390,7 +390,7 @@
         "src/features/performances/api/",
         "src/features/performances/model/",
         "src/features/performances/fixtures/",
-        "src/features/performances/screens/detail/",
+        "src/features/performances/screens/performance-detail/",
         "src/routes/_app/performances/$performanceId/",
         "src/routes/_app/performances/detail-navigation.test.tsx"
       ],
@@ -438,7 +438,7 @@
         "docs/reference/scenarios/performance-and-content.md"
       ],
       "paths": [
-        "src/features/performances/screens/detail/ui/PerformanceBasicSection.tsx"
+        "src/features/performances/screens/performance-detail/ui/PerformanceBasicSection.tsx"
       ],
       "references": [
         ".agents/skills/feature-contract/references/form.md",
@@ -954,7 +954,7 @@
         }
       ],
       "paths": [
-        "src/features/managers/screens/list/",
+        "src/features/managers/screens/manager-list/",
         "src/routes/_app/managers/index.tsx"
       ],
       "references": [
@@ -984,7 +984,7 @@
         }
       ],
       "paths": [
-        "src/features/managers/screens/detail/",
+        "src/features/managers/screens/manager-detail/",
         "src/routes/_app/managers/$managerId/index.tsx"
       ],
       "references": [
@@ -1018,7 +1018,7 @@
         }
       ],
       "paths": [
-        "src/features/managers/screens/form/",
+        "src/features/managers/screens/manager-form/",
         "src/routes/_app/managers/new.tsx"
       ],
       "references": [
@@ -1048,7 +1048,7 @@
         }
       ],
       "paths": [
-        "src/features/managers/screens/form/",
+        "src/features/managers/screens/manager-form/",
         "src/routes/_app/managers/$managerId/edit.tsx"
       ],
       "references": [

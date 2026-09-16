@@ -110,6 +110,11 @@ file: a partial request and a coherent single-file responsibility must not trigg
 The former file-set gate and its `SHAPE_EXCEPTIONS` lifecycle were removed after a filter-only probe
 produced seven missing-file errors which vanished when the same component was named Panel.
 
+The role references' `형태` tables name the file set of a **whole new screen** of that role, so a reader
+knows where each responsibility lives. They are review material, not a machine rule: the checker counts
+no files, and a partial request touches only the responsibility it changes. Those two statements agree —
+a new list has all eight responsibilities, a filter-only change has one.
+
 List-route registration in `tests/e2e/search-contract.spec.ts` and `$param` leaf loader presence remain
 cheap supporting checks. They inspect source conventions, not runtime behavior: renamed roles can be
 invisible, a loader body may be wrong, and array membership does not prove an executed test. Actual URL,

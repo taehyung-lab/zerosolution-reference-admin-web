@@ -99,7 +99,9 @@ shared 가 소유하는 것: 위 표의 mechanic 과 렌더 계약([catalog](../
 
 ## 형태
 
-한 목록 화면의 파일 집합이다. 여덟은 항상 있고, 마지막 쌍은 선택 액션이 있을 때만 있다. 폴더는 항상 `screens/{entity}-list/`([folder-structure](../../folder-structure-contract/SKILL.md)).
+**목록 화면 하나를 새로 만들 때**의 파일 집합이다. 위 절들의 책임이 어디에 사는가를 이름으로 고정한 것이고, 목록이라면 그 책임이 다 있으므로 여덟이 다 생긴다. 마지막 두 행은 그 책임이 있을 때만이다. 폴더는 항상 `screens/{entity}-list/`([folder-structure](../../folder-structure-contract/SKILL.md)).
+
+**요청이 화면 하나가 아니면 이 표를 채우지 않는다.** 필터만·컬럼만·액션만 바꾸는 요청은 그 책임의 파일만 건드리고 나머지를 빈 어댑터로 만들지 않는다. `contracts:check` 도 파일 수를 세지 않는다 — 이 표는 탐색 위치를 고정하는 것이지 scaffolding 지시가 아니다.
 
 | 파일 | 담는 것 |
 | --- | --- |

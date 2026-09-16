@@ -1,6 +1,6 @@
 # ZEROsol 공용화 판정 (Figma + Notion 전체 인벤토리 기준)
 
-- 성격: 비규범적 판정 기록. 제품 계약이 아니며 단계와 되돌리기 어려운 결정은 ADR 0009·0010이 소유한다.
+- 성격: 비규범적 판정 기록. 제품 계약이 아니며 되돌리기 어려운 결정과 그 근거는 [ADR 0014](../decisions/0014-single-screen-shape.md)가 소유한다.
 - 입력: [전체 surface 인벤토리](zero-sol/README.md)(Figma frame 보유 leaf page 59개 · top-level frame 272개, Notion Feature 72페이지 원문), 현재 `src/shared/**`·`src/features/managers/**`·`src/features/members/**`, `promotion.md`, `list.md`.
 - 판정일: 2026-09-02, Figma 전수 재확인 2026-09-04. 방식: Claude와 Codex가 같은 입력으로 독립 초안을 쓰고 교차 리뷰한 뒤 근거로 합쳤다. 합친 결론은 §2·§8 표가 소유하고, 쟁점별 해소 과정은 세션 작업 문서에 두었다.
 - 이전 판(2026-08-31)은 Figma 대표 node만 보고 Managers 한 화면에서 판정했다. 그 관찰(Alert·공통화면 카피)은 [zero-sol/01-common.md](zero-sol/01-common.md)로 옮겼다.
@@ -10,14 +10,14 @@
 
 1. Figma 열은 **UI 구성·정적 상태**만, Notion 열은 **동작·정책 문장**만 증명한다. 둘 다 없는 것은 미확인이고 리허설 API·현재 코드로 채우지 않는다.
 2. 전 제품 인벤토리는 provisional 승격 근거를 강화하지만 **두 번째 코드 consumer 검증을 대체하지 않는다**. 현재 Managers와 Members 목록이 적용 consumer다. 공용 근거의 범위는 전 제품이며 각 계약의 적용·검증 단계는 ADR과 실제 소비 흐름을 대조한다. 미구현 화면은 검증된 consumer로 세지 않는다.
-3. shared는 Router·Query·endpoint·DTO·permission을 모른다(`UnsavedChangesGuard.tsx`의 단일 이탈 blocker는 ADR 0010의 이름 붙은 Router 예외). 이 원칙은 인벤토리로 **강화**됐다: 게시물 > 작성자 검색 팝업(9.2)은 필터·summary·보기/정렬·table·paging·검색전/후를 dialog-local 상태로 조립하고, 현장발권(14.x)은 별도 창 chrome에서 같은 mechanic을 쓴다. 목록 shared가 Router를 알았다면 두 host에서 재사용할 수 없었다. dialog 안 검색은 `list.md` kind E가 이미 소유한다.
+3. shared는 Router·Query·endpoint·DTO·permission을 모른다(`UnsavedChangesGuard.tsx`의 단일 이탈 blocker는 ADR 0014가 이름 붙인 Router 예외). 이 원칙은 인벤토리로 **강화**됐다: 게시물 > 작성자 검색 팝업(9.2)은 필터·summary·보기/정렬·table·paging·검색전/후를 dialog-local 상태로 조립하고, 현장발권(14.x)은 별도 창 chrome에서 같은 mechanic을 쓴다. 목록 shared가 Router를 알았다면 두 host에서 재사용할 수 없었다. dialog 안 검색은 `list.md` kind E가 이미 소유한다.
 4. Simplicity First: 판정은 "무엇을 공용으로 만들까"보다 "지금 공용에 있는 것 중 증거가 없거나 읽는 비용만 늘리는 것"을 먼저 찾는다.
 
 ## 2. surface별 판정
 
 | surface | 판정 | 핵심 근거 (인벤토리) | 반영 |
 | --- | --- | --- | --- |
-| 검색 gate (`searched`) | **feature 소유**. 파생 공용 함수 없음 | 검색전 frame 有 ~20 화면 / 無 ~12 화면. Notion "화면 진입시, 검색 안내 화면이 제공된다" 45회는 화면별 정책. 2026-09-07 사용자 결정으로 판별자를 필터 값에서 떼어 URL 표식으로 통일했다 — 화면마다 다른 것은 표식의 유무·초기화 의미이고, 어떤 필터 필드가 검색을 켜는지는 더 이상 화면별로 다르지 않다 | `hasDefinedSearchValue` 삭제(미사용). gate 無 화면은 `searched: true` 명시. 표식 문법·정규화 순서는 ADR 0009와 list-workflow가 소유 |
+| 검색 gate (`searched`) | **feature 소유**. 파생 공용 함수 없음 | 검색전 frame 有 ~20 화면 / 無 ~12 화면. Notion "화면 진입시, 검색 안내 화면이 제공된다" 45회는 화면별 정책. 2026-09-07 사용자 결정으로 판별자를 필터 값에서 떼어 URL 표식으로 통일했다 — 화면마다 다른 것은 표식의 유무·초기화 의미이고, 어떤 필터 필드가 검색을 켜는지는 더 이상 화면별로 다르지 않다 | `hasDefinedSearchValue` 삭제(미사용). gate 無 화면은 `searched: true` 명시. 표식 문법·정규화 순서는 ADR 0014와 `list.md`가 소유 |
 | 초기화 | 현행 유지 | Notion 34 화면 "default로 설정값 변경 및 검색 전 상태로 변경". Managers `onSearchChange({})` 일치 | — |
 | error facts | `api/error-outcome.ts` 소유, feature 축소 | list·detail·edit 3곳 같은 2줄. `isFeatureError`가 이미 `unknown → ApiError` guard. `ApiError`는 `ErrorTraceValue`를 구조적으로 만족하고 `ErrorTrace`는 3필드만 읽음 | `isFeatureError(query.error) ? query.error : undefined`, `trace: error`. `model/error-trace.ts` 삭제 |
 | `ListResultData` 리턴 팩토리 | 만들지 않음 | Query result 또는 envelope 콜백을 shared로 끌어옴 = demotion 신호. 8줄 literal이 화면 사실 선언으로 가장 읽기 쉬움 | — |
@@ -30,7 +30,7 @@
 | 중복 키워드 거부 | **보류** (초안 오류 수정) | "중복 키워드 검색 허용 안함"은 회원 공통 상세의 활동정보 검색 1곳뿐. 30 화면 반복은 "다중 키워드 검색 허용" | 회원 공통 구현 시 feature validation으로 시작 |
 | 페이지 크기 옵션 | `standardPageSizeOptions` 유지 | 100~1000 전 화면 동일, 기본 100, 등록 화면 200 | — |
 | 정렬 방향 토글 | **`SortControl`에서 제거(narrow)** | Figma 30 화면 어디에도 방향 컨트롤 없음, 정렬된 컬럼 헤더 아이콘만. Notion 방향 문장 없음 | direction props 제거. 헤더 클릭 토글(`selectManagerSort`)은 feature 유지. 후속(2026-09-02): 헤더 버튼·`aria-sort`·glyph는 `DataTable.meta.sort`가 한 값에서 렌더(접근성 불변식, 인벤토리 12+ table 반복). 정렬 가능 컬럼·방향·전이는 feature `manager-sort.ts` 단일표(리허설). 제품 목록의 URL→aria 방향 매핑은 `shared/lib/list-sort.ts`(2026-09-11) |
-| `SearchFieldPartition`·`filterPartitionKey/Values` | shared mechanic 적용 | Managers·Members 목록에서 표시 조건 변경 중 draft 보존을 비교 | `src/shared/lib/search-partition.ts`; 필드 분류·기본값·URL commit은 feature 소유(ADR 0009) |
+| `SearchFieldPartition`·`filterPartitionKey/Values` | shared mechanic 적용 | Managers·Members 목록에서 표시 조건 변경 중 draft 보존을 비교 | `src/shared/lib/search-partition.ts`; 필드 분류·기본값·URL commit은 feature 소유(ADR 0014) |
 | Managers 검색 전 표면 | **feature 불일치 수정** | 11.1 검색전 frame: "검색해주세요." + `등록`만. 현재 `ManagerListResult`는 summary·toolbar를 무조건 렌더 | `data.searched`로 summary·toolbar-left 가림. `ListResult`에 mode 넣지 않음 |
 | toolbar 우측 action | slot 유지, 카탈로그 없음 | 화면별 action 집합은 다름. SMS·이메일의 미선택 검증·popup open은 동일 trigger 후보지만 마케팅 정책 gate와 popup 본문은 feature 사실 | trigger는 첫 consumer surface만 provisional, 정책·권한·field·payload는 feature |
 | 행 선택 | shared mechanic + feature workflow | 헤더 전체선택은 현재 페이지의 선택 가능 행만 대상으로 하고 결과 정체성 변경 시 해제(2026-09-04 사용자 답) | `usePageRowSelection`을 두 목록에 적용. 결과 정체성·선택 가능 ID·action은 feature 소유 |
@@ -43,14 +43,14 @@
 
 코드 — 축소: error 2줄→1줄(3곳)·`error-trace.ts` 삭제·`hasDefinedSearchValue` 삭제·`ListResultData` totals 제거·`SortControl` direction 제거·partition 유틸 feature-local·caller ARIA div 2개 제거.
 코드 — 정합: `ManagerListResult` 검색 전 `등록`만·`FilterField group`·`standardPeriodPresetValues`·`shared:list.total`.
-문서: ADR 0009 provisional 표·재검토 조건, `promotion.md` 인벤토리 근거 유형, `list.md` gate 無·kind E 연결·partition 문장, `catalog.md` facts 목록.
+문서: ADR 0014 공용 경계·재검토 조건, `promotion.md` 인벤토리 근거 유형, `list.md` gate 無·kind E 연결·partition 문장, `catalog.md` facts 목록.
 검증: focused test + `pnpm verify` + 브라우저(운영자 검색전/후, 기간·검색어 group 접근성 이름, 정렬 컨트롤).
 
 ## 4. 반복 근거와 적용 상태 (코드 존재와 시나리오 완료는 구분)
 
 | 반복 행동 | 근거 | 착수 조건 |
 | --- | --- | --- |
-| 행 checkbox + 전체선택 | 20 화면 | 현재 페이지 선택 수명은 확정. `usePageRowSelection`을 Managers·Members에 적용(ADR 0009) |
+| 행 checkbox + 전체선택 | 20 화면 | 현재 페이지 선택 수명은 확정. `usePageRowSelection`을 두 목록 소비자에 적용(ADR 0014) |
 | 일괄 변경 alert 연쇄 | Notion 미선택 20 / 확인 18 / 완료 18의 product-generic copy와 lifecycle 반복(집계 정본은 `notion/99-cross-screen.md`, 정정 근거는 §5 답19); `run(values)`는 domain-free | `useSelectionGate`·`useConfirmation`를 Managers·Members에 적용; 선택·cascade·권한·호출 이후는 feature |
 | 다운로드 선택/전체 | Notion 택1 6 / 미선택 오류 7; `(mode, count)` 순수 분류기로 검증 가능 | 첫 consumer가 쓰는 mode·검증만 provisional로 구현; row·검색조건·파일·권한·실행은 feature |
 | SMS·이메일 trigger | 회원·발권에서 미선택 검증·popup open 문구와 lifecycle 반복 | trigger만 provisional; 정책 gate·권한·popup 본문은 feature |
@@ -355,11 +355,11 @@ DOM 관련 3건은 2026-09-05 현재 코드를 직접 재대조해 아래 변경
 부모 Dialog 닫기·재발권·대상 ID 결합은 각 surface가 소유한다. 상담 폼/스키마는 `members/counsel`로 이동했다.
 `MemberMessageActions`, 계정상태/가입방법 필드, `MemberRecordResult`는 members 내부 재사용이다.
 결과 조립 5개를 제거했으며 조회 전/즉시 조회·컬럼·정렬 옵션·팝업 액션은 호출부에 남는다.
-선택 컬럼·확인 상태·마스킹의 shared 승격 근거와 단계는 ADR 0009가 소유한다.
+선택 컬럼·확인 상태·마스킹의 shared 승격 근거는 ADR 0014가, 승격 절차는 `promotion.md`가 소유한다.
 
 ## 8. 상세·폼·팝업 판정 (2026-09-02 ①′~②′, Claude·Codex 독립 초안 + 교차 리뷰)
 
-2026-09-02의 최초 판정: 기존 표면으로 상세·폼을 feature에서 조립하고 새 후보는 실제 소비 시 검증한다. 이후 Tooltip·행 활성화·목록 선택·확인 흐름은 코드에 적용됐다(§2·§4, ADR 0009). 남은 후보의 상태를 이 과거 결론으로 고정하지 않는다.
+2026-09-02의 최초 판정: 기존 표면으로 상세·폼을 feature에서 조립하고 새 후보는 실제 소비 시 검증한다. 이후 Tooltip·행 활성화·목록 선택·확인 흐름은 코드에 적용됐다(§2·§4, ADR 0014). 남은 후보의 상태를 이 과거 결론으로 고정하지 않는다.
 
 | surface | 판정 | 근거 | 반영 |
 | --- | --- | --- | --- |
@@ -368,16 +368,16 @@ DOM 관련 3건은 2026-09-05 현재 코드를 직접 재대조해 아래 변경
 | dialog 안 폼 | feature composition 유지 | SMS·이메일·댓글 | catalog.md close 표면 문장 |
 | page tab·언어 tab | `Tabs*` primitive 구현(2026-09-08), 선택값·URL 여부·panel 수명은 feature | 7 화면 유형 중 공연 상세의 읽기 언어 탭을 첫 코드 consumer로 검증 | primitives-and-tokens; 편집 폼의 입력 보존은 미검증 |
 | 편집 테이블·반복 행·파일 업로드 | kind D·`FormFileField` 현행 | 다국어·공연 수정 | — |
-| 권한 matrix | `CheckboxTree`(1D) 로 불충분 → feature-first Table+Checkbox. **`CheckboxTree` 자체는 다중선택 필터 그룹(30여 화면)의 shared 표면으로 이관 대상** — 9/1 "matrix 전용" 제외 사유 철회 | 접근권한 등록 2D / 목록 필터 1D | catalog.md 문장, ADR 0009 표 |
-| `FormSaveDialogs` | opt-in 으로 축소(9/2) → **9/3 ②: `useSaveForm.dialogs` 안에서만 렌더**. 확인 쌍이 없는 인라인 저장은 `useSaveForm` 자체를 쓰지 않는다 | 호출 직전 reference처럼 확인만 있고 실제 저장·성공이 없으면 `ConfirmDialog` 직접 조립. #24의 confirmation-only `FormSaveDialogs` 제안은 현행 계약과 다르므로 이식하지 않는다 | 주석·ADR 0010 개정 ②, form-workflow |
+| 권한 matrix | `CheckboxTree`(1D) 로 불충분 → feature-first Table+Checkbox. **`CheckboxTree` 자체는 다중선택 필터 그룹(30여 화면)의 shared 표면으로 이관 대상** — 9/1 "matrix 전용" 제외 사유 철회 | 접근권한 등록 2D / 목록 필터 1D | catalog.md 문장, ADR 0014 공용 경계 표 |
+| `FormSaveDialogs` | opt-in 으로 축소(9/2) → **9/3 ②: `useSaveForm.dialogs` 안에서만 렌더**. 확인 쌍이 없는 인라인 저장은 `useSaveForm` 자체를 쓰지 않는다 | 호출 직전 reference처럼 확인만 있고 실제 저장·성공이 없으면 `ConfirmDialog` 직접 조립. #24의 confirmation-only `FormSaveDialogs` 제안은 현행 계약과 다르므로 이식하지 않는다 | 주석·ADR 0014, `form.md` |
 | 취소 alert | **2026-09-14: 폐기 가능한 dirty 초안이 있는 모든 등록·수정·입력 form에 적용.** page·상세 인라인·action dialog를 같은 기준으로 보호하고 검색·필터·로그인·입력 없는 삭제 확인은 제외한다. 2026-09-07의 화면 형태별 제한을 대체하며 적용 범위 정본은 [form-workflow](../../.agents/skills/feature-contract/references/form.md#cancel-and-dirty-leave)다 | 취소·×·Escape·바깥 클릭은 취소 문구, 일반 route 이동은 화면 이동 문구를 쓴다. 저장 중 이탈은 조용히 거부하고, 저장 성공은 feature가 응답에서 투영한 canonical form 값 또는 제출 snapshot을 새 default로 삼는다. 두 문구의 원본 근거와 단일 route blocker 실측은 ADR 0014에 보존 | 현재 등록·수정·입력 consumer를 감사해 local 우회를 제거. 최신 동작·검증은 [회원 시나리오](scenarios/member-list-and-detail.md)·[설정 시나리오](scenarios/settings-and-permissions.md)와 각 focused test가 소유 |
 | Query 오류 → facts | `api/error-outcome.ts` helper | list·detail·edit 3곳 반복 | Managers 적용 |
 | `ManagerDetailScreen` | `목록으로` 제거, 이력 raw table → `Table` primitive | Figma 11.1 조회에 없음 | Managers 적용 |
-| 상세·수정 상태 판정 (2026-09-03, Claude·Codex 독립안 → 교차 리뷰 2라운드) | **`src/api/required-query.ts`**: 순수 `resolveRequiredQueryOutcome` + 얇은 `useDetailQuery`. API-only 훅(`api/useManagerDetail`·`api/useManagerEditDetail`)이 ID·locale를 연결 | 삼항식이 상세·수정에 글자 그대로 복제. 초기 401/403 = generic error + incident 중복, cached+500 = 내용 소실, cached+404 = stale 표시 결함 3종 실측 | ADR 0011, detail-workflow 재작성, API/workflow 의존 lint(2026-09-07 전체 훅 금지에서 API-only 실행 허용으로 수정; ADR 0011) |
-| 업데이트 이력 (2026-09-03) | **2층**: `shared/ui/detail/UpdateHistory`(3열 + `<ul><li>` 렌더만) + feature 순수 함수 `toManagerHistoryEntries(logs, t)`. Accordion 렌더·줄 조립·값 해석 옵션 훅·도메인 formatter 훅으로 나뉜 4층 구조는 제외 | 회원·소명·발권·운영자·콘텍츠 조회 5 화면 동일 3열, 사항 열은 field 단위 `이름: A > B` 다중 행(4.1.4). 현재 코드는 `type` 한 줄로 디자인 미달이었음. discriminated union 은 첫 consumer 에 없는 분기라 YAGNI | ADR 0011, page-and-detail-surfaces 행, seed `update-history` bundle |
+| 상세·수정 상태 판정 (2026-09-03, Claude·Codex 독립안 → 교차 리뷰 2라운드) | **`src/api/required-query.ts`**: 순수 `resolveRequiredQueryOutcome` + 얇은 `useDetailQuery`. API-only 훅(`api/useManagerDetail`·`api/useManagerEditDetail`)이 ID·locale를 연결 | 삼항식이 상세·수정에 글자 그대로 복제. 초기 401/403 = generic error + incident 중복, cached+500 = 내용 소실, cached+404 = stale 표시 결함 3종 실측 | ADR 0014 실측 근거, `detail.md`, API/workflow 의존 lint(전체 훅 금지에서 API-only 실행 허용으로 수정) |
+| 업데이트 이력 (2026-09-03) | **2층**: `shared/ui/detail/UpdateHistory`(3열 + `<ul><li>` 렌더만) + feature 순수 함수 `toManagerHistoryEntries(logs, t)`. Accordion 렌더·줄 조립·값 해석 옵션 훅·도메인 formatter 훅으로 나뉜 4층 구조는 제외 | 회원·소명·발권·운영자·콘텍츠 조회 5 화면 동일 3열, 사항 열은 field 단위 `이름: A > B` 다중 행(4.1.4). 현재 코드는 `type` 한 줄로 디자인 미달이었음. discriminated union 은 첫 consumer 에 없는 분기라 YAGNI | ADR 0014, `catalog.md` Detail 행, seed `update-history` bundle |
 | 운영자 제품 입력 경계 | 등록·수정은 `ManagerForm` 재사용→검증·확인·입력 callback, 상세 5상태 action과 SMS·이메일은 feature 조립 | [11 설정의 상태·연결 입력](zero-sol/11-settings.md), 직접 Notion 대조. 실제 서버·성공 응답은 만들지 않음 | 제품 기본 경로 구현; 입력/대상 focused tests. 전체 인벤토리 브라우저 대조 진행 중 |
-| 미구현 유지(서버 이후) | 실제 발송·저장·상태변경, 개인정보 재인증 성공 이후 공개/탈퇴 처리 | 재조회/해제 범위/감사와 서버 계약 미확인. `agencyId` 제품 정책도 미확인 | API 직전 구현과 별개이며 ADR 0010·0011의 서버 미확인으로 유지 |
-| 접힌 섹션의 오류 표기 | **헤더 "오류 N개" 텍스트 배지 + 폼 섹션 keepMounted** (Claude·Codex 독립안 → 교차 리뷰 합의) | 재접기 후 오류 발견성(WCAG 3.3.1 흐름 유지), Figma 에 상태 frame 없음 → 사용자 요구로 추가. unmount 가 error map 을 비우는 실측 때문에 재파싱 대신 mount 유지 채택 | `SectionCard errorCount/keepMounted`, `useFormSections invalidFields`, ADR 0010 개정, 재검증 절차 제거 |
+| 미구현 유지(서버 이후) | 실제 발송·저장·상태변경, 개인정보 재인증 성공 이후 공개/탈퇴 처리 | 재조회/해제 범위/감사와 서버 계약 미확인. `agencyId` 제품 정책도 미확인 | API 직전 구현과 별개이며 ADR 0014 미확인으로 유지 |
+| 접힌 섹션의 오류 표기 | **헤더 "오류 N개" 텍스트 배지 + 폼 섹션 keepMounted** (Claude·Codex 독립안 → 교차 리뷰 합의) | 재접기 후 오류 발견성(WCAG 3.3.1 흐름 유지), Figma 에 상태 frame 없음 → 사용자 요구로 추가. unmount 가 error map 을 비우는 실측 때문에 재파싱 대신 mount 유지 채택 | `SectionCard errorCount/keepMounted`, `useFormSections invalidFields`, ADR 0014 실측 근거, 재검증 절차 제거 |
 
 ## 8-1. 진행 표면 정책 (2026-09-02 사용자 요구)
 

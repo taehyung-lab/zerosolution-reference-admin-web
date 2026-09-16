@@ -36,8 +36,11 @@ description: Use for any request to implement or change a screen, part of a scre
 | screen — 등록·수정 | [form.md](../feature-contract/references/form.md) | 위와 같음 |
 | slice | 그 surface 가 속한 역할 문서의 **해당 절** | 그 절이 가리키는 catalog 행 |
 | component | [catalog.md](../shared-ui-contract/references/catalog.md) 의 그 행 | 계약을 바꾸면 [promotion.md](../shared-ui-contract/references/promotion.md), primitive 내부면 [primitives-and-tokens.md](../shared-ui-contract/references/primitives-and-tokens.md) |
-| logic | 실제 호출자 + catalog 의 그 행(있으면) | 공용화 여부면 [promotion.md](../shared-ui-contract/references/promotion.md), wire·cache 면 [api-contract](../api-contract/SKILL.md) 의 해당 reference |
+| logic — 화면 workflow 훅(`use{X}ListFilter`·`use{X}ListData`·`use{X}ListActions`·`use{X}ListResult` 등 `screens/`·`mechanics/` 안) | **그 훅을 품은 역할 문서의 해당 절**(필터면 [list Filter](../feature-contract/references/list.md#filter), 조회면 [Query](../feature-contract/references/list.md#query), 액션이면 [Selection and actions](../feature-contract/references/list.md#selection-and-actions), 저장이면 [form Save lifecycle](../feature-contract/references/form.md#save-lifecycle)) | 실제 호출자, 배치가 갈리면 [folder-structure-contract](../folder-structure-contract/SKILL.md) |
+| logic — 공용 순수 함수·headless mechanic(`shared/`·`src/api`) | 실제 호출자 + catalog 의 그 행(있으면) | 공용화 여부면 [promotion.md](../shared-ui-contract/references/promotion.md), wire·cache 면 [api-contract](../api-contract/SKILL.md) 의 해당 reference |
 | structure | [folder-structure-contract](../folder-structure-contract/SKILL.md) | 역할별 `형태` 절 |
+
+화면 workflow 훅은 파일 이름이 `use*` 여도 그 화면의 URL·검색·선택·저장 정책을 소유하므로 역할 문서를 건너뛰지 않는다. catalog 에 행이 없으면 공용 단위가 아니라는 뜻이고, 그러면 host 역할 문서가 소유자다.
 
 요청이 여러 종류에 걸쳐도 임의로 하나만 남기지 않는다. 요청한 성공 조건에 필요한
 요청의 기본 범위는 요청 결과와 그것을 실제 수행하는 데 필요한 최소 연결이다.
@@ -77,6 +80,10 @@ description: Use for any request to implement or change a screen, part of a scre
 | **5 구현** | 변경 지점, 가까운 호출자·테스트, 선택한 reference | 최소 코드 + 소유자 옆 테스트 | 6 | 계약·제품 사실 발견 → **2**, 소유권·흐름 → **3** |
 | **6 검증** | 변경 diff, 성공 조건, `package.json`의 검사 | 아래 완료 rubric의 각 열 | 7 | 요청 불일치 → **1**, 잘못된 사실·잘못된 계약 절 → **2**, 설계 결함 → **3**, 구현 결함 → **5** |
 | **7 보고** | 실제 diff, 정본, 검사 원출력 | 채워진 rubric + 남은 차단 조건. 멈추거나 제외한 것은 그렇게 만든 정본을 파일·절로 지목한다 | 종료 | 검토가 찾은 원인 단계 |
+
+**단계는 복귀 지점이지 제출물이 아니다.** 요청이 작으면 여러 단계가 한 문장으로 닫힌다 — 버튼 하나의
+문구를 바꾸는 요청에 일곱 문단을 쓰는 것은 이 표의 오용이다. 각 단계가 요구하는 것은 그 판단을 **했는가**이고,
+공개는 판단이 갈릴 때만 길어진다. 무엇을 읽을지도 마찬가지라 위 종류별 표가 문서 하나를 가리킨다.
 
 루트·skill·공용 계약을 바꾸는 작업은 7단계에서 **독립 검토**를 받는다. 검토자는 보고서가 아니라
 실제 diff와 정본을 열어 동의·반박·놓친 것을 낸다.

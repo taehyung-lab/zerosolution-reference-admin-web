@@ -1,9 +1,9 @@
 # 0014. 단일 화면 형태와 공용 경계
 
-- 상태: 채택
+- 상태: 채택 — 재구현 실측(같은 요구를 바뀐 문서로 다시 구현해 전후 비교) 전
 - 날짜: 2026-09-16
-- 결정자: 제품 소유자 (사용자)
-- 대체: 0009(목록·필터 공용화), 0010(폼 공용화), 0011(상세 조회·API 소비 계층·업데이트 이력), 0012(필터 초안 조합). 네 결정의 살아 있는 내용은 이 문서와 계약 문서로 옮겼고 파일은 삭제했다. 번호는 결번으로 남긴다
+- 결정자: 제품 소유자 (사용자). 결정 항목 자체는 grilling 세션에서 확정했고, 이 문서의 문장은 그 확정을 옮긴 것이다
+- 대체: 0009(목록·필터 공용화), 0010(폼 공용화), 0011(상세 조회·API 소비 계층·업데이트 이력), 0012(필터 초안 조합). 네 결정의 살아 있는 내용은 아래 [보존할 실측 근거](#보존할-실측-근거)·[미확인](#미확인)과 계약 문서로 옮겼고 파일은 삭제했다. 번호는 결번으로 남기며 그 번호를 가리키던 인용은 이 문서로 옮겼다
 - 관찰 근거: [전체 surface 인벤토리](../reference/zero-sol/README.md), [공용화 판정 기록](../reference/zero-sol-figma-analysis.md). 도메인별 사실은 그 문서와 소비자 코드·테스트가 소유한다
 
 ## 이 ADR 의 책임
@@ -20,17 +20,13 @@
 
 ## 결정
 
-1. **한 역할에 한 형태.** 목록 8 파일(+선택 액션 쌍), 상세 2 파일(+이력·입력 액션), 폼 6 파일의 집합과 Screen → 훅 → 컴포넌트 배선을 모든 도메인이 그대로 쓴다. 파일 안의 제품 값(필드·문구·기본값·정책)만 그 화면의 원장에서 온다. 형제 도메인은 형태의 예시이지 값의 출처가 아니다.
-2. **폴더는 항상 `{entity}-list|detail|form`.** 대표 엔티티라도 접두를 생략하지 않는다. URL 변형은 같은 화면 + `model/` 의 typed definition 이다.
-3. **보기 전이는 공용이다.** 페이지·보기·정렬 키·헤더 방향 전이는 도메인 사실이 없으므로 `shared/lib/list-view.ts` 의 `listViewControls` 하나가 소유한다. 활성 컬럼 헤더 클릭만 방향을 뒤집고 다른 키 선택은 방향을 유지한다.
-4. **필터 훅은 초안 + `submit` + `reset` 만이고 문구를 모른다.** 라벨·선택지·"전체" 항목은 Filters 컴포넌트가, 서버 선택지는 `api/` 훅이 `{ state, items, retry }` 로 준다.
-5. **확인 lifecycle 은 `useConfirmation` 이 `dialog` 노드까지 돌려준다.** 소유자는 액션 컴포넌트이고 `searched`/`ready` 분기 밖에서 렌더한다. 선택 요구 액션의 거절은 `useSelectionGate` + `SelectionAlert` 하나다. 일괄 변경 전용 다이얼로그 묶음은 삭제했다 — 같은 대수의 두 번째 표현이었다.
-6. **상세는 Screen → `use{Entity}Detail` → `DetailStateBoundary({ query, children(data) })` → Content.** 진입 실패는 route loader(`loadRequired`), 진입 이후 전이만 경계가 그린다. 판정은 `resolveRequiredQueryOutcome` 하나다.
-7. **등록·수정은 전부 `useSaveForm`.** schema·기본값·mapper·mutation·오류 분류·목적지를 입력으로 받고 폼 인스턴스·저장 단계·reveal/focus·서버 오류 배치·기준선·dirty guard·다이얼로그 노드를 소유한다. 입력 오류 노출과 저장 결과를 분리했던 이전 결정(`useFormFeedback`)은 두 소비자에서 같은 조립이 반복돼 하나로 합쳤다.
-8. **mutation 은 `api/mutations.ts` 의 `mutationOptions(locale)` 팩토리이고 캐시 후속은 `meta.invalidates` 선언이다.** 화면은 `useMutation(factory(locale))` 를 직접 쓰고 workflow mutation 훅을 두지 않는다. 대상 ID 는 입력에 싣는다.
-9. **미연결 mutation 은 reject 하지 않는다.** `scenarioRequest(label)` 이 업무 이름 한 줄을 로그하고 resolve 해 성공 경로(완료 alert → 이동, 무효화)를 끝까지 돌린다. API 가 생기면 `mutationFn` 본문만 바뀐다.
-10. **`Form*Field` 어댑터 집합은 소비자 0 이어도 남긴다.** 제품이 선언한 입력 종류(input·select·multi-select·file·date-range·date·time…)의 계약이며, 삭제 근거는 "소비자가 생길 예정도 없음"이다.
-11. **문서는 판단 규칙만 담고 데이터 계약은 코드가 담는다.** 목록·상세·폼 문서 각 하나, 공용 단위는 catalog 한 표. 도메인 이름·소비자 목록·개정 이력은 문서에서 뺐다. 화면 하나는 역할 문서 하나를 읽고, 버튼·로직 하나는 catalog 행 하나를 읽는다.
+**목록·상세·등록/수정은 모든 도메인에서 같은 책임 형태를 쓰고, 그 안의 제품 값만 각 화면의 원장이 소유한다.** 형태란 어떤 책임이 어느 파일·어느 층에 있고 Screen → 훅 → 컴포넌트가 어떻게 이어지는가다. 형제 도메인은 형태의 예시이지 값의 출처가 아니다. 폴더 이름도 형태의 일부라 대표 엔티티에도 접두를 생략하지 않는다 — 이름만으로 무엇의 목록인지 읽혀야 한다. 실제 파일 집합과 배선은 [list](../../.agents/skills/feature-contract/references/list.md#형태)·[detail](../../.agents/skills/feature-contract/references/detail.md#형태)·[form](../../.agents/skills/feature-contract/references/form.md#형태)이 소유한다.
+
+**공용은 의미·상태 전이·실패가 여러 실제 소비자에서 같을 때만이며, 그 경계는 아래 표가 소유한다.** 도메인·Router·Query·endpoint·permission·workflow 를 아는 순간 공용이 아니다. 개별 단위의 props 와 반환은 [catalog](../../.agents/skills/shared-ui-contract/references/catalog.md)가, 승격·좁힘 절차는 [promotion](../../.agents/skills/shared-ui-contract/references/promotion.md)이 소유한다.
+
+**미연결 write 는 실패하지 않고 성공 경로를 끝까지 돈다.** `scenarioRequest(label)` 이 업무 이름 한 줄을 로그하고 resolve 하므로 화면은 실서버와 같은 lifecycle(저장 확인 → 완료 alert → 이동 → 캐시 무효화)을 지금 검증하고, API 가 생기면 `mutationFn` 본문 하나만 바뀐다. 대가는 화면이 저장된 것처럼 보이지만 fixture 는 그대로라는 점이며, 도달 상한은 [도달 상태](../../.agents/skills/screen-loop/SKILL.md#도달-상태)의 `시나리오 구현 완료`로 말한다. 반대안(reject 로 두고 성공 경로를 만들지 않는다)은 아래 [검토한 대안](#검토한-대안)에 있다.
+
+**제품이 선언한 입력 종류의 어댑터 집합은 소비자 0 이어도 남긴다.** 일반 규칙(소비자가 사라지면 삭제)의 명시적 예외다. 삭제 근거는 "소비자가 없음"이 아니라 "소비자가 생길 예정도 없음"이고, 선언된 입력 종류는 그 예정이 있다.
 
 ### 공용 경계
 
@@ -62,6 +58,37 @@ shared 는 도메인·Router·Query·endpoint·permission·workflow 를 모른�
 | 한 도메인의 `mechanics/record-list` | 해체 → 각 `{entity}-list` 의 8 파일 | 목록마다 검색 정책·액션이 달라 한 mechanic 이 mode 를 갖게 됐다 |
 | 폼 입력 feedback 어댑터 | `useSaveForm` 으로 합침 | 두 소비자에서 같은 조립 반복 |
 | 목록·검색·상세·폼·bulk·mutation·table 문서 7개, 공용 문서 22개 | 목록·상세·폼 3개 + catalog 1개로 통합 | 화면 하나에 문서 하나 |
+
+## 보존할 실측 근거
+
+아래는 이 계약이 왜 이 모양인지를 만든 관측이다. **당시 비교·재현의 기록이며 현재 실행 결과가 아니다.** 규칙 자체는 계약 문서가 소유하고, 여기는 그 규칙을 지우면 무엇이 다시 일어나는지만 남긴다. 설치 버전이나 실제 control 의 동작이 이 관측을 반박하면 해당 mechanic 과 테스트를 함께 다시 잰다.
+
+| 관측한 실패·차이 | 설계에 남긴 이유 | 현재 검증 소유자 |
+| --- | --- | --- |
+| 닫힌 섹션의 필드가 사라져도 전체 입력 검증은 제출을 차단했는데 오류와 focus 가 보이지 않았다. 필드 unmount 가 오류 map 도 비웠다 | 폼 섹션의 mount 유지(`keepMounted`)와 같은 오류 원천의 badge·reveal·focus | `useSaveForm.test.tsx`, catalog 의 `SectionCard` 행 |
+| 제출 전용 validator 만 연결하면 blur/change 뒤 오류가 사라졌다(`FieldApi.validateSync` 가 validator 없는 실행에서 `onSubmit` 오류를 지운다) | 첫 제출 뒤 같은 schema 로 change 재검증(`revalidateLogic`) | `FormField.test.tsx`, form.md 의 Save lifecycle |
+| Standard Schema 의 성공 output 이 submit values 를 치환하지 않았다 | UI 입력 타입과 검증 output·요청 mapper 의 경계 분리 | 각 `*-form-schema.test.ts` |
+| form-level 서버 오류가 Form 타입과 맞지 않았고 field 서버 오류는 일반 검증으로 지워지지 않았다 | root 실패 stage 와 field `onServer` 분리, 매 제출 시작에 `onServer` 정리 | `useSaveForm.test.tsx` |
+| 최초 defaults 를 계속 넘긴 채 reset 하면 값이 되돌아갔고, 같은 폼에서 resource 가 바뀌면 값이 섞였다 | 성공 값·기준선과 resource identity 를 한 소유자가 갱신(`key`·`resetKey`) | 각 `*EditScreen.test.tsx` |
+| pending overlay 아래의 이탈 질문은 조작할 수 없었다 | pending 이탈을 조용히 거부, 브라우저 이탈은 native 경고 | `UnsavedChangesGuard.router.test.tsx` |
+| 두 dirty 폼의 Router 질문이 순차로 두 번 나타났다 | 단일 blocker/provider 가 dirty·pending 사실만 집계 | `UnsavedChangesGuard.integration.test.tsx` |
+| 상세의 `notFound \| error \| ready` 삼항이 조회·수정 화면에 글자 그대로 복제됐고 세 결함이 함께 나왔다: 초기 401/403 은 로컬 오류와 incident 를 동시에 띄웠고, 캐시 + background 500 은 보이던 내용을 오류 화면으로 바꿨고, 캐시 + background 404 는 삭제된 레코드를 계속 보여 줬다 | 판정 우선순위를 `resolveRequiredQueryOutcome` 하나가 소유(incident → not-found → 캐시 데이터 → pending → 로컬 오류), settled-without-data 는 not-found 를 발명하지 않고 복구 가능한 오류 | `required-query.test.tsx`, detail.md 의 State |
+| 초안을 해소된 검색 전체로 만들면 submit 이 낡은 정렬·보기로 덮어써, 정렬을 바꾼 뒤 재검색하면 되돌아갔다 | filter/view partition 을 초안 정체성에서 분리 | `search-partition.test.ts`, `use-list-filter-draft.test.tsx` |
+| 두 번째 목록이 배열 identity 에 의존한 선택 훅에서 무한 렌더를 드러냈다 | 선택 수명을 내용 비교로 판정 | `use-page-row-selection.test.tsx` |
+| 활성 정렬 컬럼이 방향 표시 없이 렌더됐다(`sortDirection` 기본값 미지정) | URL 계약이 기본 방향을 선언하고 `headerSortDirection` 이 aria 어휘로 옮김. `contracts:check` 가 `defaultValue: undefined` 를 실패로 잡는다 | `list-view.test.ts`, `list-sort.test.ts`, `screen-shape.mjs` |
+
+거부한 표현도 함께 남긴다: 오류 시 접기 금지, 상단·필드·헤더의 중복 오류 표현, pending 가드를 끄고 effect 로 이동, 이력 항목의 kind 별 discriminated union, 재마운트 후 재검증 보상 절차. 각각 사용자 제어·표현 중복·순서 소유·첫 소비자에 없는 분기를 이유로 뺐다.
+
+## 미확인
+
+이 결정이 답하지 않는 것들이다. 답이 오면 해당 소유자를 고치고 이 목록에서 지운다.
+
+- 서버의 변경 이력 `before/after` 인코딩, field key 안정성, 날짜·enum 의 wire 형식.
+- 상세·수정 endpoint 통합 여부와 저장 성공 뒤 정확한 무효화 범위. 현재 도메인 records prefix 무효화는 안전한 쪽을 택한 것이다.
+- background 404 → not-found 로 stale 표시를 끊는 정책이 제품의 삭제·비활성 의미와 맞는가.
+- 행위자 표시 문자열의 서버 필드와 마스킹 권한, 값 없음의 빈칸/`-` 표시.
+- 실 저장·발송·재인증 성공 이후의 동작(재조회 범위, 해제 범위, 감사). 미연결 구간의 상한은 [도달 상태](../../.agents/skills/screen-loop/SKILL.md#도달-상태)가 정한다.
+- bulk 의 부분 성공 표면. 응답이 행 단위 결과를 노출할 때만 보고한다는 규칙만 있고 표면의 거처는 서버 계약 전까지 만들지 않는다.
 
 ## 검토한 대안
 

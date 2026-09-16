@@ -38,7 +38,7 @@ const SOURCE_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 
 /**
  * Q3(2026-09-03): 대상은 ADR 을 0001 부터 다시 번호 붙인다. 이관 ADR 은 seed bundle 과 skill 이 이름으로
- * 가리키는 것이며 순서는 레퍼런스 번호 순이다. 0001·0002·0004·0007 은 가지 않는다(0002·0004 는 조건부 재작성).
+ * 가리키는 것이며 순서는 레퍼런스 번호 순이다. 0001·0002·0004 는 가지 않는다(0002·0004 는 조건부 재작성).
  * 0009~0012 는 0014 로 대체·삭제된 결번이라 목록에 없다.
  * 선택 bundle 에 따라 실제로 가지 않는 ADR 은 stage 가 `retired` 로 옮겨 인용만 표시한다.
  */
@@ -54,7 +54,7 @@ export const ADR_RENUMBER = [
 ]
 
 /** 이관하지 않는 ADR. 본문에서 이 번호를 인용한 곳은 재번호 전에 표시하고 사람이 검토한다. */
-export const ADR_NOT_TRANSPLANTED = ['0001', '0007']
+export const ADR_NOT_TRANSPLANTED = ['0001']
 
 /** 대상은 Managers 가 없다. 레퍼런스 consumer 를 가리키는 예시 심볼은 `{Domain}` 자리표시자로 바꾼다. */
 export const EXAMPLE_SYMBOL_SUBSTITUTIONS = [

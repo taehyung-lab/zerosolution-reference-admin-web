@@ -53,7 +53,7 @@ screen:       const detail = use{Entity}Detail(id)
 
 ## 형태
 
-폴더는 `screens/{entity}-detail/`. 둘은 항상, 나머지는 그 책임이 있을 때만.
+폴더는 `screens/{entity}-detail/`. 조회 화면을 새로 만들면 앞의 둘은 생기고, 나머지는 그 책임이 있을 때만이다. 섹션 하나·액션 하나를 바꾸는 요청은 그 파일만 건드린다 — 이 표는 탐색 위치이지 scaffolding 지시가 아니다.
 
 | 파일 | 담는 것 |
 | --- | --- |

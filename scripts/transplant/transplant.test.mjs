@@ -71,8 +71,8 @@ describe('rewriteText', () => {
   })
 
   it('marks citations of ADRs that are not transplanted instead of renumbering them', () => {
-    expect(rewriteText('리허설 계약은 ADR 0001, 결번은 ADR 0007 참고')).toBe(
-      '리허설 계약은 ADR(레퍼런스 0001, 미이관), 결번은 ADR(레퍼런스 0007, 미이관) 참고',
+    expect(rewriteText('리허설 계약은 ADR 0001 참고, 화면 형태는 ADR 0014')).toBe(
+      '리허설 계약은 ADR(레퍼런스 0001, 미이관) 참고, 화면 형태는 ADR 0005',
     )
     expect(findRetiredAdrCitations('x\nsee docs/decisions/0001-rehearsal-api-contract.md\n')).toEqual([
       { line: 2, number: '0001', text: 'see docs/decisions/0001-rehearsal-api-contract.md' },
@@ -141,7 +141,7 @@ describe('delinkUntravelled', () => {
     targetPath: 'docs/decisions/0005-single.md',
     source: SOURCE_POINTER,
     target: NEUTRAL_POINTER,
-    retired: ['0001', '0007'],
+    retired: ['0001'],
     staged: new Set(['docs/reference/product/README.md', 'docs/decisions/0005-single-screen-shape.md']),
     targetRoot: '/nowhere',
   }
@@ -448,7 +448,7 @@ describe('plan / stage / apply against a target directory', () => {
     ]) expect(files.has(adr)).toBe(true)
 
     const staged = stageTransplant(target, out, undefined, { bundles: ['ascii-triplet'] })
-    expect(staged.retired).toEqual(['0001', '0007'])
+    expect(staged.retired).toEqual(['0001'])
     expect(existsSync(join(out, 'docs/decisions/0005-single-screen-shape.md'))).toBe(true)
     expect(staged.review.some((item) => item.number === '0001')).toBe(true)
     expect(() => planTransplant(target, { bundles: ['no-such-bundle'] })).toThrow(/no-such-bundle/)

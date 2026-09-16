@@ -79,7 +79,7 @@ src/shared/       도메인·서버 계약을 모르는 UI와 순수 공용 코�
 | [`docs/reference/`](docs/reference/) | Figma 등 비규범적 관찰 증거. 그 자체로 구현 계약이 되지 않는다 |
 | [`openapi/README.md`](openapi/README.md) | 현재 snapshot의 사용법·금지 사항·검증 명령. 채택 이유와 폐기 조건은 ADR 0001이 소유한다 |
 
-활성 ADR은 번호 순서가 아니라 관련 작업의 Skill·README·다른 ADR에서 진입한다. 인증 토큰 결정(ADR 0006)은 api-contract `auth-session.md`, primitive 선택(ADR 0008)은 shared-ui-contract `primitives-and-tokens.md`가 연결한다.
+활성 ADR은 번호 순서가 아니라 관련 작업의 Skill·README·다른 ADR에서 진입한다. 인증 토큰 결정(ADR 0006)은 api-contract `auth-session.md`, primitive 선택(ADR 0008)은 shared-ui-contract `primitives-and-tokens.md`가 연결한다. 번호 0007·0009~0012는 결번이다 — 재사용하지 않고, 대체·삭제된 결정의 과거는 git history가 소유한다. 0002·0004는 설계가 아니라 버전 고정 기록이라 해당 버전을 바꾸는 작업에서만 읽는다.
 
 `CLAUDE.md`와 `.github/copilot-instructions.md`는 런타임 포인터일 뿐이며 규칙을 복제하지 않는다.
 
