@@ -1,8 +1,12 @@
-/** 대상 ID와 locale를 상세 캐시에 연결한다. 로딩·오류·없는 대상 판정은 공용 훅이 소유한다. */
-import { useDetailQuery } from "@/api/required-query";
-import { useLocale } from "@/shared/i18n/locale-context";
-import { memberDetailQuery } from "./detail-queries";
-export function useMemberDetail(id: string) {
+/**
+ * 회원 ID 와 locale 로 상세 query options 를 만들고 공용 상세 조회 상태를 반환한다.
+ * 조회 화면과 수정 화면이 같은 훅을 쓰며, 어떤 ID 를 볼지는 caller(route)가 소유한다.
+ */
+import { useDetailQuery } from '@/api/required-query';
+import { useLocale } from '@/shared/i18n/locale-context';
+import { memberDetailQueryOptions } from './queries';
+
+export function useMemberDetail(memberId: string) {
   const { locale } = useLocale();
-  return useDetailQuery(memberDetailQuery(locale, id));
+  return useDetailQuery(memberDetailQueryOptions(locale, memberId));
 }

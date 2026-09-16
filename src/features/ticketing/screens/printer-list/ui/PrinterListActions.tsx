@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { SelectionAlert } from '@/shared/ui/dialog/BulkActionDialogs';
+import { SelectionAlert } from '@/shared/ui/dialog/SelectionAlert';
 import { Button } from '@/shared/ui/primitives/Button';
 import { Select } from '@/shared/ui/primitives/Select';
 import {

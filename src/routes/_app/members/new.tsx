@@ -1,12 +1,14 @@
-import { requestMemberCreate } from "@/features/members/screens/form/model/member-form-requests";
-import { MemberCreateScreen } from "@/features/members/screens/form/ui/MemberCreateScreen";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute } from '@tanstack/react-router';
+import { MemberCreateScreen } from '@/features/members/screens/member-form/ui/MemberCreateScreen';
 
-export const Route = createFileRoute("/_app/members/new")({
+export const Route = createFileRoute('/_app/members/new')({
   component: MemberCreateRoute,
 });
 
 function MemberCreateRoute() {
-  // TRANSPLANT_PENDING_MEMBER_CREATE_CONTRACT: 신규 회원 등록 API 계약이 확정되면 확인된 입력을 연결한다.
-  return <MemberCreateScreen onConfirm={requestMemberCreate} />;
+  const navigate = Route.useNavigate();
+  const goToList = () => {
+    void navigate({ to: '/members/active/all' });
+  };
+  return <MemberCreateScreen onSaved={goToList} onCancel={goToList} />;
 }

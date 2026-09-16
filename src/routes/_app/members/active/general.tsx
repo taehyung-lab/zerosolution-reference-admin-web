@@ -1,54 +1,42 @@
-import { canonicalSearchGuard } from "@/app/router/canonical-search-guard";
-import { requestMemberBulkChange } from "@/features/members/screens/list/model/member-list-requests";
-import {
-  generalMemberCanonicalSearchSchema,
-  type MemberRouteSearch,
-} from "@/features/members/screens/list/model/search-schema";
-import { useMemberListRecipients } from "@/features/members/screens/list/model/useMemberListRecipients";
-import { GeneralMemberListScreen } from "@/features/members/screens/list/ui/MemberListScreen";
-import { requestMessageSend } from "@/features/messaging/screens/compose/model/message-request";
-import { useMessageComposer } from "@/features/messaging/screens/compose/model/useMessageComposer";
-import { MessageComposerDialog } from "@/features/messaging/screens/compose/ui/MessageComposerDialog";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute } from '@tanstack/react-router';
+import { canonicalSearchGuard } from '@/app/router/canonical-search-guard';
+import { memberListDefinitions } from '@/features/members/screens/member-list/model/member-list-definition';
+import { memberListSearch } from '@/features/members/screens/member-list/model/member-list-search';
+import { useMemberListRecipients } from '@/features/members/screens/member-list/model/useMemberListRecipients';
+import { MemberListScreen } from '@/features/members/screens/member-list/ui/MemberListScreen';
+import { requestMessageSend } from '@/features/messaging/screens/compose/model/message-request';
+import { useMessageComposer } from '@/features/messaging/screens/compose/model/useMessageComposer';
+import { MessageComposerDialog } from '@/features/messaging/screens/compose/ui/MessageComposerDialog';
 
-export const Route = createFileRoute("/_app/members/active/general")({
-  validateSearch: generalMemberCanonicalSearchSchema,
-  beforeLoad: canonicalSearchGuard(generalMemberCanonicalSearchSchema),
+const definition = memberListDefinitions.general;
+
+export const Route = createFileRoute('/_app/members/active/general')({
+  validateSearch: memberListSearch.schema,
+  beforeLoad: canonicalSearchGuard(memberListSearch.canonical),
   component: GeneralMemberListRoute,
 });
 
 function GeneralMemberListRoute() {
-  const search = generalMemberCanonicalSearchSchema.parse(Route.useSearch());
   const navigate = Route.useNavigate();
-  const actions = useMessageComposer(
-    useMemberListRecipients(search, "general"),
-  );
+  const search = Route.useSearch();
+  const messages = useMessageComposer(useMemberListRecipients(search, definition));
   return (
     <>
-      <MessageComposerDialog
-        onConfirm={requestMessageSend}
-        request={actions.message}
-        onClose={actions.closeMessage}
-      />
-
-      <GeneralMemberListScreen
-        onActionRequest={(request) => {
-          if (request.type === "bulkChange") requestMemberBulkChange(request);
-          else actions.openMessage(request.type, request.targetIds);
-        }}
+      <MemberListScreen
+        definition={definition}
         search={search}
-        onSearchChange={(next: MemberRouteSearch) => {
-          void navigate({
-            search: () => generalMemberCanonicalSearchSchema.parse(next),
-          });
+        onSearchChange={(next) => {
+          void navigate({ search: () => next });
         }}
-        onMemberActivate={(memberId) => {
-          void navigate({ to: "/members/$memberId", params: { memberId } });
+        onActivate={(memberId) => {
+          void navigate({ to: '/members/$memberId', params: { memberId } });
         }}
-        onRegister={() => {
-          void navigate({ to: "/members/new" });
+        onCreate={() => {
+          void navigate({ to: '/members/new' });
         }}
+        onMessage={messages.openMessage}
       />
+      <MessageComposerDialog onConfirm={requestMessageSend} request={messages.message} onClose={messages.closeMessage} />
     </>
   );
 }
