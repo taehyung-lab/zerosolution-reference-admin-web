@@ -1,35 +1,70 @@
-import { fireEvent, render, screen } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
-import { DetailStateBoundary } from './DetailStateBoundary'
+import { fireEvent, render as renderBare, screen } from '@testing-library/react';
+import type { ReactElement, ReactNode } from 'react';
+import { I18nextProvider } from 'react-i18next';
+import { describe, expect, it, vi } from 'vitest';
+import { i18n } from '@/shared/i18n/i18n';
+import { DetailStateBoundary, type DetailQueryFacts } from './DetailStateBoundary';
+
+const I18n = ({ children }: { readonly children: ReactNode }) => (
+  <I18nextProvider i18n={i18n}>{children}</I18nextProvider>
+);
+const render = (ui: ReactElement) => renderBare(ui, { wrapper: I18n });
+
+type Record = { readonly name: string };
+const ready: DetailQueryFacts<Record> = {
+  data: { name: 'Record A' },
+  state: 'ready',
+  error: undefined,
+  retry: () => Promise.resolve(),
+};
+const facts = (over: Partial<DetailQueryFacts<Record>>): DetailQueryFacts<Record> => ({
+  ...ready,
+  ...over,
+});
 
 describe('DetailStateBoundary', () => {
-  it.each([['error', 'Unable to load'], ['notFound', 'Missing detail']] as const)('renders the %s state instead of ready content', (state, label) => {
-    render(<DetailStateBoundary state={state} labels={{ error: 'Unable to load', notFound: 'Missing detail' }}><p>Ready detail</p></DetailStateBoundary>)
-    expect(screen.getByText(label)).toBeInTheDocument()
-    expect(screen.queryByText('Ready detail')).not.toBeInTheDocument()
-  })
-  it('renders children only for ready state', () => {
-    render(<DetailStateBoundary state="ready" labels={{ error: 'Unable to load', notFound: 'Missing detail' }}><p>Ready detail</p></DetailStateBoundary>)
-    expect(screen.getByText('Ready detail')).toBeInTheDocument()
-  })
+  it('renders the record through the child function only when data is present', () => {
+    const { rerender } = render(
+      <DetailStateBoundary query={ready}>{(data) => <p>{data.name}</p>}</DetailStateBoundary>,
+    );
+    expect(screen.getByText('Record A')).toBeInTheDocument();
 
-  it('announces a recoverable error and exposes retry and diagnostic slots', () => {
-    const retry = vi.fn()
+    rerender(
+      <DetailStateBoundary query={facts({ data: undefined })}>
+        {(data) => <p>{data.name}</p>}
+      </DetailStateBoundary>,
+    );
+    expect(screen.queryByText('Record A')).not.toBeInTheDocument();
+  });
+
+  it('says not found with shared copy', () => {
+    render(
+      <DetailStateBoundary query={facts({ data: undefined, state: "notFound" })}>
+        {(data) => <p>{data.name}</p>}
+      </DetailStateBoundary>,
+    );
+    expect(screen.getByText('요청한 정보를 찾을 수 없습니다.')).toBeInTheDocument();
+  });
+
+  it('announces the error kind, offers retry, and shows the trace', () => {
+    const retry = vi.fn(() => Promise.resolve());
     render(
       <DetailStateBoundary
-        state="error"
-        labels={{ error: 'Safe error', notFound: 'Missing detail' }}
-        retryLabel="Retry"
-        onRetry={retry}
-        trace={<span>Inquiry code req-1</span>}
+        query={facts({
+          data: undefined,
+          state: "error",
+          error: { kind: "timeout", requestId: "req-1" },
+          retry,
+        })}
       >
-        <p>Ready detail</p>
+        {(data) => <p>{data.name}</p>}
       </DetailStateBoundary>,
-    )
+    );
 
-    expect(screen.getByRole('alert')).toHaveTextContent('Safe error')
-    expect(screen.getByRole('alert')).toHaveTextContent('Inquiry code req-1')
-    fireEvent.click(screen.getByRole('button', { name: 'Retry' }))
-    expect(retry).toHaveBeenCalledOnce()
-  })
-})
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveTextContent('요청 시간이 초과되었습니다. 다시 시도해 주세요.');
+    expect(alert).toHaveTextContent('req-1');
+    fireEvent.click(screen.getByRole('button', { name: '다시 시도' }));
+    expect(retry).toHaveBeenCalledOnce();
+  });
+});

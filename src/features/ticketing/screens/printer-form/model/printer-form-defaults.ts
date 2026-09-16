@@ -1,5 +1,5 @@
-import type { PrinterDetail, PrinterSettings } from '@/features/ticketing/model/printer';
-import type { PrinterFormInput, PrinterFormValues } from './printer-form-schema';
+import type { PrinterDetail } from '@/features/ticketing/model/printer';
+import type { PrinterFormInput } from './printer-form-schema';
 
 /**
  * 등록 화면의 초기 값 — Figma 6.7.1.3 등록 frame 이 보여 주는 첫 상태(2026-09-15 렌더 실측):
@@ -31,21 +31,5 @@ export function toPrinterEditDefaults(detail: PrinterDetail): PrinterFormInput {
     measures: detail.measures,
     purpose: detail.purpose,
     usage: detail.usage,
-  };
-}
-
-/** 유효한 폼 값을 저장 입력으로 옮긴다. 폼 값과 설정 항목이 1:1 이라 골라 담기만 한다. */
-export function toPrinterSettings(values: PrinterFormValues): PrinterSettings {
-  return {
-    name: values.name,
-    serialNo: values.serialNo,
-    model: values.model,
-    manufacturer: values.manufacturer,
-    purchasedAt: values.purchasedAt,
-    location: values.location,
-    status: values.status,
-    measures: values.measures,
-    purpose: values.purpose,
-    usage: values.usage,
   };
 }

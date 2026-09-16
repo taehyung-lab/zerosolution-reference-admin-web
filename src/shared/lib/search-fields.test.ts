@@ -99,6 +99,41 @@ describe("search field declaration", () => {
     expectTypeOf(variant.defaults.status).toEqualTypeOf<"closed">();
   });
 
+  it("resolves and commits through the same declaration", () => {
+    expect(contract.resolve({ page: 2 })).toEqual({
+      page: 2,
+      status: "open",
+      tags: [],
+      direction: undefined,
+    });
+    expect(
+      contract.canonical.parse({
+        page: 1,
+        status: "closed",
+        tags: [],
+        direction: "asc",
+      }),
+    ).toEqual({ status: "closed", direction: "asc" });
+    expectTypeOf(contract.resolve({}).page).toEqualTypeOf<number>();
+  });
+
+  it("drops a half-open period on commit", () => {
+    const period = defineSearchFields({
+      startDateTime: { schema: z.string().optional(), defaultValue: undefined, kind: "filter" },
+      endDateTime: { schema: z.string().optional(), defaultValue: undefined, kind: "filter" },
+    });
+    expect(period.canonical.parse({ startDateTime: "2026-01-01T00:00:00.000Z" })).toEqual({});
+    expect(
+      period.canonical.parse({
+        startDateTime: "2026-01-01T00:00:00.000Z",
+        endDateTime: "2026-01-02T00:00:00.000Z",
+      }),
+    ).toEqual({
+      startDateTime: "2026-01-01T00:00:00.000Z",
+      endDateTime: "2026-01-02T00:00:00.000Z",
+    });
+  });
+
   it('rejects invalid defaults and missing metadata at compile time', () => {
     const invalid = { status: { schema: z.enum(['open']), defaultValue: 'invented', kind: 'filter' } } as const;
     const missingKind = { page: { schema: z.number(), defaultValue: 1 } } as const;

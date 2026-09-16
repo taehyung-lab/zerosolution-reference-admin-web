@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { printerCreateDefaults, toPrinterSettings } from './printer-form-defaults';
+import { printerCreateDefaults } from './printer-form-defaults';
+import { toPrinterSettings } from './printer-form-request';
 import { printerFormFieldOrder, printerFormSchema } from './printer-form-schema';
 
 describe('스마트프린터 등록·수정 입력 계약', () => {

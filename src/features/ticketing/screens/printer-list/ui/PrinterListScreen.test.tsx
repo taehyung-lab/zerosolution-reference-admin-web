@@ -5,13 +5,11 @@ import { chooseOptionIn } from '@/test/select';
 import type { PrinterListSearch } from '../model/printer-list-search';
 import { PrinterListScreen } from './PrinterListScreen';
 
-/** route 가 넘기는 것은 sparse search 와 이동·업무 callback 이다. 해소는 화면이 한다. */
+/** route 가 넘기는 것은 sparse search 와 이동 callback 이다. 해소·업무 실행은 화면이 한다. */
 function renderScreen(sparse: PrinterListSearch = {}) {
   const onSearchChange = vi.fn();
   const onActivate = vi.fn();
   const onCreate = vi.fn();
-  const onBulkChange = vi.fn();
-  const onCopy = vi.fn();
   render(
     <TestQueryLocaleProvider>
       <PrinterListScreen
@@ -19,15 +17,14 @@ function renderScreen(sparse: PrinterListSearch = {}) {
         onSearchChange={onSearchChange}
         onActivate={onActivate}
         onCreate={onCreate}
-        onBulkChange={onBulkChange}
-        onCopy={onCopy}
       />
     </TestQueryLocaleProvider>,
   );
-  return { onSearchChange, onActivate, onCreate, onBulkChange, onCopy };
+  return { onSearchChange, onActivate, onCreate };
 }
 
 const firstRowName = '003-31500210';
+const notConnectedMessage = '요청을 처리하지 못했습니다. 다시 시도해 주세요.';
 
 describe('PrinterListScreen (6.7.1 스마트프린터 목록)', () => {
   it('검색을 기다리지 않고 진입 즉시 결과를 그린다', async () => {
@@ -45,7 +42,6 @@ describe('PrinterListScreen (6.7.1 스마트프린터 목록)', () => {
       .getAllByRole('columnheader')
       .map((cell) => cell.textContent?.replace(/[▲▼]/g, '').trim());
     expect(headers).toEqual([
-      // 선택 컬럼의 헤더는 checkbox 하나이고 이름은 aria-label 이라 textContent 가 비어 있다.
       '',
       '기기명',
       '시리얼번호',
@@ -72,8 +68,17 @@ describe('PrinterListScreen (6.7.1 스마트프린터 목록)', () => {
     expect(sorted).toHaveLength(1);
     expect(sorted[0]).toHaveAttribute('aria-sort', 'descending');
     expect(sorted[0]).toHaveAccessibleName('등록일/최근업데이트일');
-    const rows = screen.getAllByRole('row').slice(1);
-    expect(within(rows[0]!).getByRole('cell', { name: firstRowName })).toBeInTheDocument();
+  });
+
+  it('보기·정렬·헤더·페이지 전이가 canonical URL 로 나간다', async () => {
+    const { onSearchChange } = renderScreen({ pageSize: 200 });
+    await screen.findByRole('cell', { name: firstRowName });
+
+    await chooseOptionIn('정렬', '기기명');
+    expect(onSearchChange).toHaveBeenLastCalledWith({ pageSize: 200, sortType: 'name' });
+
+    fireEvent.click(screen.getByRole('button', { name: '등록일/최근업데이트일' }));
+    expect(onSearchChange).toHaveBeenLastCalledWith({ pageSize: 200, sortDirection: 'asc' });
   });
 
   it('검색을 제출하면 검색어와 다중선택이 첫 페이지로 커밋된다', async () => {
@@ -131,8 +136,8 @@ describe('PrinterListScreen (6.7.1 스마트프린터 목록)', () => {
     expect(onActivate).not.toHaveBeenCalled();
   });
 
-  it('미선택 상태의 변경·선택복사는 원문 Case01 오류 alert 만 열고 요청하지 않는다', async () => {
-    const { onBulkChange, onCopy } = renderScreen();
+  it('미선택 상태의 변경·선택복사는 원문 Case01 오류 alert 만 연다', async () => {
+    renderScreen();
     await screen.findByRole('cell', { name: firstRowName });
 
     fireEvent.click(screen.getByRole('button', { name: '변경' }));
@@ -141,36 +146,31 @@ describe('PrinterListScreen (6.7.1 스마트프린터 목록)', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '선택복사' }));
     expect(await screen.findByText('변경할 항목을 선택해주세요.')).toBeInTheDocument();
-
-    expect(onBulkChange).not.toHaveBeenCalled();
-    expect(onCopy).not.toHaveBeenCalled();
   });
 
-  it('선택 + 변경 값 + 확인까지 통과해야 일괄변경 요청이 나간다 — 원문 Case02', async () => {
-    const { onBulkChange } = renderScreen();
+  it('선택 + 변경 값 + 확인까지 통과하면 일괄변경을 실행하고, 미연결 실패는 확인창에 남는다 — 원문 Case02', async () => {
+    renderScreen();
     await screen.findByRole('cell', { name: firstRowName });
 
     fireEvent.click(screen.getByRole('checkbox', { name: `${firstRowName} 선택` }));
     await chooseOptionIn('일괄변경 항목', '용도 > 현장발권용');
     fireEvent.click(screen.getByRole('button', { name: '변경' }));
 
-    expect(await screen.findByText('선택 항목을 변경하시겠습니까?')).toBeInTheDocument();
-    expect(onBulkChange).not.toHaveBeenCalled();
+    const dialog = await screen.findByRole('dialog');
+    expect(dialog).toHaveTextContent('선택 항목을 변경하시겠습니까?');
+    fireEvent.click(within(dialog).getByRole('button', { name: '확인' }));
 
-    fireEvent.click(screen.getByRole('button', { name: '확인' }));
-    expect(onBulkChange).toHaveBeenCalledWith({
-      targetIds: ['reference-printer-5'],
-      change: { field: 'purpose', value: 'EXTERNAL' },
-    });
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent(notConnectedMessage);
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 
-  it('선택복사는 선택한 ID 를 그대로 요청에 싣는다', async () => {
-    const { onCopy } = renderScreen();
+  it('선택복사는 선택만 있으면 실행하고, 미연결 실패는 같은 alert 로 알린다', async () => {
+    renderScreen();
     await screen.findByRole('cell', { name: firstRowName });
 
     fireEvent.click(screen.getByRole('checkbox', { name: `${firstRowName} 선택` }));
     fireEvent.click(screen.getByRole('button', { name: '선택복사' }));
 
-    expect(onCopy).toHaveBeenCalledWith({ targetIds: ['reference-printer-5'] });
+    expect(await screen.findByText(notConnectedMessage)).toBeInTheDocument();
   });
 });

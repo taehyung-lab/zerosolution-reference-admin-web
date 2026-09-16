@@ -1,7 +1,8 @@
+import type { ReactNode } from 'react'
 import { Button } from '../primitives/Button'
 import { Dialog } from '../primitives/Dialog'
 
-/** Owns: consequential yes/no layout and pending close guard. Rejects: copy, mutation, error handling, toast and navigation. API: open,onOpenChange,title,description,confirmLabel,cancelLabel,onConfirm,pending. Boundary: domain-neutral confirm mechanics (shared-ui-contract `dialogs.md`). */
+/** Consequential yes/no layout with a pending close guard. Copy, what runs, and where the user goes afterwards are the caller's; `children` is the slot for a failure line between the question and the buttons. */
 export function ConfirmDialog({
   open,
   onOpenChange,
@@ -11,6 +12,7 @@ export function ConfirmDialog({
   cancelLabel,
   onConfirm,
   pending = false,
+  children,
 }: {
   readonly open: boolean
   readonly onOpenChange: (open: boolean) => void
@@ -20,6 +22,7 @@ export function ConfirmDialog({
   readonly cancelLabel: string
   readonly onConfirm: () => void
   readonly pending?: boolean
+  readonly children?: ReactNode
 }) {
   // The handler stays present while pending so Escape/outside-click cannot bypass an
   // indivisible action; removing it would silently become the close policy.
@@ -34,6 +37,7 @@ export function ConfirmDialog({
       onOpenChange={requestOpenChange}
       title={title}
       description={description}
+      children={children}
       footer={
         <>
           <Button disabled={pending} onClick={onConfirm}>

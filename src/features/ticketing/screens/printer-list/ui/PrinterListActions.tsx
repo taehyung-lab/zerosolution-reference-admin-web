@@ -1,8 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import {
-  BulkActionDialogs,
-  SelectionAlert,
-} from '@/shared/ui/dialog/BulkActionDialogs';
+import { SelectionAlert } from '@/shared/ui/dialog/BulkActionDialogs';
 import { Button } from '@/shared/ui/primitives/Button';
 import { Select } from '@/shared/ui/primitives/Select';
 import {
@@ -10,8 +7,6 @@ import {
   printerBulkChanges,
   printerBulkChangeValue,
   usePrinterListActions,
-  type PrinterBulkChangeRequest,
-  type PrinterCopyRequest,
 } from '../model/usePrinterListActions';
 
 /**
@@ -20,18 +15,13 @@ import {
  */
 export function PrinterListActions({
   selectedIds,
-  onBulkChange,
-  onCopy,
   onCreate,
 }: {
   readonly selectedIds: readonly string[];
-  readonly onBulkChange: (request: PrinterBulkChangeRequest) => void;
-  readonly onCopy: (request: PrinterCopyRequest) => void;
   readonly onCreate: () => void;
 }) {
   const { t } = useTranslation('ticketing');
-  const { t: shared } = useTranslation('shared');
-  const actions = usePrinterListActions({ selectedIds, onBulkChange, onCopy });
+  const actions = usePrinterListActions(selectedIds);
 
   return (
     <>
@@ -58,11 +48,8 @@ export function PrinterListActions({
         </Button>
         <Button onClick={onCreate}>{t('printer.result.create')}</Button>
       </div>
-      <SelectionAlert controller={actions.selectionGate} />
-      <BulkActionDialogs
-        controller={actions.bulk}
-        confirmDescription={shared('bulkAction.confirm')}
-      />
+      <SelectionAlert controller={actions.gate} />
+      {actions.dialog}
     </>
   );
 }

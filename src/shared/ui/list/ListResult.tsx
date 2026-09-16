@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { errorMessageKey } from '../../lib/error-copy';
 import { EmptyState } from '../feedback/EmptyState';
 import { ErrorTrace, type ErrorTraceValue } from '../feedback/ErrorTrace';
 
@@ -69,22 +70,4 @@ export function ListResult<TRow>({
       {footer}
     </div>
   );
-}
-
-function errorMessageKey(kind: string | undefined) {
-  switch (kind) {
-    case 'network': return 'error.kind.network' as const;
-    case 'timeout': return 'error.kind.timeout' as const;
-    case 'cancelled': return 'error.kind.cancelled' as const;
-    case 'business': return 'error.kind.business' as const;
-    case 'unauthorized': return 'error.kind.unauthorized' as const;
-    case 'forbidden': return 'error.kind.forbidden' as const;
-    case 'validation': return 'error.kind.validation' as const;
-    case 'not-found': return 'error.kind.notFound' as const;
-    case 'conflict': return 'error.kind.conflict' as const;
-    case 'rate-limited': return 'error.kind.rateLimited' as const;
-    case 'server-error': return 'error.kind.serverError' as const;
-    case 'contract': return 'error.kind.contract' as const;
-    default: return 'error.unexpected.body' as const;
-  }
 }
