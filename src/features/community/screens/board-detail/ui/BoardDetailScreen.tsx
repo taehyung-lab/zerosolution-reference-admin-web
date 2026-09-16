@@ -66,7 +66,7 @@ function BoardDetailContent({
   const { t: shared } = useTranslation('shared');
   const { locale } = useLocale();
   const remove = useMutation(deleteBoardMutation(locale));
-  const saveCategories = useMutation(saveBoardCategoriesMutation(locale, board.id));
+  const saveCategories = useMutation(saveBoardCategoriesMutation(locale));
   const deletion = useConfirmation<string>({
     run: (boardId) => remove.mutateAsync(boardId).then(onDeleted),
     description: shared('deleteConfirm.description'),
@@ -171,7 +171,7 @@ function BoardDetailContent({
           onOpenChange={(open) => {
             if (!open) setCategoriesOpen(false);
           }}
-          onSave={(categories) => saveCategories.mutateAsync(categories)}
+          onSave={(categories) => saveCategories.mutateAsync({ boardId: board.id, categories })}
         />
       ) : null}
     </div>

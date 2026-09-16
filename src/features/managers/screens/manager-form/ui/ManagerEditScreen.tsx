@@ -57,13 +57,13 @@ function ManagerEditForm({
 }) {
   const { t } = useTranslation('managers');
   const { locale } = useLocale();
-  const update = useMutation(updateManagerMutation(locale, manager.id));
+  const update = useMutation(updateManagerMutation(locale));
   const save = useSaveForm({
     schema: managerEditSchema,
     defaultValues: toManagerEditDefaults(manager),
     sections: { info: managerEditFieldOrder },
     save: {
-      run: (values) => update.mutateAsync(toManagerSettings(values)),
+      run: (values) => update.mutateAsync({ managerId: manager.id, settings: toManagerSettings(values) }),
       isPending: update.isPending,
     },
     mapError: (error) => classifyFormError(error, managerEditFieldOrder),

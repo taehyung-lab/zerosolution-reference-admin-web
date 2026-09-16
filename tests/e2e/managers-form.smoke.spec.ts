@@ -65,12 +65,12 @@ test.describe('unauthenticated entry', () => {
   test.use({ storageState: { cookies: [], origins: [] } })
 
   test('@smoke an app route without a stored credential lands on login with the attempted location', async ({ page }) => {
-    await page.goto('/managers?periodType=CREATED_AT')
+    await page.goto('/managers?pageSize=200')
 
     await expect(page.getByRole('heading', { name: '로그인' })).toBeVisible()
     const url = new URL(page.url())
     expect(url.pathname).toBe('/login')
-    expect(url.searchParams.get('redirect')).toBe('/managers?periodType=CREATED_AT')
+    expect(url.searchParams.get('redirect')).toBe('/managers?pageSize=200')
   })
 })
 
@@ -79,7 +79,7 @@ test('@smoke manager form leaves without asking while clean, then confirms cance
 }) => {
   await page.setViewportSize({ width: 1440, height: 1024 })
   await page.goto('/managers')
-  await page.getByRole('link', { name: '등록' }).click()
+  await page.getByRole('button', { name: '등록' }).click()
   await expect(page.getByRole('heading', { name: '운영자 등록' })).toBeVisible()
 
   // 깨끗한 폼: 취소는 확인 없이 목록으로 돌아간다.
@@ -87,7 +87,7 @@ test('@smoke manager form leaves without asking while clean, then confirms cance
   await expect(page).toHaveURL(/\/managers$/)
   await expect(page.getByRole('dialog')).toHaveCount(0)
 
-  await page.getByRole('link', { name: '등록' }).click()
+  await page.getByRole('button', { name: '등록' }).click()
   await page.getByLabel('이름*').fill('김맹맹')
 
   // 입력 뒤 취소: 취소 문장으로 묻고, "취소"는 입력을 유지한다.
@@ -115,7 +115,7 @@ test('@smoke manager form leaves without asking while clean, then confirms cance
   await expect(page.getByRole('dialog')).toHaveCount(0)
 })
 
-test('@smoke 운영자 등록 확인은 로그까지 도달하고 입력과 이탈 보호를 유지한다', async ({ page }) => {
+test('@smoke 운영자 등록 확인은 로그까지 도달하고 저장 완료 뒤 목록으로 이동한다', async ({ page }) => {
   const logs: string[] = [];
   const writes: string[] = [];
   page.on('console', message => { if (message.type() === 'log') logs.push(message.text()); });
@@ -134,12 +134,13 @@ test('@smoke 운영자 등록 확인은 로그까지 도달하고 입력과 이�
   expect(logs).toHaveLength(0);
   await page.getByRole('button', { name: '저장', exact: true }).click();
   await page.getByRole('dialog').getByRole('button', { name: '확인', exact: true }).click();
-  expect(logs).toHaveLength(1);
+  await expect.poll(() => logs.length).toBe(1);
   expect(logs[0]).toContain('API');
   expect(logs[0]).not.toContain('Passw0rd!');
   expect(writes).toEqual([]);
-  await expect(page.getByText('저장되었습니다.')).toHaveCount(0);
-  await expect(page.getByLabel('이름*')).toHaveValue('김맹맹');
-  await page.getByRole('button', { name: '취소', exact: true }).click();
-  await expect(page.getByRole('dialog')).toContainText('입력을 취소하시겠습니까?');
+  // 미연결 저장도 실서버와 같은 성공 경로를 돈다: 저장 완료 alert → 이동. 기준선이 갱신되어 이탈 질문이 없다.
+  await expect(page.getByText('저장되었습니다.')).toBeVisible();
+  await page.getByRole('dialog').getByRole('button', { name: '확인', exact: true }).click();
+  await expect(page).toHaveURL(/\/managers$/);
+  await expect(page.getByRole('dialog')).toHaveCount(0);
 });

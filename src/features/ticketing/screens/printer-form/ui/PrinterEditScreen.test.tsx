@@ -49,7 +49,7 @@ describe('printer edit (Figma 6.7.1.4 수정)', () => {
 
     const saved = await screen.findByText('저장되었습니다.');
     expect(log).toHaveBeenCalledWith(
-      expect.stringContaining('[시나리오] 스마트프린터 수정 reference-printer-2'),
+      expect.stringContaining('[시나리오] 스마트프린터 수정'),
     );
     fireEvent.click(within(saved.closest('[role="dialog"]')!).getByRole('button', { name: '확인' }));
     await waitFor(() => expect(onSaved).toHaveBeenCalledWith('reference-printer-2'));

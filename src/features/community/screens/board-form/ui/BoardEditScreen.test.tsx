@@ -48,7 +48,7 @@ describe('board edit (Figma 9.1.4 수정)', () => {
     fireEvent.click(within(confirm).getByRole('button', { name: '확인' }));
 
     const saved = await screen.findByText('저장되었습니다.');
-    expect(log).toHaveBeenCalledWith(expect.stringContaining('[시나리오] 게시판 수정 reference-board-2'));
+    expect(log).toHaveBeenCalledWith(expect.stringContaining('[시나리오] 게시판 수정'));
     fireEvent.click(within(saved.closest('[role="dialog"]')!).getByRole('button', { name: '확인' }));
     await waitFor(() => expect(onSaved).toHaveBeenCalledWith('reference-board-2'));
     log.mockRestore();

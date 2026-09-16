@@ -120,7 +120,7 @@ describe('BoardDetailScreen (Figma 9.1.2)', () => {
       expect(screen.queryByRole('dialog', { name: '카테고리 설정' })).not.toBeInTheDocument(),
     );
     expect(log).toHaveBeenCalledWith(
-      expect.stringContaining('[시나리오] 게시판 카테고리 설정 저장 reference-board-1'),
+      expect.stringContaining('[시나리오] 게시판 카테고리 설정 저장'),
     );
     log.mockRestore();
   });

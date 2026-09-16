@@ -24,7 +24,7 @@ test('@reference appeal notification uses the saved result while unsaved process
 
 test('@reference counsel edit cancellation preserves the new note, and reissue reaches its input boundary', async ({ page }) => {
   await page.goto('/members/counsel');
-  await page.getByRole('cell', { name: '시나리오 검증용 문의 내용', exact: true }).click();
+  await page.getByRole('cell', { name: 'Example inquiry', exact: true }).click();
   const create = page.getByRole('form', { name: '신규 상담 등록' });
   await create.getByRole('textbox', { name: '상담내용 및 처리결과' }).fill('새 상담 초안');
   await page.getByRole('button', { name: '수정', exact: true }).click();
@@ -40,7 +40,7 @@ test('@reference counsel edit cancellation preserves the new note, and reissue r
   const print = page.getByRole('dialog', { name: '티켓재발권', exact: true });
   await expect(print.getByRole('button', { name: '발권 시작하기' })).toBeDisabled();
   await print.getByRole('combobox', { name: '스마트프린터 선택' }).click();
-  await page.getByRole('option', { name: '참고 프린터' }).click();
+  await page.getByRole('option', { name: 'Example printer' }).click();
   await print.getByRole('button', { name: '테스트 발권' }).click();
   await expect(print).toBeVisible();
   await print.getByRole('button', { name: '취소', exact: true }).last().click();
@@ -85,12 +85,17 @@ test('@reference member list → detail → edit retains hidden restrictions and
   await page.getByRole('combobox', { name: '계정 상태' }).click();
   await page.getByRole('option', { name: '일반회원', exact: true }).click();
   await expect(page.getByRole('checkbox', { name: '1:1문의' })).toHaveCount(0);
-  await page.getByRole('button', { name: '저장', exact: true }).click();
-  await page.getByRole('dialog').getByRole('button', { name: '확인', exact: true }).click();
+  // 저장 전 상태를 되돌리면 숨겨 두었던 활동제한 입력이 그대로 복원된다(Activity).
   await page.getByRole('combobox', { name: '계정 상태' }).click();
   await page.getByRole('option', { name: '불량회원', exact: true }).click();
   await expect(page.getByRole('checkbox', { name: '1:1문의' })).toBeChecked();
-  await page.getByRole('button', { name: '취소', exact: true }).click();
+  await page.getByRole('combobox', { name: '계정 상태' }).click();
+  await page.getByRole('option', { name: '일반회원', exact: true }).click();
+  await page.getByRole('button', { name: '저장', exact: true }).click();
+  await page.getByRole('dialog').getByRole('button', { name: '확인', exact: true }).click();
+  // 성공 경로: 저장 완료 alert → 조회로 이동.
+  await expect(page.getByRole('dialog')).toContainText('저장되었습니다.');
+  await page.getByRole('dialog').getByRole('button', { name: '확인', exact: true }).click();
   await expect(page).toHaveURL(/example-flagged$/);
 });
 
@@ -158,12 +163,15 @@ test('@reference privacy and withdrawal stop at verification input, password mis
   await page.getByRole('dialog').getByRole('button', { name: '확인', exact: true }).click();
   await expect(page.getByRole('alert')).toContainText('비밀번호를 다시 입력해주세요.');
   await page.getByRole('textbox', { name: '운영자 비밀번호' }).fill('reference-only');
-  await page.getByRole('dialog').getByRole('button', { name: '확인', exact: true }).click();
-  await expect(page.getByRole('dialog')).toBeVisible();
-  await page.getByRole('dialog').getByRole('button', { name: '취소', exact: true }).click();
+  // 입력 뒤 취소는 버리기 확인을 거친다.
+  await page.getByRole('dialog', { name: '개인정보 전체보기', exact: true }).getByRole('button', { name: '취소', exact: true }).click();
   const cancelVerification = page.getByRole('dialog', { name: '알림', exact: true });
   await expect(cancelVerification).toContainText('입력을 취소하시겠습니까?');
-  await cancelVerification.getByRole('button', { name: '확인', exact: true }).click();
+  await cancelVerification.getByRole('button', { name: '취소', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: '운영자 비밀번호' })).toHaveValue('reference-only');
+  // 유효한 입력의 확인은 요청 함수에 닿고 팝업을 닫는다(성공 경로). 마스킹 해제는 서버 응답의 몫이다.
+  await page.getByRole('dialog', { name: '개인정보 전체보기', exact: true }).getByRole('button', { name: '확인', exact: true }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(page.getByText('gene***@example.test', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: '회원 탈퇴', exact: true }).click();
   await page.getByRole('textbox', { name: '탈퇴 사유' }).fill('짧음');

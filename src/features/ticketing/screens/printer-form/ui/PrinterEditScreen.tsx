@@ -66,13 +66,13 @@ function PrinterEditForm({
   readonly onCancel: () => void;
 }) {
   const { locale } = useLocale();
-  const update = useMutation(updatePrinterMutation(locale, printer.id));
+  const update = useMutation(updatePrinterMutation(locale));
   const save = useSaveForm({
     schema: printerFormSchema,
     defaultValues: toPrinterEditDefaults(printer),
     sections: { info: printerFormFieldOrder },
     save: {
-      run: (values) => update.mutateAsync(toPrinterSettings(values)),
+      run: (values) => update.mutateAsync({ printerId: printer.id, settings: toPrinterSettings(values) }),
       isPending: update.isPending,
     },
     mapError: (error) => classifyFormError(error, printerFormFieldOrder),

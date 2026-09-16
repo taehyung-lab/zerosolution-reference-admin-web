@@ -28,9 +28,9 @@ export function createManagerMutation(locale: UiLocale) {
   });
 }
 
-export function updateManagerMutation(locale: UiLocale, managerId: string) {
+export function updateManagerMutation(locale: UiLocale) {
   return mutationOptions({
-    mutationFn: scenarioRequest<ManagerSettings>(`운영자 수정 ${managerId}`),
+    mutationFn: scenarioRequest<{ readonly managerId: string; readonly settings: ManagerSettings }>('운영자 수정'),
     ...invalidates(locale),
   });
 }

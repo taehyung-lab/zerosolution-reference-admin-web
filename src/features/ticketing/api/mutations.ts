@@ -32,9 +32,9 @@ export function createPrinterMutation(locale: UiLocale) {
   });
 }
 
-export function updatePrinterMutation(locale: UiLocale, printerId: string) {
+export function updatePrinterMutation(locale: UiLocale) {
   return mutationOptions({
-    mutationFn: scenarioRequest<PrinterSettings>(`스마트프린터 수정 ${printerId}`),
+    mutationFn: scenarioRequest<{ readonly printerId: string; readonly settings: PrinterSettings }>('스마트프린터 수정'),
     ...invalidates(locale),
   });
 }

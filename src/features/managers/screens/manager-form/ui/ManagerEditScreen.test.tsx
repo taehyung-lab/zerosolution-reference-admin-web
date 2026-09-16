@@ -59,7 +59,7 @@ describe('ManagerEditScreen (11.1.4 운영자 수정)', () => {
     fireEvent.click(within(confirm).getByRole('button', { name: '확인' }));
 
     const saved = await screen.findByText('저장되었습니다.');
-    expect(log).toHaveBeenCalledWith(expect.stringContaining('[시나리오] 운영자 수정 example-active'));
+    expect(log).toHaveBeenCalledWith(expect.stringContaining('[시나리오] 운영자 수정'));
     fireEvent.click(within(saved.closest('[role="dialog"]')!).getByRole('button', { name: '확인' }));
     await waitFor(() => expect(onSaved).toHaveBeenCalledWith('example-active'));
     log.mockRestore();

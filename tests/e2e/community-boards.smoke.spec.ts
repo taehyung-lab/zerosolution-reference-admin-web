@@ -54,9 +54,11 @@ test('@smoke 게시판 목록의 활성 정렬 헤더만 방향을 바꾼다', a
   await expect(header).toHaveAttribute('aria-sort', 'descending');
   await expect(page).not.toHaveURL(/sortDirection=/);
 
+  // 다른 컬럼을 고르면 정렬 키만 바뀌고 방향은 유지된다(활성 헤더 클릭만 방향을 뒤집는다).
   const other = page.getByRole('columnheader', { name: '게시물수', exact: true });
   await other.getByRole('button').click();
-  await expect(other).toHaveAttribute('aria-sort', 'ascending');
+  await expect(other).toHaveAttribute('aria-sort', 'descending');
+  await expect(page).toHaveURL(/sortType=postCount/);
   await expect(header).not.toHaveAttribute('aria-sort', /.*/);
 });
 
@@ -86,6 +88,10 @@ test('@smoke 행 → 조회 → 수정 이동 뒤 저장이 요청 로그까지 
   await expect
     .poll(() => logs.filter((line) => line.includes('[시나리오] 게시판 수정')).length)
     .toBe(1);
+  // 미연결 저장도 실서버와 같은 성공 경로를 돈다: 저장 완료 alert → 조회로 이동.
+  await expect(page.getByText('저장되었습니다.')).toBeVisible();
+  await page.getByRole('button', { name: '확인', exact: true }).click();
+  await expect(page).toHaveURL(/\/community\/boards\/reference-board-1$/);
 });
 
 test('@smoke 카테고리 설정은 키보드 드래그로 순서를 바꾸고 dirty 닫기를 보호한다', async ({ page }) => {
@@ -163,6 +169,9 @@ test('@smoke 등록은 검증·저장 확인을 거쳐 요청 로그까지 간�
   await expect
     .poll(() => logs.filter((line) => line.includes('[시나리오] 게시판 등록')).length)
     .toBe(1);
+  await expect(page.getByText('저장되었습니다.')).toBeVisible();
+  await page.getByRole('button', { name: '확인', exact: true }).click();
+  await expect(page).toHaveURL(/\/community\/boards$/);
 });
 
 test('@smoke 등록 중 취소는 이탈 확인을 거치고 유지하면 입력이 남는다', async ({ page }) => {

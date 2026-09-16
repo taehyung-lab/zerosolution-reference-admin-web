@@ -23,9 +23,9 @@ export function createBoardMutation(locale: UiLocale) {
   });
 }
 
-export function updateBoardMutation(locale: UiLocale, boardId: string) {
+export function updateBoardMutation(locale: UiLocale) {
   return mutationOptions({
-    mutationFn: scenarioRequest<BoardSettings>(`게시판 수정 ${boardId}`),
+    mutationFn: scenarioRequest<{ readonly boardId: string; readonly settings: BoardSettings }>('게시판 수정'),
     ...invalidates(locale),
   });
 }
@@ -42,9 +42,9 @@ export function deleteBoardMutation(locale: UiLocale) {
  * 무엇을 확정하는지(즉시 반영인지 게시판 저장에 묶이는지)는 미확인이다(판정 문서 질문 27). 여기서는 팝업의
  * 저장이 곧 요청이며, 순서는 배열 순서다.
  */
-export function saveBoardCategoriesMutation(locale: UiLocale, boardId: string) {
+export function saveBoardCategoriesMutation(locale: UiLocale) {
   return mutationOptions({
-    mutationFn: scenarioRequest<readonly BoardCategoryItem[]>(`게시판 카테고리 설정 저장 ${boardId}`),
+    mutationFn: scenarioRequest<{ readonly boardId: string; readonly categories: readonly BoardCategoryItem[] }>('게시판 카테고리 설정 저장'),
     ...invalidates(locale),
   });
 }

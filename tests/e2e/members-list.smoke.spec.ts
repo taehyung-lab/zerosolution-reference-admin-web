@@ -59,7 +59,7 @@ test('@smoke active member routes expose the confirmed no-API workflow', async (
   await expect(page.getByRole('heading', { name: '회원 등록' })).toBeVisible();
 });
 
-test('@smoke member create validates, confirms without fake success, and protects unsaved input', async ({ page }) => {
+test('@smoke member create validates, runs the success path after confirmation, and protects unsaved input', async ({ page }) => {
   await page.goto('/members/new');
   const email = page.getByRole('textbox', { name: '이메일' });
   const save = page.getByRole('button', { name: '저장', exact: true });
@@ -79,10 +79,14 @@ test('@smoke member create validates, confirms without fake success, and protect
   await expect(save).toBeFocused();
   await save.click();
   await dialog.getByRole('button', { name: '확인' }).click();
+  // 미연결 저장도 실서버와 같은 성공 경로를 돈다: 저장 완료 alert → 목록으로 이동.
+  await expect(dialog).toContainText('저장되었습니다.');
+  await dialog.getByRole('button', { name: '확인' }).click();
+  await expect(page).toHaveURL(/\/members\/active\/all$/);
   await expect(dialog).toHaveCount(0);
+  await page.getByRole('button', { name: '등록' }).click();
   await expect(page).toHaveURL(/\/members\/new$/);
-  await expect(email).toHaveValue('reference@example.com');
-  await expect(page.getByText('저장되었습니다.')).toHaveCount(0);
+  await email.fill('reference@example.com');
   const cancel = page.getByRole('button', { name: '취소', exact: true });
   await cancel.click();
   await expect(dialog).toContainText('입력을 취소하시겠습니까?');

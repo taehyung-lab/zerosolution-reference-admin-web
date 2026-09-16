@@ -60,13 +60,13 @@ function BoardEditForm({
   readonly onCancel: () => void;
 }) {
   const { locale } = useLocale();
-  const update = useMutation(updateBoardMutation(locale, board.id));
+  const update = useMutation(updateBoardMutation(locale));
   const save = useSaveForm({
     schema: boardFormSchema,
     defaultValues: toBoardEditDefaults(board),
     sections: { info: boardFormFieldOrder },
     save: {
-      run: (values) => update.mutateAsync(toBoardSettings(values)),
+      run: (values) => update.mutateAsync({ boardId: board.id, settings: toBoardSettings(values) }),
       isPending: update.isPending,
     },
     mapError: (error) => classifyFormError(error, boardFormFieldOrder),
