@@ -27,7 +27,7 @@ const cell = (value) => value.trim()
 const blank = (value) => EMPTY.has(cell(value))
 const strip = (value) => cell(value).replace(/^`|`$/g, '')
 
-function tableRows(content) {
+export function tableRows(content) {
   const tables = []
   let header = null
   let headerRaw = null

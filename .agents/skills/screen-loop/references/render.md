@@ -29,12 +29,8 @@
 
 ## 실측 방법
 
-제품 원문 관찰은 [제품 포인터](../../../../docs/reference/product.json)가 연결한 inventory README 의
-판독 방법을 따른다. **앱 화면 실측은 로컬 앱을 띄우고 localhost 의 실제 route 나 host 에 Playwright 또는
-프로젝트가 선언한 브라우저 검증 수단으로 진입해 본다.** 파일을 고쳤다는 사실과 컴포넌트를 직접 render 한
-단위 테스트는 보조 증거이며 screen 완료를 증명하지 않는다. 사용자가 component·slice만 요청했을 때는 그
-host에서 검증하고, screen 요청이면 진입점이 없을 때 구현으로 돌아간다. 실행 명령은 README 와
-`package.json` 이 소유하므로 여기서 다시 적지 않는다.
+무엇으로 진입해 무엇을 증거로 쓰는지는 [SKILL.md 본문](../SKILL.md)이 소유한다. 제품 원문 관찰 방법은
+`product.json`이 연결한 inventory README가 소유한다. 여기서는 **진입한 뒤 무엇을 관찰하는지**만 적는다.
 
 - 어떤 화면을 어떤 상태로 열었고, 무엇을 눌렀고, 무엇이 일어났는지를 적는다.
 - 목록은 필터·정렬·페이지 전이가 URL에 남고 새로고침으로 복원되는지 본다.
