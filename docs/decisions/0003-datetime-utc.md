@@ -2,7 +2,6 @@
 
 - 상태: 승인됨 — 구현 및 단위 검증 완료, 실제 서버 계약 대기
 - 날짜: 2026-08-27
-- 개정: 2026-09-07
 - 결정자: 제품 소유자 (사용자)
 
 ## 맥락
@@ -34,10 +33,10 @@
 7. API `timezone` 파라미터 전달 여부와 의미는 신규 서버 계약이 확정된 feature가 소유한다.
    transport가 `REQUEST_TIMEZONE`이나 브라우저 zone을 자동 주입하지 않는다.
 
-8. 현재 목록의 확정 검색 기간은 양끝이 필요한 닫힌 범위다(2026-09-07 사용자 결정).
+8. 목록의 확정 검색 기간은 양끝이 필요한 닫힌 범위다.
    양끝 미지정은 무기간이며 한쪽 결손·불량·역전은 양쪽을 제거한다. 동일 시점은 허용하고
    ISO 문자열 철자가 아니라 실제 시점으로 비교한다. 입력 중 draft는 한쪽을 유지할 수 있다.
-   실행 경계는 [list-search-contract](../../.agents/skills/feature-contract/references/list-search-contract.md#기간-입력과-확정-경계)가 소유한다.
+   실행 경계는 [list URL](../../.agents/skills/feature-contract/references/list.md#url)이 소유한다.
 
 ## 변환 예시
 

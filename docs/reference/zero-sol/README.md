@@ -5,7 +5,7 @@ Figma `ZEROsol (For Kakao)`(`Ogb6WpSpwCVhKggQ1NLRlQ`) 78 page와 Notion `DB: Wor
 런타임 상태 전이·실패·복구는 화면을 봐서 알 수 없으므로 [시나리오 원장](../scenarios/README.md)이 따로 소유한다.
 판정(공용 / feature / 미확인)은 여기에 쓰지 않는다. 판정과 그 근거는
 [zero-sol-figma-analysis.md](../zero-sol-figma-analysis.md), 승격 절차는
-`.agents/skills/shared-ui-contract/references/promotion.md`, 단계는 `docs/decisions/0009-shared-boundaries.md`가 소유한다.
+`.agents/skills/shared-ui-contract/references/promotion.md`, 단계는 `docs/decisions/0014-single-screen-shape.md`가 소유한다.
 
 ## 프로젝트 사실
 

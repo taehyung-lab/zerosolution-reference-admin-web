@@ -106,13 +106,13 @@ const RESTRICTED = {
  * 이름을 추가할 때는 skill/ADR이 그 exact 문자열로 금지한 근거가 있어야 한다.
  */
 const PROHIBITED_ABSTRACTION_BINDINGS = new Map([
-  ['ResourcePage', 'feature-contract SKILL.md, list-workflow.md, screen-composition.md'],
-  ['UniversalList', 'ADR 0009'],
+  ['ResourcePage', 'feature-contract SKILL.md, list.md, screen-composition.md'],
+  ['UniversalList', 'ADR 0014'],
   ['useCrud', 'feature-contract SKILL.md'],
-  ['useListPageController', 'ADR 0009'],
-  ['useListTable', 'list-workflow.md, react-performance.md'],
-  ['usePagedTable', 'list-workflow.md'],
-  ['useResourceQuery', 'ADR 0011'],
+  ['useListPageController', 'ADR 0014'],
+  ['useListTable', 'list.md, primitives-and-tokens.md'],
+  ['usePagedTable', 'list.md'],
+  ['useResourceQuery', 'ADR 0014'],
 ])
 
 /** 금지된 추상화 이름을 선언하거나 import 하면 실패한다. 문자열·주석 속 언급은 대상이 아니다. */

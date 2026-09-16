@@ -24,7 +24,7 @@ Treat the committed OpenAPI snapshot as the declared server contract and keep ge
 - Only `features/*/api/**` and `src/api/**` import `src/api/generated/**`; `eslint.config.js` enforces this.
 - Routes, screens, and components never import Axios or generated operations.
 - `src/api/http/**` owns the Axios instance, authentication, locale header, cancellation, and transport-error normalization.
-- Feature API modules own query/mutation options, keys and API-only execution hooks. Workflow hooks own URL/form/selection decisions and post-mutation cache consequences (ADR 0011).
+- Feature API modules own query/mutation options, keys and API-only execution hooks. A mutation declares its cache consequence in `meta.invalidates`; screens run it with `useMutation` and own navigation and acknowledgement (ADR 0014).
 - File creation, relocation and API input type placement follow [folder-structure-contract](../folder-structure-contract/SKILL.md).
 - Generated files are never edited or committed.
 

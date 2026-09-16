@@ -141,7 +141,7 @@ anonymous ──sign-in 200 (accessToken 없음)──▶ challenge-pending ─�
 | 탭 간 자격증명 동기화 | `src/api/http/incident.ts:86-97` | 커버됨 |
 | roles/permission의 단일 소유자 | `src/app/config/navigation.ts:2` — 메뉴/권한 계약 미확인, 로컬 자리표시자 카탈로그 | 아예 없음 |
 | 계정 잠금(5회) 안내 분기 | `src/features/auth/screens/login/ui/LoginScreen.tsx:81-84`가 `unauthorized`·`business`를 한 문구로 접는다. 잠금 코드가 계약에 선언되지 않음 | 아예 없음 |
-| 30분 초과·잠금 alert의 dialog primitive | `.agents/skills/shared-ui-contract/references/dialogs.md:9`(`AlertDialog`) | 커버됨 |
+| 30분 초과·잠금 alert의 dialog primitive | `.agents/skills/shared-ui-contract/references/catalog.md#dialog:9`(`AlertDialog`) | 커버됨 |
 | 로그인 실패를 화면 안에 렌더 | `src/features/auth/screens/login/ui/LoginScreen.tsx:56-87` | 커버됨 |
 | 2차 인증 화면의 route·surface 조립, 코드 입력 폼·검증 | `.agents/skills/feature-contract/references/router.md` §Thin route, `docs/reference/zero-sol/02-auth.md:7` | feature 소유 |
 | 성립 후 착지 화면 결정("가장 좌측 메뉴") | 메뉴 권한 계약이 없어 판정 불가(`src/app/config/navigation.ts:2`, `notion/02-auth.md:13`) | 아예 없음 |

@@ -25,6 +25,20 @@ description: Use for any request to implement or change a screen, part of a scre
 종류가 갈리지 않으면 화면 이름→screen, 컴포넌트 이름→component, `use*`·유틸 이름→logic,
 `형태`·`구조`·`폴더`→structure. 이 표는 **읽을 계약을 고르는 분류**이지 완료 범위를 자르는 규칙이 아니다.
 
+### 종류별로 읽는 문서 — 하나씩
+
+문서 비용은 요청 크기에 맞춘다. 화면 하나는 그 역할의 계약 문서 **한 개**를 전부 읽고, 나머지는 필요한 절만 링크로 연다. 버튼 하나·로직 하나는 화면 문서를 열지 않는다.
+
+| 종류 | 먼저 읽는 것(전체) | 필요할 때만 여는 절 |
+| --- | --- | --- |
+| screen — 목록 | [list.md](../feature-contract/references/list.md) | [router 형태](../feature-contract/references/router.md#형태), [catalog](../shared-ui-contract/references/catalog.md) 의 해당 행, [mutations 시나리오 요청](../api-contract/references/mutations.md#시나리오-요청) |
+| screen — 상세 | [detail.md](../feature-contract/references/detail.md) | 위와 같음 |
+| screen — 등록·수정 | [form.md](../feature-contract/references/form.md) | 위와 같음 |
+| slice | 그 surface 가 속한 역할 문서의 **해당 절** | 그 절이 가리키는 catalog 행 |
+| component | [catalog.md](../shared-ui-contract/references/catalog.md) 의 그 행 | 계약을 바꾸면 [promotion.md](../shared-ui-contract/references/promotion.md), primitive 내부면 [primitives-and-tokens.md](../shared-ui-contract/references/primitives-and-tokens.md) |
+| logic | 실제 호출자 + catalog 의 그 행(있으면) | 공용화 여부면 [promotion.md](../shared-ui-contract/references/promotion.md), wire·cache 면 [api-contract](../api-contract/SKILL.md) 의 해당 reference |
+| structure | [folder-structure-contract](../folder-structure-contract/SKILL.md) | 역할별 `형태` 절 |
+
 요청이 여러 종류에 걸쳐도 임의로 하나만 남기지 않는다. 요청한 성공 조건에 필요한
 요청의 기본 범위는 요청 결과와 그것을 실제 수행하는 데 필요한 최소 연결이다.
 원장의 진입·실행·취소·다음 이동을 성공 조건에 넣고, 기존 구현을 먼저 재사용한다.
@@ -34,6 +48,8 @@ description: Use for any request to implement or change a screen, part of a scre
 데이터·query options·params·route 조립은 화면보다 먼저 기존 책임 위치에서 확정한다. 빈 route·stub는 목적지가 아니다.
 기본 범위를 줄이거나 넓히는 명시적 사용자 지시가 있으면 그 지시를 따른다.
 원문에도 없는 제품 동작·목적지·권한만 영향 요구와 해소 조건을 적고 그 부분을 보류한다. 확인된 나머지는 진행한다.
+
+**같은 feature 는 한 요청, 한 소유자다.** 한 feature 를 화면 단위로 병렬 분할하면 `model/`·`api/` 의 데이터 계약이 작업마다 갈린다. 데이터 계약(model 타입·query options·mutation 입력)을 먼저 한 곳에서 확정하고, 그 위에서 화면을 잇는다. 병렬로 나눌 수 있는 것은 서로 다른 feature 다.
 
 ## 화면인가 아닌가 — 2단계의 유일한 갈림
 
@@ -45,17 +61,17 @@ description: Use for any request to implement or change a screen, part of a scre
 화면 workflow 결정을 소유하는 headless hook은 파일 형태가 logic이어도 `render`다.
 서버 wire나 cache identity가 바뀌면 둘과 무관하게 [api-contract](../api-contract/SKILL.md)를 함께 조립한다.
 
-**공용 계약이 없는 control은 그것을 품은 surface의 workflow가 소유한다.** 버튼처럼 전용 reference가
+**공용 계약이 없는 control은 그것을 품은 surface의 workflow가 소유한다.** 버튼처럼 catalog 에 행이
 없는 control은 폼 안이면 form, 목록 툴바면 list, 상세 액션이면 detail의 절을 읽는다. control 이름만
 보고 [shared-ui-contract](../shared-ui-contract/SKILL.md)로 가지 않는다 — 그쪽은 그 control 자체의
-공용 계약(select·dialog·table 등 전용 reference가 있는 것)을 바꿀 때다.
+공용 계약(catalog 에 행이 있는 것)을 바꿀 때다.
 
 ## 7단계
 
 | 단계 | 읽는 것 | 공개하는 것 | 다음 | 실패 시 복귀 |
 | --- | --- | --- | --- | --- |
 | **1 요청 고정** | 요청 본문. 루트 기준은 [AGENTS.md](../../../AGENTS.md)이며 런타임이 주입하지 않았을 때만 연다 | 요구 번호, 관측 가능한 성공 조건, 현재 흐름·영향 범위, 편집 후보, 검증 방법 | 2 | 요청 오해·새 요구 → **1** |
-| **2 라우팅·근거** | `render` 또는 `nonrender` → 제품 값 변경이면 [제품 포인터](../../../docs/reference/product.json)의 필요한 원장·원문과 연결 목적지, 아니면 호출자·설치 타입·가까운 테스트 → 책임에 맞는 계약 절. 신규 조회는 [query-cache](../api-contract/references/query-cache.md#서버-연결-전후의-책임)의 단일 raw owner를 먼저 확정 | 확인/추론/가정/미확인, 연결 범위, 계약 `채택 / 수정 / 제외` | 3 | 종류 오판 → **1**, 접근·제품·wire 부족 또는 책임 오판 → **2** |
+| **2 라우팅·근거** | `render` 또는 `nonrender` → 제품 값 변경이면 [제품 포인터](../../../docs/reference/product.json)의 필요한 원장·원문과 연결 목적지, 아니면 호출자·설치 타입·가까운 테스트 → 위 종류별 표의 계약 문서. 신규 조회는 [query-cache](../api-contract/references/query-cache.md#서버-연결-전후의-책임)의 단일 raw owner를 먼저 확정 | 확인/추론/가정/미확인, 연결 범위, 계약 `채택 / 수정 / 제외` | 3 | 종류 오판 → **1**, 접근·제품·wire 부족 또는 책임 오판 → **2** |
 | **3 설계** | 2의 근거, 변경 경계 코드, 설치된 버전의 타입 | 호출 흐름, 단일 상태 소유자, 재사용 근거, 파일·API·cache 영향, 실패·복구, vertical slice, 검사 계획 | 4 | 근거 부족 → **2**, 범위가 바뀌면 → **1**에서 확인 |
 | **4 요구 대조** | 1의 성공 조건 + 3의 설계 | 요구별 `충족 / 불충족 / 다르게 설계 / 미확인`과 근거. 불필요한 파일·계층 제거 | 5 | 요청 오해 → **1**, 근거 오류 → **2**, 설계 누락 → **3** |
 | **5 구현** | 변경 지점, 가까운 호출자·테스트, 선택한 reference | 최소 코드 + 소유자 옆 테스트 | 6 | 계약·제품 사실 발견 → **2**, 소유권·흐름 → **3** |
@@ -88,7 +104,7 @@ description: Use for any request to implement or change a screen, part of a scre
 ### 도달 상태
 
 rubric의 행 판정과 별개로, 보고는 이 요청이 어디까지 실측됐는지를 아래 네 단어 중 하나로 말한다.
-시나리오 카드·mutation-actions·ADR이 이 어휘를 쓴다. 상태는 검증된 사실을 말하는 단어이지 새 산출물
+시나리오 카드·[mutations](../api-contract/references/mutations.md#시나리오-요청)·ADR이 이 어휘를 쓴다. 상태는 검증된 사실을 말하는 단어이지 새 산출물
 요구가 아니며, component·logic·structure에는 화면 상태 기계를 씌우지 않고 각자의 요구 증거로 닫는다.
 
 | 상태 | 뜻 |
@@ -126,7 +142,7 @@ URL·상태까지)다. fixture·mock은 실제 backend 수용을 증명하지 �
 | 표 ↔ 산문 ↔ 판정 문서 충돌 | 판정 문서 + 원장 셀. 답 없으면 사용자 질문 |
 | 제품 사실 부재 | 사용자 질문. 그 경로는 답 전까지 구현하지 않는다 |
 | 계약 문장이 없거나 모호 | 해당 계약 skill의 reference. 도메인 이름 소비자 표는 만들지 않는다 |
-| 공용 semantics 드리프트 | [ADR 0009](../../../docs/decisions/0009-shared-boundaries.md) + shared-ui-contract |
+| 공용 semantics 드리프트 | [ADR 0014](../../../docs/decisions/0014-single-screen-shape.md) + shared-ui-contract |
 
 소유자가 없는 차이는 새 정본을 만들지 말고 보고에 남긴다.
 
@@ -134,5 +150,5 @@ URL·상태까지)다. fixture·mock은 실제 backend 수용을 증명하지 �
 
 - 이 루프는 의미를 증명하지 않는다. 기계가 잡는 것은 타입·lint·테스트·`contracts:check`이고,
   요구 해석·범위 관련성·단순성·공용화 판단·"없다"의 직접 확인은 3~7단계의 대조와 독립 검토가 본다.
-- 계약 skill은 **이번 변경에 해당하는 절만** 읽는다. 전체를 읽는 것이 기본값이 아니다.
+- 계약 skill은 **이번 변경에 해당하는 절만** 읽는다. 전체를 읽는 것이 기본값이 아니다 — 위 종류별 표가 예외(화면 하나 = 역할 문서 하나)를 정한다.
 - 도구가 원문을 잘라 내거나 거부를 성공 종료로 되돌릴 수 있다. 빈 출력은 부재가 아니라 미확인이다.

@@ -41,7 +41,7 @@
 - 관측 사실에는 시점과 방법을 밝힌다. 저장소 밖 경로로 Markdown 링크를 걸지 않는다.
 - 확인과 추론을 구분한다. 제품 정책은 Figma·Notion 원문과 사용자 확정이 근거다. 격리된 리허설
   스냅샷은 리허설 API의 동작만 증명하며 ZERO PLUS+의 제품 정책이나 신규 서버 계약을 확정하지 않는다.
-- 시나리오의 상태 어휘와 정의는 [도달 상태](../../../.agents/skills/screen-loop/SKILL.md#도달-상태), 상태별 관찰 범위는 [mutation-actions.md](../../../.agents/skills/feature-contract/references/mutation-actions.md#시나리오-상태와-관찰-범위), API 연결 전 실행은 같은 문서의 [시나리오 요청](../../../.agents/skills/feature-contract/references/mutation-actions.md#api-연결-전-시나리오-요청)이 소유한다. 각 카드는 적용 상태와 실제 관찰 증거를 기록하며, 문서 대조·요청 직전 실행·실제 서버 성공을 구분한다.
+- 시나리오의 상태 어휘와 정의는 [도달 상태](../../../.agents/skills/screen-loop/SKILL.md#도달-상태), 상태별 관찰 범위는 [mutations.md](../../../.agents/skills/api-contract/references/mutations.md#시나리오-상태와-관찰-범위), API 연결 전 실행은 같은 문서의 [시나리오 요청](../../../.agents/skills/api-contract/references/mutations.md#시나리오-요청)이 소유한다. 각 카드는 적용 상태와 실제 관찰 증거를 기록하며, 문서 대조·요청 직전 실행·실제 서버 성공을 구분한다.
 
 ## 현재 카드
 

@@ -75,13 +75,11 @@ src/shared/       도메인·서버 계약을 모르는 UI와 순수 공용 코�
 | `.agents/skills/screen-loop/` | 구현 요청의 요구 고정·증거 선택·설계·구현·검증·복귀 지점. 범위가 정해지기 전에 읽는 진입 skill |
 | `.agents/skills/{folder-structure-contract,api-contract,feature-contract,shared-ui-contract}/` | 반복 구현 절차의 정본. 편집 범위가 정해진 뒤 필요한 reference만 읽는다 |
 | `docs/decisions/` | 결정 이유·대안·상태·재검토 조건을 보존하는 ADR |
-| [`docs/decisions/0009-shared-boundaries.md`](docs/decisions/0009-shared-boundaries.md) | 목록 공용화의 결정과 provisional 검증 상태. 구현법은 연결된 Skill reference가 소유한다 |
-| [`docs/decisions/0010-form-boundaries.md`](docs/decisions/0010-form-boundaries.md) | 등록·수정 공용화의 결정과 provisional 검증 상태. 0009는 목록·필터만 소유한다 |
-| [`docs/decisions/0011-detail-data-and-update-history-boundaries.md`](docs/decisions/0011-detail-data-and-update-history-boundaries.md) | 상세 조회 상태 판정, API 소비 계층(API-only 실행과 workflow 후속 처리 분리), 업데이트 이력 2층 계약 |
+| [`docs/decisions/0014-single-screen-shape.md`](docs/decisions/0014-single-screen-shape.md) | 목록·상세·등록/수정이 모든 도메인에서 한 형태를 갖는 이유와 공용 경계. 사용법은 feature-contract 의 list·detail·form, 단위 계약은 shared-ui-contract 의 catalog 가 소유한다 |
 | [`docs/reference/`](docs/reference/) | Figma 등 비규범적 관찰 증거. 그 자체로 구현 계약이 되지 않는다 |
 | [`openapi/README.md`](openapi/README.md) | 현재 snapshot의 사용법·금지 사항·검증 명령. 채택 이유와 폐기 조건은 ADR 0001이 소유한다 |
 
-활성 ADR은 번호 순서가 아니라 관련 작업의 Skill·README·다른 ADR에서 진입한다. 인증 토큰 결정(ADR 0006)은 api-contract `auth-session.md`, primitive 선택(ADR 0008)은 shared-ui-contract `disclosure-sections.md`가 연결한다.
+활성 ADR은 번호 순서가 아니라 관련 작업의 Skill·README·다른 ADR에서 진입한다. 인증 토큰 결정(ADR 0006)은 api-contract `auth-session.md`, primitive 선택(ADR 0008)은 shared-ui-contract `primitives-and-tokens.md`가 연결한다.
 
 `CLAUDE.md`와 `.github/copilot-instructions.md`는 런타임 포인터일 뿐이며 규칙을 복제하지 않는다.
 

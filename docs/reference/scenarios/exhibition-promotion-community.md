@@ -55,17 +55,17 @@ form과 file workflow가 소유한다. `[확인]`
 
 작성자 검색은 table composition kind E다. 검색 draft와 candidate는 popup local이고, 확인할 때만 parent
 field에 commit하며 취소·닫기는 폐기한다. parent URL은 바꾸지 않는다
-([table-composition.md](../../../.agents/skills/feature-contract/references/table-composition.md):15,19,24). PUSH의
+([list.md](../../../.agents/skills/feature-contract/references/list.md#collections-elsewhere):15,19,24). PUSH의
 대상 영역에 보이는 Tabs는 shared 후보를 유지하되 tab 종류·회원 cardinality는 feature가 소유한다. `[추론]`
 
 ## 5. 우리 공용 계약과의 대조
 
 | 요구 | 현재 계약 | 판정 |
 | --- | --- | --- |
-| 기간 필터 | `PeriodField` 구현 | 채택 — [filter-fields.md](../../../.agents/skills/shared-ui-contract/references/filter-fields.md):11,19 |
+| 기간 필터 | `PeriodField` 구현 | 채택 — [catalog.md](../../../.agents/skills/shared-ui-contract/references/catalog.md#filter):11,19 |
 | 업로드·제거 | 파일 범위·선행조건·payload는 feature 소유 | 커버됨 — [file-workflow.md](../../../.agents/skills/feature-contract/references/file-workflow.md):3-13 |
-| 행 안 상태 action | column renderer와 action은 feature 소유 | 커버됨 — table-composition.md:28 |
-| 작성자 popup 목록 | kind E local draft/candidate/confirm/cancel | 커버됨 — table-composition.md:15,19 |
+| 행 안 상태 action | column renderer와 action은 feature 소유 | 커버됨 — list.md:28 |
+| 작성자 popup 목록 | kind E local draft/candidate/confirm/cancel | 커버됨 — list.md:15,19 |
 | PUSH 대상 tab | 다섯 shared 후보 중 `Tabs` | 후보 유지 — [primitives-and-tokens.md](../../../.agents/skills/shared-ui-contract/references/primitives-and-tokens.md):21 |
 | 행 클릭 상세 | 다섯 shared 후보 중 행 활성화 | 후보 유지 — primitives-and-tokens.md:23 |
 | 값 없음 `-` | 다섯 shared 후보 중 빈 값 표현 | 후보 유지 — primitives-and-tokens.md:25 |

@@ -9,14 +9,12 @@ import { basename, join, relative, resolve } from 'node:path'
  */
 export const SHAPE_SECTIONS = {
   detailRoute: '.agents/skills/feature-contract/references/router.md#형태',
-  sorting: '.agents/skills/feature-contract/references/list-workflow.md#sorting',
-  list: '.agents/skills/feature-contract/references/list-workflow.md#형태',
+  sorting: '.agents/skills/feature-contract/references/list.md#sorting',
+  list: '.agents/skills/feature-contract/references/list.md#형태',
 }
 
-/** 리허설 운영자 목록은 서버 어휘 ASC/DESC 를 model/manager-sort.ts 에서 옮기므로 headerSortDirection('asc'|'desc') 을 받을 수 없다. */
-export const SORT_MAPPING_EXCEPTIONS = [
-  { file: 'src/features/managers/screens/list/ui/manager-columns.tsx', until: '리허설 계약이 폐기되거나 서버 어휘가 asc/desc 로 바뀐다' },
-]
+/** 서버 정렬 어휘가 asc/desc 가 아니라 headerSortDirection 을 바로 받을 수 없는 컬럼 파일. 지금은 없다. */
+export const SORT_MAPPING_EXCEPTIONS = [] // { file: 'src/features/<domain>/screens/<entity>-list/ui/<entity>-list-columns.tsx', until: '<해소 조건>' }
 
 const withoutComments = (source) => source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:'"])\/\/.*$/gm, '$1')
 

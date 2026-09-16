@@ -1,62 +1,59 @@
 # Shared ownership and promotion
 
-Read this file only when deciding whether a feature UI composition or shared pattern should enter, remain in, narrow within, or leave `shared/ui`. Source-owned primitive creation and shared logic have separate references.
+Read this file only when deciding whether a feature UI composition, state mechanic, or pure utility should enter, remain in, narrow within, or leave `src/shared` (`ui`, `model`, `lib`) or `src/api`. The current shared set and its contracts are listed in [catalog.md](catalog.md); this file owns the decision procedure.
 
 ## Admission test
 
-One use stays feature-local. Two uses are compared. A third stable use starts review; it does not guarantee promotion. An explicitly approved reference-project pattern may start provisional shared only when the current screen needs it. Promote other code only when all are true:
+One use stays feature-local. Two uses are compared. A third stable use starts review; it does not guarantee promotion. Promote only when all are true:
 
-- semantics, interaction lifecycle, ownership, and failure behavior match
+- semantics, interaction lifecycle, ownership, and failure behavior match across the compared callers
 - the public API contains no domain type, server DTO, Query, Router, permission, or mutation policy
-- no resource/entity switch, domain mode, schema injection, or callback override is needed. An opaque generic — a schema type parameter the hook never reads, a `run(values)` callback, a pure classifier result, a completion callback — is not schema injection or a callback override: the hook learns no field, DTO, endpoint, or destination from it (구조적 필드 오류/DOM focus 연결, ADR 0010)
-- one implementation reduces observed change cost or defect risk
+- no resource/entity switch, domain mode, schema injection, or callback override is needed. An opaque generic — a schema type parameter the hook never reads, a `run(values)` callback, a pure classifier result, a completion callback, a `resetKey` string — is not schema injection: the unit learns no field, DTO, endpoint, or destination from it
+- one implementation reduces observed change cost or defect risk (a repeated defect, a transition rewritten in every consumer, an accessibility invariant that was missed once)
 
-Figma repetition counts only when semantics, state transitions, and failure behavior are legible and match. It may establish a documented contract before three code uses; it does not automatically authorize a component. Visual similarity and anticipated reuse are not evidence.
+Visual similarity, anticipated reuse, and a mechanical third occurrence are not evidence. Design repetition counts only when semantics, state transitions, and failure behavior are legible and match; it may establish a documented contract before code uses, never a component by itself. The target inventory located through `docs/reference/product.json` is evidence about behavior, not a second code consumer.
 
-The target inventory located through `docs/reference/product.json` is a third evidence type: Figma frames prove UI composition and static states, Notion Feature sentences prove behavior and policy. An identical sentence repeated across domains strengthens a provisional contract, but it never replaces the second code consumer. An inventory-only candidate may be recorded in the judgment document and `primitives-and-tokens.md` with its evidence and feature-owned boundary, but it is not a named API or implementation commitment.
+A shared unit may own confirmed product-generic copy in the `shared` namespace when that wording is part of its interaction contract (error/retry/trace labels, the save confirm/acknowledge pair, the alert title). A sentence that carries workflow meaning (not-searched, empty, a domain confirmation) stays feature copy.
 
-A pattern may own confirmed product-generic status or action copy in the `shared` namespace when that wording
-is part of the pattern's interaction contract. For example, `ListResult` owns shared error/retry/trace labels,
-while its search-before and no-result messages remain feature-owned because they carry workflow meaning.
-
-The completion report must answer every admission item, not return only a verdict word:
+The completion report answers every admission item, not a verdict word:
 
 | admission item | required evidence |
 | --- | --- |
 | semantics, lifecycle, ownership, failure behavior match | compared call sites and the matching/differing transitions |
 | public API has no domain, DTO, Query, Router, permission, or mutation policy | the smallest domain-free input/output and the feature-owned remainder |
-| no resource switch, schema injection, or callback override | required variation and why an opaque generic, pure classifier, `run(values)`, or completion callback does not teach shared domain facts |
-| implementation reduces observed cost or risk | concrete duplication, change cost, or defect evidence |
+| no resource switch, schema injection, or callback override | the required variation and why an opaque generic does not teach shared a domain fact |
+| implementation reduces observed cost or risk | the concrete duplication, change cost, or defect |
 
-If any row is unanswered, keep the code feature-local. A verdict such as `feature-local` or `provisional shared` alone is not a completed promotion report. Implementation-loop N5 treats an unanswered row or a single-caller widening as E6, not as a completed screen.
+If any row is unanswered, keep the code feature-local.
 
-## Reference-project lifecycle
+## Shared logic
 
-A bootstrap contract remains provisional until a second real workflow validates the same semantics, lifecycle, and failure behavior. The first consumer is a consumer, not the owner or sufficient confirmation.
+A focused shared state mechanic owns one domain-neutral algebra: draft preservation while a caller identity is equal, period preset/custom transitions from explicit timezone inputs, pending keyword add/remove/trim, page-scoped row selection, one rejection message, the confirm → run → close lifecycle. The caller owns identity policy, field/enum meaning, defaults, submit/reset destinations, navigation, Query enablement, and API mapping. Navigation ports, query options, resource modes, or schema configs are demotion signals.
 
-For each candidate:
+A pure utility may compact values, resolve declared defaults, normalize a pair, format primitive values, or map structurally generic options only when it does not broaden keys or invent server semantics. Keep it local when arguments grow to absorb domain differences.
 
-1. name evidence and current consumer
-2. state the smallest public contract and feature-owned remainder
+Before promoting, compare the real callers on input differences, state transitions, failure/recovery, and owner. Merge same-role copies in the nearest feature owner first; only a domain-free mechanic moves to shared. A fixture's search/sort/page calculation imitates the server and disappears with the real API — tidy it inside the mock and do not count it as shared evidence. Responsibilities that survive connection (query outcome judgment, selection lifetime, confirmation value holding) are compared against the existing catalog first. Report the compared consumers and the differences left outside; "no duplication" holds only inside the compared range.
+
+## Lifecycle
+
+A unit stays provisional until a second real workflow validates the same semantics, lifecycle, and failure behavior. The first consumer is a consumer, not the owner.
+
+1. name the evidence and the current consumer
+2. state the smallest public contract and the feature-owned remainder
 3. implement only the surface the current consumer uses
 4. compare the next real consumer
 5. confirm, narrow, or demote from observed differences
 
-Do not count an isolated non-product endpoint or a second visual instance as another implementation consumer. Keep current list-candidate status in ADR 0009 and form status in ADR 0010; this reference owns the decision procedure, not inventories or last-green reports.
+When the request names a shared unit rather than a screen, the same procedure applies from the other direction: the unit's focused tests are the contract, completeness is those tests plus every existing consumer still passing, and a caller's need never widens the contract on its own — that is step 4 with a new consumer. Implement only inside the unit's ownership; absorbing anything the catalog assigns to the feature is a failure even when a caller asks for it.
 
-When the request itself names a shared contract rather than a screen, the same procedure applies from the
-other direction. The bundle's focused tests are the contract, so completeness is those tests plus every
-existing consumer still passing, not a count of facts. Implement only inside `ownership.shared`; absorbing
-anything the bundle assigns to the feature is a failure even when a caller asks for it. If the request
-cannot be satisfied without widening the public contract, that is step 4 above with a new consumer, not
-implementation: compare it and then confirm, narrow, or demote. A single caller's need never widens a
-contract on its own.
+Consequential selection (a select whose change needs confirmation before it commits) is not a shared control feature: keep the committed value unchanged, hold one local candidate, open `ConfirmDialog`, commit through the caller on confirm, discard on cancel. Shared controls expose controlled values and never open workflow dialogs themselves.
 
 ## Demotion signals
 
 - domain `mode`, resource descriptor, schema injection, or permission branch
 - callback overrides added for exceptional callers
 - Router, Query, mutation, endpoint, or server DTO knowledge (an injected `run` promise or a domain-free failure vocabulary is not that knowledge)
-- different failure lifecycle hidden behind configuration
+- a different failure lifecycle hidden behind configuration
+- a unit whose only consumer is its own test and for which no consumer is expected
 
-Return the differing workflow to feature code and narrow the shared contract instead of growing an option framework.
+Return the differing workflow to feature code and narrow the shared contract instead of growing an option framework. Delete a unit whose consumers are gone and none is expected; a `Form*Field` adapter with no consumer is the exception the product owner keeps for the declared input set. The reasons behind the current shared set are recorded in [ADR 0014](../../../../docs/decisions/0014-single-screen-shape.md).

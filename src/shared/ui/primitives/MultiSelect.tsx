@@ -4,7 +4,7 @@ import { Checkbox } from "./Checkbox";
  * Owns: controlled multi selection, first-label +N trigger and removable tokens.
  * Rejects: search/domain.
  * API: values, onValueChange, options.
- * Boundary: explicit MultiSelect contract (shared-ui-contract `multiselect.md`).
+ * Boundary: explicit MultiSelect contract (shared-ui-contract `catalog.md` Primitives).
  */
 export function MultiSelect({
   values,
