@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
-  managerListSearchSchema,
-  resolveManagerListSearch,
-} from "@/features/managers/screens/list/model/manager-list-search";
-import { managerCanonicalSearchSchema } from "@/features/managers/screens/list/model/search-schema";
+  managerListSearch,
+  toManagerListRequest,
+} from "@/features/managers/screens/manager-list/model/manager-list-search";
+import { readManagerListPage } from "@/features/managers/fixtures/managers";
 import { memberCanonicalSearchSchemas } from "@/features/members/screens/list/model/search-schema";
 import {
   accessSearchSchema,
@@ -15,12 +15,10 @@ import {
   resolveMemberRecordSearch,
 } from "@/features/members/mechanics/record-list/model/member-record-search";
 import { performanceSearchSchema } from "@/features/performances/screens/list/model/search-schema";
-import { readManagerDirectoryPage } from "@/features/managers/fixtures/directory-page";
 import { accessData } from "@/features/members/fixtures/record-pages";
 
 const schemas = [
-  ["manager", managerListSearchSchema, true],
-  ["rehearsal manager", managerCanonicalSearchSchema, true],
+  ["manager", managerListSearch.canonical, true],
   ...Object.entries(memberCanonicalSearchSchemas).map(
     ([name, schema]) => [name, schema, true] as const,
   ),
@@ -62,19 +60,18 @@ describe.each(schemas)("%s closed search", (_name, schema, explicit) => {
   );
 });
 
-it("uses instant comparison in the manager URL-to-fixture workflow", () => {
-  const search = resolveManagerListSearch(
-    managerListSearchSchema.parse({
-      startDateTime: "2026-08-01T00:00:00Z",
-      endDateTime: "2026-08-01T00:00:00.100Z",
-    }),
+it("uses instant comparison in the manager URL-to-fixture workflow", async () => {
+  const request = toManagerListRequest(
+    managerListSearch.resolve(
+      managerListSearch.canonical.parse({
+        startDateTime: "2026-08-01T00:00:00Z",
+        endDateTime: "2026-08-01T00:00:00.100Z",
+      }),
+    ),
   );
-  expect(readManagerDirectoryPage(search).total).toBeGreaterThan(0);
+  expect((await readManagerListPage(request)).total).toBeGreaterThan(0);
   expect(
-    readManagerDirectoryPage({
-      ...search,
-      startDateTime: "2026-08-01T00:00:00.001Z",
-    }).total,
+    (await readManagerListPage({ ...request, startDateTime: "2026-08-01T00:00:00.001Z" })).total,
   ).toBe(0);
 });
 

@@ -9,8 +9,6 @@
   "title": "Managers",
   "detailTitle": "Manager details",
   "detail": {
-    "error": "Could not load manager information.",
-    "notFound": "Manager not found.",
     "section": "Manager information",
     "type": "Type",
     "id": "ID",
@@ -28,22 +26,12 @@
     "historyChange": "Change",
     "historyManager": "Manager",
     "historyEmpty": "There is no update history.",
-    "changeType": {
-      "C": "Created",
-      "U": "Updated",
-      "D": "Deleted",
-      "unknown": "-"
-    },
     "emptyValue": "-",
     "historyUnknownField": "Other field changed",
-    "historyLine": {
-      "change": "{{field}}: {{before}} > {{after}}",
-      "unsupported": "{{field}}: value cannot be displayed"
-    },
-    "historyValue": {
-      "true": "Yes",
-      "false": "No"
-    }
+    "historyLine": "{{field}}: {{before}} > {{after}}",
+    "historyCreated": "Created",
+    "historyUpdated": "Updated",
+    "historyDeleted": "Deleted"
   },
   "search": "Search",
   "reset": "Reset",
@@ -65,35 +53,6 @@
     "endDate": "End date",
     "calendar": "Open calendar"
   },
-  "filterOptions": {
-    "createdAt": "Created at",
-    "lastAccessAt": "Last access",
-    "id": "ID",
-    "name": "Name",
-    "phone": "Phone",
-    "organization": "Organization",
-    "permission": "Permission",
-    "web": "WEB"
-  },
-  "status": {
-    "awaiting": "Awaiting approval",
-    "active": "Approved",
-    "locked": "Locked",
-    "inactive": "Rejected",
-    "unknown": "-"
-  },
-  "columns": {
-    "type": "Type",
-    "organization": "Organization",
-    "id": "ID",
-    "name": "Name",
-    "phone": "Phone",
-    "permission": "Permission",
-    "registrationRoute": "Registration route",
-    "status": "Account status",
-    "createdAt": "Created at",
-    "updatedAt": "Last access"
-  },
   "bulk": {
     "field": "Change field",
     "select": "Select",
@@ -110,9 +69,7 @@
     "previous": "Previous",
     "next": "Next",
     "notSearched": "Enter search criteria, then select Search.",
-    "error": "Could not load the list.",
     "empty": "No matching results.",
-    "retry": "Retry",
     "selectAll": "Select the current page",
     "selectRow": "Select {{id}}"
   },
@@ -122,7 +79,6 @@
     "section": "Manager information",
     "type": "Type",
     "permission": "Permission",
-    "agency": "Agency",
     "id": "ID",
     "password": "Password",
     "passwordConfirm": "Confirm password",
@@ -137,14 +93,11 @@
     "phonePlaceholder": "Up to 20 characters",
     "emailPlaceholder": "3-100 characters",
     "organizationPlaceholder": "Up to 20 characters",
-    "agencyDescription": "Required when the type is Agency.",
     "createAction": "Add",
     "editAction": "Edit",
-    "loadError": "Could not load the manager to edit.",
     "errors": {
       "typeRequired": "Select a type.",
       "permissionRequired": "Select a permission.",
-      "agencyRequired": "Select an agency.",
       "id": "The ID must be 6-20 letters and digits.",
       "password": "The password must be 8-20 characters with at least 3 of upper case, lower case, digits and symbols.",
       "passwordConfirmRequired": "Confirm the password.",
@@ -190,7 +143,7 @@
     "withdrawalReasonError": "Enter a reason with at least 5 characters.",
     "passwordRequired": "Enter your password again."
   },
-  "scenarioSort": {
+  "fields": {
     "joinedAt": "Joined",
     "lastAccessAt": "Last access",
     "type": "Type",

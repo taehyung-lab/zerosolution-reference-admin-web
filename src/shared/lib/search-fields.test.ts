@@ -145,7 +145,8 @@ describe("search field declaration", () => {
       page: 2,
       searched: true,
     });
-    expect(gated.canonical.parse({ searched: false as never })).toEqual({});
+    // `false` is the reset: it wins over every other field and lands on the pre-search URL.
+    expect(gated.canonical.parse({ searched: false, status: "closed", page: 2 })).toEqual({});
     expect(gated.resolve({})).toMatchObject({ page: 1, searched: false });
     expect(gated.resolve({ searched: true, page: 3 })).toMatchObject({ page: 3, searched: true });
     expectTypeOf(gated.resolve({}).searched).toEqualTypeOf<boolean>();

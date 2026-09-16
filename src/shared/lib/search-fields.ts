@@ -67,7 +67,8 @@ export function defineSearchFields<const T extends Record<string, SearchField>>(
  * The same declaration for a list that waits for the user's first search. The URL carries a
  * `searched` marker: the empty URL is the pre-search state, any valid condition (even a default
  * written out) means a search happened, and committing writes the marker exactly once.
- * `resolve` exposes the marker as a boolean the screen passes to its query and controls.
+ * Committing `searched: false` returns to the pre-search URL whatever else is set — that is how
+ * reset works. `resolve` exposes the marker as a boolean the screen passes to its query and controls.
  */
 export function defineGatedSearchFields<const T extends Record<string, SearchField>>(
   fields: T & {
@@ -77,8 +78,9 @@ export function defineGatedSearchFields<const T extends Record<string, SearchFie
   },
 ) {
   const base = defineSearchFields(fields);
-  const schema = base.schema.extend({
-    searched: z.literal(true).optional().catch(undefined),
+  const schema = z.object({
+    ...base.schema.shape,
+    searched: z.boolean().optional().catch(undefined),
   });
   type Sparse = z.output<typeof schema>;
   type Full = ReturnType<typeof base.resolve> & { readonly searched: boolean };
@@ -87,13 +89,15 @@ export function defineGatedSearchFields<const T extends Record<string, SearchFie
     ...base,
     schema,
     resolve: (sparse: Sparse): Full => ({
-      ...base.resolve(sparse),
-      searched: sparse.searched === true,
+      ...base.resolve(sparse as z.output<typeof base.schema>),
+      searched: (sparse as { readonly searched?: boolean }).searched === true,
     }),
-    canonical: schema.transform(({ searched, ...rest }): Sparse => {
+    canonical: schema.transform((value): Sparse => {
+      const { searched, ...rest } = value as { readonly searched?: boolean } & Record<string, unknown>;
+      if (searched === false) return {} as Sparse;
       const valid = compactSearchValues(normalizeClosedInstantRange(rest));
-      if (searched !== true && Object.keys(valid).length === 0) return {};
-      return { ...omitSearchDefaults(valid, base.defaults), searched: true };
+      if (searched !== true && Object.keys(valid).length === 0) return {} as Sparse;
+      return { ...omitSearchDefaults(valid, base.defaults), searched: true } as Sparse;
     }),
   };
 }
