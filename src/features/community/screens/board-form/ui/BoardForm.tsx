@@ -2,7 +2,7 @@
  * 게시판 등록·수정 폼 — Figma 9.1.3 등록 / 9.1.3.1 Case / 9.1.4 수정 frame 의 `기본정보` 섹션을 화면 순서대로
  * 조립한다(2026-09-11 aside 실측, 원장 15행). 규칙(필수·기본값·cascade)은 스키마·기본값 파일이, 여기서는
  * 상위 값에 따른 하위 항목의 활성·초기화만 다룬다. 하위 항목의 `*`는 frame 대로 비활성일 때도 남는다(필수 여부는
- * 상위가 켤 때만 스키마가 검사). `유형 *`의 별표는 읽기 전용 FormTextField 가 받지 않아 그리지 않는다. dialog 는 폼이 렌더한다(form-workflow.md).
+ * 상위가 켤 때만 스키마가 검사). `유형 *`의 별표는 읽기 전용 FormTextField 가 받지 않아 그리지 않는다.
  */
 import { useState, type ReactNode } from 'react';
 import { useSelector } from '@tanstack/react-form';
@@ -22,14 +22,17 @@ import {
 } from '@/features/community/model/board';
 import { FormCancelButton } from '@/shared/ui/form/FormCancelButton';
 import { formFieldControlId } from '@/shared/ui/form/FormField';
+import { FormSaveFailureMessage } from '@/shared/ui/form/FormSaveDialogs';
 import { FormSelectField } from '@/shared/ui/form/FormSelectField';
 import { FormSubmitButton } from '@/shared/ui/form/FormSubmitButton';
 import { FormTextField } from '@/shared/ui/form/FormTextField';
+import type { useSaveForm } from '@/shared/ui/form/useSaveForm';
 import { SectionCard } from '@/shared/ui/layout/SectionCard';
 import { Button } from '@/shared/ui/primitives/Button';
 import { Input } from '@/shared/ui/primitives/Input';
-import type { BoardFormInput } from '../model/board-form-schema';
-import type { BoardInputForm } from './useBoardInputForm';
+import type { BoardFormInput, BoardFormValues } from '../model/board-form-schema';
+
+export type BoardSaveForm = ReturnType<typeof useSaveForm<BoardFormInput, BoardFormValues, 'info'>>;
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
@@ -44,18 +47,14 @@ function Group({ title, children }: { readonly title: string; readonly children:
 }
 
 export function BoardForm({
-  form,
-  onSubmit,
+  save,
   onCancel,
-  dialogs,
 }: {
-  readonly form: BoardInputForm['form'];
-  readonly onSubmit: () => void;
+  readonly save: BoardSaveForm;
   readonly onCancel: () => void;
-  /** 저장 확인·이탈 확인 dialog. 폼이 렌더해 blocker 만 있고 dialog 가 없는 상태를 만들지 않는다(form-workflow.md). */
-  readonly dialogs: ReactNode;
 }) {
   const { t } = useTranslation('community');
+  const { form } = save;
   const values = useSelector(form.store, (state) => state.values);
   const usageOptions = boardUsages.map((value) => ({ value, label: t(`board.values.usage.${value}`) }));
   const permissionOptions = boardPermissions.map((value) => ({ value, label: t(`board.values.permission.${value}`) }));
@@ -64,15 +63,16 @@ export function BoardForm({
 
   return (
     <>
-      {dialogs}
+      {save.dialogs}
       <form
         noValidate
         onSubmit={(event) => {
           event.preventDefault();
-          onSubmit();
+          void save.submit.run();
         }}
       >
-        <SectionCard title={t('board.form.section')} collapsible={false}>
+        {save.stage.kind === 'failed' ? <FormSaveFailureMessage failure={save.stage.root} /> : null}
+        <SectionCard title={t('board.form.section')} {...save.sections.sectionProps('info')}>
           <div className="space-y-6">
             <div className="grid gap-x-8 gap-y-4 md:grid-cols-2">
               {/* 유형은 두 frame 모두 읽기 전용 `일반`이다(원장 9행: 관찰된 유형이 하나). */}
@@ -255,8 +255,8 @@ export function BoardForm({
           </div>
         </SectionCard>
         <div className="mt-6 flex justify-center gap-2">
-          <FormSubmitButton pending={false} />
-          <FormCancelButton onClick={onCancel} />
+          <FormSubmitButton pending={save.submit.isPending} />
+          <FormCancelButton disabled={save.submit.isPending} onClick={() => save.guard.leave(onCancel)} />
         </div>
       </form>
     </>
@@ -275,7 +275,7 @@ function ManagerTitlesField({
   onChange,
   t,
 }: {
-  readonly form: BoardInputForm['form'];
+  readonly form: BoardSaveForm['form'];
   readonly disabled: boolean;
   readonly titles: readonly string[];
   readonly onChange: (titles: readonly string[]) => void;

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { boardCreateDefaults, toBoardSettings } from './board-form-defaults';
+import { boardCreateDefaults } from './board-form-defaults';
+import { toBoardSettings } from './board-form-request';
 import { boardFormFieldOrder, boardFormSchema } from './board-form-schema';
 
 const valid = {

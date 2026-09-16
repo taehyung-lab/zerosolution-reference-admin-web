@@ -34,11 +34,11 @@ describe('router 진입', () => {
   })
 
   it('로그인 뒤 돌아갈 경로에 원래 검색값을 보존한다', async () => {
-    const { router } = renderAt('/managers?periodType=UPDATED_AT')
+    const { router } = renderAt('/managers?periodType=lastAccessAt')
 
     await waitFor(() => expect(router.state.location.pathname).toBe('/login'))
     expect(router.state.location.search).toEqual({
-      redirect: '/managers?periodType=UPDATED_AT',
+      redirect: '/managers?periodType=lastAccessAt',
     })
   })
 
@@ -77,18 +77,17 @@ describe('router 진입', () => {
   it('역전된 Manager 기간만 URL에서 제거하고 다른 정상 검색값은 보존한다', async () => {
     setAccessToken('token-1')
     const { router } = renderAt(
-      '/managers?startDateTime=2026-09-01T00%3A00%3A00.000Z&endDateTime=2026-08-31T23%3A59%3A59.999Z&periodType=lastAccessAt&direction=asc',
+      '/managers?startDateTime=2026-09-01T00%3A00%3A00.000Z&endDateTime=2026-08-31T23%3A59%3A59.999Z&periodType=lastAccessAt&sortDirection=asc',
     )
 
     await waitFor(() =>
-      expect(router.state.location.href).toBe(
-        '/managers?periodType=lastAccessAt&direction=asc&searched=true',
-      ),
+      expect(router.state.location.search).toEqual({
+        periodType: 'lastAccessAt',
+        sortDirection: 'asc',
+        searched: true,
+      }),
     )
-    expect(router.state.location.search).toEqual({
-      periodType: 'lastAccessAt',
-      direction: 'asc',
-      searched: true,
-    })
+    expect(router.state.location.href).toContain('searched=true')
+    expect(router.state.location.href).not.toContain('startDateTime')
   })
 })

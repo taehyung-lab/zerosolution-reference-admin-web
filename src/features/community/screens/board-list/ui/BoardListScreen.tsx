@@ -1,7 +1,10 @@
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/shared/ui/layout/PageHeader';
-import { resolveBoardListSearch } from '../model/board-list-search';
-import type { BoardListSearch } from '../model/board-list-search';
+import {
+  boardListSearch,
+  type BoardListSearch,
+  type BoardListView,
+} from '../model/board-list-search';
 import { useBoardListData } from '../model/useBoardListData';
 import { useBoardListFilter } from '../model/useBoardListFilter';
 import { BoardListFilters } from './BoardListFilters';
@@ -10,8 +13,8 @@ import { useBoardListResult } from './useBoardListResult';
 
 /**
  * 9.1 게시판 목록. 조립만 하고 상태는 각 소유자에 둔다.
- * route 는 검증한 sparse search 를 넘기고 화면 경계에서 한 번 해소한다.
- * 모든 전이는 `onSearchChange` 한 곳으로 나간다.
+ * route 는 검증한 sparse search 를 넘기고 화면이 한 번 해소한다. 모든 URL 전이는 `commit` 한 곳으로
+ * 나가며 canonical 로 줄여 `onSearchChange` 에 넘긴다.
  */
 export function BoardListScreen({
   search: sparse,
@@ -25,11 +28,11 @@ export function BoardListScreen({
   readonly onCreate: () => void;
 }) {
   const { t } = useTranslation('community');
-  const search = resolveBoardListSearch(sparse);
-  const filter = useBoardListFilter(search, onSearchChange);
-  const { rows, total, totalPages, searched, isPending, isFetching, isError, trace, retry } =
-    useBoardListData(search);
-  const result = useBoardListResult(search, totalPages, onSearchChange);
+  const search = boardListSearch.resolve(sparse);
+  const commit = (next: BoardListView) => onSearchChange(boardListSearch.canonical.parse(next));
+  const filter = useBoardListFilter(search, commit);
+  const { rows, total, totalPages, ...data } = useBoardListData(search);
+  const result = useBoardListResult({ search, totalPages, commit });
 
   return (
     <section>
@@ -39,7 +42,7 @@ export function BoardListScreen({
       />
       <BoardListFilters filter={filter} />
       <BoardListResult
-        data={{ rows, searched, isPending, isFetching, isError, trace, retry }}
+        data={{ rows, ...data }}
         total={total}
         result={result}
         onActivate={onActivate}

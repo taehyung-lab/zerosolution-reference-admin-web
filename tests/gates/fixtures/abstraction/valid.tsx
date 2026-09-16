@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 
-export function ManagerApiListScreen() {
+export function ExampleListScreen() {
   const { t } = useTranslation('common')
   return <section>{t('title')}</section>
 }

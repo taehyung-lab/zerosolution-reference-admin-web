@@ -18,7 +18,7 @@
 
 ## 2. 상태와 전이
 
-2026-09-07 사용자 결정·현재 구현: 휴면·탈퇴·접속은 빈 URL에서 대기하며 검색 버튼은 `searched=true`와 기본값 아닌 조건을 남긴다. 유효한 소유 조건이 있는 직접 접근도 조회한다. 상담·소명은 빈 URL 진입·초기화 모두 즉시 조회하며 표식을 제거한다. 기본값 해석 전 검색 의도를 판정하고, 해석된 같은 값으로 필터·결과·Query·수신자 캐시를 연결한다. 탈퇴의 기간 생략은 경로와 무관하게 `joinedAt`이고 정렬은 `withdrawnAt`이다. 상세 규칙은 [list-workflow](../../../.agents/skills/feature-contract/references/list-workflow.md#state-and-url-lifecycle)가 소유한다.
+2026-09-07 사용자 결정·현재 구현: 휴면·탈퇴·접속은 빈 URL에서 대기하며 검색 버튼은 `searched=true`와 기본값 아닌 조건을 남긴다. 유효한 소유 조건이 있는 직접 접근도 조회한다. 상담·소명은 빈 URL 진입·초기화 모두 즉시 조회하며 표식을 제거한다. 기본값 해석 전 검색 의도를 판정하고, 해석된 같은 값으로 필터·결과·Query·수신자 캐시를 연결한다. 탈퇴의 기간 생략은 경로와 무관하게 `joinedAt`이고 정렬은 `withdrawnAt`이다. 상세 규칙은 [list-workflow](../../../.agents/skills/feature-contract/references/list.md#url)가 소유한다.
 
 Chromium `search-contract.spec.ts`에서 다섯 화면의 기본값 검색, 보기·정렬 후 재검색, 초기화 2회, 뒤로/앞으로, 잘못된 URL 복구와 표식 변경을 실측했다(2026-09-07). 명시 검색 3종은 새로고침 복원도 확인했다. 예시 Query 응답으로 검증한 시나리오 구현이며 실 API 완료·신규 제품 이관 검증은 아니다.
 
@@ -51,24 +51,24 @@ Chromium `search-contract.spec.ts`에서 다섯 화면의 기본값 검색, 보�
 ## 4. 처음부터 알았다면 이렇게 설계한다
 
 목록 골격만 공유하고 toolbar action·필터·컬럼·선택 용도는 각 feature가 소유한다. 선택은 현재 page의 안정
-ID만 가지며 검색 조건·page·정렬 변경 때 지운다([bulk-actions.md](../../../.agents/skills/feature-contract/references/bulk-actions.md):3-9). `[확인]`
+ID만 가지며 검색 조건·page·정렬 변경 때 지운다([list.md](../../../.agents/skills/feature-contract/references/list.md#selection-and-actions):3-9). `[확인]`
 
 다운로드 범위는 default 미선택이다. `선택한 항목`은 행 검증 뒤 ID 입력을, `검색결과 전체`는 커밋된
 검색 조건을 확정한다. 파일 형식·payload·권한은 feature와 신규 계약이 정할 때까지 만들지 않는다. `[추론]`
 
 소명 처리 결과는 상세 안의 독립 인라인 폼이다. 통보 전에는 필드·검증·dirty를 폼이 소유하고,
 `SectionCard`와 form adapter를 채택하되 확인/완료 쌍을 전제한 새 workflow 훅은 만들지 않는다
-([form-workflow.md](../../../.agents/skills/feature-contract/references/form-workflow.md):19,31). 통보 후에는 같은 서버
+([form.md](../../../.agents/skills/feature-contract/references/form.md):19,31). 통보 후에는 같은 서버
 상태가 필드 read-only와 저장 action 부재를 결정한다. `[추론]`
 
 ## 5. 우리 공용 계약과의 대조
 
 | 요구 | 현재 계약 | 판정 |
 | --- | --- | --- |
-| 목록별 action·선택 수명 | 화면/feature adapter가 소유 | 커버됨 — `bulk-actions.md:3-9` |
+| 목록별 action·선택 수명 | 화면/feature adapter가 소유 | 커버됨 — `list.md:3-9` |
 | 다운로드 선택/전체 | 범위·선행조건·request mapping은 feature 소유 | 커버됨 — [file-workflow.md](../../../.agents/skills/feature-contract/references/file-workflow.md):3-13 |
-| 다중선택 필터 | `CheckboxTree(emptyMeansAll)` 구현 | 채택 — [list-workflow.md](../../../.agents/skills/feature-contract/references/list-workflow.md#multi-select-group) |
-| 소명 인라인 폼·접이식 섹션 | form adapter와 `SectionCard(collapsible)` 구현 | 채택 — form-workflow.md:19,28 |
+| 다중선택 필터 | `CheckboxTree(emptyMeansAll)` 구현 | 채택 — [list.md](../../../.agents/skills/feature-contract/references/list.md#filter) |
+| 소명 인라인 폼·접이식 섹션 | form adapter와 `SectionCard(collapsible)` 구현 | 채택 — form.md:19,28 |
 | 회원접속 header 도움말 | 다섯 shared 후보 중 `Tooltip` | 후보 유지 — [primitives-and-tokens.md](../../../.agents/skills/shared-ui-contract/references/primitives-and-tokens.md):22 |
 | 행 클릭 조회 | 접근성 있는 행 활성화는 다섯 shared 후보 중 하나 | 후보 유지 — [primitives-and-tokens.md](../../../.agents/skills/shared-ui-contract/references/primitives-and-tokens.md):23 |
 | 빈 값 `-` | 표현만 소유하는 다섯 shared 후보 중 하나 | 후보 유지 — primitives-and-tokens.md:25 |
@@ -79,4 +79,4 @@ ID만 가지며 검색 조건·page·정렬 변경 때 지운다([bulk-actions.m
 2. 소명 결과를 통보 후 잠그는 권위 상태와 통보 호출에 필요한 입력.
 3. 다운로드 형식, 선택/전체 request 모양과 권한 식별자.
 
-2026-09-07 기간 계약 확장: 확정 검색은 양끝을 요구하며 한쪽 결손·불량·역전은 양쪽을 제거한다. 입력 중 draft는 한쪽을 보존한다. 공통 실행 규칙은 [list-search-contract](../../../.agents/skills/feature-contract/references/list-search-contract.md#기간-입력과-확정-경계), 전체 목록의 직접 입력·mock 비교 회귀는 `src/test/workflows/closed-search.test.ts`가 소유한다.
+2026-09-07 기간 계약 확장: 확정 검색은 양끝을 요구하며 한쪽 결손·불량·역전은 양쪽을 제거한다. 입력 중 draft는 한쪽을 보존한다. 공통 실행 규칙은 [list-search-contract](../../../.agents/skills/feature-contract/references/list.md#url), 전체 목록의 직접 입력·mock 비교 회귀는 `src/test/workflows/closed-search.test.ts`가 소유한다.

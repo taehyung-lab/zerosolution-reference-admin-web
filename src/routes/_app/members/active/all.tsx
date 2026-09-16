@@ -1,54 +1,44 @@
-import { canonicalSearchGuard } from "@/app/router/canonical-search-guard";
-import { requestMemberBulkChange } from "@/features/members/screens/list/model/member-list-requests";
-import {
-  allMemberCanonicalSearchSchema,
-  type MemberRouteSearch,
-} from "@/features/members/screens/list/model/search-schema";
-import { useMemberListRecipients } from "@/features/members/screens/list/model/useMemberListRecipients";
-import { AllMemberListScreen } from "@/features/members/screens/list/ui/MemberListScreen";
-import { requestMessageSend } from "@/features/messaging/screens/compose/model/message-request";
-import { useMessageComposer } from "@/features/messaging/screens/compose/model/useMessageComposer";
-import { MessageComposerDialog } from "@/features/messaging/screens/compose/ui/MessageComposerDialog";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute } from '@tanstack/react-router';
+import { canonicalSearchGuard } from '@/app/router/canonical-search-guard';
+import { memberListDefinitions } from '@/features/members/screens/member-list/model/member-list-definition';
+import { memberListSearch } from '@/features/members/screens/member-list/model/member-list-search';
+import { useMemberListRecipients } from '@/features/members/screens/member-list/model/useMemberListRecipients';
+import { MemberListScreen } from '@/features/members/screens/member-list/ui/MemberListScreen';
+import { requestMessageSend } from '@/features/messaging/screens/compose/model/message-request';
+import { useMessageComposer } from '@/features/messaging/screens/compose/model/useMessageComposer';
+import { MessageComposerDialog } from '@/features/messaging/screens/compose/ui/MessageComposerDialog';
 
-export const Route = createFileRoute("/_app/members/active/all")({
-  validateSearch: allMemberCanonicalSearchSchema,
-  beforeLoad: canonicalSearchGuard(allMemberCanonicalSearchSchema),
+const definition = memberListDefinitions.all;
+
+/** 검색 전 상태를 가진 목록이라 진입 URL 에서는 목록 query 를 열지 않는다. URL 해소는 화면이 한 번 한다. */
+export const Route = createFileRoute('/_app/members/active/all')({
+  validateSearch: memberListSearch.schema,
+  beforeLoad: canonicalSearchGuard(memberListSearch.canonical),
   component: AllMemberListRoute,
 });
 
+/** SMS·이메일 작성은 다른 도메인(messaging)의 기능이라 route 가 조립한다. 수신자는 목록 캐시에서 다시 읽는다. */
 function AllMemberListRoute() {
-  const search = allMemberCanonicalSearchSchema.parse(Route.useSearch());
   const navigate = Route.useNavigate();
-  const actions = useMessageComposer(useMemberListRecipients(search, "all"));
-
+  const search = Route.useSearch();
+  const messages = useMessageComposer(useMemberListRecipients(search, definition));
   return (
     <>
-      {/* 메시지(sms, email) 작성 다이얼로그 */}
-      <MessageComposerDialog
-        onConfirm={requestMessageSend}
-        request={actions.message}
-        onClose={actions.closeMessage}
-      />
-
-      <AllMemberListScreen
-        onActionRequest={(request) => {
-          if (request.type === "bulkChange") requestMemberBulkChange(request);
-          else actions.openMessage(request.type, request.targetIds);
-        }}
+      <MemberListScreen
+        definition={definition}
         search={search}
-        onSearchChange={(next: MemberRouteSearch) => {
-          void navigate({
-            search: () => allMemberCanonicalSearchSchema.parse(next),
-          });
+        onSearchChange={(next) => {
+          void navigate({ search: () => next });
         }}
-        onMemberActivate={(memberId) => {
-          void navigate({ to: "/members/$memberId", params: { memberId } });
+        onActivate={(memberId) => {
+          void navigate({ to: '/members/$memberId', params: { memberId } });
         }}
-        onRegister={() => {
-          void navigate({ to: "/members/new" });
+        onCreate={() => {
+          void navigate({ to: '/members/new' });
         }}
+        onMessage={messages.openMessage}
       />
+      <MessageComposerDialog onConfirm={requestMessageSend} request={messages.message} onClose={messages.closeMessage} />
     </>
   );
 }

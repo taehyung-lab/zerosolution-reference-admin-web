@@ -1,23 +1,40 @@
+import { useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import type { BoardSettings } from '@/features/community/model/board';
+import { classifyFormError } from '@/api/form-error';
+import { createBoardMutation } from '@/features/community/api/mutations';
+import { useLocale } from '@/shared/i18n/locale-context';
+import { useSaveForm } from '@/shared/ui/form/useSaveForm';
 import { PageHeader } from '@/shared/ui/layout/PageHeader';
 import { boardCreateDefaults } from '../model/board-form-defaults';
+import { toBoardSettings } from '../model/board-form-request';
+import { boardFormFieldOrder, boardFormSchema } from '../model/board-form-schema';
 import { BoardForm } from './BoardForm';
-import { useBoardInputForm } from './useBoardInputForm';
 
 /**
- * 9.1.3 게시판 등록(Figma, 2026-09-11 실측). 저장은 검증 → 확인 alert → 요청 함수 도달까지이고
- * 성공 이후는 만들지 않는다. 취소·dirty 이탈은 공용 가드가 묻는다.
+ * 9.1.3 게시판 등록(Figma, 2026-09-11 실측). 검증 → 저장 확인 → mutation → 저장 완료 → 목록.
+ * 서버가 없는 동안 mutation 은 미연결 실패로 끝나 폼 위에 공용 실패 문구가 남고 그 다음은 일어나지 않는다.
  */
 export function BoardCreateScreen({
-  onConfirm,
+  onSaved,
   onCancel,
 }: {
-  readonly onConfirm: (values: BoardSettings) => void;
+  readonly onSaved: () => void;
   readonly onCancel: () => void;
 }) {
   const { t } = useTranslation('community');
-  const input = useBoardInputForm({ defaults: boardCreateDefaults, onConfirm });
+  const { locale } = useLocale();
+  const create = useMutation(createBoardMutation(locale));
+  const save = useSaveForm({
+    schema: boardFormSchema,
+    defaultValues: boardCreateDefaults,
+    sections: { info: boardFormFieldOrder },
+    save: {
+      run: (values) => create.mutateAsync(toBoardSettings(values)),
+      isPending: create.isPending,
+    },
+    mapError: (error) => classifyFormError(error, boardFormFieldOrder),
+    onDone: onSaved,
+  });
 
   return (
     <section>
@@ -29,12 +46,7 @@ export function BoardCreateScreen({
         ]}
         title={t('board.form.createTitle')}
       />
-      <BoardForm
-        dialogs={input.dialogs}
-        form={input.form}
-        onSubmit={input.submit}
-        onCancel={() => input.guard.leave(onCancel)}
-      />
+      <BoardForm save={save} onCancel={onCancel} />
     </section>
   );
 }

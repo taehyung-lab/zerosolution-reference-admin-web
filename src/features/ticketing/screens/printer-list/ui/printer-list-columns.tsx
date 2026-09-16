@@ -5,7 +5,7 @@ import { headerSortDirection } from '@/shared/lib/list-sort';
 import type { PageRowSelection } from '@/shared/model/use-page-row-selection';
 import type { DataTableProps } from '@/shared/ui/list/DataTable';
 import { selectionColumn } from '@/shared/ui/list/selection-column';
-import type { ResolvedPrinterListSearch } from '../model/printer-list-search';
+import type { PrinterListView } from "../model/printer-list-search";
 
 /**
  * Figma `6.7.1.1 스마트프린터 리스트` table 의 컬럼 구성이다(2026-09-15 렌더 실측).
@@ -23,7 +23,7 @@ export function printerListColumns({
   onHeaderSort,
 }: {
   readonly t: TFunction<'ticketing'>;
-  readonly search: ResolvedPrinterListSearch;
+  readonly search: PrinterListView;
   readonly selection: PageRowSelection<PrinterRow>;
   readonly onHeaderSort: (key: PrinterSortKey) => void;
 }): DataTableProps<PrinterRow>['columns'] {

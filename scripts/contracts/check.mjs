@@ -97,6 +97,25 @@ failures.push(...readLocalLinkFailures(documents))
 const budgetNotices = documentBudgetNotices(documents)
 notes.push(...productNameNotices(documents.filter((file) => file.startsWith('.agents/skills/'))))
 
+/**
+ * 제품 이름 검사의 범위는 **이관되는 것 전부**다. skill 만 보면 같은 오염이 ADR·공용 코드·게이트 fixture 로
+ * 옮겨 가고, 대상 제품은 그것을 규범으로 읽는다. `src/app/**` 은 제외한다 — navigation·i18n 등록처럼
+ * 대상이 자기 것으로 교체하는 배선이라 제품 이름이 있는 것이 정상이고 manifest 가 `merge` 로 표시한다.
+ */
+export function portableProductNameScope(seedFiles, manifestFiles, read = (file) => readFileSync(resolve(file), 'utf8')) {
+  return [...new Set([...seedFiles, ...manifestFiles])]
+    .filter((file) => /\.(md|ts|tsx)$/.test(file))
+    .filter((file) => !file.startsWith('src/app/'))
+    .filter((file) => !file.startsWith('src/test/workflows/'))
+    .filter((file) => !file.startsWith('.agents/skills/'))
+    // 이 검사의 어휘를 설명하는 문서는 자기 자신을 예로 든다.
+    .filter((file) => file !== 'scripts/contracts/README.md')
+    // 이관 결정이 이미 표시된 자리는 sentinel 이 소유한다. 그쪽은 target 모드에서 **실패**하므로
+    // 같은 줄을 notice 로 한 번 더 세면 닫힌 것과 열린 것이 구별되지 않는다.
+    .filter((file) => !existsSync(resolve(file)) || !read(file).includes('TRANSPLANT_PENDING_'))
+    .sort()
+}
+
 const claudeImport = claudeAgentsImportFailure(readFileSync(resolve('CLAUDE.md'), 'utf8'))
 if (claudeImport !== null) failures.push(claudeImport)
 
@@ -174,6 +193,7 @@ if (mode === 'source') {
     const byId = [...new Set(pending.map((item) => item.id))].sort()
     notes.push(`계약 미확정 자리 ${pending.length}곳 (source 모드에서는 허용, 대상에서 해소): ${byId.join(', ')}`)
   }
+  notes.push(...productNameNotices(portableProductNameScope(seedFiles, manifestFiles)))
   seedSummary = `seed ${SEED_BUNDLES.length}개 4-part bundle의 code-root ${SEED_BUNDLES.flatMap((bundle) => bundle.code).length}개(closure ${codeClosure.length}) + focused-test-root ${new Set(SEED_BUNDLES.flatMap((bundle) => bundle.tests)).size}개(closure ${testClosure.length})가 ${seedFiles.length}파일 안에서 폐쇄, manifest ${manifestFiles.length}파일 실존`
 } else {
   // 테스트 fixture 문자열과 레퍼런스 측 이관 도구는 결정이 아니다.

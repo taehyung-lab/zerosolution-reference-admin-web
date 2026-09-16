@@ -2,7 +2,7 @@ export const REQUEST_TIMEZONE = 'UTC';
 
 /**
  * 서버가 준 instant를 화면에 그릴 브라우저 IANA timezone을 반환한다.
- * 언어로 timezone을 추정하지 않는다. 나중에 표시 기준이 공연장 timezone으로 바뀌면
+ * 언어로 timezone을 추정하지 않는다. 나중에 표시 기준이 계정·장소 timezone으로 바뀌면
  * 호출부가 아니라 이 함수만 교체할 수 있도록 함수 경계로 남긴다.
  */
 export function displayTimeZone(): string {

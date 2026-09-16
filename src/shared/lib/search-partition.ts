@@ -3,9 +3,9 @@
  * committed search. Declaring the split once with `satisfies` turns a forgotten field into a
  * compile error instead of a draft that silently stops rebuilding.
  *
- * Promoted to shared 2026-09-05: the second route-backed list showed the same defect. Members
- * built its draft from the whole resolved search, so a sort or page-size commit was undone by
- * the next filter submit. The mechanic reads a caller-declared partition and knows no domain.
+ * Promoted to shared after a second route-backed list reproduced the same defect: a draft built
+ * from the whole resolved search let the next filter submit undo a sort or page-size commit.
+ * The mechanic reads a caller-declared partition and knows no domain.
  */
 export type SearchFieldKind = "filter" | "view";
 

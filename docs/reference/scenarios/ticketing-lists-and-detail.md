@@ -57,19 +57,19 @@ lookup은 feature-local draft/commit이며 공연이 확정된 뒤에만 공연�
 다섯 shared 후보 중 하나로 남긴다. `[확인]`
 
 상세의 표면은 collection kind별로 분리한다. 부모 facts는 kind A, 필터·paging이 있는 입장정보는 kind C,
-회원상담은 독립 인라인 form이다([table-composition.md](../../../.agents/skills/feature-contract/references/table-composition.md):11-17,23). `[추론]`
+회원상담은 독립 인라인 form이다([collection.md](../../../.agents/skills/feature-contract/references/collection.md):11-17,23). `[추론]`
 
 ## 5. 우리 공용 계약과의 대조
 
 | 요구 | 현재 계약 | 판정 |
 | --- | --- | --- |
-| 공연일 종속 선택 | option prerequisite와 clear를 feature가 소유 | 커버됨 — [form-workflow.md](../../../.agents/skills/feature-contract/references/form-workflow.md):16 |
+| 공연일 종속 선택 | option prerequisite와 clear를 feature가 소유 | 커버됨 — [form.md](../../../.agents/skills/feature-contract/references/form.md):16 |
 | 결제금액 slider | 관찰 1건, min/max 외 계약 없음 | 아직 판정 불가 — 추가 판정 없음 |
-| 다항목 summary | `ResultSummary.groups` 구현 | 채택 — [list-result.md](../../../.agents/skills/shared-ui-contract/references/list-result.md):10 |
+| 다항목 summary | `ResultSummary.groups` 구현 | 채택 — [catalog.md](../../../.agents/skills/shared-ui-contract/references/catalog.md#list):10 |
 | 상태 count 클릭 | 다섯 shared 후보 중 하나 | 후보 유지 — [primitives-and-tokens.md](../../../.agents/skills/shared-ui-contract/references/primitives-and-tokens.md):24 |
 | 행 클릭 조회 | 다섯 shared 후보 중 행 활성화 | 후보 유지 — primitives-and-tokens.md:23 |
-| 상세의 자식 목록·인라인 폼 | kind 분리와 form adapter가 이미 소유 | 커버됨 — table-composition.md:11-19, form-workflow.md:19 |
-| 선택복사 | 선택 검증·payload는 feature 소유 | 커버됨 — [bulk-actions.md](../../../.agents/skills/feature-contract/references/bulk-actions.md):3-9 |
+| 상세의 자식 목록·인라인 폼 | kind 분리와 form adapter가 이미 소유 | 커버됨 — list.md:11-19, form.md:19 |
+| 선택복사 | 선택 검증·payload는 feature 소유 | 커버됨 — [list.md](../../../.agents/skills/feature-contract/references/list.md#selection-and-actions):3-9 |
 
 ## 6. 미확인
 

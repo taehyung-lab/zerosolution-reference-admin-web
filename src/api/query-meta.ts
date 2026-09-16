@@ -5,15 +5,27 @@
  * Mounted content transitions stay on their content surface, while option and lookup data stay
  * inside their field. Route loaders warm option caches on entry or preload intent.
  */
+import type { QueryKey } from '@tanstack/react-query'
+
 export type QueryProgress = 'blocking' | 'content' | 'inline'
 
 export interface ApiQueryMeta extends Record<string, unknown> {
   readonly progress?: QueryProgress
 }
 
+/**
+ * A mutation declares which cache families its success makes stale. The app's `MutationCache`
+ * invalidates them, so a screen never wires `onSuccess` by hand and a forgotten invalidation
+ * cannot leave a list showing a record the user just changed.
+ */
+export interface ApiMutationMeta extends Record<string, unknown> {
+  readonly invalidates?: readonly QueryKey[]
+}
+
 declare module '@tanstack/react-query' {
   interface Register {
     queryMeta: ApiQueryMeta
+    mutationMeta: ApiMutationMeta
   }
 }
 

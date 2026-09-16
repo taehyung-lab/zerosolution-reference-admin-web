@@ -1,63 +1,43 @@
 /**
- * 운영자 유형·권한·기획사 옵션을 각각 조회하고 서버 레코드를 선택 UI 값/라벨로 변환한다.
- * 실제 API에서도 필요한 feature 연결부다. 옵션 의미·선행 유형·locale별 캐시를 도메인 없는 공용 훅으로 숨기지 않는다.
+ * 운영자 유형·권한 옵션 조회를 선택 필드 하나의 표시 상태로 바꾼다. 목록 필터와 등록·수정 폼이 같은 계약을
+ * 쓴다. 실패를 빈 목록으로 접지 않고 로딩·실패·재시도를 필드까지 전달한다. 캐시된 값이 있으면 ready 다.
  */
-import { useLocale } from "@/shared/i18n/locale-context";
-import { useQuery } from "@tanstack/react-query";
-import type { ManagerPermissionScope } from "./manager-form-contract";
-import { managerTypes } from "./manager-list-contract";
-import {
-  managerAgencyOptionsQuery,
-  managerPermissionOptionsQuery,
-  managerTypeOptionsQuery,
-} from "./queries";
+import { useQuery, type UseQueryResult } from '@tanstack/react-query';
+import { useLocale } from '@/shared/i18n/locale-context';
+import type { AsyncFieldState } from '@/shared/ui/feedback/AsyncFieldBoundary';
+import type { ManagerOption } from '../model/manager';
+import { managerPermissionOptionsQuery, managerTypeOptionsQuery } from './queries';
 
-interface StringIdNameOptionSource {
-  readonly id?: string;
-  readonly name?: string;
+export interface ManagerSelectOptions {
+  readonly state: AsyncFieldState;
+  readonly items: readonly ManagerOption[];
+  readonly retry: () => void;
 }
 
-interface IdNameOptionSource {
-  readonly id?: string | number;
-  readonly name?: string;
+function toSelectOptions(query: UseQueryResult<readonly ManagerOption[]>): ManagerSelectOptions {
+  return {
+    state: query.data !== undefined ? 'ready' : query.isError ? 'error' : 'loading',
+    items: query.data ?? [],
+    retry: () => void query.refetch(),
+  };
 }
 
-function toManagerTypeOptions(options: readonly StringIdNameOptionSource[]) {
-  return options.flatMap(({ id, name }) =>
-    id && Object.hasOwn(managerTypes, id)
-      ? [{ value: id, label: name ?? "" }]
-      : [],
-  );
-}
-
-function toIdNameOptions(options: readonly IdNameOptionSource[]) {
-  return options.flatMap(({ id, name }) =>
-    id === undefined ? [] : [{ value: String(id), label: name ?? String(id) }],
-  );
-}
-
-export function useManagerTypeOptions() {
+export function useManagerTypeOptions(): ManagerSelectOptions {
   const { locale } = useLocale();
-  return useQuery({
-    ...managerTypeOptionsQuery(locale),
-    select: toManagerTypeOptions,
-  });
+  return toSelectOptions(useQuery(managerTypeOptionsQuery(locale)));
 }
 
-export function useManagerPermissionOptions(
-  type: ManagerPermissionScope | undefined,
-) {
+/**
+ * 목록 필터는 `{ enabled: true }`(전체 권한), 폼은 `{ type, enabled: type !== '' }`(선택 유형의 권한).
+ * 선행 조건이 아직 없으면 조회하지 않은 빈 ready 다.
+ */
+export function useManagerPermissionOptions(scope: {
+  readonly type?: string;
+  readonly enabled: boolean;
+}): ManagerSelectOptions {
   const { locale } = useLocale();
-  return useQuery({
-    ...managerPermissionOptionsQuery(locale, type),
-    select: toIdNameOptions,
-  });
-}
-
-export function useManagerAgencyOptions() {
-  const { locale } = useLocale();
-  return useQuery({
-    ...managerAgencyOptionsQuery(locale),
-    select: toIdNameOptions,
-  });
+  const query = useQuery(managerPermissionOptionsQuery(locale, scope));
+  return scope.enabled
+    ? toSelectOptions(query)
+    : { state: 'ready', items: [], retry: () => undefined };
 }

@@ -1,17 +1,17 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { TestQueryLocaleProvider } from '@/test/query-locale';
 import { PrinterDetailScreen } from './PrinterDetailScreen';
 
 function renderScreen(printerId = 'reference-printer-1') {
   const onEdit = vi.fn();
-  const onDelete = vi.fn();
+  const onDeleted = vi.fn();
   render(
     <TestQueryLocaleProvider>
-      <PrinterDetailScreen printerId={printerId} onEdit={onEdit} onDelete={onDelete} />
+      <PrinterDetailScreen printerId={printerId} onEdit={onEdit} onDeleted={onDeleted} />
     </TestQueryLocaleProvider>,
   );
-  return { onEdit, onDelete };
+  return { onEdit, onDeleted };
 }
 
 describe('PrinterDetailScreen (6.7.1.2 스마트프린터 조회)', () => {
@@ -35,7 +35,6 @@ describe('PrinterDetailScreen (6.7.1.2 스마트프린터 조회)', () => {
     }
     expect(screen.getByText('정상')).toBeInTheDocument();
     expect(screen.getByText('현장발권용')).toBeInTheDocument();
-    // 입력되지 않은 조치사항은 빈칸이 아니라 빈 값 표기다.
     expect(screen.getAllByText('-').length).toBeGreaterThan(0);
   });
 
@@ -57,16 +56,22 @@ describe('PrinterDetailScreen (6.7.1.2 스마트프린터 조회)', () => {
     expect(onEdit).toHaveBeenCalledWith('reference-printer-1');
   });
 
-  it('삭제는 확인 alert 를 지나야 요청에 닿는다 — 원문 Case02', async () => {
-    const { onDelete } = renderScreen();
+  it('삭제는 확인 alert 를 지나 요청 함수에 닿고 성공 뒤 목록으로 나간다 — 원문 Case02', async () => {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    const { onDeleted } = renderScreen();
     await screen.findByText('001-12345648');
 
     fireEvent.click(screen.getByRole('button', { name: '삭제' }));
-    expect(await screen.findByText('삭제하시겠습니까?')).toBeInTheDocument();
-    expect(onDelete).not.toHaveBeenCalled();
+    const dialog = await screen.findByRole('dialog');
+    expect(dialog).toHaveTextContent('삭제하시겠습니까?');
+    expect(onDeleted).not.toHaveBeenCalled();
 
-    fireEvent.click(screen.getByRole('button', { name: '확인' }));
-    expect(onDelete).toHaveBeenCalledWith('reference-printer-1');
+    fireEvent.click(within(dialog).getByRole('button', { name: '확인' }));
+
+    await waitFor(() => expect(onDeleted).toHaveBeenCalledOnce());
+    expect(log).toHaveBeenCalledWith(expect.stringContaining('[시나리오] 스마트프린터 삭제'));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    log.mockRestore();
   });
 
   it('없는 ID 의 재조회 실패는 not-found 문구로 닫는다', async () => {

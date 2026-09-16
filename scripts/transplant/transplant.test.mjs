@@ -57,22 +57,22 @@ describe('rewriteText', () => {
   it('renumbers ADR file names, citations, and headings atomically', () => {
     const text = [
       '# 0008. 공용 primitive 구현 선택',
-      'see docs/decisions/0009-shared-boundaries.md and ADR 0008 개정 3, ADR0011',
-      '(`useSaveForm`, ADR 0010 2026-09-03)',
+      'see docs/decisions/0014-single-screen-shape.md and ADR 0008, ADR0014',
+      '(`useSaveForm`, ADR 0014)',
       'runtime pin: ADR 0004',
     ].join('\n')
 
     expect(rewriteText(text)).toBe([
       '# 0004. 공용 primitive 구현 선택',
-      'see docs/decisions/0005-shared-boundaries.md and ADR 0004 개정 3, ADR 0007',
-      '(`useSaveForm`, ADR 0006 2026-09-03)',
-      'runtime pin: ADR 0009',
+      'see docs/decisions/0005-single-screen-shape.md and ADR 0004, ADR 0005',
+      '(`useSaveForm`, ADR 0005)',
+      'runtime pin: ADR 0007',
     ].join('\n'))
   })
 
   it('marks citations of ADRs that are not transplanted instead of renumbering them', () => {
-    expect(rewriteText('리허설 계약은 ADR 0001, 결번은 ADR 0007 참고')).toBe(
-      '리허설 계약은 ADR(레퍼런스 0001, 미이관), 결번은 ADR(레퍼런스 0007, 미이관) 참고',
+    expect(rewriteText('리허설 계약은 ADR 0001 참고, 화면 형태는 ADR 0014')).toBe(
+      '리허설 계약은 ADR(레퍼런스 0001, 미이관) 참고, 화면 형태는 ADR 0005',
     )
     expect(findRetiredAdrCitations('x\nsee docs/decisions/0001-rehearsal-api-contract.md\n')).toEqual([
       { line: 2, number: '0001', text: 'see docs/decisions/0001-rehearsal-api-contract.md' },
@@ -80,12 +80,12 @@ describe('rewriteText', () => {
   })
 
   it('treats an ADR left out of this transplant like a retired one, without renaming its path', () => {
-    const out = rewriteText('see ADR 0011 and docs/decisions/0011-detail-data-and-update-history-boundaries.md', {
-      retired: ['0001', '0007', '0011'],
-      renumber: [['0009-shared-boundaries', '0005-shared-boundaries']],
+    const out = rewriteText('see ADR 0013 and docs/decisions/0013-agent-implementation-workflow.md', {
+      retired: ['0001', '0007', '0013'],
+      renumber: [['0014-single-screen-shape', '0005-single-screen-shape']],
     })
-    expect(out).toContain('ADR(레퍼런스 0011, 미이관)')
-    expect(out).toContain('docs/decisions/0011-detail-data-and-update-history-boundaries.md')
+    expect(out).toContain('ADR(레퍼런스 0013, 미이관)')
+    expect(out).toContain('docs/decisions/0013-agent-implementation-workflow.md')
   })
 
   it('replaces reference consumer example symbols with the {Domain} placeholder', () => {
@@ -123,12 +123,12 @@ describe('rewriteMarkdownLinks', () => {
     const text = [
       '[a](../reference/zero-sol/README.md#표-형식)',
       '[b](../reference/zero-sol-figma-analysis.md)',
-      '[c](./0009-shared-boundaries.md) [d](https://example.com/x.md)',
+      '[c](./0014-single-screen-shape.md) [d](https://example.com/x.md)',
     ].join('\n')
     expect(rewriteMarkdownLinks(text, 'docs/decisions', SOURCE_POINTER, NEUTRAL_POINTER)).toBe([
       '[a](../reference/product/README.md#표-형식)',
       '[b](../reference/product/judgment.md)',
-      '[c](./0009-shared-boundaries.md) [d](https://example.com/x.md)',
+      '[c](./0014-single-screen-shape.md) [d](https://example.com/x.md)',
     ].join('\n'))
     expect(rewriteMarkdownLinks('[a](../reference/zero-sol/11-settings.md)', 'docs/decisions', SOURCE_POINTER, CUSTOM_POINTER))
       .toBe('[a](../product/11-settings.md)')
@@ -137,12 +137,12 @@ describe('rewriteMarkdownLinks', () => {
 
 describe('delinkUntravelled', () => {
   const context = {
-    sourceFile: 'docs/decisions/0011-detail.md',
-    targetPath: 'docs/decisions/0007-detail.md',
+    sourceFile: 'docs/decisions/0014-single.md',
+    targetPath: 'docs/decisions/0005-single.md',
     source: SOURCE_POINTER,
     target: NEUTRAL_POINTER,
-    retired: ['0001', '0007'],
-    staged: new Set(['docs/reference/product/README.md', 'docs/decisions/0005-shared-boundaries.md']),
+    retired: ['0001'],
+    staged: new Set(['docs/reference/product/README.md', 'docs/decisions/0005-single-screen-shape.md']),
     targetRoot: '/nowhere',
   }
 
@@ -298,12 +298,12 @@ describe('plan / stage / apply against a target directory', () => {
     expect(byFile.get('CLAUDE.md').action).toBe('copy')
     expect(byFile.has('.claude/settings.json')).toBe(false)
     expect(byFile.has('.codex/hooks.json')).toBe(false)
-    expect(byFile.get('docs/decisions/0009-shared-boundaries.md').targetPath).toBe('docs/decisions/0005-shared-boundaries.md')
+    expect(byFile.get('docs/decisions/0014-single-screen-shape.md').targetPath).toBe('docs/decisions/0005-single-screen-shape.md')
     expect(byFile.get('docs/decisions/0002-typescript-version-pin.md').action).toBe('conditional')
     expect(byFile.get('AGENTS.md').action).toBe('template')
     expect(plan.some((item) => item.file.startsWith('src/features/'))).toBe(false)
     // Product workflow tests live in the harness directory but import feature screens; they are excluded, not copied.
-    expect(byFile.get('src/test/workflows/member-record-workflows.test.tsx').action).toBe('exclude')
+    expect(byFile.get('src/test/workflows/closed-search.test.ts').action).toBe('exclude')
     expect(byFile.get('src/test/setup.ts').action).toBe('copy')
     expect(plan.some((item) => item.file.startsWith('.agents/skills/api-contract/references/'))).toBe(true)
     // The active source-product ledger stays home; the target gets neutral ledger shells at its pointer paths.
@@ -317,14 +317,14 @@ describe('plan / stage / apply against a target directory', () => {
 
     const staged = stageTransplant(target, out)
     expect(existsSync(join(out, 'MANIFEST.json'))).toBe(true)
-    expect(existsSync(join(out, 'docs/decisions/0005-shared-boundaries.md'))).toBe(true)
-    expect(existsSync(join(out, 'docs/decisions/0009-shared-boundaries.md'))).toBe(false)
+    expect(existsSync(join(out, 'docs/decisions/0005-single-screen-shape.md'))).toBe(true)
+    expect(existsSync(join(out, 'docs/decisions/0014-single-screen-shape.md'))).toBe(false)
     const agents = readFileSync(join(out, 'AGENTS.md'), 'utf8')
     expect(agents).toContain('docs/reference/product.json')
     expect(agents).not.toMatch(/ZERO|BOOSTER|zero-sol/)
     expect(agents).toContain('docs/reference/product.json')
     expect(readFileSync(join(out, 'CLAUDE.md'), 'utf8').split('\n')[0]).toBe('@AGENTS.md')
-    expect(readFileSync(join(out, 'docs/decisions/0008-typescript-version-pin.md'), 'utf8')).toContain('TRANSPLANT_PENDING_ADR_PIN')
+    expect(readFileSync(join(out, 'docs/decisions/0006-typescript-version-pin.md'), 'utf8')).toContain('TRANSPLANT_PENDING_ADR_PIN')
     const skill = readFileSync(join(out, '.agents/skills/screen-loop/SKILL.md'), 'utf8')
     expect(skill).toContain('docs/reference/product.json')
     expect(skill).not.toContain('zero-sol')
@@ -346,12 +346,12 @@ describe('plan / stage / apply against a target directory', () => {
     expect(staged.pending.map((item) => item.id)).toEqual(expect.arrayContaining(['ENVELOPE', 'API_BASE', 'FACTS', 'ADR_PIN', 'INVENTORY']))
     expect(readFileSync(join(out, 'PENDING.md'), 'utf8')).toContain('## 조건부')
     // ADR evidence lines link to ledger section files that stay home; the shell README they can reach is rewritten.
-    const shared = readFileSync(join(out, 'docs/decisions/0005-shared-boundaries.md'), 'utf8')
+    const shared = readFileSync(join(out, 'docs/decisions/0005-single-screen-shape.md'), 'utf8')
     expect(shared).toContain('](../reference/product/README.md)')
     expect(shared).toContain('레퍼런스 저장소 docs/reference/zero-sol-figma-analysis.md')
     expect(staged.sourceReferences.some((item) => item.link === 'docs/reference/product/README.md')).toBe(false)
-    // Section files and feature code stay home: their citations keep the reference path instead of inventing a target one.
-    expect(staged.sourceReferences.some((item) => item.file.startsWith('docs/decisions/') && /docs\/reference\/zero-sol\/\d{2}-/.test(item.link))).toBe(true)
+    // The judgment record and feature code stay home: their citations keep the reference path instead of inventing a target one.
+    expect(staged.sourceReferences.some((item) => item.file.startsWith('docs/decisions/') && item.link === 'docs/reference/zero-sol-figma-analysis.md')).toBe(true)
     expect(staged.danglingLinks).toEqual([])
     expect(readFileSync(join(out, 'PENDING.md'), 'utf8')).toContain('## 레퍼런스 저장소에만 있는 근거')
 
@@ -359,7 +359,7 @@ describe('plan / stage / apply against a target directory', () => {
     expect(readFileSync(join(target, 'src/shared/ui/layout/PageHeader.tsx'), 'utf8')).toBe('export const PageHeader = () => null\n')
     expect(readFileSync(join(target, 'package.json'), 'utf8')).toBe('{"name":"target"}\n')
     expect(existsSync(join(target, 'src/shared/ui/detail/DetailField.tsx'))).toBe(true)
-    expect(existsSync(join(target, 'docs/decisions/0005-shared-boundaries.md'))).toBe(true)
+    expect(existsSync(join(target, 'docs/decisions/0005-single-screen-shape.md'))).toBe(true)
     expect(existsSync(join(target, 'CLAUDE.md'))).toBe(true)
     expect(existsSync(join(target, '.claude/settings.json'))).toBe(false)
     // The common root points at product-owned facts, whose unresolved status survives apply.
@@ -444,15 +444,12 @@ describe('plan / stage / apply against a target directory', () => {
     // The skills and eslint.config.js travel whole and name these decisions, so the decisions travel with them.
     for (const adr of [
       'docs/decisions/0006-auth-token-storage.md',
-      'docs/decisions/0009-shared-boundaries.md',
-      'docs/decisions/0010-form-boundaries.md',
-      'docs/decisions/0011-detail-data-and-update-history-boundaries.md',
-      'docs/decisions/0012-list-filter-draft-composition.md',
+      'docs/decisions/0014-single-screen-shape.md',
     ]) expect(files.has(adr)).toBe(true)
 
     const staged = stageTransplant(target, out, undefined, { bundles: ['ascii-triplet'] })
-    expect(staged.retired).toEqual(['0001', '0007'])
-    expect(existsSync(join(out, 'docs/decisions/0007-detail-data-and-update-history-boundaries.md'))).toBe(true)
+    expect(staged.retired).toEqual(['0001'])
+    expect(existsSync(join(out, 'docs/decisions/0005-single-screen-shape.md'))).toBe(true)
     expect(staged.review.some((item) => item.number === '0001')).toBe(true)
     expect(() => planTransplant(target, { bundles: ['no-such-bundle'] })).toThrow(/no-such-bundle/)
 
@@ -461,10 +458,10 @@ describe('plan / stage / apply against a target directory', () => {
     expect(catalog.match(/^\s+id: '[^']+',$/gm).map((line) => line.trim())).toEqual(["id: 'ascii-triplet',"])
     expect(catalog).toContain("'ascii-triplet': ['hasRepeatedOrSequentialAsciiTriplet'],")
     expect(catalog).not.toContain("'data-table': [")
-    expect(catalog).toContain("location('docs/decisions/0005-shared-boundaries.md'")
+    expect(catalog).toContain("location('docs/decisions/0005-single-screen-shape.md'")
 
     // The eslint evidence pointer names a decision that travelled, so the target's own check can resolve it.
-    expect(readFileSync(join(out, 'eslint.config.js'), 'utf8')).toContain("['useResourceQuery', 'ADR 0007']")
+    expect(readFileSync(join(out, 'eslint.config.js'), 'utf8')).toContain("['useResourceQuery', 'ADR 0005']")
     // The target's verify chain checks itself as a target, not as this reference repository.
     expect(JSON.parse(readFileSync(join(out, 'package.json'), 'utf8')).scripts['contracts:check'])
       .toBe('node scripts/contracts/check.mjs --mode target')
@@ -483,11 +480,11 @@ describe('plan / stage / apply against a target directory', () => {
     const out = temporaryDirectory('transplant-stage-')
     const staged = stageTransplant(target, out, undefined, { bundles: ['ascii-triplet'] })
 
-    const detail = readFileSync(join(out, 'docs/decisions/0007-detail-data-and-update-history-boundaries.md'), 'utf8')
-    expect(detail).toContain('레퍼런스 저장소 docs/reference/zero-sol/04-members.md')
-    expect(detail).not.toContain('docs/reference/product/04-members.md')
-    expect(staged.sourceReferences.some((item) => item.link.startsWith('docs/reference/zero-sol/'))).toBe(true)
-    expect(staged.productTerms.some((item) => item.file === 'docs/decisions/0005-shared-boundaries.md')).toBe(true)
+    const auth = readFileSync(join(out, 'docs/decisions/0003-auth-token-storage.md'), 'utf8')
+    expect(auth).toContain('레퍼런스 저장소 docs/decisions/0001-rehearsal-api-contract.md')
+    expect(auth).not.toContain('](0001-rehearsal-api-contract.md)')
+    expect(staged.sourceReferences.some((item) => item.link === 'docs/decisions/0001-rehearsal-api-contract.md')).toBe(true)
+    expect(staged.productTerms.some((item) => item.file === 'README.md')).toBe(true)
     expect(staged.danglingLinks).toEqual([])
     expect(readFileSync(join(out, 'PENDING.md'), 'utf8')).toContain('## 레퍼런스 저장소에만 있는 근거')
   })

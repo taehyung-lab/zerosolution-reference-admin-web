@@ -1,7 +1,7 @@
 import { Select as RadixSelect } from "radix-ui";
 import { cn } from "@/shared/lib/cn";
 
-/** Owns: Radix single-select listbox, focus/keyboard and tokens. Rejects: remote search, multi-select, `multiple`. API: value,onValueChange,options,placeholder. Boundary: explicit select contract (shared-ui-contract `select.md`). */
+/** Owns: Radix single-select listbox, focus/keyboard and tokens. Rejects: remote search, multi-select, `multiple`. API: value,onValueChange,options,placeholder. Boundary: explicit select contract (shared-ui-contract `catalog.md` Primitives). */
 export function Select({
   value,
   onValueChange,

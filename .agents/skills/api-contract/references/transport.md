@@ -18,7 +18,7 @@ Canonicalize supported failure `data` shapes into one field-error array. Keep se
 
 Kind does not choose a UI location. The operation context owns the result: cancelled work the user left has no surface; recoverable feature operations render in place; terminal auth/access is an app incident; render, route-loader, unhandled fatal, and route not-found belong to root. A recoverable `contract` failure stays in place, while a render/loader contract failure belongs to root.
 
-The four outcomes `none | feature | incident | root` are decided only in `src/api/error-outcome.ts` (`resolveErrorOutcome(context, kind)`, `isFeatureError(error)`); the UI-side placement of each outcome is [shared-ui-contract incidents.md](../../shared-ui-contract/references/incidents.md).
+The four outcomes `none | feature | incident | root` are decided only in `src/api/error-outcome.ts` (`resolveErrorOutcome(context, kind)`, `isFeatureError(error)`); the UI-side placement of each outcome is [shared-ui-contract catalog Feedback](../../shared-ui-contract/references/catalog.md#feedback).
 Feature consumers use its context-free feature predicate instead of repeating cancelled/unauthorized/forbidden
 comparisons. Context remains only for real differences such as observerless prefetch, pre-auth failures that end no
 session, and root failures.

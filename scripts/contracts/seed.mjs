@@ -14,33 +14,33 @@ export const SEED_BUNDLES = [
   {
     id: 'ascii-triplet',
     code: ['src/shared/lib/ascii-triplet.ts'],
-    skills: [location('.agents/skills/shared-ui-contract/references/shared-values.md', 'Pure utilities (`shared/lib`)', '`hasRepeatedOrSequentialAsciiTriplet')],
-    adrs: [location('docs/decisions/0009-shared-boundaries.md', '단위별 단계와 소비자', '`hasRepeatedOrSequentialAsciiTriplet')],
+    skills: [location('.agents/skills/shared-ui-contract/references/catalog.md', 'Lib', '`hasRepeatedOrSequentialAsciiTriplet`')],
+    adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/shared/lib/ascii-triplet.test.ts'],
     ownership: { shared: 'Detects case-insensitive repeated or sequential ASCII letter/digit triplets.', feature: 'Owns password length, character classes, schema, copy, and server checks.' },
   },
   {
     id: 'confirmation',
-    code: ['src/shared/model/use-confirmation.ts', 'src/shared/model/use-selection-gate.ts', 'src/shared/ui/dialog/BulkActionDialogs.tsx'],
-    skills: [location('.agents/skills/shared-ui-contract/references/shared-values.md', 'State mechanics (`shared/model`)', '`useConfirmation')],
-    adrs: [location('docs/decisions/0009-shared-boundaries.md', '단위별 단계와 소비자', '`useConfirmation')],
-    tests: ['src/shared/ui/dialog/BulkActionDialogs.test.tsx'],
-    ownership: { shared: 'Holds opaque confirmation values, invokes run after confirm, and renders selection rejection/confirmation surfaces; no form or API knowledge.', feature: 'Owns validation, copy, selection, callbacks, and all success/failure behavior.' },
+    code: ['src/shared/ui/dialog/useConfirmation.tsx', 'src/shared/model/use-selection-gate.ts', 'src/shared/ui/dialog/SelectionAlert.tsx'],
+    skills: [location('.agents/skills/shared-ui-contract/references/catalog.md', 'Dialog', '`useConfirmation<TValues>(')],
+    adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
+    tests: ['src/shared/ui/dialog/useConfirmation.test.tsx', 'src/shared/ui/dialog/SelectionAlert.test.tsx'],
+    ownership: { shared: 'Owns the request → confirm → run → close lifecycle with its dialog node, the pending guard and the failure line, and the one selection-rejection alert; no form or API knowledge.', feature: 'Owns what is confirmed, the target ids, the copy, the run promise, and everything after success.' },
   },
   {
     id: 'contact-masking',
     code: ['src/shared/lib/mask-contact.ts'],
-    skills: [location('.agents/skills/shared-ui-contract/references/shared-values.md', 'Pure utilities (`shared/lib`)', '`maskEmail')],
-    adrs: [location('docs/decisions/0009-shared-boundaries.md', '단위별 단계와 소비자', '`maskEmail')],
+    skills: [location('.agents/skills/shared-ui-contract/references/catalog.md', 'Lib', '`maskEmail`')],
+    adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/shared/lib/mask-contact.test.ts'],
     ownership: { shared: 'Applies the currently shared string-only contact masking algorithm.', feature: 'Owns raw data, permission, disclosure, and adoption of product masking rules.' },
   },
   {
     id: 'list-result',
     examples: [{
-      files: ['src/features/performances/screens/list/ui/PerformanceListResult.tsx'],
-      useWhen: 'Compare a feature composing result facts, empty/not-searched copy, pagination and table slots.',
-      doNotCopy: 'Performance toolbar visibility, columns, translated messages or navigation. This is a composition example, not evidence of real-server recovery.',
+      files: ['src/features/managers/screens/manager-list/ui/ManagerListResult.tsx'],
+      useWhen: 'Compare a feature composing result facts, empty/not-searched copy, view controls, the actions slot, pagination and the table.',
+      doNotCopy: 'That domain\'s columns, sort keys, translated messages, actions or navigation. This is a composition example, not evidence of real-server recovery.',
     }],
     code: [
       'src/shared/ui/list/ListResult.tsx',
@@ -48,16 +48,8 @@ export const SEED_BUNDLES = [
       'src/shared/ui/list/ResultSummary.tsx',
       'src/shared/ui/list/ResultTotal.tsx',
     ],
-    skills: [location(
-      '.agents/skills/feature-contract/references/list-workflow.md',
-      'Result ownership',
-      '`ListResult` receives `ListResultData<TRow>`',
-    )],
-    adrs: [location(
-      'docs/decisions/0009-shared-boundaries.md',
-      '현재 provisional 계약',
-      '`ListResult`는 `notSearched | loading | error | empty | ready`',
-    )],
+    skills: [location('.agents/skills/feature-contract/references/list.md', 'Result', '`ListResult`')],
+    adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: [
       'src/shared/ui/list/list-patterns.test.tsx',
       'src/shared/ui/list/ListResult.test-d.ts',
@@ -71,16 +63,8 @@ export const SEED_BUNDLES = [
   {
     id: 'detail-state-boundary',
     code: ['src/shared/ui/detail/DetailStateBoundary.tsx'],
-    skills: [location(
-      '.agents/skills/feature-contract/references/detail-workflow.md',
-      'Detail state',
-      '`DetailStateBoundary`',
-    )],
-    adrs: [location(
-      'docs/decisions/0011-detail-data-and-update-history-boundaries.md',
-      'API 호출 계층 (조회·목록·mutation 공통)',
-      '`DetailStateBoundary` 는 `ready | error | notFound` 렌더',
-    )],
+    skills: [location('.agents/skills/feature-contract/references/detail.md', 'State', '`DetailStateBoundary`')],
+    adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/shared/ui/detail/DetailStateBoundary.test.tsx'],
     ownership: {
       shared: 'Renders ready, error, and notFound with live error, retry, and trace slots.',
@@ -90,16 +74,8 @@ export const SEED_BUNDLES = [
   {
     id: 'detail-query',
     code: ['src/api/required-query.ts'],
-    skills: [location(
-      '.agents/skills/feature-contract/references/detail-workflow.md',
-      'Detail state',
-      '`useDetailQuery(options)`',
-    )],
-    adrs: [location(
-      'docs/decisions/0011-detail-data-and-update-history-boundaries.md',
-      'API 호출 계층 (조회·목록·mutation 공통)',
-      '`resolveRequiredQueryOutcome(facts)`',
-    )],
+    skills: [location('.agents/skills/feature-contract/references/detail.md', 'State', '`resolveRequiredQueryOutcome`')],
+    adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/api/required-query.test.tsx'],
     ownership: {
       shared: 'API owns the required-query outcome priority (incident, not-found, cached data, pending, error) and its projection to the three detail states.',
@@ -109,16 +85,8 @@ export const SEED_BUNDLES = [
   {
     id: 'update-history',
     code: ['src/shared/ui/detail/UpdateHistory.tsx'],
-    skills: [location(
-      '.agents/skills/shared-ui-contract/references/page-and-detail-surfaces.md',
-      'Page and detail surfaces',
-      '`UpdateHistory`',
-    )],
-    adrs: [location(
-      'docs/decisions/0011-detail-data-and-update-history-boundaries.md',
-      '업데이트 이력 — 2층',
-      '`UpdateHistory`',
-    )],
+    skills: [location('.agents/skills/shared-ui-contract/references/catalog.md', 'Detail', '`UpdateHistory`')],
+    adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/shared/ui/detail/UpdateHistory.test.tsx'],
     ownership: {
       shared: 'Renders the three-column history table with one semantic line per change and the empty text.',
@@ -128,16 +96,8 @@ export const SEED_BUNDLES = [
   {
     id: 'blocking-progress',
     code: ['src/shared/ui/primitives/BlockingProgress.tsx', 'src/api/query-meta.ts'],
-    skills: [location(
-      '.agents/skills/shared-ui-contract/references/blocking-progress.md',
-      'Blocking progress',
-      '`BlockingProgress` is the sole confirmed app-wide loading surface',
-    )],
-    adrs: [location(
-      'docs/decisions/0010-form-boundaries.md',
-      '결정과 이유',
-      '진행 표면은 요청의 역할로 구분했다',
-    )],
+    skills: [location('.agents/skills/shared-ui-contract/references/catalog.md', 'Primitives', '`BlockingProgress`')],
+    adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/app/shell/AppShell.test.tsx'],
     ownership: {
       shared: 'Owns the inert blocking surface, accessible progress presentation, and the query progress meta vocabulary (blocking | content | inline).',
@@ -148,11 +108,11 @@ export const SEED_BUNDLES = [
     id: 'form-sections-and-adapters',
     examples: [{
       files: [
-        'src/features/managers/screens/form/ui/ManagerCreateScreen.tsx',
-        'src/features/managers/screens/form/ui/ManagerForm.tsx',
+        'src/features/managers/screens/manager-form/ui/ManagerCreateScreen.tsx',
+        'src/features/managers/screens/manager-form/ui/ManagerForm.tsx',
       ],
       useWhen: 'Compare feature-owned schema, mutation and error mapping passed to useSaveForm, then form fields, dialogs and cancellation bound to that same save lifecycle.',
-      doNotCopy: 'Rehearsal Manager fields, defaults, dependent options, request DTOs, route destinations or the optional internal options Query. Recheck the target product save policy.',
+      doNotCopy: 'That domain\'s fields, defaults, dependent options, request types, route destinations or option queries. Recheck the target product save policy.',
     }],
     code: [
       'src/shared/model/use-form-sections.ts',
@@ -175,29 +135,10 @@ export const SEED_BUNDLES = [
       'src/shared/ui/list/SortableList.tsx',
     ],
     skills: [
-      location(
-        '.agents/skills/feature-contract/references/form-workflow.md',
-        'Sections and error visibility',
-        'onServer 표시/정리',
-      ),
-      location(
-        '.agents/skills/shared-ui-contract/references/form-fields.md',
-        'Layer contract',
-        'approved adapter vocabulary',
-      ),
+      location('.agents/skills/feature-contract/references/form.md', 'Save lifecycle', 'onServer'),
+      location('.agents/skills/shared-ui-contract/references/catalog.md', 'Form', '`FormField`'),
     ],
-    adrs: [
-      location(
-        'docs/decisions/0010-form-boundaries.md',
-        '결정과 이유',
-        '입력 값은 Form, 오류·접근성 연결은 어댑터',
-      ),
-      location(
-        'docs/decisions/0010-form-boundaries.md',
-        '보존할 실측 근거',
-        'form-level 서버 오류는 당시 Form 타입과 맞지 않았고',
-      ),
-    ],
+    adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: [
       'src/shared/model/use-form-sections.test.tsx',
       'src/shared/ui/form/useSaveForm.test.tsx',
@@ -224,31 +165,18 @@ export const SEED_BUNDLES = [
     id: 'draft-commit',
     examples: [{
       files: [
-        'src/features/members/screens/list/model/useMemberListFilter.ts',
-        'src/features/performances/screens/list/model/usePerformanceListFilter.ts',
+        'src/features/managers/screens/manager-list/model/useManagerListFilter.ts',
+        'src/features/community/screens/board-list/model/useBoardListFilter.ts',
       ],
-      useWhen: 'Compare filter, period and keyword drafts that share a commit identity; callers collect input through prepareSubmit and retain URL transitions.',
-      doNotCopy: 'Member explicit-search and performance immediate-search/reset policies, keyword fields or venueKeyword. Use individual primitives when input lifecycles differ.',
+      useWhen: 'Compare a gated (search-then-load) and an immediate-load filter hook: both wrap useListFilterDraft with submit and reset and know no labels.',
+      doNotCopy: 'Either domain\'s search policy, keyword fields, defaults or reset destination. Use individual primitives when input lifecycles differ.',
     }],
     code: ['src/shared/model/use-draft-commit.ts', 'src/shared/model/use-list-filter-draft.ts'],
-    skills: [location(
-      '.agents/skills/shared-ui-contract/references/logic-promotion.md',
-      'Shared logic admission',
-      'draft preservation while a caller identity is equal',
-    ), location(
-      '.agents/skills/shared-ui-contract/references/shared-values.md',
-      'State mechanics (`shared/model`)',
-      '`useListFilterDraft` composes',
-    )],
-    adrs: [location(
-      'docs/decisions/0009-shared-boundaries.md',
-      '현재 provisional 계약',
-      '`useDraftCommit`',
-    ), location(
-      'docs/decisions/0012-list-filter-draft-composition.md',
-      '초안 조합 결정',
-      '`useListFilterDraft`를 **provisional shared**로 채택한다',
-    )],
+    skills: [
+      location('.agents/skills/shared-ui-contract/references/promotion.md', 'Shared logic', 'draft preservation while a caller identity is equal'),
+      location('.agents/skills/shared-ui-contract/references/catalog.md', 'Model', '`useListFilterDraft('),
+    ],
+    adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/shared/model/use-draft-commit.test.tsx', 'src/shared/model/use-list-filter-draft.test.tsx'],
     ownership: {
       shared: 'Owns preserve, rebuild, reset, and patch mechanics; composes declared filter identity, period and keyword drafts and input collection.',
@@ -258,16 +186,8 @@ export const SEED_BUNDLES = [
   {
     id: 'period-draft',
     code: ['src/shared/model/use-period-draft.ts'],
-    skills: [location(
-      '.agents/skills/shared-ui-contract/references/logic-promotion.md',
-      'Shared logic admission',
-      'period preset/custom transitions',
-    )],
-    adrs: [location(
-      'docs/decisions/0009-shared-boundaries.md',
-      '현재 provisional 계약',
-      '`usePeriodDraft`',
-    )],
+    skills: [location('.agents/skills/shared-ui-contract/references/promotion.md', 'Shared logic', 'period preset/custom transitions')],
+    adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/shared/model/use-period-draft.test.tsx'],
     ownership: {
       shared: 'Owns preset/custom draft transitions and conversion from explicit timezone inputs.',
@@ -277,24 +197,12 @@ export const SEED_BUNDLES = [
   {
     id: 'search-partition',
     code: ['src/shared/lib/search-partition.ts', 'src/shared/lib/search-fields.ts', 'src/shared/lib/search-codecs.ts', 'src/shared/lib/search.ts'],
-    skills: [location(
-      '.agents/skills/shared-ui-contract/references/shared-values.md',
-      'Pure utilities (`shared/lib`)',
-      'filterPartitionKey',
-    ), location(
-      '.agents/skills/shared-ui-contract/references/shared-values.md',
-      'Search field declarations and codecs',
-      'defineSearchFields',
-    ), location(
-      '.agents/skills/feature-contract/references/list-search-contract.md',
-      'Search 계약과 기본값 작성',
-      'defineSearchFields',
-    )],
-    adrs: [location(
-      'docs/decisions/0009-shared-boundaries.md',
-      '현재 provisional 계약',
-      'filter/view partition',
-    )],
+    skills: [
+      location('.agents/skills/shared-ui-contract/references/catalog.md', 'Lib', 'filterPartitionKey'),
+      location('.agents/skills/shared-ui-contract/references/catalog.md', 'Lib', 'defineSearchFields'),
+      location('.agents/skills/feature-contract/references/list.md', 'URL', 'defineSearchFields'),
+    ],
+    adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/shared/lib/search-partition.test.ts', 'src/shared/lib/search-fields.test.ts', 'src/shared/lib/search-codecs.test.ts', 'src/shared/lib/search.test.ts'],
     ownership: {
       shared: 'Derives schema/defaults/partition from caller fields, supplies domain-neutral recovery codecs, and projects filter-only draft identity/values.',
@@ -309,11 +217,7 @@ export const SEED_BUNDLES = [
       '서버 연결 전후의 책임',
       '`useListQuery`',
     )],
-    adrs: [location(
-      'docs/decisions/0009-shared-boundaries.md',
-      '현재 provisional 계약',
-      '`api/list-query.ts` (`useListQuery`)',
-    )],
+    adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/api/list-query.test.tsx'],
     ownership: {
       shared: 'API owns the three list-only facts: an empty page is a result, only the entry fetch may open the blocking surface, an incident failure is not the list error, and the committed rows stay while the next view loads.',
@@ -328,16 +232,8 @@ export const SEED_BUNDLES = [
       'src/shared/model/list-options.ts',
       'src/shared/i18n/use-period-presets.ts',
     ],
-    skills: [location(
-      '.agents/skills/shared-ui-contract/references/shared-values.md',
-      'Config (`shared/model/list-options.ts`)',
-      'standardPageSizeOptions',
-    )],
-    adrs: [location(
-      'docs/decisions/0009-shared-boundaries.md',
-      '현재 provisional 계약',
-      '`standardPageSizeOptions`, `standardPeriodPresetValues`',
-    )],
+    skills: [location('.agents/skills/shared-ui-contract/references/catalog.md', 'Model', 'standardPageSizeOptions')],
+    adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: [
       'src/shared/model/list-options.test.ts',
       'src/shared/i18n/use-period-presets.test.tsx',
@@ -350,16 +246,8 @@ export const SEED_BUNDLES = [
   {
     id: 'keyword-draft',
     code: ['src/shared/model/use-keyword-draft.ts'],
-    skills: [location(
-      '.agents/skills/shared-ui-contract/references/logic-promotion.md',
-      'Shared logic admission',
-      'pending keyword add/remove/trim behavior',
-    )],
-    adrs: [location(
-      'docs/decisions/0009-shared-boundaries.md',
-      '현재 provisional 계약',
-      '`useKeywordDraft`',
-    )],
+    skills: [location('.agents/skills/shared-ui-contract/references/promotion.md', 'Shared logic', 'pending keyword add/remove/trim')],
+    adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/shared/model/use-keyword-draft.test.tsx'],
     ownership: {
       shared: 'Owns pending keyword add, remove, and trim mechanics.',
@@ -411,16 +299,8 @@ export const SEED_BUNDLES = [
       'src/shared/ui/filter/KeywordFilterField.tsx',
       'src/shared/ui/feedback/AsyncFieldBoundary.tsx',
     ],
-    skills: [location(
-      '.agents/skills/shared-ui-contract/references/filter-fields.md',
-      'Composition',
-      '`FilterPanel`',
-    )],
-    adrs: [location(
-      'docs/decisions/0009-shared-boundaries.md',
-      '현재 provisional 계약',
-      '`FilterPanel`, `FilterField`, `AsyncFieldBoundary`',
-    )],
+    skills: [location('.agents/skills/shared-ui-contract/references/catalog.md', 'Filter', '`FilterPanel`')],
+    adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: [
       'src/shared/ui/list/list-patterns.test.tsx',
       'src/shared/ui/feedback/AsyncFieldBoundary.test.tsx',
@@ -433,16 +313,8 @@ export const SEED_BUNDLES = [
   {
     id: 'inline-search-select',
     code: ['src/shared/ui/primitives/InlineSearchSelect.tsx'],
-    skills: [location(
-      '.agents/skills/shared-ui-contract/references/combobox.md',
-      'Inline single selection',
-      '`InlineSearchSelect` is the provisional',
-    )],
-    adrs: [location(
-      'docs/decisions/0009-shared-boundaries.md',
-      '검토한 대안',
-      '`InlineSearchSelect`를 provisional primitive로 분리했다',
-    )],
+    skills: [location('.agents/skills/shared-ui-contract/references/catalog.md', 'Primitives', '`InlineSearchSelect`')],
+    adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/shared/ui/primitives/InlineSearchSelect.test.tsx'],
     ownership: {
       shared: 'Owns local option matching, single selection, search clearing and the remove-before-reselect input state.',
@@ -453,24 +325,16 @@ export const SEED_BUNDLES = [
     id: 'data-table',
     examples: [{
       files: [
-        'src/features/performances/screens/list/ui/PerformanceListResult.tsx',
-        'src/features/performances/screens/list/ui/performance-columns.tsx',
-        'src/features/performances/screens/list/ui/usePerformanceListResult.ts',
+        'src/features/managers/screens/manager-list/ui/ManagerListResult.tsx',
+        'src/features/managers/screens/manager-list/ui/manager-list-columns.tsx',
+        'src/features/managers/screens/manager-list/ui/useManagerListResult.ts',
       ],
-      useWhen: 'Trace stable row IDs and controlled meta.sort from feature columns through a URL transition callback to DataTable rendering.',
-      doNotCopy: 'Performance fields, sort keys, direction defaults, row numbers or destinations. This example has no selection column or bulk workflow.',
+      useWhen: 'Trace stable row IDs, the selection column and controlled meta.sort from feature columns through listViewControls to DataTable rendering.',
+      doNotCopy: 'That domain\'s fields, sort keys, direction defaults or destinations.',
     }],
     code: ['src/shared/ui/list/DataTable.tsx', 'src/shared/ui/list/selection-column.tsx'],
-    skills: [location(
-      '.agents/skills/shared-ui-contract/references/data-table.md',
-      'Public contract',
-      '`meta.sort`',
-    ), location('.agents/skills/shared-ui-contract/references/data-table.md', 'Selection column', '`selectionColumn')],
-    adrs: [location(
-      'docs/decisions/0009-shared-boundaries.md',
-      '현재 provisional 계약',
-      '`DataTable`, `Pagination`, `PageSizeControl`, `SortControl`',
-    )],
+    skills: [location('.agents/skills/shared-ui-contract/references/catalog.md', 'List', '`meta.sort'), location('.agents/skills/shared-ui-contract/references/catalog.md', 'List', '`selectionColumn(')],
+    adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/shared/ui/list/DataTable.test.tsx', 'src/shared/ui/list/selection-column.test.tsx'],
     ownership: {
       shared: 'Owns native table semantics, stable row identity, and the controlled sort header (button, aria-sort, glyph) from meta.sort.',
@@ -484,16 +348,8 @@ export const SEED_BUNDLES = [
       'src/shared/ui/list/PageSizeControl.tsx',
       'src/shared/ui/list/SortControl.tsx',
     ],
-    skills: [location(
-      '.agents/skills/shared-ui-contract/references/pagination.md',
-      'Pagination rendering',
-      '`Pagination({ page, totalPages, onPageChange',
-    )],
-    adrs: [location(
-      'docs/decisions/0009-shared-boundaries.md',
-      '현재 provisional 계약',
-      '`DataTable`, `Pagination`, `PageSizeControl`, `SortControl`',
-    )],
+    skills: [location('.agents/skills/shared-ui-contract/references/catalog.md', 'List', '`Pagination`')],
+    adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/shared/ui/list/list-patterns.test.tsx'],
     ownership: {
       shared: 'Owns controlled page window rendering, accessible current page, boundary buttons, and the controlled page-size/sort-field selects.',
@@ -503,16 +359,8 @@ export const SEED_BUNDLES = [
   {
     id: 'page-header',
     code: ['src/shared/ui/layout/PageHeader.tsx'],
-    skills: [location(
-      '.agents/skills/shared-ui-contract/references/page-and-detail-surfaces.md',
-      'Page and detail surfaces',
-      '`PageHeader`',
-    )],
-    adrs: [location(
-      'docs/decisions/0011-detail-data-and-update-history-boundaries.md',
-      '상세 표면',
-      '`PageHeader`',
-    )],
+    skills: [location('.agents/skills/shared-ui-contract/references/catalog.md', 'Detail', '`PageHeader`')],
+    adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/shared/ui/layout/PageHeader.test.tsx'],
     ownership: {
       shared: 'Owns the single h1 header row with optional breadcrumb and an end-aligned actions slot.',
@@ -522,16 +370,8 @@ export const SEED_BUNDLES = [
   {
     id: 'section-card',
     code: ['src/shared/ui/layout/SectionCard.tsx'],
-    skills: [location(
-      '.agents/skills/shared-ui-contract/references/disclosure-sections.md',
-      'Which surface',
-      '`SectionCard`',
-    )],
-    adrs: [location(
-      'docs/decisions/0011-detail-data-and-update-history-boundaries.md',
-      '상세 표면',
-      '`SectionCard`',
-    )],
+    skills: [location('.agents/skills/shared-ui-contract/references/catalog.md', 'Detail', '`SectionCard`')],
+    adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/shared/ui/detail/DetailField.test.tsx'],
     ownership: {
       shared: 'Owns the titled disclosure block: header button with aria-expanded/aria-controls, controlled/uncontrolled open, keepMounted, and the error-count badge.',
@@ -541,20 +381,37 @@ export const SEED_BUNDLES = [
   {
     id: 'detail-field',
     code: ['src/shared/ui/detail/DetailField.tsx'],
-    skills: [location(
-      '.agents/skills/shared-ui-contract/references/page-and-detail-surfaces.md',
-      'Page and detail surfaces',
-      '`DetailField`',
-    )],
-    adrs: [location(
-      'docs/decisions/0011-detail-data-and-update-history-boundaries.md',
-      '상세 표면',
-      '`DetailField`',
-    )],
+    skills: [location('.agents/skills/shared-ui-contract/references/catalog.md', 'Detail', '`DetailField`')],
+    adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/shared/ui/detail/DetailField.test.tsx'],
     ownership: {
       shared: 'Owns one dt/dd pair.',
       feature: 'Owns the enclosing dl grid, empty-value copy, formatting, masking, and interactive values.',
+    },
+  },
+  {
+    id: 'list-view',
+    code: ['src/shared/lib/list-view.ts', 'src/shared/lib/list-sort.ts'],
+    skills: [
+      location('.agents/skills/feature-contract/references/list.md', 'URL', '`listViewControls('),
+      location('.agents/skills/feature-contract/references/list.md', 'Sorting', '`headerSortDirection('),
+    ],
+    adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
+    tests: ['src/shared/lib/list-view.test.ts', 'src/shared/lib/list-sort.test.ts'],
+    ownership: {
+      shared: 'Owns the four pure view transitions of a paged list URL (page size and sort key return to page 1, page keeps the rest, only the active header flips direction) and the aria-sort vocabulary of the active column.',
+      feature: 'Owns the search type, its sort keys, the default direction, the commit destination and the columns.',
+    },
+  },
+  {
+    id: 'scenario-request',
+    code: ['src/api/scenario.ts'],
+    skills: [location('.agents/skills/api-contract/references/mutations.md', '시나리오 요청', '`scenarioRequest')],
+    adrs: [location('docs/decisions/0014-single-screen-shape.md', '버린 대안', '미연결 쓰기를 실패로 둔다')],
+    tests: ['src/api/scenario.test.ts'],
+    ownership: {
+      shared: 'Owns the mutationFn of a write without a server contract: one log line naming the business request, then a resolved promise so the screen runs its real success path.',
+      feature: 'Owns the business label, the mutation input, the invalidated keys, and replacing the function body when the endpoint arrives.',
     },
   },
 ]
@@ -565,17 +422,17 @@ export const SEED_BUNDLES = [
  */
 export const SEED_BUNDLE_EXPORTS = {
   'ascii-triplet': ['hasRepeatedOrSequentialAsciiTriplet'],
-  confirmation: ['BulkActionDialogs', 'SelectionAlert', 'useConfirmation', 'useSelectionGate'],
+  confirmation: ['SelectionAlert', 'useConfirmation', 'useSelectionGate'],
   'contact-masking': ['maskEmail', 'maskPhone'],
   'list-result': ['ListResult', 'ListResultCopy', 'ListResultData', 'ListResultState', 'ResultSummary', 'ResultSummaryGroup', 'ResultSummaryItem', 'ResultToolbar', 'ResultTotal'],
-  'detail-state-boundary': ['DetailStateBoundary'],
+  'detail-state-boundary': ['DetailQueryFacts', 'DetailStateBoundary'],
   'detail-query': ['DetailQueryResult', 'DetailState', 'RequiredQueryFacts', 'RequiredQueryOutcome', 'resolveRequiredQueryOutcome', 'toDetailState', 'useDetailQuery'],
   'update-history': ['UpdateHistory', 'UpdateHistoryEntry'],
-  'blocking-progress': ['ApiQueryMeta', 'BlockingProgress', 'QueryProgress', 'blockingProgress', 'contentProgress', 'inlineProgress'],
+  'blocking-progress': ['ApiMutationMeta', 'ApiQueryMeta', 'BlockingProgress', 'QueryProgress', 'blockingProgress', 'contentProgress', 'inlineProgress'],
   'form-sections-and-adapters': ['FieldControlProps', 'FieldForm', 'FormArrayField', 'FormArrayFieldApi', 'FormCancelButton', 'FormCheckboxField', 'FormComboboxField', 'FormDateField', 'FormDateRangeField', 'FormDateRangeValue', 'FormErrorOutcome', 'FormField', 'FormFileField', 'FormFileValue', 'FormMultiSelectField', 'FormPermissionTreeField', 'FormRadioGroupField', 'FormSelectField', 'FormSubmitButton', 'FormTextField', 'SaveStage', 'SortableItemId', 'SortableList', 'SortableListItemProps', 'UnsavedChangesProvider', 'formFieldControlId', 'useFormSections', 'useSaveForm', 'useUnsavedChangesGuard'],
   'draft-commit': ['useDraftCommit', 'useListFilterDraft'],
   'period-draft': ['DisplayDateRange', 'PeriodDraft', 'PeriodPreset', 'PeriodValue', 'UtcPeriodRange', 'createPeriodDraft', 'usePeriodDraft'],
-  'search-partition': ['FilterFieldKeys', 'Resolved', 'SearchFieldKind', 'SearchFieldPartition', 'SearchParser', 'canonicalizeRouteSearch', 'defineSearchFields', 'filterPartitionKey', 'filterPartitionValues', 'nonEmptyArray', 'normalizeClosedInstantRange', 'omitSearchDefaults', 'optionalInstant', 'optionalPositiveInteger', 'recoverArray', 'recoverArrayItems', 'resolveSearchDefaults', 'toTotalPages'],
+  'search-partition': ['FilterFieldKeys', 'Resolved', 'SearchFieldKind', 'SearchFieldPartition', 'SearchParser', 'canonicalizeRouteSearch', 'defineGatedSearchFields', 'defineSearchFields', 'filterPartitionKey', 'filterPartitionValues', 'nonEmptyArray', 'normalizeClosedInstantRange', 'omitSearchDefaults', 'optionalInstant', 'optionalPositiveInteger', 'recoverArray', 'recoverArrayItems', 'resolveSearchDefaults', 'toTotalPages'],
   'list-query': ['ListQueryResult', 'useListQuery'],
   'list-config': ['standardPageSizeOptions', 'standardPeriodPresetValues', 'usePeriodPresetLabels', 'usePeriodPresets'],
   'keyword-draft': ['KeywordDraft', 'KeywordFilterItem', 'createKeywordDraft', 'useKeywordDraft'],
@@ -587,6 +444,8 @@ export const SEED_BUNDLE_EXPORTS = {
   'page-header': ['PageHeader'],
   'section-card': ['SectionCard'],
   'detail-field': ['DetailField'],
+  'list-view': ['ActiveListSort', 'HeaderSortDirection', 'ListSortDirection', 'ListViewControls', 'ListViewSearch', 'SortDirection', 'changePageSize', 'changeSort', 'goToPage', 'headerSortDirection', 'listViewControls', 'toggleHeaderSort'],
+  'scenario-request': ['scenarioRequest'],
 }
 
 /**
@@ -905,16 +764,13 @@ export const TRANSPLANT_MANIFEST = {
     '.agents/skills/shared-ui-contract',
   ],
   // 여기 있는 skill 전체와 `gates` 의 `eslint.config.js` 가 이름으로 가리키는 결정. 선택한 bundle 과 무관하게
-  // 함께 나가야 그 문장들이 대상에서 끊기지 않는다(`0009` 는 `0011`·`0012` 를 다시 가리킨다).
+  // 함께 나가야 그 문장들이 대상에서 끊기지 않는다.
   adrs: [
     'docs/decisions/0003-datetime-utc.md',
     'docs/decisions/0005-locale-query-key.md',
     'docs/decisions/0006-auth-token-storage.md',
     'docs/decisions/0008-primitive-implementation-selection.md',
-    'docs/decisions/0009-shared-boundaries.md',
-    'docs/decisions/0010-form-boundaries.md',
-    'docs/decisions/0011-detail-data-and-update-history-boundaries.md',
-    'docs/decisions/0012-list-filter-draft-composition.md',
+    'docs/decisions/0014-single-screen-shape.md',
   ],
   conditional: [
     'docs/decisions/0002-typescript-version-pin.md',
@@ -1006,7 +862,7 @@ export function listTransplantManifestFiles(manifest = TRANSPLANT_MANIFEST, root
 }
 
 /**
- * seed closure에 들어오면 안 되는 것. feature 코드·리허설 생성물·도메인 번역은 제품 사실이 아니다(ADR 0009 채택 경계).
+ * seed closure에 들어오면 안 되는 것. feature 코드·격리 계약 생성물·도메인 번역은 제품 사실이 아니다(ADR 0014 공용 경계).
  */
 export const FORBIDDEN_SEED_PATTERNS = [
   /^scripts\/agents\/reference-product\.test\.mjs$/,

@@ -1,34 +1,24 @@
 {
-  "edit": {
-    "title": "Edit member",
-    "restrictionsRequired": "Select activity restrictions."
-  },
-  "form": {
-    "createTitle": "Create member",
-    "section": "Member information",
-    "email": "Email",
-    "password": "Password",
-    "name": "Name",
-    "birthDate": "Date of birth",
-    "phone": "Mobile number",
-    "errors": {
-      "email": "Enter a 3–100 character email address using letters, numbers, and @._-.",
-      "password": "Use 8–20 characters from at least three groups: uppercase letters, lowercase letters, numbers, and symbols. Do not use three consecutive or repeated letters or numbers.",
-      "name": "Enter 1–10 Korean, Latin, Japanese, Chinese, or numeric characters.",
-      "birthDate": "Select a date of birth on or before today.",
-      "phone": "Enter 1–20 digits or hyphens."
-    }
+  "path": {
+    "members": "Members",
+    "active": "Active members",
+    "detail": "Details",
+    "create": "Create",
+    "edit": "Edit"
   },
   "screens": {
     "all": "All members",
     "general": "General members",
     "flagged": "Flagged members",
     "allTooltip": "View and manage active members.",
-    "help": "About all members"
-  },
-  "path": {
-    "members": "Members",
-    "active": "Active members"
+    "help": "About all members",
+    "dormant": "Dormant members",
+    "withdrawn": "Withdrawn members",
+    "withdrawnDetail": "Withdrawn member details",
+    "access": "Member access",
+    "counsel": "Member inquiries",
+    "appeals": "Flagged member appeals",
+    "appealDetail": "Appeal details"
   },
   "search": "Search",
   "reset": "Reset",
@@ -41,6 +31,7 @@
     "signupMethod": "Signup method",
     "accountStatus": "Account status",
     "restrictions": "Restrictions",
+    "progress": "Progress",
     "all": "All",
     "add": "Add",
     "remove": "Remove {{value}}",
@@ -66,16 +57,42 @@
     "inquiry": "1:1 inquiry",
     "entry": "Entry restriction"
   },
-  "columns": {
+  "accessPath": {
+    "app": "APP"
+  },
+  "states": {
+    "waiting": "Waiting",
+    "reviewing": "Under review",
+    "held": "On hold",
+    "completed": "Completed",
+    "rejected": "Rejected"
+  },
+  "fields": {
     "grade": "Grade",
     "signupMethod": "Signup method",
     "email": "Email",
+    "password": "Password",
     "name": "Name",
+    "birthDate": "Date of birth",
     "phone": "Phone",
     "accountStatus": "Account status",
     "joinedAt": "Joined at",
     "lastAccessedAt": "Last access",
-    "restrictions": "Restrictions"
+    "restrictions": "Restrictions",
+    "dormantAt": "Dormant since",
+    "withdrawnAt": "Withdrawal requested",
+    "withdrawalDate": "Withdrawn",
+    "reason": "Withdrawal reason",
+    "accessedAt": "Accessed",
+    "accessPath": "Access channel",
+    "receivedAt": "Received",
+    "answeredAt": "Answered",
+    "inquiryType": "Inquiry type",
+    "content": "Inquiry",
+    "status": "Processing status",
+    "appliedAt": "Applied",
+    "flaggedAt": "Flagged since",
+    "result": "Appeal result"
   },
   "result": {
     "pageSize": "View",
@@ -98,18 +115,17 @@
     "sms": "SMS",
     "email": "Email",
     "register": "Register",
+    "edit": "Edit",
     "smsMissing": "Select items to send SMS.",
-    "emailMissing": "Select items to send email.",
-    "smsTitle": "Send SMS",
-    "emailTitle": "Send email"
+    "emailMissing": "Select items to send email."
   },
-  "dialog": {
-    "title": "Alert",
-    "acknowledge": "Confirm"
-  },
-  "stubs": {
-    "detail": "Member details will be implemented in a follow-up issue.",
-    "create": "Member registration will be implemented in a follow-up issue."
+  "download": {
+    "action": "Download",
+    "scope": "Download scope",
+    "choose": "Select",
+    "selected": "Selected items",
+    "allResults": "All search results",
+    "required": "Select items to download."
   },
   "activity": {
     "title": "Activity",
@@ -149,6 +165,7 @@
     "receivedAt": "Received at",
     "answeredAt": "Answered at",
     "operatorName": "Operator",
+    "defaultOperator": "REFERENCE",
     "inquiryType": "Inquiry type",
     "chooseType": "Choose inquiry type",
     "content": "Counseling notes and outcome",
@@ -166,83 +183,37 @@
       "other": "Other"
     }
   },
-  "secondary": {
-    "dormant": "Dormant members",
-    "withdrawn": "Withdrawn members",
-    "counsel": "Member inquiries",
-    "appeals": "Flagged member appeals",
-    "access": "Member access",
-    "withdrawnDetail": "Withdrawn member details",
-    "appealDetail": "Appeal details",
-    "download": "Download",
-    "downloadScope": "Download scope",
-    "choose": "Select",
-    "selected": "Selected items",
-    "allResults": "All search results",
-    "downloadRequired": "Select items to download.",
-    "downloadScopeRequired": "Select a download scope.",
-    "fields": {
-      "dormantAt": "Dormant since",
-      "withdrawnAt": "Withdrawal requested",
-      "accessedAt": "Accessed",
-      "receivedAt": "Received",
-      "answeredAt": "Answered",
-      "appliedAt": "Applied",
-      "flaggedAt": "Flagged since",
-      "content": "Inquiry",
-      "status": "Processing status",
-      "progress": "Progress",
-      "result": "Appeal result",
-      "inquiryType": "Inquiry type",
-      "accessPath": "Access channel",
-      "app": "APP",
-      "reason": "Withdrawal reason",
-      "withdrawalDate": "Withdrawn",
-      "member": "Member information",
-      "performance": "Performance information",
-      "booking": "Booking information",
-      "booker": "Booker information"
-    },
-    "states": {
-      "waiting": "Waiting",
-      "reviewing": "Under review",
-      "held": "On hold",
-      "completed": "Completed",
-      "rejected": "Rejected"
-    },
-    "appeal": {
-      "application": "Appeal information",
-      "processing": "Processing result",
-      "reason": "Rejection reason",
-      "unclear": "Unclear reason or circumstances",
-      "insufficient": "Insufficient supporting evidence",
-      "other": "Other (enter directly)",
-      "direct": "Details",
-      "opinion": "Operator comments",
-      "notify": "Notify member of result",
-      "confirmNotify": "Notify the member of this result?",
-      "memberLink": "View member information",
-      "attachment": "Attachments",
-      "notified": "Member notified"
-    },
-    "example": {
-      "name": "Reference member",
-      "operator": "Reference operator",
-      "content": "Reference scenario inquiry",
-      "reason": "Reference scenario withdrawal reason",
-      "application": "Reference scenario appeal",
-      "performance": "Reference performance",
-      "category": "Reference inquiry category",
-      "printer": "Reference printer",
-      "preview": "REFERENCE-001 · Reference performance · A-1 (reference print preview)"
-    },
-    "send": "Send",
-    "reissue": "Reissue ticket",
+  "counselDetail": {
+    "member": "Member information",
+    "performance": "Performance information",
+    "booking": "Booking information",
+    "booker": "Booker information"
+  },
+  "reissue": {
+    "title": "Reissue ticket",
     "printer": "Smart printer",
+    "choose": "Select",
     "preview": "Preview",
     "testPrint": "Test print",
     "startPrint": "Start issuing",
     "printerBusy": "The selected printer is busy. Select another printer."
+  },
+  "appeal": {
+    "member": "Member information",
+    "application": "Appeal information",
+    "processing": "Processing result",
+    "reason": "Rejection reason",
+    "unclear": "Unclear reason or circumstances",
+    "insufficient": "Insufficient supporting evidence",
+    "other": "Other (enter directly)",
+    "direct": "Details",
+    "choose": "Select",
+    "opinion": "Operator comments",
+    "notify": "Notify member of result",
+    "confirmNotify": "Notify the member of this result?",
+    "send": "Send",
+    "memberLink": "View member information",
+    "notified": "Member notified"
   },
   "detailAction": {
     "passwordTitle": "Change password",
@@ -265,10 +236,32 @@
   },
   "detail": {
     "title": "Member details",
+    "section": "Member information",
     "history": "Update history",
     "updatedAt": "Updated at",
     "change": "Changes",
+    "actor": "Operator",
     "historyEmpty": "No update history.",
-    "contractPending": "The member query API is not connected yet."
+    "emptyValue": "-"
+  },
+  "form": {
+    "createTitle": "Create member",
+    "editTitle": "Edit member",
+    "section": "Member information",
+    "email": "Email",
+    "password": "Password",
+    "name": "Name",
+    "birthDate": "Date of birth",
+    "phone": "Mobile number",
+    "accountStatus": "Account status",
+    "restrictions": "Restrictions",
+    "errors": {
+      "email": "Enter a 3–100 character email address using letters, numbers, and @._-.",
+      "password": "Use 8–20 characters from at least three groups: uppercase letters, lowercase letters, numbers, and symbols. Do not use three consecutive or repeated letters or numbers.",
+      "name": "Enter 1–10 Korean, Latin, Japanese, Chinese, or numeric characters.",
+      "birthDate": "Select a date of birth on or before today.",
+      "phone": "Enter 1–20 digits or hyphens.",
+      "restrictions": "Select activity restrictions."
+    }
   }
 }

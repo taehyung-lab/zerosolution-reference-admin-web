@@ -110,13 +110,35 @@ file: a partial request and a coherent single-file responsibility must not trigg
 The former file-set gate and its `SHAPE_EXCEPTIONS` lifecycle were removed after a filter-only probe
 produced seven missing-file errors which vanished when the same component was named Panel.
 
+The role references' `형태` tables name the file set of a **whole new screen** of that role, so a reader
+knows where each responsibility lives. They are review material, not a machine rule: the checker counts
+no files, and a partial request touches only the responsibility it changes. Those two statements agree —
+a new list has all eight responsibilities, a filter-only change has one.
+
 List-route registration in `tests/e2e/search-contract.spec.ts` and `$param` leaf loader presence remain
 cheap supporting checks. They inspect source conventions, not runtime behavior: renamed roles can be
 invisible, a loader body may be wrong, and array membership does not prove an executed test. Actual URL,
 state, API, accessibility and shared-boundary correctness belongs to focused tests and consumer review.
 The feature references’ `형태` tables describe responsibility placement, not mandatory file counts.
 
-Skill text is product-free. `productNameNotices` scans `.agents/skills/**/*.md` for this product's
+**Everything that travels is product-free, not just the skills.** The same scan runs over the portable
+set — skills, the ADRs the skills and gates name, the root instructions, and the seed's production code
+and focused tests — because a domain noun leaking into an ADR or a shared comment reaches the target as
+a norm just as a skill sentence would. Excluded from the scan, with reasons: `src/app/**` (navigation and
+i18n registration are the wiring a target replaces, and the manifest marks them `merge`) and
+`src/test/workflows/**` (product workflow tests the transplant excludes), this file (it documents the
+vocabulary by example), and any file carrying a `TRANSPLANT_PENDING_` sentinel — that sentinel already
+marks the decision and **fails** in target mode, so counting the same line as a notice would blur a
+closed placeholder with open drift. `packageManager` is named in `PRODUCT_DOMAIN_TERMS.allow` because a
+regex cannot tell its `Manager` from the one in a domain hook.
+
+What remains is one class, and it is closed rather than tolerated: an ADR that cites the **filename** of
+a decision which does not travel. The transplant unlinks that citation, keeps the source path as plain
+text and records it in `PENDING.md`, so the target never resolves it as its own decision. A new notice
+outside these classes means the vocabulary leaked into something portable; close it by removing the
+name, excluding the file from the transplant, or marking the spot with a sentinel.
+
+`productNameNotices` scans for this product's
 domain nouns, `Manager*`/`Member*`-style identifiers and `src/features/<dir>/` paths
 (`PRODUCT_DOMAIN_TERMS` in `contracts.mjs`; replace the vocabulary on transplant) and reports every line,
 including examples and fences, as a notice. A rule that needs a

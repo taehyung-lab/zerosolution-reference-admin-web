@@ -4,7 +4,7 @@
  * key gets a direction and every other sortable header gets `undefined` (one `aria-sort` per table).
  *
  * `direction` is required on purpose: a list whose URL contract leaves `sortDirection` undefined by
- * default rendered its active column with no arrow at all (2026-09-11, boards and performances),
+ * default rendered its active column with no arrow at all (observed on two independent lists),
  * so the resolved search must supply the default before it reaches the columns.
  */
 export type ListSortDirection = 'asc' | 'desc';

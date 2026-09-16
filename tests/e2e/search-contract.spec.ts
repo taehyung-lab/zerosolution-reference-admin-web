@@ -114,12 +114,14 @@ for (const path of explicitPaths) {
     ).toHaveValue("");
     await page.reload();
     await expect(page.getByRole("table")).toHaveCount(1);
+    // `searched=false` 는 초기화 커밋이라 다른 조건이 있어도 검색 전 URL 로 돌아간다.
     await page.goto(path + "?searched=false&pageSize=200");
-    await expect(page).toHaveURL(/searched=true/);
+    await expect(page).toHaveURL(new RegExp(path + "$"));
+    await expect(page.getByRole("table")).toHaveCount(0);
+    await page.goto(path + "?pageSize=200");
     await expect(
       page.getByRole("combobox", { name: "보기", exact: true }),
     ).toContainText("200");
-    await page.goto(path + "?pageSize=200");
     await expect(page.getByRole("table")).toHaveCount(1);
     await expect(page).toHaveURL(/searched=true/);
     await page.goto(path);

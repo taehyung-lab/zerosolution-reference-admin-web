@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
-import type { BoardRow } from '@/features/community/model/board';
+import { boardSortKeys, type BoardRow, type BoardSortKey } from '@/features/community/model/board';
+import { standardPageSizeOptions } from '@/shared/model/list-options';
 import { DataTable } from '@/shared/ui/list/DataTable';
-import { ListResult } from '@/shared/ui/list/ListResult';
-import type { ListResultData } from '@/shared/ui/list/ListResult';
+import { ListResult, type ListResultData } from '@/shared/ui/list/ListResult';
 import { Pagination } from '@/shared/ui/list/Pagination';
 import { PageSizeControl } from '@/shared/ui/list/PageSizeControl';
 import { ResultToolbar } from '@/shared/ui/list/ResultToolbar';
@@ -29,6 +29,7 @@ export function BoardListResult({
   readonly onCreate: () => void;
 }) {
   const { t } = useTranslation('community');
+  const { view } = result;
 
   return (
     <>
@@ -36,22 +37,27 @@ export function BoardListResult({
       <ResultToolbar
         left={
           <>
-            <PageSizeControl label={t('board.result.pageSize')} {...result.pageSize} />
-            <SortControl label={t('board.result.sort')} {...result.sort} />
+            <PageSizeControl
+              label={t('board.result.pageSize')}
+              options={standardPageSizeOptions}
+              {...view.pageSize}
+            />
+            <SortControl<BoardSortKey>
+              label={t('board.result.sort')}
+              value={view.sort.value}
+              options={boardSortKeys.map((value) => ({ value, label: t(`board.sort.${value}`) }))}
+              onValueChange={view.sort.onValueChange}
+            />
           </>
         }
         right={<Button onClick={onCreate}>{t('board.result.create')}</Button>}
       />
       <ListResult
         data={data}
-        copy={{
-          // 진입 즉시 조회라 notSearched 에 도달하지 않는다. 타입이 두 문구를 요구해 같은 값을 넘긴다.
-          notSearched: t('board.result.empty'),
-          empty: t('board.result.empty'),
-        }}
+        copy={{ notSearched: t('board.result.empty'), empty: t('board.result.empty') }}
         footer={
           <Pagination
-            {...result.pagination}
+            {...view.pagination}
             ariaLabel={t('board.result.pagination.label')}
             previousLabel={t('board.result.pagination.previous')}
             nextLabel={t('board.result.pagination.next')}

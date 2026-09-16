@@ -1,34 +1,24 @@
 {
-  "edit": {
-    "title": "会員編集",
-    "restrictionsRequired": "活動制限を選択してください。"
-  },
-  "form": {
-    "createTitle": "会員登録",
-    "section": "会員情報",
-    "email": "メールアドレス",
-    "password": "パスワード",
-    "name": "名前",
-    "birthDate": "生年月日",
-    "phone": "携帯電話番号",
-    "errors": {
-      "email": "英数字と@._-を使用し、3〜100文字のメールアドレスを入力してください。",
-      "password": "英大文字・英小文字・数字・記号のうち3種類以上を使い、8〜20文字で入力してください。連続または同一の英数字を3文字以上使用できません。",
-      "name": "韓国語・英字・日本語・中国語・数字で1〜10文字入力してください。",
-      "birthDate": "今日以前の生年月日を選択してください。",
-      "phone": "数字とハイフンで1〜20文字入力してください。"
-    }
+  "path": {
+    "members": "会員",
+    "active": "アクティブ会員",
+    "detail": "照会",
+    "create": "登録",
+    "edit": "編集"
   },
   "screens": {
     "all": "全会員",
     "general": "一般会員",
     "flagged": "不良会員",
     "allTooltip": "アクティブ会員を照会・管理します。",
-    "help": "全会員について"
-  },
-  "path": {
-    "members": "会員",
-    "active": "アクティブ会員"
+    "help": "全会員について",
+    "dormant": "休眠会員",
+    "withdrawn": "退会会員",
+    "withdrawnDetail": "退会会員照会",
+    "access": "会員アクセス",
+    "counsel": "会員相談",
+    "appeals": "不良会員の釈明申請",
+    "appealDetail": "釈明申請照会"
   },
   "search": "検索",
   "reset": "初期化",
@@ -41,6 +31,7 @@
     "signupMethod": "登録方法",
     "accountStatus": "アカウント状態",
     "restrictions": "活動制限",
+    "progress": "進行状況",
     "all": "全体",
     "add": "追加",
     "remove": "{{value}}を削除",
@@ -66,16 +57,42 @@
     "inquiry": "1:1お問い合わせ",
     "entry": "入場制限設定"
   },
-  "columns": {
+  "accessPath": {
+    "app": "APP"
+  },
+  "states": {
+    "waiting": "待機",
+    "reviewing": "検討中",
+    "held": "保留",
+    "completed": "完了",
+    "rejected": "却下"
+  },
+  "fields": {
     "grade": "等級",
     "signupMethod": "登録方法",
     "email": "メール",
+    "password": "パスワード",
     "name": "名前",
+    "birthDate": "生年月日",
     "phone": "携帯電話番号",
     "accountStatus": "アカウント状態",
     "joinedAt": "登録日",
     "lastAccessedAt": "最終アクセス日",
-    "restrictions": "活動制限"
+    "restrictions": "活動制限",
+    "dormantAt": "休眠移行日",
+    "withdrawnAt": "退会申請日",
+    "withdrawalDate": "退会日",
+    "reason": "退会理由",
+    "accessedAt": "アクセス日",
+    "accessPath": "アクセス経路",
+    "receivedAt": "受付日",
+    "answeredAt": "回答日",
+    "inquiryType": "問い合わせ種類",
+    "content": "問い合わせ内容",
+    "status": "処理状況",
+    "appliedAt": "申請日",
+    "flaggedAt": "不良会員移行日",
+    "result": "釈明結果"
   },
   "result": {
     "pageSize": "表示",
@@ -98,18 +115,17 @@
     "sms": "SMS",
     "email": "メール",
     "register": "登録",
+    "edit": "編集",
     "smsMissing": "SMSを送信する項目を選択してください。",
-    "emailMissing": "メールを送信する項目を選択してください。",
-    "smsTitle": "SMS送信",
-    "emailTitle": "メール送信"
+    "emailMissing": "メールを送信する項目を選択してください。"
   },
-  "dialog": {
-    "title": "お知らせ",
-    "acknowledge": "確認"
-  },
-  "stubs": {
-    "detail": "会員照会は後続課題で実装します。",
-    "create": "会員登録は後続課題で実装します。"
+  "download": {
+    "action": "ダウンロード",
+    "scope": "ダウンロード範囲",
+    "choose": "選択",
+    "selected": "選択した項目",
+    "allResults": "検索結果全体",
+    "required": "ダウンロードする項目を選択してください。"
   },
   "activity": {
     "title": "活動情報",
@@ -149,6 +165,7 @@
     "receivedAt": "受付日時",
     "answeredAt": "回答日時",
     "operatorName": "担当者",
+    "defaultOperator": "REFERENCE",
     "inquiryType": "問い合わせ種別",
     "chooseType": "問い合わせ種別を選択",
     "content": "相談内容および処理結果",
@@ -166,83 +183,37 @@
       "other": "その他"
     }
   },
-  "secondary": {
-    "dormant": "休眠会員",
-    "withdrawn": "退会会員",
-    "counsel": "会員相談",
-    "appeals": "不良会員の釈明申請",
-    "access": "会員アクセス",
-    "withdrawnDetail": "退会会員照会",
-    "appealDetail": "釈明申請照会",
-    "download": "ダウンロード",
-    "downloadScope": "ダウンロード範囲",
-    "choose": "選択",
-    "selected": "選択した項目",
-    "allResults": "検索結果全体",
-    "downloadRequired": "ダウンロードする項目を選択してください。",
-    "downloadScopeRequired": "ダウンロード範囲を選択してください。",
-    "fields": {
-      "dormantAt": "休眠移行日",
-      "withdrawnAt": "退会申請日",
-      "accessedAt": "アクセス日",
-      "receivedAt": "受付日",
-      "answeredAt": "回答日",
-      "appliedAt": "申請日",
-      "flaggedAt": "不良会員移行日",
-      "content": "問い合わせ内容",
-      "status": "処理状況",
-      "progress": "進行状況",
-      "result": "釈明結果",
-      "inquiryType": "問い合わせ種類",
-      "accessPath": "アクセス経路",
-      "app": "APP",
-      "reason": "退会理由",
-      "withdrawalDate": "退会日",
-      "member": "会員情報",
-      "performance": "公演情報",
-      "booking": "予約情報",
-      "booker": "予約者情報"
-    },
-    "states": {
-      "waiting": "待機",
-      "reviewing": "検討中",
-      "held": "保留",
-      "completed": "完了",
-      "rejected": "却下"
-    },
-    "appeal": {
-      "application": "釈明申請情報",
-      "processing": "処理結果",
-      "reason": "却下理由",
-      "unclear": "理由や経緯が不明確",
-      "insufficient": "証拠資料が不足",
-      "other": "その他（直接入力）",
-      "direct": "直接入力",
-      "opinion": "担当者の意見",
-      "notify": "会員に結果を通知",
-      "confirmNotify": "会員に結果を通知しますか？",
-      "memberLink": "会員情報を表示",
-      "attachment": "添付ファイル",
-      "notified": "結果通知済み"
-    },
-    "example": {
-      "name": "参考会員",
-      "operator": "参考担当者",
-      "content": "シナリオ検証用の問い合わせ",
-      "reason": "シナリオ検証用の退会理由",
-      "application": "シナリオ検証用の釈明",
-      "performance": "参考公演",
-      "category": "参考問い合わせ種類",
-      "printer": "参考プリンター",
-      "preview": "REFERENCE-001 · 参考公演 · A-1（参考発券プレビュー）"
-    },
-    "send": "送信",
-    "reissue": "チケット再発行",
+  "counselDetail": {
+    "member": "会員情報",
+    "performance": "公演情報",
+    "booking": "予約情報",
+    "booker": "予約者情報"
+  },
+  "reissue": {
+    "title": "チケット再発行",
     "printer": "スマートプリンター選択",
+    "choose": "選択",
     "preview": "プレビュー",
     "testPrint": "テスト発券",
     "startPrint": "発券開始",
     "printerBusy": "選択したプリンターは発券中です。別のプリンターを選択してください。"
+  },
+  "appeal": {
+    "member": "会員情報",
+    "application": "釈明申請情報",
+    "processing": "処理結果",
+    "reason": "却下理由",
+    "unclear": "理由や経緯が不明確",
+    "insufficient": "証拠資料が不足",
+    "other": "その他（直接入力）",
+    "direct": "直接入力",
+    "choose": "選択",
+    "opinion": "担当者の意見",
+    "notify": "会員に結果を通知",
+    "confirmNotify": "会員に結果を通知しますか？",
+    "send": "送信",
+    "memberLink": "会員情報を表示",
+    "notified": "結果通知済み"
   },
   "detailAction": {
     "passwordTitle": "パスワード変更",
@@ -265,10 +236,32 @@
   },
   "detail": {
     "title": "会員詳細",
+    "section": "会員情報",
     "history": "更新履歴",
     "updatedAt": "更新日時",
     "change": "更新内容",
+    "actor": "担当者",
     "historyEmpty": "更新履歴はありません。",
-    "contractPending": "会員取得APIはまだ接続されていません。"
+    "emptyValue": "-"
+  },
+  "form": {
+    "createTitle": "会員登録",
+    "editTitle": "会員編集",
+    "section": "会員情報",
+    "email": "メールアドレス",
+    "password": "パスワード",
+    "name": "名前",
+    "birthDate": "生年月日",
+    "phone": "携帯電話番号",
+    "accountStatus": "アカウント状態",
+    "restrictions": "活動制限",
+    "errors": {
+      "email": "英数字と@._-を使用し、3〜100文字のメールアドレスを入力してください。",
+      "password": "英大文字・英小文字・数字・記号のうち3種類以上を使い、8〜20文字で入力してください。連続または同一の英数字を3文字以上使用できません。",
+      "name": "韓国語・英字・日本語・中国語・数字で1〜10文字入力してください。",
+      "birthDate": "今日以前の生年月日を選択してください。",
+      "phone": "数字とハイフンで1〜20文字入力してください。",
+      "restrictions": "活動制限を選択してください。"
+    }
   }
 }

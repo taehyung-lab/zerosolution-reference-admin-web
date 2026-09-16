@@ -65,7 +65,8 @@ for (const [status, action, kind, label] of [
     }
     await confirm.click();
     await expectRequests(observed, label);
-    await expect(dialog).toBeVisible();
+    // 요청이 이행되면 입력 팝업은 닫힌다(성공 경로).
+    await expect(dialog).toHaveCount(0);
   });
 }
 
@@ -92,7 +93,7 @@ for (const [action, label] of [
     }
     await confirm.click();
     await expectRequests(observed, label);
-    await expect(dialog).toBeVisible();
+    await expect(dialog).toHaveCount(0);
   });
 }
 
@@ -114,7 +115,7 @@ for (const [path, selectRows] of [
         if (path !== '/members/appeals') await page.getByRole('form', { name: '검색', exact: true }).getByRole('button', { name: '검색', exact: true }).click();
         await page.getByRole('row').nth(1).getByRole('checkbox').check();
       }
-      await page.getByRole('button', { name: path.startsWith('/managers') ? channel + ' 발송' : channel, exact: true }).first().click();
+      await page.getByRole('button', { name: channel, exact: true }).first().click();
       const dialog = page.getByRole('dialog');
       await dialog.getByRole('button', { name: '보내기', exact: true }).click();
       await expect(dialog.getByRole('alert').first()).toBeVisible();
@@ -198,7 +199,10 @@ for (const [path, label] of [
     await page.getByRole('button', { name: '저장', exact: true }).click();
     await page.getByRole('dialog').getByRole('button', { name: '확인', exact: true }).click();
     await expectRequests(observed, label);
-    await expect(page.getByRole('textbox', { name: '이름', exact: true })).toHaveValue('수정회원');
+    // 성공 경로: 저장 완료 alert → 조회로 이동.
+    await expect(page.getByRole('dialog')).toContainText('저장되었습니다.');
+    await page.getByRole('dialog').getByRole('button', { name: '확인', exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(path.replace('/edit', '') + '$'));
   });
 }
 
@@ -215,7 +219,9 @@ test('@reference manager create reaches its handler after confirmation', async (
   await page.getByRole('button', { name: '저장', exact: true }).click();
   await page.getByRole('dialog').getByRole('button', { name: '확인', exact: true }).click();
   await expectRequests(observed, '운영자 등록');
-  await expect(page.getByLabel('비밀번호*', { exact: true })).toHaveValue('Safe!729');
+  await expect(page.getByRole('dialog')).toContainText('저장되었습니다.');
+  await page.getByRole('dialog').getByRole('button', { name: '확인', exact: true }).click();
+  await expect(page).toHaveURL(/\/managers$/);
 });
 
 for (const [path, prefix] of [
@@ -225,7 +231,7 @@ for (const [path, prefix] of [
   test('@reference counsel create edit delete requests ' + path, async ({ page }) => {
     const observed = observeRequests(page);
     await page.goto(path);
-    if (path === '/members/counsel') await page.getByRole('cell', { name: '시나리오 검증용 문의 내용', exact: true }).click();
+    if (path === '/members/counsel') await page.getByRole('cell', { name: 'Example inquiry', exact: true }).click();
     const create = page.getByRole('form', { name: '신규 상담 등록', exact: true });
     await create.getByRole('button', { name: '저장', exact: true }).click();
     await expect(create.getByRole('alert').first()).toBeVisible();
@@ -260,13 +266,13 @@ for (const [path, prefix] of [
 test('@reference ticket test and reissue requests require a printer', async ({ page }) => {
   const observed = observeRequests(page);
   await page.goto('/members/counsel');
-  await page.getByRole('cell', { name: '시나리오 검증용 문의 내용', exact: true }).click();
+  await page.getByRole('cell', { name: 'Example inquiry', exact: true }).click();
   await page.getByRole('button', { name: '티켓재발권', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: '티켓재발권', exact: true });
   await expect(dialog.getByRole('button', { name: '테스트 발권', exact: true })).toBeDisabled();
   await expect(dialog.getByRole('button', { name: '발권 시작하기', exact: true })).toBeDisabled();
   expect(observed.logs).toEqual([]);
-  await choose(page, '스마트프린터 선택', '참고 프린터');
+  await choose(page, '스마트프린터 선택', 'Example printer');
   await dialog.getByRole('button', { name: '테스트 발권', exact: true }).click();
   await expectRequests(observed, '티켓 테스트 발권');
   await dialog.getByRole('button', { name: '발권 시작하기', exact: true }).click();
@@ -298,7 +304,7 @@ test('@reference appeal save and notification use distinct confirmed inputs', as
 test('@reference appeal bulk change validates selected members', async ({ page }) => {
   const observed = observeRequests(page);
   await page.goto('/members/appeals');
-  await choose(page, '계정 상태', '일반회원');
+  await choose(page, '변경 항목', '일반회원');
   await page.getByRole('button', { name: '변경', exact: true }).click();
   await page.getByRole('dialog').getByRole('button', { name: '확인', exact: true }).click();
   expect(observed.logs).toEqual([]);
@@ -326,7 +332,9 @@ test('@reference member create reaches its request without clearing private inpu
   await save.click();
   await page.getByRole('dialog').getByRole('button', { name: '확인', exact: true }).click();
   await expectRequests(observed, '회원 등록');
-  await expect(page.getByLabel('비밀번호*', { exact: true })).toHaveValue('Rt7!vK9@q');
+  await expect(page.getByRole('dialog')).toContainText('저장되었습니다.');
+  await page.getByRole('dialog').getByRole('button', { name: '확인', exact: true }).click();
+  await expect(page).toHaveURL(/\/members\/active\/all$/);
 });
 
 test('@reference shell search and profile expose their unconnected destinations', async ({ page }) => {

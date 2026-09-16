@@ -1,117 +1,59 @@
-/**
- * 운영자 조회 요청 조건 변환과 생성 API를 실행하는 query options를 선언한다.
- * 실제 API에서도 남는 연결부다. endpoint·DTO는 OpenAPI에 맞춰 교체하고, 화면의 선택/폼 상태는 이 파일에 넣지 않는다.
- */
+import { queryOptions } from '@tanstack/react-query';
+import { inlineProgress } from '@/api/query-meta';
+import type { UiLocale } from '@/shared/i18n/locale';
 import {
-  get8,
-  getAgencies,
-  getForEdit1,
-  getList8,
-  getManagerTypes,
-  getPermissions,
-} from "@/api/generated/endpoints";
-import type {
-  CnJsonPagingResultPagingDataMrManagerDTOInventory,
-  GetList8Params,
-  GetPermissionsType,
-  MrManagerDTODetail,
-  MrManagerDTOEditDetail,
-} from "@/api/generated/models";
-import { blockingProgress, inlineProgress } from "@/api/query-meta";
-import type { UiLocale } from "@/shared/i18n/locale";
-import { nonEmptyArray } from "@/shared/lib/search";
-import { queryOptions } from "@tanstack/react-query";
-import { managerKeys } from "./keys";
-import type { ManagerSearch } from "./manager-search";
+  readManagerDetail,
+  readManagerListPage,
+  readManagerPermissionOptions,
+  readManagerTypeOptions,
+} from '../fixtures/managers';
+import type { ManagerListRequest } from '../model/manager';
+import { managerQueryKeys } from './keys';
 
-/** 확정 화면 검색값을 기존 API 필드명과 빈 배열 생략 규칙으로 변환한다. 실제 API에서도 필요한 요청 mapper다. */
-export function toManagerListParams(search: ManagerSearch): GetList8Params {
-  const keywords = nonEmptyArray(search.keywords);
-  const types = nonEmptyArray(search.types);
-  const statuses = nonEmptyArray(search.statuses);
-  const agencyIds = nonEmptyArray(search.agencyIds);
-  const registrationRouteTypes = nonEmptyArray(search.registrationRouteTypes);
-
-  return {
-    periodType: search.periodType,
-    ...(keywords ? { keywords } : {}),
-    ...(types ? { types } : {}),
-    ...(statuses ? { statuses } : {}),
-    ...(agencyIds ? { agencyIds } : {}),
-    ...(registrationRouteTypes ? { registrationRouteTypes } : {}),
-    sortType: search.sortType,
-    sortDirection: search.sortDirection,
-    pageNo: search.page,
-    pageSize: search.pageSize,
-    startDateTime: search.startDateTime,
-    endDateTime: search.endDateTime,
-  };
-}
-
-/** 같은 변환 params를 캐시 키와 생성 API 호출에 함께 사용해 다른 검색 결과가 섞이지 않게 한다. */
-export function managerListQuery(locale: UiLocale, search: ManagerSearch) {
-  const params = toManagerListParams(search);
+/**
+ * 운영자 조회의 유일한 query 선언들. 화면·route loader·테스트가 같은 정의를 소비한다.
+ *
+ * TRANSPLANT_PENDING_MANAGER_QUERY: queryFn 은 아직 임시 응답 함수다. 실제 endpoint 가 확정되면
+ * 여기서 생성된 operation 을 호출하고 fixtures 를 지운다. 요청 입력과 캐시 키는 화면이 해소한 같은
+ * 값이므로 그때도 바뀌지 않는다.
+ */
+export function managerListQueryOptions(locale: UiLocale, request: ManagerListRequest) {
   return queryOptions({
-    queryKey: managerKeys.list(locale, params),
-    queryFn:
-      async (): Promise<CnJsonPagingResultPagingDataMrManagerDTOInventory> =>
-        getList8(params),
-  });
-}
-/** 표시용 상세를 조회한다. 수정용 원본 조회와 캐시를 구분한다. */
-export function managerDetailQuery(locale: UiLocale, id: string) {
-  return queryOptions({
-    queryKey: managerKeys.detail(locale, id),
-    queryFn: async (): Promise<MrManagerDTODetail> => get8(id),
-    ...blockingProgress,
+    queryKey: managerQueryKeys.list(locale, request),
+    queryFn: () => readManagerListPage(request),
   });
 }
 
-/** 목록 검색 전에도 필요한 운영자 유형 옵션을 독립 캐시로 조회한다. */
+/** 운영자 한 건. 조회 화면과 수정 화면, 두 route loader 가 같은 정의를 쓴다. */
+export function managerDetailQueryOptions(locale: UiLocale, managerId: string) {
+  return queryOptions({
+    queryKey: managerQueryKeys.detail(locale, managerId),
+    queryFn: () => readManagerDetail(managerId),
+  });
+}
+
+/** 유형 옵션은 선행 조건이 없어 목록 필터와 등록·수정 폼이 같은 캐시를 쓴다. */
 export function managerTypeOptionsQuery(locale: UiLocale) {
   return queryOptions({
-    queryKey: managerKeys.typeOptions(locale),
-    queryFn: () => getManagerTypes(),
+    queryKey: managerQueryKeys.typeOptions(locale),
+    queryFn: () => readManagerTypeOptions(),
     staleTime: Infinity,
     ...inlineProgress,
   });
 }
 
-/** 수정 초기값용 상세를 조회한다. 편집 중 초기값 재주입을 피하는 캐시 정책을 이 조회가 소유한다. */
-export function managerEditDetailQuery(locale: UiLocale, id: string) {
-  return queryOptions({
-    queryKey: managerKeys.editDetail(locale, id),
-    queryFn: async (): Promise<MrManagerDTOEditDetail> => getForEdit1(id),
-    // 수정 진입값은 폼 defaults 로 한 번만 복사된다. 배경 refetch 가 편집 중인 입력과
-    // 경쟁하지 않도록 화면이 살아 있는 동안 stale 로 만들지 않는다.
-    staleTime: Infinity,
-    gcTime: 0,
-    ...blockingProgress,
-  });
-}
-
 /**
- * 권한 옵션은 선택된 유형에 종속된다(리허설 계약의 `GET /options/permissions?type=`).
- * 유형이 없으면 조회하지 않는다. 어떤 유형에 어떤 권한이 열리는지는 feature 가 소유한다.
+ * 권한 옵션의 범위. 목록 필터는 사용 중인 전체 권한(`type` 없음), 등록·수정은 선택한 유형에 종속된
+ * 권한만 쓴다(11-settings.md 11.1). 폼에서 유형을 고르기 전(`enabled: false`)에는 조회하지 않는다.
  */
 export function managerPermissionOptionsQuery(
   locale: UiLocale,
-  type: GetPermissionsType | undefined,
+  scope: { readonly type?: string; readonly enabled: boolean },
 ) {
   return queryOptions({
-    queryKey: managerKeys.permissionOptions(locale, type),
-    queryFn: () => getPermissions(type === undefined ? undefined : { type }),
-    enabled: type !== undefined,
-    staleTime: Infinity,
-    ...inlineProgress,
-  });
-}
-
-/** 기획사 선택용 원본 옵션을 조회한다. value/label 변환은 옵션 소비 훅에서 한다. */
-export function managerAgencyOptionsQuery(locale: UiLocale) {
-  return queryOptions({
-    queryKey: managerKeys.agencyOptions(locale),
-    queryFn: getAgencies,
+    queryKey: managerQueryKeys.permissionOptions(locale, scope.type),
+    queryFn: () => readManagerPermissionOptions(scope.type),
+    enabled: scope.enabled,
     staleTime: Infinity,
     ...inlineProgress,
   });

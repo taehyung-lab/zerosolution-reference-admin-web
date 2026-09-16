@@ -1,13 +1,11 @@
 /**
  * 스마트프린터 등록·수정 폼 — Figma 6.7.1.3 등록 / 6.7.1.3.1 Case / 6.7.1.4 수정 frame 의 `기본정보`
  * 섹션을 화면 순서대로 조립한다(2026-09-15 aside 렌더 실측). 두 frame 의 항목·필수·선택지가 같아
- * 등록·수정이 이 조립을 그대로 공유하고, 기본값·요청 mapper·저장 목적지는 각 화면이 소유한다.
+ * 등록·수정이 이 조립을 그대로 공유하고, 기본값·요청 mapper·mutation·저장 후 이동은 각 화면이 소유한다.
  *
- * `조치사항` 은 frame 이 여러 줄 입력으로 그린다. 공용 form adapter 목록(form-fields.md)에 textarea 가
- * 없고 한 소비자 때문에 공용 어휘를 늘리지 않으므로, 공용 `FormField` 의 field/control 계약 위에
- * feature-local 여러 줄 입력을 조립한다.
+ * `조치사항` 은 frame 이 여러 줄 입력으로 그린다. 공용 form 어댑터에 textarea 가 없고 한 소비자 때문에
+ * 공용 어휘를 늘리지 않으므로, 공용 `FormField` 의 field/control 계약 위에 feature-local 로 그린다.
  */
-import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   PRINTER_MODEL_MAX_LENGTH,
@@ -20,50 +18,42 @@ import {
 import { FormCancelButton } from '@/shared/ui/form/FormCancelButton';
 import { FormDateField } from '@/shared/ui/form/FormDateField';
 import { FormField, type FieldForm } from '@/shared/ui/form/FormField';
+import { FormSaveFailureMessage } from '@/shared/ui/form/FormSaveDialogs';
 import { FormSelectField } from '@/shared/ui/form/FormSelectField';
 import { FormSubmitButton } from '@/shared/ui/form/FormSubmitButton';
 import { FormTextField } from '@/shared/ui/form/FormTextField';
+import type { useSaveForm } from '@/shared/ui/form/useSaveForm';
 import { SectionCard } from '@/shared/ui/layout/SectionCard';
-import type { PrinterFormInput } from '../model/printer-form-schema';
-import type { PrinterInputForm } from './usePrinterInputForm';
+import type { PrinterFormInput, PrinterFormValues } from '../model/printer-form-schema';
+
+export type PrinterSaveForm = ReturnType<
+  typeof useSaveForm<PrinterFormInput, PrinterFormValues, 'info'>
+>;
 
 export function PrinterForm({
-  form,
-  onSubmit,
+  save,
   onCancel,
-  dialogs,
 }: {
-  readonly form: PrinterInputForm['form'];
-  readonly onSubmit: () => void;
+  readonly save: PrinterSaveForm;
   readonly onCancel: () => void;
-  /** 저장 확인·이탈 확인 dialog. 폼이 렌더해 blocker 만 있고 dialog 가 없는 상태를 만들지 않는다. */
-  readonly dialogs: ReactNode;
 }) {
   const { t } = useTranslation('ticketing');
-  const statusOptions = printerStatuses.map((value) => ({
-    value,
-    label: t(`printer.values.status.${value}`),
-  }));
-  const purposeOptions = printerPurposes.map((value) => ({
-    value,
-    label: t(`printer.values.purpose.${value}`),
-  }));
-  const usageOptions = printerUsages.map((value) => ({
-    value,
-    label: t(`printer.values.usage.${value}`),
-  }));
+  const { form } = save;
+  const options = <T extends string>(values: readonly T[], namespace: string) =>
+    values.map((value) => ({ value, label: t(`printer.values.${namespace}.${value}`) }));
 
   return (
     <>
-      {dialogs}
+      {save.dialogs}
       <form
         noValidate
         onSubmit={(event) => {
           event.preventDefault();
-          onSubmit();
+          void save.submit.run();
         }}
       >
-        <SectionCard title={t('printer.form.section')}>
+        {save.stage.kind === 'failed' ? <FormSaveFailureMessage failure={save.stage.root} /> : null}
+        <SectionCard title={t('printer.form.section')} {...save.sections.sectionProps('info')}>
           <div className="grid gap-x-8 gap-y-5 md:grid-cols-2">
             <FormTextField
               form={form}
@@ -76,9 +66,7 @@ export function PrinterForm({
               form={form}
               label={t('printer.form.serialNo')}
               name="serialNo"
-              placeholder={t('printer.form.serialNoPlaceholder', {
-                max: PRINTER_SERIAL_NO_MAX_LENGTH,
-              })}
+              placeholder={t('printer.form.serialNoPlaceholder', { max: PRINTER_SERIAL_NO_MAX_LENGTH })}
               required
             />
             <FormTextField
@@ -87,11 +75,7 @@ export function PrinterForm({
               name="model"
               placeholder={t('printer.form.modelPlaceholder', { max: PRINTER_MODEL_MAX_LENGTH })}
             />
-            <FormTextField
-              form={form}
-              label={t('printer.form.manufacturer')}
-              name="manufacturer"
-            />
+            <FormTextField form={form} label={t('printer.form.manufacturer')} name="manufacturer" />
             <FormDateField form={form} label={t('printer.form.purchasedAt')} name="purchasedAt" />
             <div aria-hidden="true" className="hidden md:block" />
             <FormTextField form={form} label={t('printer.form.location')} name="location" />
@@ -99,7 +83,7 @@ export function PrinterForm({
               form={form}
               label={t('printer.form.status')}
               name="status"
-              options={statusOptions}
+              options={options(printerStatuses, 'status')}
               required
             />
             <div className="md:col-span-2">
@@ -109,21 +93,24 @@ export function PrinterForm({
               form={form}
               label={t('printer.form.purpose')}
               name="purpose"
-              options={purposeOptions}
+              options={options(printerPurposes, 'purpose')}
               required
             />
             <FormSelectField
               form={form}
               label={t('printer.form.usage')}
               name="usage"
-              options={usageOptions}
+              options={options(printerUsages, 'usage')}
               required
             />
           </div>
         </SectionCard>
         <div className="mt-8 flex justify-center gap-3">
-          <FormSubmitButton pending={false} />
-          <FormCancelButton onClick={onCancel} />
+          <FormSubmitButton pending={save.submit.isPending} />
+          <FormCancelButton
+            disabled={save.submit.isPending}
+            onClick={() => save.guard.leave(onCancel)}
+          />
         </div>
       </form>
     </>

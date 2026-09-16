@@ -34,7 +34,7 @@ generator / transport / envelope / query-cache seam을 검증한다.
    번역 리소스의 **제품 진실로 삼지 않는다.**
 3. 기본 개발과 테스트는 스냅샷 파생 MSW 계약으로 돌린다. 실제 dev API 호출은 명시적 opt-in
    통합 검증으로 분리하고 production-like 환경에 연결하지 않는다.
-4. 이 계약으로 만든 코드는 공용 승격의 "두 번째 실제 사용" 카운트에 넣지 않는다 ([ADR 0009](0009-shared-boundaries.md)).
+4. 이 계약으로 만든 코드는 공용 승격의 "두 번째 실제 사용" 카운트에 넣지 않는다 ([ADR 0014](0014-single-screen-shape.md)).
 5. 교체 성공 기준을 "generated + feature api/model 컴파일 통과"로 **축소하지 않는다.**
    route search schema, form schema/defaults/mapper, auth lifecycle, permission, i18n copy,
    MSW/test까지 영향 분석 대상이다.

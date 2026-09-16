@@ -1,7 +1,7 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { TestLocaleProvider } from '@/test/locale';
 import { UnsavedChangesProvider } from '@/shared/ui/form/UnsavedChangesGuard';
+import { TestQueryLocaleProvider } from '@/test/query-locale';
 import { chooseOptionIn } from '@/test/select';
 import { PrinterCreateScreen } from './PrinterCreateScreen';
 
@@ -18,26 +18,23 @@ afterEach(() => {
 });
 
 function setup() {
-  const onConfirm = vi.fn();
+  const onSaved = vi.fn();
   const onCancel = vi.fn();
   render(
-    <TestLocaleProvider>
+    <TestQueryLocaleProvider>
       <UnsavedChangesProvider>
-        <PrinterCreateScreen onConfirm={onConfirm} onCancel={onCancel} />
+        <PrinterCreateScreen onSaved={onSaved} onCancel={onCancel} />
       </UnsavedChangesProvider>
-    </TestLocaleProvider>,
+    </TestQueryLocaleProvider>,
   );
-  return { onConfirm, onCancel };
+  return { onSaved, onCancel };
 }
 
 describe('printer create (Figma 6.7.1.3 등록)', () => {
   it('등록 frame 의 항목과 초기 선택을 그린다', () => {
     setup();
 
-    expect(screen.getByLabelText('기기명*')).toHaveAttribute(
-      'placeholder',
-      '기기명 (1~100자 내외)',
-    );
+    expect(screen.getByLabelText('기기명*')).toHaveAttribute('placeholder', '기기명 (1~100자 내외)');
     expect(screen.getByLabelText('시리얼번호*')).toHaveAttribute(
       'placeholder',
       '시리얼번호 (1~100자 내외)',
@@ -51,18 +48,19 @@ describe('printer create (Figma 6.7.1.3 등록)', () => {
     expect(screen.getByRole('combobox', { name: '사용상태' })).toHaveTextContent('사용');
   });
 
-  it('필수 입력이 비면 저장이 오류로 막히고 요청에 닿지 않는다', async () => {
-    const { onConfirm } = setup();
+  it('필수 입력이 비면 저장이 오류로 막힌다', async () => {
+    setup();
 
     fireEvent.click(screen.getByRole('button', { name: '저장' }));
 
     expect(await screen.findByText('기기명을 입력해주세요.')).toBeInTheDocument();
     expect(screen.getByText('시리얼번호를 입력해주세요.')).toBeInTheDocument();
-    expect(onConfirm).not.toHaveBeenCalled();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
-  it('검증을 통과하면 확인 alert 를 지나야 요청 입력이 나간다', async () => {
-    const { onConfirm } = setup();
+  it('검증을 통과하면 저장 확인 → 요청 함수 → 저장 완료 → 목록 이동으로 이어진다', async () => {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    const { onSaved } = setup();
 
     fireEvent.change(screen.getByLabelText('기기명*'), { target: { value: '001-12345648' } });
     fireEvent.change(screen.getByLabelText('시리얼번호*'), {
@@ -72,25 +70,18 @@ describe('printer create (Figma 6.7.1.3 등록)', () => {
     await chooseOptionIn('상태', '수리중');
     fireEvent.click(screen.getByRole('button', { name: '저장' }));
 
-    expect(await screen.findByText('저장하시겠습니까?')).toBeInTheDocument();
-    expect(onConfirm).not.toHaveBeenCalled();
+    const confirm = await screen.findByRole('dialog');
+    expect(confirm).toHaveTextContent('저장하시겠습니까?');
+    expect(log).not.toHaveBeenCalled();
+    fireEvent.click(within(confirm).getByRole('button', { name: '확인' }));
 
-    fireEvent.click(screen.getByRole('button', { name: '확인' }));
-
-    await waitFor(() => {
-      expect(onConfirm).toHaveBeenCalledWith({
-        name: '001-12345648',
-        serialNo: 'ZERO123456-45678',
-        model: '',
-        manufacturer: '',
-        purchasedAt: '',
-        location: '',
-        status: 'REPAIR',
-        measures: '리본 교체',
-        purpose: 'INTERNAL',
-        usage: 'IN_USE',
-      });
-    });
+    const saved = await screen.findByText('저장되었습니다.');
+    expect(log).toHaveBeenCalledWith(expect.stringContaining('[시나리오] 스마트프린터 등록'));
+    expect(log.mock.calls[0]?.[0]).not.toContain('001-12345648');
+    expect(onSaved).not.toHaveBeenCalled();
+    fireEvent.click(within(saved.closest('[role="dialog"]')!).getByRole('button', { name: '확인' }));
+    await waitFor(() => expect(onSaved).toHaveBeenCalledOnce());
+    log.mockRestore();
   });
 
   it('입력이 없으면 취소가 바로 나가고, 입력이 있으면 이탈 보호가 켜진다', async () => {

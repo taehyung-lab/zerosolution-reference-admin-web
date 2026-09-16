@@ -8,6 +8,6 @@ Read this file only for upload, download, file-field transport, retry, parsing, 
 - Client parsing, preview, header mapping, multiple selection, large-file jobs, progress polling, cancellation, and rejection reports require explicit product behavior and server support.
 - A shared file field owns selection/removal UI and its domain-neutral value contract, not transport, storage type, retry, or workflow policy.
 
-The consuming screen keeps upload/download scope, selected-versus-all meaning, format options, prerequisite validation, payload, permission, pending surface, retry, and post-success result. Adopt the field and action mechanics already available; do not create a generic file controller because an issue omitted this wiring.
+The consuming screen keeps upload/download scope, selected-versus-all meaning, format options, prerequisite validation, payload, permission, pending surface, retry, and post-success result. A list download is a selection-gated action ([list Selection and actions](list.md#selection-and-actions)); a form file is a `FormFileField` ([form Fields](form.md#fields)). Do not create a generic file controller because an issue omitted this wiring.
 
-Read [mutation-actions.md](mutation-actions.md) for pending/result presentation and `api-contract` for transport or payload changes.
+Read [mutations](../../api-contract/references/mutations.md) for payload and cache consequences.

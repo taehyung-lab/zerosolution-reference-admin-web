@@ -1,6 +1,6 @@
 # 세션 만료·경고·연장 시나리오
 
-세션 타이머는 이 저장소에 **미구현**이다(`.agents/skills/shared-ui-contract/references/incidents.md:8`). 이 카드는 그 작업의 설계 입력이며, 목적은 시나리오가 실제로 요구하는 것과 우리 공용 계약을 대조해 빠진 자리를 드러내는 것이다. 구현 코드는 여기서 쓰지 않는다.
+세션 타이머는 이 저장소에 **미구현**이다(`.agents/skills/shared-ui-contract/references/catalog.md#feedback:8`). 이 카드는 그 작업의 설계 입력이며, 목적은 시나리오가 실제로 요구하는 것과 우리 공용 계약을 대조해 빠진 자리를 드러내는 것이다. 구현 코드는 여기서 쓰지 않는다.
 
 증거 출처: 저장소 안은 `파일:줄`로 표기한다. 저장소 밖 근거는 2026-08-26 브라우저에서 관측하고 코디네이터가 확정한 런타임 실패·복구 사실만 "외부 실측"으로 표기한다. 비교 프로젝트의 설계·파일 구조·구현 선택은 증거에서 제외한다. `[확인]`은 파일:줄이나 스키마 원문으로 확인한 것, `[추론]`은 그 사실에서 끌어낸 판단이다.
 
@@ -13,7 +13,7 @@ Figma 상단 바는 모든 화면에 반복된다. 통합검색 input · **"로�
 1. **상단 바 카운트다운** — `MM:SS` 형식으로 상시 노출. 30:00에서 시작한다. `[확인]`
 2. **상단 바 `연장` 버튼** — 아무 때나 누를 수 있다. 성공하면 alert `1.1.3.3.1 세션 초기화`가 "세션 유지시간을 30분으로 초기화합니다." + `확인` 하나로 뜬다(`docs/reference/zero-sol/01-common.md:30`). `[확인]`
 3. **만료 전 경고 팝업** — `1.4.4 팝업-세션종료 알림`. 작은 dialog이고 **상세 카피와 경고 시점은 미판독**이다(`docs/reference/zero-sol/01-common.md:14,37`). `[확인]`
-4. **만료 후 종결** — Figma에 전용 frame이 없다. 현재 계약에서 종결의 표면은 `IncidentBoundary`다(`incidents.md:7`). `[추론]`
+4. **만료 후 종결** — Figma에 전용 frame이 없다. 현재 계약에서 종결의 표면은 `IncidentBoundary`다(`catalog.md:7`). `[추론]`
 
 Notion에는 "세션: 5분0초부터 카운트 진행됨"이 있지만 이는 로그인·찾기·마케팅의 인증코드 카운터 문맥이다(`docs/reference/zero-sol/01-common.md:42`). 세션 경고 임계로 쓰지 않는다. `[추론]`
 
@@ -135,9 +135,9 @@ Figma는 별도 OS 창이나 origin 전체에 하나뿐인 경고 UI를 요구�
 | 401 → reissue → replay가 세션 타이머와 독립 | 있다. terminal 조건이 좁게 정의돼 있다 | `.agents/skills/api-contract/references/auth-session.md:8,11,12` | 커버됨 |
 | 탭 간 자격증명·마감 동기화 | 자격증명은 있다. 마감 시각용 자리는 없다 | `src/api/http/incident.ts:50-58` | 수정 필요 |
 | 상단 바 남은시간·`연장` 표시 자리 | 없다. 우측 클러스터에 프로필·현장발권·알림만 있다 | `src/app/shell/AppHeader.tsx:42-66` | 아예 없음 |
-| 경고 dialog primitive | 있다. 도메인 중립 `ConfirmDialog`/`AlertDialog` | `.agents/skills/shared-ui-contract/references/dialogs.md:9` | 커버됨 |
-| 만료 dialog의 닫기 차단(X/ESC/외부 클릭 불가) | 부분. 닫기 차단이 `pending` 동안으로만 정의돼 있다 | `.agents/skills/shared-ui-contract/references/dialogs.md:9,11` | 수정 필요 |
-| 연장 중 진행 표시 | 있다. `연장`은 화면 진입 primary 요청이 아니므로 overlay 금지, 버튼 pending만 | `.agents/skills/shared-ui-contract/references/blocking-progress.md:6,8` | 커버됨(제외 판정) |
+| 경고 dialog primitive | 있다. 도메인 중립 `ConfirmDialog`/`AlertDialog` | `.agents/skills/shared-ui-contract/references/catalog.md#dialog:9` | 커버됨 |
+| 만료 dialog의 닫기 차단(X/ESC/외부 클릭 불가) | 부분. 닫기 차단이 `pending` 동안으로만 정의돼 있다 | `.agents/skills/shared-ui-contract/references/catalog.md#dialog:9,11` | 수정 필요 |
+| 연장 중 진행 표시 | 있다. `연장`은 화면 진입 primary 요청이 아니므로 overlay 금지, 버튼 pending만 | `.agents/skills/shared-ui-contract/references/catalog.md#primitives:6,8` | 커버됨(제외 판정) |
 | 유휴 시 배경 인증 트래픽 억제 | 없다. `refetchOnWindowFocus:false`는 있으나 polling·유휴 억제를 소유한 규칙이 없다 | `src/app/providers/AppProviders.tsx:12-14`, `query-cache.md` 전문 | 아예 없음 |
 | `SESSION_EXPIRED(4004)`의 kind 매핑 | 있다. ADR이 `401`·`4004` → `unauthorized`를 선언하고 구현이 그 표를 따른다. 봉투 실패 경로는 `DECLARED_FAILURE_KINDS`가, HTTP 401 경로는 `classifyHttpStatus`가 같은 kind를 낸다 | `docs/decisions/0001-rehearsal-api-contract.md:114-120`, `src/api/http/envelope.ts:19-27`, `src/api/http/client.ts:80-88` | 커버됨 — 남은 것은 kind가 아니라 어느 HTTP status로 오는가다(미확인 7) |
 | 세션 마감 상태의 단일 소유자 | 있다. 앱 수명주기 → app boundary/provider | `AGENTS.md`의 상태 소유 표 상태 소유권 표 | 커버됨 |

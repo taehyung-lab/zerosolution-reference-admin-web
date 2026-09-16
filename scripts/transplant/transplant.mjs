@@ -38,7 +38,8 @@ const SOURCE_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 
 /**
  * Q3(2026-09-03): 대상은 ADR 을 0001 부터 다시 번호 붙인다. 이관 ADR 은 seed bundle 과 skill 이 이름으로
- * 가리키는 것이며 순서는 레퍼런스 번호 순이다. 0001·0002·0004·0007 은 가지 않는다(0002·0004 는 조건부 재작성).
+ * 가리키는 것이며 순서는 레퍼런스 번호 순이다. 0001·0002·0004 는 가지 않는다(0002·0004 는 조건부 재작성).
+ * 0009~0012 는 0014 로 대체·삭제된 결번이라 목록에 없다.
  * 선택 bundle 에 따라 실제로 가지 않는 ADR 은 stage 가 `retired` 로 옮겨 인용만 표시한다.
  */
 export const ADR_RENUMBER = [
@@ -46,25 +47,23 @@ export const ADR_RENUMBER = [
   ['0005-locale-query-key', '0002-locale-query-key'],
   ['0006-auth-token-storage', '0003-auth-token-storage'],
   ['0008-primitive-implementation-selection', '0004-primitive-implementation-selection'],
-  ['0009-shared-boundaries', '0005-shared-boundaries'],
-  ['0010-form-boundaries', '0006-form-boundaries'],
-  ['0011-detail-data-and-update-history-boundaries', '0007-detail-data-and-update-history-boundaries'],
+  ['0014-single-screen-shape', '0005-single-screen-shape'],
   // 조건부(Q1/H6): 대상 버전과 대조해 채택·재작성·삭제한다. 번호 충돌을 피해 뒤에 붙인다.
-  ['0002-typescript-version-pin', '0008-typescript-version-pin'],
-  ['0004-runtime-version-pin', '0009-runtime-version-pin'],
-  // 공용 목록·필터 계약. 조건부 버전 핀 다음 번호지만 일반 ADR로 이관한다.
-  ['0012-list-filter-draft-composition', '0010-list-filter-draft-composition'],
+  ['0002-typescript-version-pin', '0006-typescript-version-pin'],
+  ['0004-runtime-version-pin', '0007-runtime-version-pin'],
 ]
 
 /** 이관하지 않는 ADR. 본문에서 이 번호를 인용한 곳은 재번호 전에 표시하고 사람이 검토한다. */
-export const ADR_NOT_TRANSPLANTED = ['0001', '0007']
+export const ADR_NOT_TRANSPLANTED = ['0001']
 
 /** 대상은 Managers 가 없다. 레퍼런스 consumer 를 가리키는 예시 심볼은 `{Domain}` 자리표시자로 바꾼다. */
 export const EXAMPLE_SYMBOL_SUBSTITUTIONS = [
   ['useManagerListData', 'use{Domain}ListData'],
-  ['useManagerEditDetail', 'use{Domain}EditDetail'],
+  ['useManagerListFilter', 'use{Domain}ListFilter'],
+  ['useManagerListResult', 'use{Domain}ListResult'],
   ['useManagerDetail', 'use{Domain}Detail'],
-  ['useUpdateManagerMutation', 'useUpdate{Domain}Mutation'],
+  ['ManagerListResult', '{Domain}ListResult'],
+  ['ManagerCreateScreen', '{Domain}CreateScreen'],
   ['ManagerForm', '{Domain}Form'],
 ]
 
@@ -92,7 +91,7 @@ export function rewriteText(text, { renumber = ADR_RENUMBER, symbols = EXAMPLE_S
     out = out.replace(new RegExp(`ADR\\s?${number}\\b`, 'g'), `ADR(레퍼런스 ${number}, 미이관)`)
   }
   const active = renumber.filter(([from]) => !retired.includes(from.split('-', 1)[0]))
-  // 옛 번호 → 자리표시자 → 새 번호. 두 단계로 나눠야 0008→0004 뒤에 0004→0009 가 다시 잡히지 않는다.
+  // 옛 번호 → 자리표시자 → 새 번호. 두 단계로 나눠야 0008→0004 뒤에 0004→0007 이 다시 잡히지 않는다.
   const placeholder = (index) => `\u0000ADR${index}\u0000`
   active.forEach(([from], index) => {
     const [fromNumber] = from.split('-', 1)
@@ -188,7 +187,7 @@ export function restoreSourcePaths(text, collected) {
 /**
  * staged seed 카탈로그를 선택한 bundle 만 남긴 것으로 바꾼다. 카탈로그는 대상의 게이트·`cli bundle` 이 읽는 목록이라,
  * 오지 않은 code·test·skill marker 를 그대로 두면 대상이 없는 파일을 요구한다(실측: 대상 `contracts:check` 가
- * `use-confirmation.ts` 없음으로 죽었다). 형식이 바뀌면 조용히 전부 내보내지 않고 여기서 실패한다.
+ * 이관되지 않은 공용 파일 없음으로 죽었다). 형식이 바뀌면 조용히 전부 내보내지 않고 여기서 실패한다.
  */
 export function limitSeedCatalog(text, ids) {
   const kept = new Set(ids)
@@ -561,7 +560,7 @@ export function stageTransplant(targetRoot, outRoot, sourceRoot = SOURCE_ROOT, o
     ...dangling.map((item) => `- ${item.file}:${item.line} → ${item.link}`),
     '',
     '## 조건부',
-    '- `docs/decisions/0008-typescript-version-pin.md`·`0009-runtime-version-pin.md`(레퍼런스 0002·0004): 대상 `package.json`·lockfile 의 typescript·typescript-eslint·engines 와 대조해 같으면 머리글 sentinel 을 지우고 개정, 다르면 대상 결정으로 다시 쓴다.',
+    '- `docs/decisions/0006-typescript-version-pin.md`·`0007-runtime-version-pin.md`(레퍼런스 0002·0004): 대상 `package.json`·lockfile 의 typescript·typescript-eslint·engines 와 대조해 같으면 머리글 sentinel 을 지우고 개정, 다르면 대상 결정으로 다시 쓴다.',
     '- 대상에 이미 있는 primitive·config·package.json·런타임 진입점: MANIFEST.json 의 `merge` 항목. 덮어쓰지 않고 diff 를 사람이 병합한다.',
     withLedger
       ? '- `--with-ledger`: 레퍼런스 제품의 활성 원장이 그대로 들어갔다. 대상 제품의 원문으로 다시 관찰하기 전까지는 참고 자료이며 제품 사실이 아니다.'

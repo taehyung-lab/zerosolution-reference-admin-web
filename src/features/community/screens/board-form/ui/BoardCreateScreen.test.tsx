@@ -1,7 +1,7 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { TestLocaleProvider } from '@/test/locale';
 import { UnsavedChangesProvider } from '@/shared/ui/form/UnsavedChangesGuard';
+import { TestQueryLocaleProvider } from '@/test/query-locale';
 import { BoardCreateScreen } from './BoardCreateScreen';
 
 let guardDisabled = true;
@@ -17,16 +17,16 @@ afterEach(() => {
 });
 
 function setup() {
-  const onConfirm = vi.fn();
+  const onSaved = vi.fn();
   const onCancel = vi.fn();
   render(
-    <TestLocaleProvider>
+    <TestQueryLocaleProvider>
       <UnsavedChangesProvider>
-        <BoardCreateScreen onConfirm={onConfirm} onCancel={onCancel} />
+        <BoardCreateScreen onSaved={onSaved} onCancel={onCancel} />
       </UnsavedChangesProvider>
-    </TestLocaleProvider>,
+    </TestQueryLocaleProvider>,
   );
-  return { onConfirm, onCancel };
+  return { onSaved, onCancel };
 }
 
 async function choose(combobox: string, option: string) {
@@ -83,17 +83,17 @@ describe('board create (Figma 9.1.3 등록)', () => {
   });
 
   it('필수 입력이 비면 저장이 확인창까지 가지 않고 첫 오류로 포커스가 간다', async () => {
-    const { onConfirm } = setup();
+    setup();
 
     fireEvent.click(screen.getByRole('button', { name: '저장' }));
 
     await waitFor(() => expect(screen.getByLabelText('게시판명*')).toHaveFocus());
     expect(screen.queryByRole('dialog')).toBeNull();
-    expect(onConfirm).not.toHaveBeenCalled();
   });
 
-  it('유효한 입력은 저장 확인을 거쳐 정리된 설정으로 업무 요청에 닿는다', async () => {
-    const { onConfirm } = setup();
+  it('유효한 입력은 저장 확인 → 요청 함수 → 저장 완료 → 목록 이동으로 이어진다', async () => {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    const { onSaved } = setup();
 
     fireEvent.change(screen.getByLabelText('게시판명*'), { target: { value: '공지 게시판' } });
     await choose('쓰기', '운영자');
@@ -101,24 +101,17 @@ describe('board create (Figma 9.1.3 등록)', () => {
     await choose('게시글 제목 지정', '작성자가 직접입력');
     fireEvent.click(screen.getByRole('button', { name: '저장' }));
 
-    expect(await screen.findByText('저장하시겠습니까?')).toBeInTheDocument();
-    expect(onConfirm).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button', { name: '확인' }));
+    const confirm = await screen.findByRole('dialog');
+    expect(confirm).toHaveTextContent('저장하시겠습니까?');
+    expect(log).not.toHaveBeenCalled();
+    fireEvent.click(within(confirm).getByRole('button', { name: '확인' }));
 
-    expect(onConfirm).toHaveBeenCalledWith(
-      expect.objectContaining({
-        type: 'GENERAL',
-        category: 'GENERAL',
-        name: '공지 게시판',
-        write: { permission: 'MANAGER' },
-        read: { permission: 'ALL_MEMBERS' },
-        postTitleMode: 'AUTHOR_INPUT',
-        managerTitles: [],
-        comment: 'NOT_IN_USE',
-        usage: 'IN_USE',
-      }),
-    );
-    expect(onConfirm.mock.calls[0]?.[0]).not.toHaveProperty('attachmentLimitMb');
+    const saved = await screen.findByText('저장되었습니다.');
+    expect(log).toHaveBeenCalledWith(expect.stringContaining('[시나리오] 게시판 등록'));
+    expect(onSaved).not.toHaveBeenCalled();
+    fireEvent.click(within(saved.closest('[role="dialog"]')!).getByRole('button', { name: '확인' }));
+    await waitFor(() => expect(onSaved).toHaveBeenCalledOnce());
+    log.mockRestore();
   });
 
   it('입력 전에는 이탈 가드가 꺼져 있고 입력하면 켜진다', () => {

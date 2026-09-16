@@ -106,13 +106,13 @@ const RESTRICTED = {
  * 이름을 추가할 때는 skill/ADR이 그 exact 문자열로 금지한 근거가 있어야 한다.
  */
 const PROHIBITED_ABSTRACTION_BINDINGS = new Map([
-  ['ResourcePage', 'feature-contract SKILL.md, list-workflow.md, screen-composition.md'],
-  ['UniversalList', 'ADR 0009'],
+  ['ResourcePage', 'feature-contract SKILL.md, list.md, screen-composition.md'],
+  ['UniversalList', 'ADR 0014'],
   ['useCrud', 'feature-contract SKILL.md'],
-  ['useListPageController', 'ADR 0009'],
-  ['useListTable', 'list-workflow.md, react-performance.md'],
-  ['usePagedTable', 'list-workflow.md'],
-  ['useResourceQuery', 'ADR 0011'],
+  ['useListPageController', 'ADR 0014'],
+  ['useListTable', 'list.md, primitives-and-tokens.md'],
+  ['usePagedTable', 'list.md'],
+  ['useResourceQuery', 'ADR 0014'],
 ])
 
 /** 금지된 추상화 이름을 선언하거나 import 하면 실패한다. 문자열·주석 속 언급은 대상이 아니다. */
@@ -320,7 +320,7 @@ export default tseslint.config(
             {
               name: '@tanstack/react-query',
               importNames: FEATURE_API_FORBIDDEN_HOOKS,
-              message: 'API는 캐시 후속 처리·전역 진행 집계를 소유하지 않는다. workflow/app에 둔다(ADR 0011).',
+              message: 'API는 캐시 후속 처리·전역 진행 집계를 소유하지 않는다. workflow/app에 둔다(ADR 0014).',
             },
           ],
           patterns: [...relaxed(['api/generated']).patterns, { group: ['@tanstack/react-router', '@tanstack/react-form'], message: 'API는 URL·폼 workflow를 소유하지 않는다.' }],
@@ -335,11 +335,11 @@ export default tseslint.config(
   },
   {
     files: ['src/shared/**/*.{ts,tsx}'],
-    rules: { 'no-restricted-imports': ['error', { paths: RESTRICTED.paths, patterns: [...RESTRICTED.patterns, { group: ['@tanstack/react-router'], message: 'shared는 Router를 모른다. UnsavedChangesGuard만 좁은 dirty-navigation 예외다.' }, { group: ['@tanstack/react-query'], message: 'shared는 Query를 모른다. feature가 Query를 plain facts로 바꿔 넘긴다(ADR 0009).' }] }] },
+    rules: { 'no-restricted-imports': ['error', { paths: RESTRICTED.paths, patterns: [...RESTRICTED.patterns, { group: ['@tanstack/react-router'], message: 'shared는 Router를 모른다. UnsavedChangesGuard만 좁은 dirty-navigation 예외다.' }, { group: ['@tanstack/react-query'], message: 'shared는 Query를 모른다. feature가 Query를 plain facts로 바꿔 넘긴다(ADR 0014).' }] }] },
   },
   {
     files: ['src/shared/ui/primitives/**/*.tsx'],
-    rules: { 'no-restricted-imports': ['error', { paths: RESTRICTED.paths, patterns: [...relaxed(['radix']).patterns, { group: ['@tanstack/react-router'], message: 'shared는 Router를 모른다. UnsavedChangesGuard만 좁은 dirty-navigation 예외다.' }, { group: ['@tanstack/react-query'], message: 'shared는 Query를 모른다. feature가 Query를 plain facts로 바꿔 넘긴다(ADR 0009).' }] }] },
+    rules: { 'no-restricted-imports': ['error', { paths: RESTRICTED.paths, patterns: [...relaxed(['radix']).patterns, { group: ['@tanstack/react-router'], message: 'shared는 Router를 모른다. UnsavedChangesGuard만 좁은 dirty-navigation 예외다.' }, { group: ['@tanstack/react-query'], message: 'shared는 Query를 모른다. feature가 Query를 plain facts로 바꿔 넘긴다(ADR 0014).' }] }] },
   },
   {
     // `shared/lib` 은 결정적 계산만 소유한다. React 를 들이면 상태 수명을 소유하는 훅이 다시

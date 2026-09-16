@@ -10,9 +10,9 @@ function renderBoundary(
 ) {
   return render(
     <I18nextProvider i18n={i18n}>
-      <span id="manager-type-label">유형</span>
+      <span id="example-field-label">유형</span>
       <AsyncFieldBoundary
-        labelledBy="manager-type-label"
+        labelledBy="example-field-label"
         state={state}
         onRetry={onRetry}
       >

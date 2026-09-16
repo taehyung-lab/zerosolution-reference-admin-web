@@ -111,13 +111,13 @@ it('discovers valid seed bundle IDs and their four roots without reading the dec
 
 it('fails a surface that cites a skill file without its 형태 heading', () => {
   const { root, write } = fixture()
-  const skill = '.agents/skills/feature-contract/references/list-workflow.md'
+  const skill = '.agents/skills/feature-contract/references/list.md'
   write(skill, '# List\n\n## Confirm\nA.\n\n## 형태\nFiles.\n')
   const indexPath = join(root, 'docs/reference/zero-sol/context.json')
   const index = JSON.parse(readFileSync(indexPath, 'utf8'))
   index.surfaces[0].references = [{ file: skill, heading: 'Confirm' }]
   write('docs/reference/zero-sol/context.json', JSON.stringify(index))
-  expect(surfaceIndexFailures(root).join('\n')).toMatch(/performance-list cites .*list-workflow.md without heading 형태/)
+  expect(surfaceIndexFailures(root).join('\n')).toMatch(/performance-list cites .*list.md without heading 형태/)
   index.surfaces[0].references = [skill]
   write('docs/reference/zero-sol/context.json', JSON.stringify(index))
   expect(surfaceIndexFailures(root).filter((item) => item.includes('형태'))).toEqual([])

@@ -787,8 +787,8 @@ describe('sentinel occurrences and citation drift', () => {
 
   it('rejects a retired document name wherever it is cited', () => {
     const [stale, clean] = createDocuments({
-      'eslint.config.js': "['useListTable', 'list-detail.md, react-performance.md'],\n// docs/design/2026-09-14-reference-document-loop-redesign.md\n",
-      'src/ok.ts': '// see select.md\n',
+      'eslint.config.js': "['useListTable', 'list-detail.md, primitives-and-tokens.md'],\n// docs/design/2026-09-14-reference-document-loop-redesign.md\n",
+      'src/ok.ts': '// see catalog.md\n',
     })
 
     expect(retiredDocumentNameFailures([stale, clean])).toEqual([
@@ -801,9 +801,9 @@ describe('sentinel occurrences and citation drift', () => {
   it('requires every prohibited-abstraction source to be a real skill, reference, or ADR', () => {
     const config = `
 const PROHIBITED_ABSTRACTION_BINDINGS = new Map([
-  ['ResourcePage', 'feature-contract SKILL.md, list-workflow.md'],
-  ['useListTable', 'list-detail.md, react-performance.md'],
-  ['UniversalList', 'ADR 0009'],
+  ['ResourcePage', 'feature-contract SKILL.md, list.md'],
+  ['useListTable', 'list-detail.md, primitives-and-tokens.md'],
+  ['UniversalList', 'ADR 0014'],
 ])
 `
     const exists = (path) => !path.endsWith('list-detail.md')

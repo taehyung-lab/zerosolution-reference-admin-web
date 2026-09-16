@@ -1,21 +1,17 @@
 import type { SubmitEvent } from 'react';
 import { useListFilterDraft } from '@/shared/model/use-list-filter-draft';
 import { boardKeywordFields } from '@/features/community/model/board';
-import { toSubmittedSearch } from './board-list-policy';
-import { boardListSearchContract } from './board-list-search';
-import type { BoardListSearch, ResolvedBoardListSearch } from './board-list-search';
+import { boardListSearch, type BoardListView } from './board-list-search';
 
 /**
- * 검색 영역의 입력 수명과 커밋 목적지를 소유한다. 렌더는 `BoardListFilters` 가 맡는다.
- * 이 화면에는 검색 표식이 없으므로 draft 정체성의 scope 도 없다(진입 즉시 조회, 원장 7행).
+ * 검색 영역의 입력 초안과 두 커밋(검색·초기화)을 소유한다. 렌더와 라벨은 `BoardListFilters` 가 맡는다.
+ * 검색은 필터·기간·검색어를 첫 페이지로 커밋하고 보기·정렬은 유지한다.
+ * 초기화는 원문 34행 `검색 조건을 default 로` 대로 선언된 기본값을 커밋한다(진입과 같은 URL).
  */
-export function useBoardListFilter(
-  search: ResolvedBoardListSearch,
-  onSearchChange: (next: BoardListSearch) => void,
-) {
+export function useBoardListFilter(search: BoardListView, commit: (next: BoardListView) => void) {
   const inputs = useListFilterDraft({
     search,
-    partition: boardListSearchContract.partition,
+    partition: boardListSearch.partition,
     keywords: search.keywords,
     initialKeywordField: boardKeywordFields[0],
   });
@@ -27,15 +23,12 @@ export function useBoardListFilter(
     keyword: inputs.keyword,
     submit: (event: SubmitEvent<HTMLFormElement>) => {
       event.preventDefault();
-      onSearchChange(toSubmittedSearch(search, inputs.prepareSubmit()));
+      const input = inputs.prepareSubmit();
+      commit({ ...search, ...input.filters, ...input.range, keywords: [...input.keywords], page: 1 });
     },
-    /**
-     * 확정된 것은 "검색 조건을 default 로" 뿐이다(Notion 원문 34행).
-     * 이 화면의 "검색 전 상태"가 무엇인지는 미확인이므로 결과를 비우는 idle 표식은 만들지 않는다.
-     */
     reset: () => {
       inputs.resetDrafts();
-      onSearchChange({});
+      commit(boardListSearch.defaults);
     },
   };
 }

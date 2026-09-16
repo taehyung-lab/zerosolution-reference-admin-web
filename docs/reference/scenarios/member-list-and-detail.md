@@ -44,7 +44,7 @@
 | 커밋된 검색·정렬·페이지·보기 | 공유·복원할 화면 상태 → Router search | AGENTS.md:95 |
 | 폼 값·dirty·검증 상태 | 폼 값과 검증 상태 → TanStack Form | AGENTS.md:96 |
 | draft 필터 값, 섹션 접힘, tab 활성 | 임시 상호작용 상태 → 가장 가까운 component | AGENTS.md:97 |
-| **행 선택 집합** | 임시 상호작용 상태 → feature 목록 화면. 요청 입력으로 사용된다는 사실은 상태 소유자를 바꾸지 않는다 | [list-workflow.md](../../../.agents/skills/feature-contract/references/list-workflow.md#state-and-url-lifecycle), [bulk-actions.md](../../../.agents/skills/feature-contract/references/bulk-actions.md):5 → **feature(목록 화면)** |
+| **행 선택 집합** | 임시 상호작용 상태 → feature 목록 화면. 요청 입력으로 사용된다는 사실은 상태 소유자를 바꾸지 않는다 | [list.md](../../../.agents/skills/feature-contract/references/list.md#url), [list.md](../../../.agents/skills/feature-contract/references/list.md#selection-and-actions):5 → **feature(목록 화면)** |
 | **보기·정렬 기억값** | 지속 범위 미확인. 현재 커밋 값은 URL; 계정 설정 응답이 되면 Query, 브라우저 설정이면 client UI 경계 | 미확인 3이 소유자를 정한다 |
 
 ### 2.3 전이
@@ -61,7 +61,7 @@
                     └─ 인라인 폼(회원상담): 확인 없이 검증된 입력 확정(API 전)
 ```
 
-목록에서 상세로 갈 때 **행 데이터를 넘기지 않는다.** 목록 행은 부분 값이고 컬럼도 화면마다 다르다(불량회원만 활동제한 컬럼: :30). 계약이 이미 그렇게 선언한다([detail-workflow.md](../../../.agents/skills/feature-contract/references/detail-workflow.md):7). `[확인]`
+목록에서 상세로 갈 때 **행 데이터를 넘기지 않는다.** 목록 행은 부분 값이고 컬럼도 화면마다 다르다(불량회원만 활동제한 컬럼: :30). 계약이 이미 그렇게 선언한다([detail.md](../../../.agents/skills/feature-contract/references/detail.md):7). `[확인]`
 
 ## 3. 관측된 실패
 
@@ -69,12 +69,12 @@
 
 | 무엇이 깨졌나 | 왜 | 애초에 무엇을 몰라서 |
 | --- | --- | --- |
-| **F1** `[계약]` 접힌 섹션 안의 필수 필드 때문에 submit이 차단되는데 **오류 문구가 렌더되지 않아 저장이 조용히 실패** | 닫힌 섹션을 unmount했다 | 두 폼 라이브러리 모두 전체 values를 검증하지만 control이 없으면 오류를 그리지 못한다는 것([0010](../../decisions/0010-form-boundaries.md):36-40) |
-| **F2** `[계약]` 제출 실패한 필드에서 **벗어나기만 해도 오류가 사라졌다** | `validators: { onSubmit }`만 썼다 | non-submit 검증(blur·change)이 오류 없이 끝나면 `FieldApi.validateSync`가 `onSubmit` 오류를 지운다는 것(0010:53-56) |
-| **F3** `[계약]` 저장 성공 후 폼 값이 **원래 defaults로 되돌아갔다** | `form.reset(values)`만 불렀다 | `useForm`이 매 렌더 `formApi.update(opts)`를 불러 `keepDefaultValues` 없이는 기준선이 갱신되지 않는다는 것(0010:146-147) |
-| **F4** `[계약]` 저장 중 이동을 물었더니 **질문 dialog가 진행 overlay 아래 깔려 조작 불가**였다 | dirty 가드를 pending 중에도 질문으로 처리했다 | 전역 진행 overlay가 이미 "기다리라"는 메시지이고 그 아래 dialog는 조작될 수 없다는 것(0010:151) |
-| **F5** `[계약]` 초기 요청이 401/403인데 **로컬 오류 화면과 incident overlay가 함께** 떴다 | 상세 상태를 `notFound\|error\|ready` 3항으로 화면마다 판정했다(같은 판정이 글자 그대로 3곳에 복제) | 세션·권한 실패는 로컬 표면을 만들지 않고 incident boundary가 소유해야 한다는 것([0011](../../decisions/0011-detail-data-and-update-history-boundaries.md):21,30) |
-| **F6** `[계약]` 캐시된 상세가 있으면 background 404가 와도 **삭제된 레코드를 계속 표시**했다 | data 우선 규칙을 무조건 적용했다 | 서버가 방금 없다고 답한 사실은 캐시보다 우선이고 다른 실패는 반대라는 것(0011:32) |
+| **F1** `[계약]` 접힌 섹션 안의 필수 필드 때문에 submit이 차단되는데 **오류 문구가 렌더되지 않아 저장이 조용히 실패** | 닫힌 섹션을 unmount했다 | 두 폼 라이브러리 모두 전체 values를 검증하지만 control이 없으면 오류를 그리지 못한다는 것([0014](../../decisions/0014-single-screen-shape.md):36-40) |
+| **F2** `[계약]` 제출 실패한 필드에서 **벗어나기만 해도 오류가 사라졌다** | `validators: { onSubmit }`만 썼다 | non-submit 검증(blur·change)이 오류 없이 끝나면 `FieldApi.validateSync`가 `onSubmit` 오류를 지운다는 것([ADR 0014 이유](../../decisions/0014-single-screen-shape.md#이유)) |
+| **F3** `[계약]` 저장 성공 후 폼 값이 **원래 defaults로 되돌아갔다** | `form.reset(values)`만 불렀다 | `useForm`이 매 렌더 `formApi.update(opts)`를 불러 `keepDefaultValues` 없이는 기준선이 갱신되지 않는다는 것([ADR 0014 이유](../../decisions/0014-single-screen-shape.md#이유)) |
+| **F4** `[계약]` 저장 중 이동을 물었더니 **질문 dialog가 진행 overlay 아래 깔려 조작 불가**였다 | dirty 가드를 pending 중에도 질문으로 처리했다 | 전역 진행 overlay가 이미 "기다리라"는 메시지이고 그 아래 dialog는 조작될 수 없다는 것([ADR 0014 이유](../../decisions/0014-single-screen-shape.md#이유)) |
+| **F5** `[계약]` 초기 요청이 401/403인데 **로컬 오류 화면과 incident overlay가 함께** 떴다 | 상세 상태를 `notFound\|error\|ready` 3항으로 화면마다 판정했다(같은 판정이 글자 그대로 3곳에 복제) | 세션·권한 실패는 로컬 표면을 만들지 않고 incident boundary가 소유해야 한다는 것([0014](../../decisions/0014-single-screen-shape.md):21,30) |
+| **F6** `[계약]` 캐시된 상세가 있으면 background 404가 와도 **삭제된 레코드를 계속 표시**했다 | data 우선 규칙을 무조건 적용했다 | 서버가 방금 없다고 답한 사실은 캐시보다 우선이고 다른 실패는 반대라는 것([ADR 0014 이유](../../decisions/0014-single-screen-shape.md#이유)) |
 | **F7** `[외부]` **목록 조회 실패가 "검색해주세요"로 위장**됐고, 다른 목록에서는 실패가 빈 결과로 보였다 | `[추론]` 요청 실패·재시도 사실이 결과 표면에 도달하지 않는 조건 | 검색 전·빈 결과·오류를 별도 사실로 전달한다 |
 | **F8** `[외부]` 빈 결과 문구가 "등록된 데이터 없음"과 "검색 결과 없음"으로 갈리지 않았고, 검색 전 판정 기준을 나중에 바꿔야 했다 | `[추론]` 검색 전과 검색 후 빈 결과의 판별 조건이 분리되지 않는 조건 | 검색 의도를 URL에서 복원하고 Query와 결과 표면이 같은 사실을 읽는다(2026-09-07 사용자 결정) |
 | **F9** `[외부]` 만료된 참조 ID가 옵션에서 안 잡히는 상태와 "이름 미등록"이 같은 표시로 합쳐졌고, 하위 칸이 데이터가 없다고 단정했다 | `[추론]` "찾지 못함"과 "값 없음"을 한 상태로 접는 조건 | 미해결 참조와 값 없음·하위 빈 결과를 분리한다 |
@@ -88,17 +88,17 @@
 
 ## 4. 처음부터 알았다면 이렇게 설계한다
 
-**(a) 검색 상태의 소유자는 URL 하나다.** 2026-09-07 사용자 결정으로 `periodType` 판별을 검색 의도와 분리했다. 활성 3 variant는 빈 URL에서 대기하고 기본값 검색은 `{ searched: true }`로 복원한다. 유효한 해당 variant 조건이 있는 직접 접근도 검색하며, 다른 variant 전용 필드만 있는 주소는 대기한다. `searched=false`는 조회 금지가 아니므로 유효 조건이 남으면 조회한다. 기본값 주입 전 판정한 한 사실이 Query enablement와 `notSearched`를 함께 정한다. 초기화는 `{}`로의 복귀다. 상세 실행 규칙은 [list-workflow](../../../.agents/skills/feature-contract/references/list-workflow.md#state-and-url-lifecycle)가 소유한다. `[확인: 사용자 결정·현재 코드]`
+**(a) 검색 상태의 소유자는 URL 하나다.** 2026-09-07 사용자 결정으로 `periodType` 판별을 검색 의도와 분리했다. 활성 3 variant는 빈 URL에서 대기하고 기본값 검색은 `{ searched: true }`로 복원한다. 유효한 해당 variant 조건이 있는 직접 접근도 검색하며, 다른 variant 전용 필드만 있는 주소는 대기한다. `searched=false`는 조회 금지가 아니므로 유효 조건이 남으면 조회한다. 기본값 주입 전 판정한 한 사실이 Query enablement와 `notSearched`를 함께 정한다. 초기화는 `{}`로의 복귀다. 상세 실행 규칙은 [list-workflow](../../../.agents/skills/feature-contract/references/list.md#url)가 소유한다. `[확인: 사용자 결정·현재 코드]`
 
 Chromium `search-contract.spec.ts`에서 활성 3 variant의 기본값 검색·새로고침·표식 변경·보기/정렬 후 재검색·초기화 2회·뒤로/앞으로를 확인했다. 기본값 검색 후 미확정 검색어/날짜를 입력하고 뒤로 가도 초안이 지워지는 것을 검증했다(2026-09-07). 예시 Query 응답으로 확인한 시나리오 구현이며 실 API 완료·신규 제품 이관 검증은 아니다.
 
-**3 variant를 한 route에 `status` search로 얹지 않는다.** 그 값은 필터인 동시에 화면 정체성이라 초기화가 그것까지 지워야 하는지 답할 수 없고, 필터 그룹과 컬럼이 화면마다 다르다는 사실(:27,:29,:30)이 `variant` 분기로 숨는다. ADR 0009:42가 목록에서, 0010:128-130이 폼에서 이미 거부한 형태다. Figma·Notion의 별도 화면 정체성과 2026-09-04 사용자 답에 따라 전체·일반·불량은 각각 별도 route다. `[확인]`
+**3 variant를 한 route에 `status` search로 얹지 않는다.** 그 값은 필터인 동시에 화면 정체성이라 초기화가 그것까지 지워야 하는지 답할 수 없고, 필터 그룹과 컬럼이 화면마다 다르다는 사실(:27,:29,:30)이 `variant` 분기로 숨는다. [ADR 0014 버린 대안](../../decisions/0014-single-screen-shape.md#버린-대안)이 목록에서도 폼에서도 이미 거부한 형태다. Figma·Notion의 별도 화면 정체성과 2026-09-04 사용자 답에 따라 전체·일반·불량은 각각 별도 route다. `[확인]`
 
 **(b) 결과 상태는 화면이 쓰지 않고, 세 사실이 각자 표면에 닿는다.** feature는 plain facts만 만들고 `notSearched → loading → error → empty → ready` 판정은 한 곳에 있다([ListResult.tsx](../../../src/shared/ui/list/ListResult.tsx):27-33). **검색 전·빈 결과·오류 중 하나라도 그 표면에 도달하지 못하면 나머지로 위장된다**(F7·F8). 상세는 다른 대수라 같은 boundary를 쓰지 않고 `resolveRequiredQueryOutcome`의 우선순위를 쓴다([required-query.ts](../../../src/api/required-query.ts):22-41). **두 대수를 합치지 않는다** — F5·F6은 상세 축의 실패이고 목록에는 `not-found`·`delegated`가 없다. `[추론]`
 
-**(c) 선택은 현재 보이는 결과 정체성에 종속되고, 선택 가능 여부의 소스는 하나다.** 헤더 전체선택은 2026-09-04 사용자 답에 따라 **현재 페이지에 보이는 선택 가능 행 전체**다. 페이지·page size·정렬·커밋된 검색 조건·목록 route가 바뀌면 선택을 지우고, draft 편집이나 같은 조건의 재검색·refetch에서는 여전히 존재하고 선택 가능한 ID만 남긴다. bulk 실패 시 재시도를 위해 유지하고 성공 후 cache consequence가 끝나면 지운다([bulk-actions.md](../../../.agents/skills/feature-contract/references/bulk-actions.md)). 그리고 **행이 선택 가능한가는 한 판정에서만 나오고**(F10), 그 판정이 행 밖 사실에 의존하면 그 사실이 렌더 identity에 들어가야 한다(F11). `[확인]` `[추론]`
+**(c) 선택은 현재 보이는 결과 정체성에 종속되고, 선택 가능 여부의 소스는 하나다.** 헤더 전체선택은 2026-09-04 사용자 답에 따라 **현재 페이지에 보이는 선택 가능 행 전체**다. 페이지·page size·정렬·커밋된 검색 조건·목록 route가 바뀌면 선택을 지우고, draft 편집이나 같은 조건의 재검색·refetch에서는 여전히 존재하고 선택 가능한 ID만 남긴다. bulk 실패 시 재시도를 위해 유지하고 성공 후 cache consequence가 끝나면 지운다([list.md](../../../.agents/skills/feature-contract/references/list.md#selection-and-actions)). 그리고 **행이 선택 가능한가는 한 판정에서만 나오고**(F10), 그 판정이 행 밖 사실에 의존하면 그 사실이 렌더 identity에 들어가야 한다(F11). `[확인]` `[추론]`
 
-**전체선택의 범위가 payload의 모양을 정한다.** "현재 페이지"면 선택은 ID 목록이지만 "검색결과 전체"면 ID를 셀 수 없어 선택이 **조건**이 되고, bulk 요청은 ID 배열이 아니라 검색 조건을 보내야 한다. 계약은 "안정 ID를 보내고 클라이언트 batching을 발명하지 않는다"고 선언했으므로(bulk-actions.md:6,7) 답이 후자면 서버 계약 자체가 달라진다. `[추론]`
+**전체선택의 범위가 payload의 모양을 정한다.** "현재 페이지"면 선택은 ID 목록이지만 "검색결과 전체"면 ID를 셀 수 없어 선택이 **조건**이 되고, bulk 요청은 ID 배열이 아니라 검색 조건을 보내야 한다. 계약은 "안정 ID를 보내고 클라이언트 batching을 발명하지 않는다"고 선언했으므로(list.md:6,7) 답이 후자면 서버 계약 자체가 달라진다. `[추론]`
 
 **(d) 저장 오케스트레이션은 하나가 아니라 셋이고, 합치지 않는다.** `[확인]`
 
@@ -110,13 +110,13 @@ Chromium `search-contract.spec.ts`에서 활성 3 variant의 기본값 검색·�
 
 셋을 한 훅의 옵션으로 흡수하면 `mode`가 생기고 그것이 곧 demotion 신호다([promotion.md](../../../.agents/skills/shared-ui-contract/references/promotion.md):40). 갈라 두는 것이 설계다. `[추론]`
 
-**(e) 취소 경고 대상과 route 이동을 구분한다.** 2026-09-07 사용자 결정으로 dirty 취소 경고는 독립 등록·수정 화면에만 적용한다. 상세 안 상담 신규/수정과 SMS·이메일·비밀번호 등 action dialog는 dirty여도 추가 취소 경고 없이 기존 local 취소/닫기를 실행한다. 공용 적용 범위의 정본은 [form-workflow.md의 Cancel and tabs](../../../.agents/skills/feature-contract/references/form-workflow.md#cancel-and-tabs)다. 현재 consumer에 적용했다. `crud-reference.spec.ts`에서 상담 수정 취소 시 신규 초안 보존, SMS 취소·×·Escape·바깥 클릭의 경고·요청 없음, 상담+SMS dirty 뒤로가기 확인 1회를 Chromium으로 검증했다(2026-09-07). 이번 취소 범위 결정으로 LNB·뒤로가기 보호를 제거하지 않는다.
+**(e) 취소 경고 대상과 route 이동을 구분한다.** 2026-09-07 사용자 결정으로 dirty 취소 경고는 독립 등록·수정 화면에만 적용한다. 상세 안 상담 신규/수정과 SMS·이메일·비밀번호 등 action dialog는 dirty여도 추가 취소 경고 없이 기존 local 취소/닫기를 실행한다. 공용 적용 범위의 정본은 [form.md의 Cancel and tabs](../../../.agents/skills/feature-contract/references/form.md#cancel-and-dirty-leave)다. 현재 consumer에 적용했다. `crud-reference.spec.ts`에서 상담 수정 취소 시 신규 초안 보존, SMS 취소·×·Escape·바깥 클릭의 경고·요청 없음, 상담+SMS dirty 뒤로가기 확인 1회를 Chromium으로 검증했다(2026-09-07). 이번 취소 범위 결정으로 LNB·뒤로가기 보호를 제거하지 않는다.
 
 과거 증거: 2026-09-05에는 local dirty 보호까지 확대했고, 2026-09-06에는 상담+SMS 동시 dirty 뒤로가기 확인이 두 번 뜨는 결함을 `UnsavedChangesProvider`로 한 번에 모아 검증했다. 이 검증은 기존 동작의 기록이며 새 취소 시나리오의 구현 완료 증거가 아니다. `[확인]`
 
-**(f) 오류 표면의 거처는 요청 하나가 아니라 요청의 자리가 정한다.** 배치 판정은 `resolveErrorOutcome(context, kind)` 하나다([error-outcome.ts](../../../src/api/error-outcome.ts):25-38). 이 계열의 자리는 다섯이다: 목록 결과 · 상세(DetailStateBoundary) · **자식 목록(그 절 안에서 끝나고 부모를 다시 쓰지 않는다** — [table-composition.md](../../../.agents/skills/feature-contract/references/table-composition.md):21) · 폼 필드(`onServer`) · 세션·권한(incident boundary). **여섯 번째가 이 계열에서 처음 생긴다: bulk의 부분 성공.** "20건 중 3건 실패"는 `ApiError`가 아니라 **성공 응답 안의 사실**이라 4-outcome의 대상이 아니다. 계약은 "응답이 행 단위 결과를 노출할 때만 보고한다"고 잠갔을 뿐(bulk-actions.md:9) 표면의 거처를 말하지 않는다. Notion이 확정한 것은 성공 경로의 3단계 alert뿐이다(:94). 서버 계약 전에는 표면을 만들지 않는다(미확인 3). `[추론]`
+**(f) 오류 표면의 거처는 요청 하나가 아니라 요청의 자리가 정한다.** 배치 판정은 `resolveErrorOutcome(context, kind)` 하나다([error-outcome.ts](../../../src/api/error-outcome.ts):25-38). 이 계열의 자리는 다섯이다: 목록 결과 · 상세(DetailStateBoundary) · **자식 목록(그 절 안에서 끝나고 부모를 다시 쓰지 않는다** — [collection.md](../../../.agents/skills/feature-contract/references/collection.md):21) · 폼 필드(`onServer`) · 세션·권한(incident boundary). **여섯 번째가 이 계열에서 처음 생긴다: bulk의 부분 성공.** "20건 중 3건 실패"는 `ApiError`가 아니라 **성공 응답 안의 사실**이라 4-outcome의 대상이 아니다. 계약은 "응답이 행 단위 결과를 노출할 때만 보고한다"고 잠갔을 뿐(list.md:9) 표면의 거처를 말하지 않는다. Notion이 확정한 것은 성공 경로의 3단계 alert뿐이다(:94). 서버 계약 전에는 표면을 만들지 않는다(미확인 3). `[추론]`
 
-**(g) 만들지 않는 것.** ① 서로 다른 workflow를 범용 `mode`에 숨기는 것. 같은 workflow인 활성 목록 3개는 별도 route/공개 화면으로 두고 동일 feature 안 조립을 공유한다. SMS·이메일은 전체 제품에서 반복되는 동일 메시지 업무이므로 독립 messaging feature로 재사용하며 shared에 제품 정책을 올리지 않는다. ② 선택 집합을 Zustand나 shared Table에 두는 것(AGENTS.md:101, [data-table.md](../../../.agents/skills/shared-ui-contract/references/data-table.md):11). ③ 목록 행을 상세 데이터로 재사용하는 것(detail-workflow.md:7). ④ 권한을 표시에서만 적용하는 것 — 숨긴 필드는 payload에서도 빠져야 한다(F12). ⑤ 마스킹 해제를 클라이언트가 결정하는 것 — 값을 이미 받아 가리는 것과 다시 받아 오는 것은 감사 대상이 다르다(미확인 5).
+**(g) 만들지 않는 것.** ① 서로 다른 workflow를 범용 `mode`에 숨기는 것. 같은 workflow인 활성 목록 3개는 별도 route/공개 화면으로 두고 동일 feature 안 조립을 공유한다. SMS·이메일은 전체 제품에서 반복되는 동일 메시지 업무이므로 독립 messaging feature로 재사용하며 shared에 제품 정책을 올리지 않는다. ② 선택 집합을 Zustand나 shared Table에 두는 것(AGENTS.md:101, [catalog.md](../../../.agents/skills/shared-ui-contract/references/catalog.md#list):11). ③ 목록 행을 상세 데이터로 재사용하는 것(detail.md:7). ④ 권한을 표시에서만 적용하는 것 — 숨긴 필드는 payload에서도 빠져야 한다(F12). ⑤ 마스킹 해제를 클라이언트가 결정하는 것 — 값을 이미 받아 가리는 것과 다시 받아 오는 것은 감사 대상이 다르다(미확인 5).
 
 ### 각 이슈가 인라인할 "적용 결론"
 
@@ -133,28 +133,28 @@ Chromium `search-contract.spec.ts`에서 활성 3 variant의 기본값 검색·�
 
 | 이 시나리오가 요구하는 것 | 현재 공용 계약 | 근거 | 판정 |
 | --- | --- | --- | --- |
-| 검색 전/후 판별과 Query gate | 판별자 union이 선언돼 있고 `notSearched`와 enablement가 한 사실에서 나온다 | [URL lifecycle](../../../.agents/skills/feature-contract/references/list-workflow.md#state-and-url-lifecycle), [Query lifecycle](../../../.agents/skills/feature-contract/references/list-workflow.md#query-and-option-lifecycle) | 커버됨 — F8이 여기서 닫힌다 |
-| 필터 행 조립(기간·검색어·다중선택 그룹) | `PeriodFilterField`·`KeywordFilterField`의 slot 조립, `CheckboxTree` + `emptyMeansAll` | [filter-fields.md](../../../.agents/skills/shared-ui-contract/references/filter-fields.md):11,12, [checkbox-group.md](../../../.agents/skills/shared-ui-contract/references/checkbox-group.md):22,24 | 커버됨 |
-| 검색 전·빈 결과·오류가 서로를 위장하지 않기 | `ListResult`가 다섯 상태 판정과 공용 error/retry/trace를 한 곳에서 소유 | ListResult.tsx:27-33, [list-result.md](../../../.agents/skills/shared-ui-contract/references/list-result.md):5 | 커버됨 — F7이 여기서 닫힌다 |
-| 상세 상태 판정과 결함 입력 4종 | `resolveRequiredQueryOutcome` 우선순위 + `DetailStateBoundary` | required-query.ts:22-41, detail-workflow.md:15 | 커버됨 — F5·F6이 여기서 닫힌다 |
-| 자식 목록 실패가 부모를 덮지 않기 | kind B/C의 pending·error·retry는 그 절 안에 있고 자식 not-found는 부모의 notFound가 아니다 | table-composition.md:21 | 커버됨 |
-| 저장 오케스트레이션(확인→완료 + 서버 필드 오류 + 이탈 가드) | `useSaveForm` 한 훅이 다섯 책임을 순서 결합으로 소유하고, `onServer`는 다음 submit 시작 시 전부 지운다 | form-workflow.md:12,36, 0010:158 | 커버됨 — F1~F4가 여기서 닫힌다 |
-| 조건부 필드(수정의 활동제한) 값 정리 | 사용자 결정: form draft 유지, Activity로 숨김/복원, 일반회원 검증은 활동제한 제외, 확인 입력은 빈값. `MemberEditScreen`과 `/members/$memberId/edit` 연결, 확인 callback의 `{memberId,input}` 결합 구현 | [form-workflow.md](../../../.agents/skills/feature-contract/references/form-workflow.md), [회원 원장](../zero-sol/04-members.md) | feature 정책으로 구현·검증됨, 수정 전체 완료 아님 |
-| 업데이트 이력 3열 표 | `UpdateHistory`(provisional, 인벤토리 5화면·코드 consumer 1) | [page-and-detail-surfaces.md](../../../.agents/skills/shared-ui-contract/references/page-and-detail-surfaces.md):10, 0011:64 | 커버됨 — 회원 조회가 두 번째 consumer면 confirm/demote 대상(0011:96) |
-| 상세 안 인라인 폼(회원상담) | 섹션 하나가 자기 폼이고 성공 시 상세를 invalidate한다고 이미 선언 | detail-workflow.md:11 | 커버됨 |
-| locale 전환 시 이미 뜬 폼 오류 | 어댑터가 `fieldMeta.errors`를 그대로 읽고 `onServer`는 다음 submit까지 남는다. **오류 문자열의 locale 재계산을 다룬 문장이 없다** | [form-fields.md](../../../.agents/skills/shared-ui-contract/references/form-fields.md):7,10, form-workflow.md:36 | **수정 필요** — F13이 닿는 자리 |
-| dialog 안 폼(SMS·이메일 발송) | Dialog primitive의 feature 조립, `closeLabel`과 opener focus 복원 구현 | [dialogs.md](../../../.agents/skills/shared-ui-contract/references/dialogs.md) | messaging feature 소비 및 회원/운영자 route 연결 구현, 실발송 제외 |
-| **dialog·인라인 폼의 dirty 이탈** | local 취소 경고 제외, route 보호 유지 | [form-workflow.md](../../../.agents/skills/feature-contract/references/form-workflow.md#cancel-and-tabs), [기존 통합 테스트](../../../src/shared/ui/form/UnsavedChangesGuard.integration.test.tsx) | 2026-09-07 현재 consumer 구현 및 Chromium 대조; 실서버 연결은 제외 |
-| 행 선택과 전체선택 | 선택 소유자가 "목록 화면 또는 feature-local table adapter"로 이미 선언됐고 `DataTable`은 선택을 소유하지 않는다 | [목록 상태](../../../.agents/skills/feature-contract/references/list-workflow.md#state-and-url-lifecycle), bulk-actions.md:5, data-table.md:11 | feature 소유 |
-| **선택의 수명**(검색·정렬·페이지 전환 시 유지/폐기) | 현재 페이지의 선택 가능 행만 전체선택하고 결과 정체성 변경·bulk 성공 때 해제하며 같은 조건 refetch·bulk 실패 때 유효 ID를 유지한다 | [bulk-actions.md](../../../.agents/skills/feature-contract/references/bulk-actions.md) | 커버됨 — 2026-09-04 사용자 답 |
-| bulk 실행 3단계 alert(미선택 오류→확인→완료) | `useSelectionGate`·`useConfirmation`·`BulkActionDialogs`를 members/managers가 소비한다. 대상·실행·완료 사실은 feature 소유 | [zero-sol-figma-analysis.md](../zero-sol-figma-analysis.md) | mechanic 공용 적용됨; 실제 성공 응답은 이번 범위 밖 |
-| **bulk 부분 성공의 표면** | "응답이 행 단위 결과를 노출할 때만 보고한다"만 있고 거처는 없다. 4-outcome은 `ApiError` 축이라 성공 응답 안의 실패를 다루지 않는다 | bulk-actions.md:9, error-outcome.ts:25-38 | **아예 없음** (서버 계약 확정 전) |
-| bulk·다운로드 실행 중 진행 표면 | 버튼 pending만으로 시작하고 overlay 여부는 미확인이라고 이미 선언 | [blocking-progress.md](../../../.agents/skills/shared-ui-contract/references/blocking-progress.md):8 | 커버됨(미확인으로 잠금) |
-| 마스킹된 값의 렌더 | `DetailField`가 마스킹을 명시적으로 feature에 뒀고 컬럼 포맷도 feature다 | page-and-detail-surfaces.md:8, table-composition.md:26 | feature 소유 — 남은 것은 표시가 아니라 **해제 권한**(미확인 5) |
-| **보기·정렬의 "마지막으로 설정한 값"** | `standardPageSizeOptions`는 값만 주고 **기본값을 선언하지 않는다.** 기억의 소유자·범위를 정한 문장이 없다 | shared-values.md:29, zero-sol-figma-analysis.md:62 | **아예 없음** |
-| 중복 키워드 거부 | `useKeywordDraft`가 중복 정책을 caller에 남기고 **제품 규칙을 미확인으로 표기**했다 | shared-values.md:25, 04-members.md:92 | feature 소유 — 동일성 정의는 미확인 6 |
+| 검색 전/후 판별과 Query gate | 판별자 union이 선언돼 있고 `notSearched`와 enablement가 한 사실에서 나온다 | [URL lifecycle](../../../.agents/skills/feature-contract/references/list.md#url), [Query lifecycle](../../../.agents/skills/feature-contract/references/list.md#query) | 커버됨 — F8이 여기서 닫힌다 |
+| 필터 행 조립(기간·검색어·다중선택 그룹) | `PeriodFilterField`·`KeywordFilterField`의 slot 조립, `CheckboxTree` + `emptyMeansAll` | [catalog.md](../../../.agents/skills/shared-ui-contract/references/catalog.md#filter):11,12, [catalog.md](../../../.agents/skills/shared-ui-contract/references/catalog.md#primitives):22,24 | 커버됨 |
+| 검색 전·빈 결과·오류가 서로를 위장하지 않기 | `ListResult`가 다섯 상태 판정과 공용 error/retry/trace를 한 곳에서 소유 | ListResult.tsx:27-33, [catalog.md](../../../.agents/skills/shared-ui-contract/references/catalog.md#list):5 | 커버됨 — F7이 여기서 닫힌다 |
+| 상세 상태 판정과 결함 입력 4종 | `resolveRequiredQueryOutcome` 우선순위 + `DetailStateBoundary` | required-query.ts:22-41, detail.md:15 | 커버됨 — F5·F6이 여기서 닫힌다 |
+| 자식 목록 실패가 부모를 덮지 않기 | kind B/C의 pending·error·retry는 그 절 안에 있고 자식 not-found는 부모의 notFound가 아니다 | list.md:21 | 커버됨 |
+| 저장 오케스트레이션(확인→완료 + 서버 필드 오류 + 이탈 가드) | `useSaveForm` 한 훅이 다섯 책임을 순서 결합으로 소유하고, `onServer`는 다음 submit 시작 시 전부 지운다 | [form.md](../../../.agents/skills/feature-contract/references/form.md#save-lifecycle), ADR 0014 이유 | 커버됨 — F1~F4가 여기서 닫힌다 |
+| 조건부 필드(수정의 활동제한) 값 정리 | 사용자 결정: form draft 유지, Activity로 숨김/복원, 일반회원 검증은 활동제한 제외, 확인 입력은 빈값. `MemberEditScreen`과 `/members/$memberId/edit` 연결, 확인 callback의 `{memberId,input}` 결합 구현 | [form.md](../../../.agents/skills/feature-contract/references/form.md), [회원 원장](../zero-sol/04-members.md) | feature 정책으로 구현·검증됨, 수정 전체 완료 아님 |
+| 업데이트 이력 3열 표 | `UpdateHistory`(provisional, 인벤토리 5화면·코드 consumer 1) | [catalog.md](../../../.agents/skills/shared-ui-contract/references/catalog.md#detail):10, ADR 0014 | 커버됨 — 회원 조회가 두 번째 consumer면 confirm/demote 대상(0011:96) |
+| 상세 안 인라인 폼(회원상담) | 섹션 하나가 자기 폼이고 성공 시 상세를 invalidate한다고 이미 선언 | detail.md:11 | 커버됨 |
+| locale 전환 시 이미 뜬 폼 오류 | 어댑터가 `fieldMeta.errors`를 그대로 읽고 `onServer`는 다음 submit까지 남는다. **오류 문자열의 locale 재계산을 다룬 문장이 없다** | [catalog.md](../../../.agents/skills/shared-ui-contract/references/catalog.md#form):7,10, form.md:36 | **수정 필요** — F13이 닿는 자리 |
+| dialog 안 폼(SMS·이메일 발송) | Dialog primitive의 feature 조립, `closeLabel`과 opener focus 복원 구현 | [catalog.md](../../../.agents/skills/shared-ui-contract/references/catalog.md#dialog) | messaging feature 소비 및 회원/운영자 route 연결 구현, 실발송 제외 |
+| **dialog·인라인 폼의 dirty 이탈** | local 취소 경고 제외, route 보호 유지 | [form.md](../../../.agents/skills/feature-contract/references/form.md#cancel-and-dirty-leave), [기존 통합 테스트](../../../src/shared/ui/form/UnsavedChangesGuard.integration.test.tsx) | 2026-09-07 현재 consumer 구현 및 Chromium 대조; 실서버 연결은 제외 |
+| 행 선택과 전체선택 | 선택 소유자가 "목록 화면 또는 feature-local table adapter"로 이미 선언됐고 `DataTable`은 선택을 소유하지 않는다 | [목록 상태](../../../.agents/skills/feature-contract/references/list.md#url), list.md:5, catalog.md:11 | feature 소유 |
+| **선택의 수명**(검색·정렬·페이지 전환 시 유지/폐기) | 현재 페이지의 선택 가능 행만 전체선택하고 결과 정체성 변경·bulk 성공 때 해제하며 같은 조건 refetch·bulk 실패 때 유효 ID를 유지한다 | [list.md](../../../.agents/skills/feature-contract/references/list.md#selection-and-actions) | 커버됨 — 2026-09-04 사용자 답 |
+| bulk 실행 3단계 alert(미선택 오류→확인→완료) | `useSelectionGate`·`useConfirmation`·`SelectionAlert`를 members/managers가 소비한다. 대상·실행·완료 사실은 feature 소유 | [zero-sol-figma-analysis.md](../zero-sol-figma-analysis.md) | mechanic 공용 적용됨; 실제 성공 응답은 이번 범위 밖 |
+| **bulk 부분 성공의 표면** | "응답이 행 단위 결과를 노출할 때만 보고한다"만 있고 거처는 없다. 4-outcome은 `ApiError` 축이라 성공 응답 안의 실패를 다루지 않는다 | list.md:9, error-outcome.ts:25-38 | **아예 없음** (서버 계약 확정 전) |
+| bulk·다운로드 실행 중 진행 표면 | 버튼 pending만으로 시작하고 overlay 여부는 미확인이라고 이미 선언 | [catalog.md](../../../.agents/skills/shared-ui-contract/references/catalog.md#primitives):8 | 커버됨(미확인으로 잠금) |
+| 마스킹된 값의 렌더 | `DetailField`가 마스킹을 명시적으로 feature에 뒀고 컬럼 포맷도 feature다 | catalog.md:8, list.md:26 | feature 소유 — 남은 것은 표시가 아니라 **해제 권한**(미확인 5) |
+| **보기·정렬의 "마지막으로 설정한 값"** | `standardPageSizeOptions`는 값만 주고 **기본값을 선언하지 않는다.** 기억의 소유자·범위를 정한 문장이 없다 | catalog.md:29, zero-sol-figma-analysis.md:62 | **아예 없음** |
+| 중복 키워드 거부 | `useKeywordDraft`가 중복 정책을 caller에 남기고 **제품 규칙을 미확인으로 표기**했다 | catalog.md:25, 04-members.md:92 | feature 소유 — 동일성 정의는 미확인 6 |
 | **권한에 따른 action 노출과 payload 제외** | 진입 가드 절차는 있으나 **권한 사실의 소유자가 없다.** `navigation.ts`는 계약 미확인 자리표시자다 | [router.md](../../../.agents/skills/feature-contract/references/router.md):33, [navigation.ts](../../../src/app/config/navigation.ts):1-3 | **아예 없음** |
-| shared/feature 경계 | shared는 feature·Router·Query·DTO·permission을 모르고 ESLint가 강제한다 | AGENTS.md:90, 0009:60 | 커버됨 |
+| shared/feature 경계 | shared는 feature·Router·Query·DTO·permission을 모르고 ESLint가 강제한다 | AGENTS.md:90, [ADR 0014 결정](../../decisions/0014-single-screen-shape.md#결정) | 커버됨 |
 
 요약(2026-09-06): 등록·수정·상세·메시지·상담·활동정보의 입력 callback을 업무별 요청 함수로 연결했다. 요청 함수는 한글 도달 로그를 남기며 focused 검사와 실제 Chromium 흐름을 대조한다. 예시 데이터는 환경 분기 없이 Query에서 조회하며 서버 응답·인증 성공을 만들지 않는다. bulk 부분 성공·보기/정렬 기억값·권한 사실은 제품 또는 서버 계약을 기다리며, API 이후 결과는 이번 완료 범위 밖이다. 공용 판정은 두 consumer만이 아니라 전체 제품의 반복 증거로 한다. `[확인]`
 
@@ -174,10 +174,10 @@ Chromium `search-contract.spec.ts`에서 활성 3 variant의 기본값 검색·�
    전에는 action을 권한으로 감추지 않는다. 답이 오면 4(g)④에 따라 payload 제외까지 같은 사실에서 나와야 한다.
 5. **마스킹의 소유자와 해제 절차.** 발생: 목록 이메일·휴대폰 셀, 상세 `개인정보 전체보기`. 기대: 서버가 마스킹한 값을
    주는지, 해제 시 재조회인지, 그 행위가 감사 대상인지. 값을 이미 받아 가리는 것과 다시 받는 것은 노출 위험이 다르다
-   (04-members.md:19,41, zero-sol-figma-analysis.md:107, 0011:85).
+   (04-members.md:19,41, zero-sol-figma-analysis.md:107, [ADR 0014 가 답하지 않는 것](../../decisions/0014-single-screen-shape.md#이-결정이-답하지-않는-것)).
 6. **중복 키워드의 동일성 정의.** 대상 select를 포함하는지, 대소문자·공백을 무시하는지(:92,
    zero-sol-figma-analysis.md:65). 답에 따라 `addPending`의 거부 조건이 정해진다.
-7. **저장 성공·취소의 목적지.** Notion 회원 공통 원문은 등록·수정 완료 확인 후 해당 회원 상세로 이동한다고 명시한다. 입력 확인만 끝난 지금은 이동하지 않는다. 취소는 등록→전체 목록, 수정→해당 상세로 연결한다.
+7. **저장 성공·취소의 목적지.** Notion 회원 공통 원문은 등록·수정 완료 확인 후 해당 회원 상세로 이동한다고 명시한다. 2026-09-16 사용자 결정으로 미연결 write 도 이름 붙인 요청 함수를 지나 **같은 성공 경로**(저장 완료 alert → 이동 → 캐시 무효화)를 돈다. 현재 등록은 목록으로, 수정은 해당 상세로 이동하며, 원문이 말하는 등록 후 상세 이동은 실제 저장이 ID 를 돌려줄 때 확정한다. 취소는 등록→전체 목록, 수정→해당 상세다.
 8. **편집 중 상세 refetch와 폼 값의 충돌 정책, 그리고 인라인 폼 이탈.** 수정 화면이 재조회하면 입력 중 값을 덮을지가
    미확정이다(실서버 연결 시). 인라인 폼의 route/local 이탈 가드는 구현·검증했다. 재조회 정책은
    입력을 서버 재조회로 덮을 수 있는 조건이 확인될 때 결정한다.
@@ -185,4 +185,4 @@ Chromium `search-contract.spec.ts`에서 활성 3 variant의 기본값 검색·�
    기대: 공통 필터를 넘길지 각 route의 검색 전 상태로 진입할지. 답에 따라 LNB link search, route별 schema 초기값과
    page reset이 갈린다. 선택은 답과 무관하게 route 변경 시 해제한다.
 
-2026-09-07 기간 계약 확장: 확정 검색은 양끝을 요구하며 한쪽 결손·불량·역전은 양쪽을 제거한다. 입력 중 draft는 한쪽을 보존한다. 공통 실행 규칙은 [list-search-contract](../../../.agents/skills/feature-contract/references/list-search-contract.md#기간-입력과-확정-경계), 전체 목록의 직접 입력·mock 비교 회귀는 `src/test/workflows/closed-search.test.ts`가 소유한다.
+2026-09-07 기간 계약 확장: 확정 검색은 양끝을 요구하며 한쪽 결손·불량·역전은 양쪽을 제거한다. 입력 중 draft는 한쪽을 보존한다. 공통 실행 규칙은 [list-search-contract](../../../.agents/skills/feature-contract/references/list.md#url), 전체 목록의 직접 입력·mock 비교 회귀는 `src/test/workflows/closed-search.test.ts`가 소유한다.

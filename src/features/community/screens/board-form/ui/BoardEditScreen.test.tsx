@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { TestQueryLocaleProvider } from '@/test/query-locale';
 import { UnsavedChangesProvider } from '@/shared/ui/form/UnsavedChangesGuard';
@@ -9,16 +9,16 @@ vi.mock('@tanstack/react-router', () => ({
 }));
 
 function setup(boardId = 'reference-board-2') {
-  const onConfirm = vi.fn();
+  const onSaved = vi.fn();
   const onCancel = vi.fn();
   render(
     <TestQueryLocaleProvider>
       <UnsavedChangesProvider>
-        <BoardEditScreen boardId={boardId} onConfirm={onConfirm} onCancel={onCancel} />
+        <BoardEditScreen boardId={boardId} onSaved={onSaved} onCancel={onCancel} />
       </UnsavedChangesProvider>
     </TestQueryLocaleProvider>,
   );
-  return { onConfirm, onCancel };
+  return { onSaved, onCancel };
 }
 
 describe('board edit (Figma 9.1.4 수정)', () => {
@@ -35,32 +35,27 @@ describe('board edit (Figma 9.1.4 수정)', () => {
     expect(screen.getByRole('combobox', { name: '중복 허용' })).toBeDisabled();
   });
 
-  it('저장 확인을 거친 설정이 게시판 ID 와 함께 업무 요청에 닿는다', async () => {
-    const { onConfirm } = setup();
+  it('저장은 확인 → 요청 함수 → 저장 완료 → 조회 이동으로 이어진다', async () => {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    const { onSaved } = setup();
     const name = await screen.findByDisplayValue('Reference Board 2');
 
     fireEvent.change(name, { target: { value: 'Reference Board 2 수정' } });
     fireEvent.click(screen.getByRole('button', { name: '저장' }));
 
-    expect(await screen.findByText('저장하시겠습니까?')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: '확인' }));
+    const confirm = await screen.findByRole('dialog');
+    expect(confirm).toHaveTextContent('저장하시겠습니까?');
+    fireEvent.click(within(confirm).getByRole('button', { name: '확인' }));
 
-    expect(onConfirm).toHaveBeenCalledWith({
-      boardId: 'reference-board-2',
-      input: expect.objectContaining({
-        name: 'Reference Board 2 수정',
-        write: { permission: 'MANAGER' },
-        attachment: 'IN_USE',
-        attachmentLimitMb: 10,
-        comment: 'NOT_IN_USE',
-      }),
-    });
-    const request = onConfirm.mock.calls[0]?.[0] as { input: Record<string, unknown> } | undefined;
-    expect(request?.input).not.toHaveProperty('secretComment');
+    const saved = await screen.findByText('저장되었습니다.');
+    expect(log).toHaveBeenCalledWith(expect.stringContaining('[시나리오] 게시판 수정'));
+    fireEvent.click(within(saved.closest('[role="dialog"]')!).getByRole('button', { name: '확인' }));
+    await waitFor(() => expect(onSaved).toHaveBeenCalledWith('reference-board-2'));
+    log.mockRestore();
   });
 
   it('게시판명을 비우면 저장이 확인창까지 가지 않는다', async () => {
-    const { onConfirm } = setup();
+    setup();
     const name = await screen.findByDisplayValue('Reference Board 2');
 
     fireEvent.change(name, { target: { value: '' } });
@@ -68,7 +63,6 @@ describe('board edit (Figma 9.1.4 수정)', () => {
 
     await waitFor(() => expect(name).toHaveAttribute('aria-invalid', 'true'));
     expect(screen.queryByText('저장하시겠습니까?')).toBeNull();
-    expect(onConfirm).not.toHaveBeenCalled();
   });
 
   it('진입 후 없는 게시판은 폼 대신 notFound 로 선다', async () => {

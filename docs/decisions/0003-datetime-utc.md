@@ -2,7 +2,6 @@
 
 - 상태: 승인됨 — 구현 및 단위 검증 완료, 실제 서버 계약 대기
 - 날짜: 2026-08-27
-- 개정: 2026-09-07
 - 결정자: 제품 소유자 (사용자)
 
 ## 맥락
@@ -12,7 +11,7 @@
 `APP_TIMEZONE = 'UTC'` Context 하나가 표시와 기간 변환을 함께 맡아 서울 브라우저에서도 UTC 날짜를
 보여 줬고, 비어 있거나 파싱할 수 없는 날짜 하나가 목록 전체를 `RangeError`로 중단시켰다.
 
-리허설 OpenAPI의 `timezone` 파라미터 의미는 신규 서버 계약이 아니다. 현재 요청은 이
+격리 계약 OpenAPI의 `timezone` 파라미터 의미는 신규 서버 계약이 아니다. 현재 요청은 이
 파라미터를 보내지 않으며, UTC instant를 보낸다는 사실만으로 값을 추론해 추가하지 않는다.
 
 ## 결정
@@ -22,7 +21,7 @@
 2. `displayTimeZone()`은 `Intl.DateTimeFormat().resolvedOptions().timeZone`으로 브라우저 IANA
    timezone을 반환한다. 언어와 timezone은 다른 축이므로 locale에서 timezone을 추정하지 않는다.
 3. 표시 기준을 Context로 주입하지 않는다. 브라우저 환경이 단일 소유자이므로 `TimezoneProvider`와
-   `useTimezone`을 제거한다. 공연장 timezone이 제품 기준으로 확정되면 호출부가 아니라
+   `useTimezone`을 제거한다. 장소 timezone이 제품 기준으로 확정되면 호출부가 아니라
    `displayTimeZone()`만 교체할 수 있도록 함수 경계는 유지한다.
 4. 서버 instant 표시는 브라우저 timezone으로 변환한다. 값이 없거나 파싱할 수 없으면 빈 문자열을
    반환하며 한 셀의 결함이 화면 전체를 중단시키지 않는다.
@@ -34,10 +33,10 @@
 7. API `timezone` 파라미터 전달 여부와 의미는 신규 서버 계약이 확정된 feature가 소유한다.
    transport가 `REQUEST_TIMEZONE`이나 브라우저 zone을 자동 주입하지 않는다.
 
-8. 현재 목록의 확정 검색 기간은 양끝이 필요한 닫힌 범위다(2026-09-07 사용자 결정).
+8. 목록의 확정 검색 기간은 양끝이 필요한 닫힌 범위다.
    양끝 미지정은 무기간이며 한쪽 결손·불량·역전은 양쪽을 제거한다. 동일 시점은 허용하고
    ISO 문자열 철자가 아니라 실제 시점으로 비교한다. 입력 중 draft는 한쪽을 유지할 수 있다.
-   실행 경계는 [list-search-contract](../../.agents/skills/feature-contract/references/list-search-contract.md#기간-입력과-확정-경계)가 소유한다.
+   실행 경계는 [list URL](../../.agents/skills/feature-contract/references/list.md#url)이 소유한다.
 
 ## 변환 예시
 
@@ -74,6 +73,6 @@ endDateTime request:     2026-08-28T14:59:59.999Z
 
 ## 재검토 조건
 
-- 표시 기준이 브라우저가 아니라 계정·공연장 timezone으로 확정될 때
+- 표시 기준이 브라우저가 아니라 계정·장소 timezone으로 확정될 때
 - 신규 서버가 date-only, instant, `timezone` 파라미터의 결합 의미를 확정할 때
 - 브라우저가 IANA zone을 반환하지 못하는 환경의 fallback 정책이 필요할 때

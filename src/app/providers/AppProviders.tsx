@@ -1,5 +1,5 @@
 import { ApiError, type ApiErrorKind } from '@/api/error'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { MutationCache, QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { LocaleProvider } from './LocaleProvider'
 import { AuthProvider } from './AuthProvider'
@@ -15,8 +15,12 @@ export function retryOnce(failureCount: number, error: unknown): boolean {
   return failureCount < 1
 }
 
+/**
+ * A mutation's `meta.invalidates` lists the cache families its success makes stale; this is the one
+ * place that acts on it, so no screen wires `onSuccess` invalidation by hand (`ApiMutationMeta`).
+ */
 export function createQueryClient(): QueryClient {
-  return new QueryClient({
+  const client: QueryClient = new QueryClient({
     defaultOptions: {
       queries: {
         // 목록 화면의 SOT는 URL search이며, Router preload가 Query freshness와
@@ -25,8 +29,16 @@ export function createQueryClient(): QueryClient {
         retry: retryOnce,
         refetchOnWindowFocus: false,
       },
+      mutations: { retry: false },
     },
+    mutationCache: new MutationCache({
+      onSuccess: (_data, _variables, _context, mutation) =>
+        Promise.all(
+          (mutation.meta?.invalidates ?? []).map((queryKey) => client.invalidateQueries({ queryKey })),
+        ),
+    }),
   })
+  return client
 }
 
 export function AppProviders({
