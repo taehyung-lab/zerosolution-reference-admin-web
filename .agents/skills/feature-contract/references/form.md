@@ -45,7 +45,7 @@ const save = useSaveForm({
 - 어댑터는 `FormTextField`·`FormSelectField`·`FormMultiSelectField`·`FormComboboxField`·`FormCheckboxField`·`FormRadioGroupField`·`FormDateField`·`FormDateRangeField`·`FormFileField`·`FormPermissionTreeField`·`FormArrayField` 다([catalog Form](../../shared-ui-contract/references/catalog.md#form)). 소비자가 없어도 이 집합은 남는다; 다른 이름의 별칭은 만들지 않는다.
 - 서버 선택지는 `api/use{Entity}Options.ts` 훅의 `{ state, items, retry }` 를 `FormSelectField state/onRetry` 에 그대로 넘긴다. 종속 선택지(유형 → 권한)는 훅의 `enabled` 로 선행 조건을 표현하고, 종속 값 비우기는 그 필드의 `onValueChange` 에서 `form.setFieldValue` 로 한다 — effect 가 아니다.
 - 조건부 필드군: 제품이 숨긴 입력의 복원을 요구하면 값은 부모 폼에 두고 React `Activity` 로 가시성만 바꾼다. schema 가 authoritative 상태로 검증하고 mapper 가 확정 입력만 싣는다. 복원을 요구하지 않으면 값을 명시적으로 비운다.
-- 반복 행은 `FormArrayField` + `Table` primitive. row factory·stable id·최소 개수는 feature 가 정한다.
+- 반복 행은 `FormArrayField` + `Table` primitive. row factory·stable id·최소 개수는 feature 가 정한다. 폼 안의 다른 행 집합(선택지 표·검색 후보)은 [collection](collection.md) 이 분류한다.
 - 비밀번호 확인처럼 blur 에서도 알려야 하는 불일치는 `validators.onBlur` 에 필드 하나만 더한다.
 
 ## Cancel and dirty leave

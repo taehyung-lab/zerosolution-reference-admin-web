@@ -55,7 +55,7 @@ form과 file workflow가 소유한다. `[확인]`
 
 작성자 검색은 table composition kind E다. 검색 draft와 candidate는 popup local이고, 확인할 때만 parent
 field에 commit하며 취소·닫기는 폐기한다. parent URL은 바꾸지 않는다
-([list.md](../../../.agents/skills/feature-contract/references/list.md#collections-elsewhere):15,19,24). PUSH의
+([collection.md](../../../.agents/skills/feature-contract/references/collection.md):15,19,24). PUSH의
 대상 영역에 보이는 Tabs는 shared 후보를 유지하되 tab 종류·회원 cardinality는 feature가 소유한다. `[추론]`
 
 ## 5. 우리 공용 계약과의 대조

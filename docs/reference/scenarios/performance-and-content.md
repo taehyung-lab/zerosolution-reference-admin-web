@@ -56,7 +56,7 @@ feature가 소유하며 하나의 `mode`로 숨기지 않는다. `[추론]`
 
 입장안내정보는 form-owned editable rows(kind D)다. `SectionCard(collapsible)` 안에서 파일과 반복 행의
 values·dirty·per-row error를 한 폼이 소유하고, caller가 row schema·추가/삭제 정책을 정한다
-([list.md](../../../.agents/skills/feature-contract/references/list.md#collections-elsewhere):14,27-30). 저장은
+([collection.md](../../../.agents/skills/feature-contract/references/collection.md):14,27-30). 저장은
 섹션 입력 검증과 확인 뒤 호출 직전에서 끝난다. `[확인]`
 
 언어 tab은 source-owned controlled `Tabs` 후보를 쓸 수 있지만 값의 소유자와 panel 수명은 이 화면에

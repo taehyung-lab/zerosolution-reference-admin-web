@@ -14,9 +14,10 @@ Pick the reference for the role the request changes. Read a whole file only for 
 | Request | Read |
 | --- | --- |
 | Route, params/search validation, guard, loader, preload, navigation entry | [router.md](references/router.md) |
-| List: URL fields, query, filter, result, sorting, row selection, bulk/send/download action, a collection hosted anywhere on a screen | [list.md](references/list.md) |
+| List screen entered by its own route: URL fields, query, filter, result, sorting, row selection, bulk/send/download action | [list.md](references/list.md) |
 | Detail: entry, state boundary, sections, history, record actions, entry to edit | [detail.md](references/detail.md) |
 | Create/edit form: save lifecycle, fields, options, conditional groups, cancel and dirty leave | [form.md](references/form.md) |
+| A row collection hosted inside a screen (a detail section table, a form's repeating rows, a dialog's search results): who owns its rows, params and failure | [collection.md](references/collection.md) plus the host role's section |
 | Upload, download, file field transport, retry | [file-workflow.md](references/file-workflow.md) |
 | New ordinary screen skeleton, how a screen splits into files, app-shell metadata | [screen-composition.md](references/screen-composition.md) |
 | Analytics, permission matrix, notification screen | [specialized-screens.md](references/specialized-screens.md) plus screen composition |

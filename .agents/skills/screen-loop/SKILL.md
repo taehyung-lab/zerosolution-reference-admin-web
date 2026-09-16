@@ -35,6 +35,7 @@ description: Use for any request to implement or change a screen, part of a scre
 | screen — 상세 | [detail.md](../feature-contract/references/detail.md) | 위와 같음 |
 | screen — 등록·수정 | [form.md](../feature-contract/references/form.md) | 위와 같음 |
 | slice | 그 surface 가 속한 역할 문서의 **해당 절** | 그 절이 가리키는 catalog 행 |
+| slice — 화면 안의 행 집합(상세 섹션 표, 폼 반복 행, 다이얼로그 검색 결과) | host 역할 문서의 섹션 절 + [collection.md](../feature-contract/references/collection.md) | 렌더는 [catalog](../shared-ui-contract/references/catalog.md) 의 그 행 |
 | component | [catalog.md](../shared-ui-contract/references/catalog.md) 의 그 행 | 계약을 바꾸면 [promotion.md](../shared-ui-contract/references/promotion.md), primitive 내부면 [primitives-and-tokens.md](../shared-ui-contract/references/primitives-and-tokens.md) |
 | logic — 화면 workflow 훅(`use{X}ListFilter`·`use{X}ListData`·`use{X}ListActions`·`use{X}ListResult` 등 `screens/`·`mechanics/` 안) | **그 훅을 품은 역할 문서의 해당 절**(필터면 [list Filter](../feature-contract/references/list.md#filter), 조회면 [Query](../feature-contract/references/list.md#query), 액션이면 [Selection and actions](../feature-contract/references/list.md#selection-and-actions), 저장이면 [form Save lifecycle](../feature-contract/references/form.md#save-lifecycle)) | 실제 호출자, 배치가 갈리면 [folder-structure-contract](../folder-structure-contract/SKILL.md) |
 | logic — 공용 순수 함수·headless mechanic(`shared/`·`src/api`) | 실제 호출자 + catalog 의 그 행(있으면) | 공용화 여부면 [promotion.md](../shared-ui-contract/references/promotion.md), wire·cache 면 [api-contract](../api-contract/SKILL.md) 의 해당 reference |

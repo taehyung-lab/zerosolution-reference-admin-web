@@ -2,6 +2,8 @@
 
 Read this file only when deciding whether a feature UI composition, state mechanic, or pure utility should enter, remain in, narrow within, or leave `src/shared` (`ui`, `model`, `lib`) or `src/api`. The current shared set and its contracts are listed in [catalog.md](catalog.md); this file owns the decision procedure.
 
+**Using a shared unit is not promoting one.** If an existing contract already matches what the screen needs, read its catalog row and use it — no decision is required here. This file starts only when a caller wants a contract that does not exist yet, or wants an existing one widened, narrowed, or removed. A need that appears in exactly one screen stays feature-local without consulting this file either.
+
 ## Admission test
 
 One use stays feature-local. Two uses are compared. A third stable use starts review; it does not guarantee promotion. Promote only when all are true:

@@ -36,7 +36,7 @@ screen:       const detail = use{Entity}Detail(id)
 | 필드 | `<dl>` 안의 `DetailField({ label, children })` | 컬럼 grid, 빈 값 `-`, 포맷, 마스킹, 값 안의 버튼·링크 |
 | 상태 | `Badge({ tone })` | 상태 → tone 의 exhaustive map |
 | 이력 | `UpdateHistory({ entries, labels, emptyText })` | `model/{entity}-history.ts` 의 순수 mapper `to{Entity}HistoryEntries(logs, t)` — 항목 라벨, 값 포맷, 비노출 항목(변경 사실만 한 줄), 모르는 항목의 중립 문구 |
-| 자식 행 집합 | [list Collections elsewhere](list.md#collections-elsewhere) | 종류별 소유자 |
+| 자식 행 집합(이력·자식 목록·자식 표) | [collection](collection.md) 이 분류 | 행 출처·컬럼·문구·빈 상태 |
 | 탭 | `Tabs*` | 선택 값(로컬 상태), 라벨 |
 
 렌더 계약은 [catalog Detail](../../shared-ui-contract/references/catalog.md#detail).

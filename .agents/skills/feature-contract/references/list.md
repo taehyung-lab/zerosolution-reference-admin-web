@@ -85,17 +85,7 @@ shared 가 소유하는 것: 위 표의 mechanic 과 렌더 계약([catalog](../
 
 ## Collections elsewhere
 
-목록 결과 밖의 행 집합은 데이터 소유자로 분류하고 그 소유자의 절을 적용한다.
-
-| 종류 | 행의 출처 | 상태 소유자 | 적용 |
-| --- | --- | --- | --- |
-| 부모 DTO 의 배열 | 상세 응답 안 | 부모 ID query 하나 | [detail](detail.md). 정렬 계약이 필요하면 `DataTable`, 아니면 `Table` primitive |
-| 독립 자식 query | 부모 ID 로 여는 자식 endpoint | 자식 key | key 는 [query-cache](../../api-contract/references/query-cache.md). 자식 실패는 그 섹션 안에서 끝나고 부모를 다시 쓰지 않는다 |
-| 필터·페이지가 있는 자식 목록 | params 를 받는 자식 endpoint | 자식 key + 해소된 params. URL 은 공유·복원이 확정될 때만, 아니면 가장 가까운 host 컴포넌트 | 이 문서 전부를 그 surface 에 적용 |
-| 폼이 소유하는 편집 행 | TanStack Form 배열 필드 | Form | [form](form.md) + `FormArrayField` |
-| 검색 뒤 선택하는 다이얼로그 | 로컬 검색 입력으로 여는 검색 endpoint | 검색 key + host 의 후보 하나. 확정 시 `setFieldValue` | 다이얼로그가 host 다. 새 controller 를 만들지 않는다 |
-
-행 identity 는 서버 계약이 확인한 stable ID 다. 배열 index 는 identity 가 아니다.
+목록 결과 밖의 행 집합(상세 섹션의 표, 폼의 반복 행, 다이얼로그의 검색 결과)은 이 문서가 아니라 [collection](collection.md) 이 분류한다. 그 분류가 다시 이 문서를 가리키는 것은 **필터·정렬·페이지를 가진 집합**뿐이고, 그때도 URL 은 독립 route 로 진입할 때만 쓴다.
 
 ## 형태
 

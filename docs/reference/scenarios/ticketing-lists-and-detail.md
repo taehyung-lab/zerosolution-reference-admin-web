@@ -57,7 +57,7 @@ lookup은 feature-local draft/commit이며 공연이 확정된 뒤에만 공연�
 다섯 shared 후보 중 하나로 남긴다. `[확인]`
 
 상세의 표면은 collection kind별로 분리한다. 부모 facts는 kind A, 필터·paging이 있는 입장정보는 kind C,
-회원상담은 독립 인라인 form이다([list.md](../../../.agents/skills/feature-contract/references/list.md#collections-elsewhere):11-17,23). `[추론]`
+회원상담은 독립 인라인 form이다([collection.md](../../../.agents/skills/feature-contract/references/collection.md):11-17,23). `[추론]`
 
 ## 5. 우리 공용 계약과의 대조
 
