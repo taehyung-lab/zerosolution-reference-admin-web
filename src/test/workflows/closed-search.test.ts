@@ -14,7 +14,7 @@ import {
   accessSearchContract,
   resolveMemberRecordSearch,
 } from "@/features/members/mechanics/record-list/model/member-record-search";
-import { performanceSearchSchema } from "@/features/performances/screens/list/model/search-schema";
+import { performanceListSearch } from "@/features/performances/screens/performance-list/model/performance-list-search";
 import { accessData } from "@/features/members/fixtures/record-pages";
 
 const schemas = [
@@ -27,7 +27,7 @@ const schemas = [
   ["access", accessSearchSchema, true],
   ["counsel", counselSearchSchema, false],
   ["appeal", appealSearchSchema, false],
-  ["performance", performanceSearchSchema, false],
+  ["performance", performanceListSearch.canonical, false],
 ] as const;
 
 describe.each(schemas)("%s closed search", (_name, schema, explicit) => {
