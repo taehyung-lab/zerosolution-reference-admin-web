@@ -70,11 +70,11 @@
 | 무엇이 깨졌나 | 왜 | 애초에 무엇을 몰라서 |
 | --- | --- | --- |
 | **F1** `[계약]` 접힌 섹션 안의 필수 필드 때문에 submit이 차단되는데 **오류 문구가 렌더되지 않아 저장이 조용히 실패** | 닫힌 섹션을 unmount했다 | 두 폼 라이브러리 모두 전체 values를 검증하지만 control이 없으면 오류를 그리지 못한다는 것([0014](../../decisions/0014-single-screen-shape.md):36-40) |
-| **F2** `[계약]` 제출 실패한 필드에서 **벗어나기만 해도 오류가 사라졌다** | `validators: { onSubmit }`만 썼다 | non-submit 검증(blur·change)이 오류 없이 끝나면 `FieldApi.validateSync`가 `onSubmit` 오류를 지운다는 것([ADR 0014 실측 근거](../../decisions/0014-single-screen-shape.md#보존할-실측-근거)) |
-| **F3** `[계약]` 저장 성공 후 폼 값이 **원래 defaults로 되돌아갔다** | `form.reset(values)`만 불렀다 | `useForm`이 매 렌더 `formApi.update(opts)`를 불러 `keepDefaultValues` 없이는 기준선이 갱신되지 않는다는 것([ADR 0014 실측 근거](../../decisions/0014-single-screen-shape.md#보존할-실측-근거)) |
-| **F4** `[계약]` 저장 중 이동을 물었더니 **질문 dialog가 진행 overlay 아래 깔려 조작 불가**였다 | dirty 가드를 pending 중에도 질문으로 처리했다 | 전역 진행 overlay가 이미 "기다리라"는 메시지이고 그 아래 dialog는 조작될 수 없다는 것([ADR 0014 실측 근거](../../decisions/0014-single-screen-shape.md#보존할-실측-근거)) |
+| **F2** `[계약]` 제출 실패한 필드에서 **벗어나기만 해도 오류가 사라졌다** | `validators: { onSubmit }`만 썼다 | non-submit 검증(blur·change)이 오류 없이 끝나면 `FieldApi.validateSync`가 `onSubmit` 오류를 지운다는 것([ADR 0014 이유](../../decisions/0014-single-screen-shape.md#이유)) |
+| **F3** `[계약]` 저장 성공 후 폼 값이 **원래 defaults로 되돌아갔다** | `form.reset(values)`만 불렀다 | `useForm`이 매 렌더 `formApi.update(opts)`를 불러 `keepDefaultValues` 없이는 기준선이 갱신되지 않는다는 것([ADR 0014 이유](../../decisions/0014-single-screen-shape.md#이유)) |
+| **F4** `[계약]` 저장 중 이동을 물었더니 **질문 dialog가 진행 overlay 아래 깔려 조작 불가**였다 | dirty 가드를 pending 중에도 질문으로 처리했다 | 전역 진행 overlay가 이미 "기다리라"는 메시지이고 그 아래 dialog는 조작될 수 없다는 것([ADR 0014 이유](../../decisions/0014-single-screen-shape.md#이유)) |
 | **F5** `[계약]` 초기 요청이 401/403인데 **로컬 오류 화면과 incident overlay가 함께** 떴다 | 상세 상태를 `notFound\|error\|ready` 3항으로 화면마다 판정했다(같은 판정이 글자 그대로 3곳에 복제) | 세션·권한 실패는 로컬 표면을 만들지 않고 incident boundary가 소유해야 한다는 것([0014](../../decisions/0014-single-screen-shape.md):21,30) |
-| **F6** `[계약]` 캐시된 상세가 있으면 background 404가 와도 **삭제된 레코드를 계속 표시**했다 | data 우선 규칙을 무조건 적용했다 | 서버가 방금 없다고 답한 사실은 캐시보다 우선이고 다른 실패는 반대라는 것([ADR 0014 실측 근거](../../decisions/0014-single-screen-shape.md#보존할-실측-근거)) |
+| **F6** `[계약]` 캐시된 상세가 있으면 background 404가 와도 **삭제된 레코드를 계속 표시**했다 | data 우선 규칙을 무조건 적용했다 | 서버가 방금 없다고 답한 사실은 캐시보다 우선이고 다른 실패는 반대라는 것([ADR 0014 이유](../../decisions/0014-single-screen-shape.md#이유)) |
 | **F7** `[외부]` **목록 조회 실패가 "검색해주세요"로 위장**됐고, 다른 목록에서는 실패가 빈 결과로 보였다 | `[추론]` 요청 실패·재시도 사실이 결과 표면에 도달하지 않는 조건 | 검색 전·빈 결과·오류를 별도 사실로 전달한다 |
 | **F8** `[외부]` 빈 결과 문구가 "등록된 데이터 없음"과 "검색 결과 없음"으로 갈리지 않았고, 검색 전 판정 기준을 나중에 바꿔야 했다 | `[추론]` 검색 전과 검색 후 빈 결과의 판별 조건이 분리되지 않는 조건 | 검색 의도를 URL에서 복원하고 Query와 결과 표면이 같은 사실을 읽는다(2026-09-07 사용자 결정) |
 | **F9** `[외부]` 만료된 참조 ID가 옵션에서 안 잡히는 상태와 "이름 미등록"이 같은 표시로 합쳐졌고, 하위 칸이 데이터가 없다고 단정했다 | `[추론]` "찾지 못함"과 "값 없음"을 한 상태로 접는 조건 | 미해결 참조와 값 없음·하위 빈 결과를 분리한다 |
@@ -92,7 +92,7 @@
 
 Chromium `search-contract.spec.ts`에서 활성 3 variant의 기본값 검색·새로고침·표식 변경·보기/정렬 후 재검색·초기화 2회·뒤로/앞으로를 확인했다. 기본값 검색 후 미확정 검색어/날짜를 입력하고 뒤로 가도 초안이 지워지는 것을 검증했다(2026-09-07). 예시 Query 응답으로 확인한 시나리오 구현이며 실 API 완료·신규 제품 이관 검증은 아니다.
 
-**3 variant를 한 route에 `status` search로 얹지 않는다.** 그 값은 필터인 동시에 화면 정체성이라 초기화가 그것까지 지워야 하는지 답할 수 없고, 필터 그룹과 컬럼이 화면마다 다르다는 사실(:27,:29,:30)이 `variant` 분기로 숨는다. [ADR 0014 검토한 대안](../../decisions/0014-single-screen-shape.md#검토한-대안)이 목록에서도 폼에서도 이미 거부한 형태다. Figma·Notion의 별도 화면 정체성과 2026-09-04 사용자 답에 따라 전체·일반·불량은 각각 별도 route다. `[확인]`
+**3 variant를 한 route에 `status` search로 얹지 않는다.** 그 값은 필터인 동시에 화면 정체성이라 초기화가 그것까지 지워야 하는지 답할 수 없고, 필터 그룹과 컬럼이 화면마다 다르다는 사실(:27,:29,:30)이 `variant` 분기로 숨는다. [ADR 0014 버린 대안](../../decisions/0014-single-screen-shape.md#버린-대안)이 목록에서도 폼에서도 이미 거부한 형태다. Figma·Notion의 별도 화면 정체성과 2026-09-04 사용자 답에 따라 전체·일반·불량은 각각 별도 route다. `[확인]`
 
 **(b) 결과 상태는 화면이 쓰지 않고, 세 사실이 각자 표면에 닿는다.** feature는 plain facts만 만들고 `notSearched → loading → error → empty → ready` 판정은 한 곳에 있다([ListResult.tsx](../../../src/shared/ui/list/ListResult.tsx):27-33). **검색 전·빈 결과·오류 중 하나라도 그 표면에 도달하지 못하면 나머지로 위장된다**(F7·F8). 상세는 다른 대수라 같은 boundary를 쓰지 않고 `resolveRequiredQueryOutcome`의 우선순위를 쓴다([required-query.ts](../../../src/api/required-query.ts):22-41). **두 대수를 합치지 않는다** — F5·F6은 상세 축의 실패이고 목록에는 `not-found`·`delegated`가 없다. `[추론]`
 
@@ -138,7 +138,7 @@ Chromium `search-contract.spec.ts`에서 활성 3 variant의 기본값 검색·�
 | 검색 전·빈 결과·오류가 서로를 위장하지 않기 | `ListResult`가 다섯 상태 판정과 공용 error/retry/trace를 한 곳에서 소유 | ListResult.tsx:27-33, [catalog.md](../../../.agents/skills/shared-ui-contract/references/catalog.md#list):5 | 커버됨 — F7이 여기서 닫힌다 |
 | 상세 상태 판정과 결함 입력 4종 | `resolveRequiredQueryOutcome` 우선순위 + `DetailStateBoundary` | required-query.ts:22-41, detail.md:15 | 커버됨 — F5·F6이 여기서 닫힌다 |
 | 자식 목록 실패가 부모를 덮지 않기 | kind B/C의 pending·error·retry는 그 절 안에 있고 자식 not-found는 부모의 notFound가 아니다 | list.md:21 | 커버됨 |
-| 저장 오케스트레이션(확인→완료 + 서버 필드 오류 + 이탈 가드) | `useSaveForm` 한 훅이 다섯 책임을 순서 결합으로 소유하고, `onServer`는 다음 submit 시작 시 전부 지운다 | [form.md](../../../.agents/skills/feature-contract/references/form.md#save-lifecycle), ADR 0014 실측 근거 | 커버됨 — F1~F4가 여기서 닫힌다 |
+| 저장 오케스트레이션(확인→완료 + 서버 필드 오류 + 이탈 가드) | `useSaveForm` 한 훅이 다섯 책임을 순서 결합으로 소유하고, `onServer`는 다음 submit 시작 시 전부 지운다 | [form.md](../../../.agents/skills/feature-contract/references/form.md#save-lifecycle), ADR 0014 이유 | 커버됨 — F1~F4가 여기서 닫힌다 |
 | 조건부 필드(수정의 활동제한) 값 정리 | 사용자 결정: form draft 유지, Activity로 숨김/복원, 일반회원 검증은 활동제한 제외, 확인 입력은 빈값. `MemberEditScreen`과 `/members/$memberId/edit` 연결, 확인 callback의 `{memberId,input}` 결합 구현 | [form.md](../../../.agents/skills/feature-contract/references/form.md), [회원 원장](../zero-sol/04-members.md) | feature 정책으로 구현·검증됨, 수정 전체 완료 아님 |
 | 업데이트 이력 3열 표 | `UpdateHistory`(provisional, 인벤토리 5화면·코드 consumer 1) | [catalog.md](../../../.agents/skills/shared-ui-contract/references/catalog.md#detail):10, ADR 0014 | 커버됨 — 회원 조회가 두 번째 consumer면 confirm/demote 대상(0011:96) |
 | 상세 안 인라인 폼(회원상담) | 섹션 하나가 자기 폼이고 성공 시 상세를 invalidate한다고 이미 선언 | detail.md:11 | 커버됨 |
@@ -154,7 +154,7 @@ Chromium `search-contract.spec.ts`에서 활성 3 variant의 기본값 검색·�
 | **보기·정렬의 "마지막으로 설정한 값"** | `standardPageSizeOptions`는 값만 주고 **기본값을 선언하지 않는다.** 기억의 소유자·범위를 정한 문장이 없다 | catalog.md:29, zero-sol-figma-analysis.md:62 | **아예 없음** |
 | 중복 키워드 거부 | `useKeywordDraft`가 중복 정책을 caller에 남기고 **제품 규칙을 미확인으로 표기**했다 | catalog.md:25, 04-members.md:92 | feature 소유 — 동일성 정의는 미확인 6 |
 | **권한에 따른 action 노출과 payload 제외** | 진입 가드 절차는 있으나 **권한 사실의 소유자가 없다.** `navigation.ts`는 계약 미확인 자리표시자다 | [router.md](../../../.agents/skills/feature-contract/references/router.md):33, [navigation.ts](../../../src/app/config/navigation.ts):1-3 | **아예 없음** |
-| shared/feature 경계 | shared는 feature·Router·Query·DTO·permission을 모르고 ESLint가 강제한다 | AGENTS.md:90, [ADR 0014 공용 경계](../../decisions/0014-single-screen-shape.md#공용-경계) | 커버됨 |
+| shared/feature 경계 | shared는 feature·Router·Query·DTO·permission을 모르고 ESLint가 강제한다 | AGENTS.md:90, [ADR 0014 결정](../../decisions/0014-single-screen-shape.md#결정) | 커버됨 |
 
 요약(2026-09-06): 등록·수정·상세·메시지·상담·활동정보의 입력 callback을 업무별 요청 함수로 연결했다. 요청 함수는 한글 도달 로그를 남기며 focused 검사와 실제 Chromium 흐름을 대조한다. 예시 데이터는 환경 분기 없이 Query에서 조회하며 서버 응답·인증 성공을 만들지 않는다. bulk 부분 성공·보기/정렬 기억값·권한 사실은 제품 또는 서버 계약을 기다리며, API 이후 결과는 이번 완료 범위 밖이다. 공용 판정은 두 consumer만이 아니라 전체 제품의 반복 증거로 한다. `[확인]`
 
@@ -174,7 +174,7 @@ Chromium `search-contract.spec.ts`에서 활성 3 variant의 기본값 검색·�
    전에는 action을 권한으로 감추지 않는다. 답이 오면 4(g)④에 따라 payload 제외까지 같은 사실에서 나와야 한다.
 5. **마스킹의 소유자와 해제 절차.** 발생: 목록 이메일·휴대폰 셀, 상세 `개인정보 전체보기`. 기대: 서버가 마스킹한 값을
    주는지, 해제 시 재조회인지, 그 행위가 감사 대상인지. 값을 이미 받아 가리는 것과 다시 받는 것은 노출 위험이 다르다
-   (04-members.md:19,41, zero-sol-figma-analysis.md:107, [ADR 0014 미확인](../../decisions/0014-single-screen-shape.md#미확인)).
+   (04-members.md:19,41, zero-sol-figma-analysis.md:107, [ADR 0014 가 답하지 않는 것](../../decisions/0014-single-screen-shape.md#이-결정이-답하지-않는-것)).
 6. **중복 키워드의 동일성 정의.** 대상 select를 포함하는지, 대소문자·공백을 무시하는지(:92,
    zero-sol-figma-analysis.md:65). 답에 따라 `addPending`의 거부 조건이 정해진다.
 7. **저장 성공·취소의 목적지.** Notion 회원 공통 원문은 등록·수정 완료 확인 후 해당 회원 상세로 이동한다고 명시한다. 2026-09-16 사용자 결정으로 미연결 write 도 이름 붙인 요청 함수를 지나 **같은 성공 경로**(저장 완료 alert → 이동 → 캐시 무효화)를 돈다. 현재 등록은 목록으로, 수정은 해당 상세로 이동하며, 원문이 말하는 등록 후 상세 이동은 실제 저장이 ID 를 돌려줄 때 확정한다. 취소는 등록→전체 목록, 수정→해당 상세다.

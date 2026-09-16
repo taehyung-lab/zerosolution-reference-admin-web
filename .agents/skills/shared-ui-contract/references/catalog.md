@@ -132,7 +132,7 @@
 | `usePageRowSelection({ rows, getId, isSelectable?, resetKey })` | 현재 페이지 행, id 함수, 정체성 키 | 현재 페이지 선택 가능 행만; `resetKey` 가 바뀌면 해제, 같은 키 refetch 는 남은 선택 가능 id 만 유지; `isChecked`·`isAllChecked`·`isMixed`·`toggleRow`·`togglePage`·`clear` | 무엇이 선택 가능인가, payload |
 | `useSelectionGate(selectedCount)` | 선택 수 | `requireSelection(message)`·`reject(message)` → `false`, `message`, `close` | 문구, 규칙 |
 | `useFormSections(sections, { invalidFields })` | 섹션 → 필드, 오류 필드 | `sectionProps(section)` → `{ open, onOpenChange, keepMounted: true, errorCount }`, `revealInvalid(fields)` → 첫 오류 필드 | focus(`useSaveForm`) |
-| `standardPageSizeOptions`(`[100, 200, 300, 400, 500, 700, 1000]`), `standardPeriodPresetValues`(8 preset, `CUSTOM` 없음) (`list-options.ts`) | — | 저장소가 채택한 선택지 집합 | 기본값(화면이 정한다) |
+| `standardPageSizeOptions`, `standardPeriodPresetValues` (`list-options.ts`) | — | **이 제품이 고른 선택지 집합의 한 자리.** 값 자체는 제품 정책이라 이관 대상이 아니며 대상 제품이 자기 값으로 교체한다 | 어떤 값을 채택할지, 기본값, 예외 |
 | `usePeriodPresets(values)` (`shared/i18n`) | 채택할 preset 값 | `{ presets, customLabel }`(`shared:list.periodPresets`) | 기본 선택, 다른 문구(화면 namespace) |
 
 ## Lib

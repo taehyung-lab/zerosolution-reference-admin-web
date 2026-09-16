@@ -121,7 +121,17 @@ invisible, a loader body may be wrong, and array membership does not prove an ex
 state, API, accessibility and shared-boundary correctness belongs to focused tests and consumer review.
 The feature references’ `형태` tables describe responsibility placement, not mandatory file counts.
 
-Skill text is product-free. `productNameNotices` scans `.agents/skills/**/*.md` for this product's
+**Everything that travels is product-free, not just the skills.** The same scan runs over the portable
+set — skills, the ADRs the skills and gates name, the root instructions, and the seed's production code
+and focused tests — because a domain noun leaking into an ADR or a shared comment reaches the target as
+a norm just as a skill sentence would. Excluded from the scan, with reasons: `src/app/**` (navigation and
+i18n registration are the wiring a target replaces, and the manifest marks them `merge`) and
+`src/test/workflows/**` (product workflow tests the transplant excludes). Known false positives the
+reviewer waves through: `packageManager` matching the `Manager` identifier fragment, this file's own
+description of the vocabulary, and the name of the isolated rehearsal contract, which is a repository
+arrangement carried by a sentinel rather than a product fact.
+
+`productNameNotices` scans for this product's
 domain nouns, `Manager*`/`Member*`-style identifiers and `src/features/<dir>/` paths
 (`PRODUCT_DOMAIN_TERMS` in `contracts.mjs`; replace the vocabulary on transplant) and reports every line,
 including examples and fences, as a notice. A rule that needs a

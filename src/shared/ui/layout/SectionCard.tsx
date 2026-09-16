@@ -12,7 +12,7 @@ import { Badge } from '../primitives/Badge';
  * section to open and why stays with the caller; this surface never sees fields, errors, or schemas.
  *
  * `errorCount` is the one fact a form section shares with its header: how many of its fields are
- * currently invalid. It renders as text inside the trigger ("운영자정보 오류 2개") so the header keeps
+ * currently invalid. It renders as text inside the trigger ("<섹션 제목> 오류 2개") so the header keeps
  * announcing it while the section is collapsed. `keepMounted` keeps closed content registered.
  */
 export function SectionCard({

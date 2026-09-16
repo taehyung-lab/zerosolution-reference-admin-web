@@ -21,7 +21,7 @@
 2. `displayTimeZone()`은 `Intl.DateTimeFormat().resolvedOptions().timeZone`으로 브라우저 IANA
    timezone을 반환한다. 언어와 timezone은 다른 축이므로 locale에서 timezone을 추정하지 않는다.
 3. 표시 기준을 Context로 주입하지 않는다. 브라우저 환경이 단일 소유자이므로 `TimezoneProvider`와
-   `useTimezone`을 제거한다. 공연장 timezone이 제품 기준으로 확정되면 호출부가 아니라
+   `useTimezone`을 제거한다. 장소 timezone이 제품 기준으로 확정되면 호출부가 아니라
    `displayTimeZone()`만 교체할 수 있도록 함수 경계는 유지한다.
 4. 서버 instant 표시는 브라우저 timezone으로 변환한다. 값이 없거나 파싱할 수 없으면 빈 문자열을
    반환하며 한 셀의 결함이 화면 전체를 중단시키지 않는다.
@@ -73,6 +73,6 @@ endDateTime request:     2026-08-28T14:59:59.999Z
 
 ## 재검토 조건
 
-- 표시 기준이 브라우저가 아니라 계정·공연장 timezone으로 확정될 때
+- 표시 기준이 브라우저가 아니라 계정·장소 timezone으로 확정될 때
 - 신규 서버가 date-only, instant, `timezone` 파라미터의 결합 의미를 확정할 때
 - 브라우저가 IANA zone을 반환하지 못하는 환경의 fallback 정책이 필요할 때

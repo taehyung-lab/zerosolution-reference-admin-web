@@ -1,4 +1,4 @@
-// 현재 회원·운영자 화면의 동일한 표시 규칙이다. 원본 연락처와 공개 권한은 호출부가 소유한다.
+// 두 독립 소비자가 같은 문자열 표시 규칙을 쓰는 것이 확인돼 올렸다. 원본 연락처와 공개 권한은 호출부가 소유한다.
 export function maskEmail(email: string): string {
   const [local = "", domain = ""] = email.split("@");
   return `${local.slice(0, 4)}${"*".repeat(Math.max(0, local.length - 4))}@${domain}`;

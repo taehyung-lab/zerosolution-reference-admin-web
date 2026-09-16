@@ -3,7 +3,7 @@ import { maskEmail, maskPhone } from "./mask-contact";
 
 describe("existing contact display rules", () => {
   it.each([
-    ["member@example.com", "memb**@example.com"],
+    ["person@example.com", "pers**@example.com"],
     ["abc@example.com", "abc@example.com"],
   ])("masks email %s", (input, output) => {
     expect(maskEmail(input)).toBe(output);

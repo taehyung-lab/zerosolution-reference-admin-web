@@ -43,7 +43,7 @@
 
 코드 — 축소: error 2줄→1줄(3곳)·`error-trace.ts` 삭제·`hasDefinedSearchValue` 삭제·`ListResultData` totals 제거·`SortControl` direction 제거·partition 유틸 feature-local·caller ARIA div 2개 제거.
 코드 — 정합: `ManagerListResult` 검색 전 `등록`만·`FilterField group`·`standardPeriodPresetValues`·`shared:list.total`.
-문서: ADR 0014 공용 경계·재검토 조건, `promotion.md` 인벤토리 근거 유형, `list.md` gate 無·kind E 연결·partition 문장, `catalog.md` facts 목록.
+문서: ADR 0014 결정·재검토 조건, `promotion.md` 인벤토리 근거 유형, `list.md` gate 無·kind E 연결·partition 문장, `catalog.md` facts 목록.
 검증: focused test + `pnpm verify` + 브라우저(운영자 검색전/후, 기간·검색어 group 접근성 이름, 정렬 컨트롤).
 
 ## 4. 반복 근거와 적용 상태 (코드 존재와 시나리오 완료는 구분)
@@ -368,16 +368,16 @@ DOM 관련 3건은 2026-09-05 현재 코드를 직접 재대조해 아래 변경
 | dialog 안 폼 | feature composition 유지 | SMS·이메일·댓글 | catalog.md close 표면 문장 |
 | page tab·언어 tab | `Tabs*` primitive 구현(2026-09-08), 선택값·URL 여부·panel 수명은 feature | 7 화면 유형 중 공연 상세의 읽기 언어 탭을 첫 코드 consumer로 검증 | primitives-and-tokens; 편집 폼의 입력 보존은 미검증 |
 | 편집 테이블·반복 행·파일 업로드 | kind D·`FormFileField` 현행 | 다국어·공연 수정 | — |
-| 권한 matrix | `CheckboxTree`(1D) 로 불충분 → feature-first Table+Checkbox. **`CheckboxTree` 자체는 다중선택 필터 그룹(30여 화면)의 shared 표면으로 이관 대상** — 9/1 "matrix 전용" 제외 사유 철회 | 접근권한 등록 2D / 목록 필터 1D | catalog.md 문장, ADR 0014 공용 경계 표 |
+| 권한 matrix | `CheckboxTree`(1D) 로 불충분 → feature-first Table+Checkbox. **`CheckboxTree` 자체는 다중선택 필터 그룹(30여 화면)의 shared 표면으로 이관 대상** — 9/1 "matrix 전용" 제외 사유 철회 | 접근권한 등록 2D / 목록 필터 1D | catalog.md 문장, ADR 0014 결정 |
 | `FormSaveDialogs` | opt-in 으로 축소(9/2) → **9/3 ②: `useSaveForm.dialogs` 안에서만 렌더**. 확인 쌍이 없는 인라인 저장은 `useSaveForm` 자체를 쓰지 않는다 | 호출 직전 reference처럼 확인만 있고 실제 저장·성공이 없으면 `ConfirmDialog` 직접 조립. #24의 confirmation-only `FormSaveDialogs` 제안은 현행 계약과 다르므로 이식하지 않는다 | 주석·ADR 0014, `form.md` |
 | 취소 alert | **2026-09-14: 폐기 가능한 dirty 초안이 있는 모든 등록·수정·입력 form에 적용.** page·상세 인라인·action dialog를 같은 기준으로 보호하고 검색·필터·로그인·입력 없는 삭제 확인은 제외한다. 2026-09-07의 화면 형태별 제한을 대체하며 적용 범위 정본은 [form-workflow](../../.agents/skills/feature-contract/references/form.md#cancel-and-dirty-leave)다 | 취소·×·Escape·바깥 클릭은 취소 문구, 일반 route 이동은 화면 이동 문구를 쓴다. 저장 중 이탈은 조용히 거부하고, 저장 성공은 feature가 응답에서 투영한 canonical form 값 또는 제출 snapshot을 새 default로 삼는다. 두 문구의 원본 근거와 단일 route blocker 실측은 ADR 0014에 보존 | 현재 등록·수정·입력 consumer를 감사해 local 우회를 제거. 최신 동작·검증은 [회원 시나리오](scenarios/member-list-and-detail.md)·[설정 시나리오](scenarios/settings-and-permissions.md)와 각 focused test가 소유 |
 | Query 오류 → facts | `api/error-outcome.ts` helper | list·detail·edit 3곳 반복 | Managers 적용 |
 | `ManagerDetailScreen` | `목록으로` 제거, 이력 raw table → `Table` primitive | Figma 11.1 조회에 없음 | Managers 적용 |
-| 상세·수정 상태 판정 (2026-09-03, Claude·Codex 독립안 → 교차 리뷰 2라운드) | **`src/api/required-query.ts`**: 순수 `resolveRequiredQueryOutcome` + 얇은 `useDetailQuery`. API-only 훅(`api/useManagerDetail`·`api/useManagerEditDetail`)이 ID·locale를 연결 | 삼항식이 상세·수정에 글자 그대로 복제. 초기 401/403 = generic error + incident 중복, cached+500 = 내용 소실, cached+404 = stale 표시 결함 3종 실측 | ADR 0014 실측 근거, `detail.md`, API/workflow 의존 lint(전체 훅 금지에서 API-only 실행 허용으로 수정) |
+| 상세·수정 상태 판정 (2026-09-03, Claude·Codex 독립안 → 교차 리뷰 2라운드) | **`src/api/required-query.ts`**: 순수 `resolveRequiredQueryOutcome` + 얇은 `useDetailQuery`. API-only 훅(`api/useManagerDetail`·`api/useManagerEditDetail`)이 ID·locale를 연결 | 삼항식이 상세·수정에 글자 그대로 복제. 초기 401/403 = generic error + incident 중복, cached+500 = 내용 소실, cached+404 = stale 표시 결함 3종 실측 | ADR 0014 이유, `detail.md`, API/workflow 의존 lint(전체 훅 금지에서 API-only 실행 허용으로 수정) |
 | 업데이트 이력 (2026-09-03) | **2층**: `shared/ui/detail/UpdateHistory`(3열 + `<ul><li>` 렌더만) + feature 순수 함수 `toManagerHistoryEntries(logs, t)`. Accordion 렌더·줄 조립·값 해석 옵션 훅·도메인 formatter 훅으로 나뉜 4층 구조는 제외 | 회원·소명·발권·운영자·콘텍츠 조회 5 화면 동일 3열, 사항 열은 field 단위 `이름: A > B` 다중 행(4.1.4). 현재 코드는 `type` 한 줄로 디자인 미달이었음. discriminated union 은 첫 consumer 에 없는 분기라 YAGNI | ADR 0014, `catalog.md` Detail 행, seed `update-history` bundle |
 | 운영자 제품 입력 경계 | 등록·수정은 `ManagerForm` 재사용→검증·확인·입력 callback, 상세 5상태 action과 SMS·이메일은 feature 조립 | [11 설정의 상태·연결 입력](zero-sol/11-settings.md), 직접 Notion 대조. 실제 서버·성공 응답은 만들지 않음 | 제품 기본 경로 구현; 입력/대상 focused tests. 전체 인벤토리 브라우저 대조 진행 중 |
-| 미구현 유지(서버 이후) | 실제 발송·저장·상태변경, 개인정보 재인증 성공 이후 공개/탈퇴 처리 | 재조회/해제 범위/감사와 서버 계약 미확인. `agencyId` 제품 정책도 미확인 | API 직전 구현과 별개이며 ADR 0014 미확인으로 유지 |
-| 접힌 섹션의 오류 표기 | **헤더 "오류 N개" 텍스트 배지 + 폼 섹션 keepMounted** (Claude·Codex 독립안 → 교차 리뷰 합의) | 재접기 후 오류 발견성(WCAG 3.3.1 흐름 유지), Figma 에 상태 frame 없음 → 사용자 요구로 추가. unmount 가 error map 을 비우는 실측 때문에 재파싱 대신 mount 유지 채택 | `SectionCard errorCount/keepMounted`, `useFormSections invalidFields`, ADR 0014 실측 근거, 재검증 절차 제거 |
+| 미구현 유지(서버 이후) | 실제 발송·저장·상태변경, 개인정보 재인증 성공 이후 공개/탈퇴 처리 | 재조회/해제 범위/감사와 서버 계약 미확인. `agencyId` 제품 정책도 미확인 | API 직전 구현과 별개이며 ADR 0014 가 답하지 않는 것으로 유지 |
+| 접힌 섹션의 오류 표기 | **헤더 "오류 N개" 텍스트 배지 + 폼 섹션 keepMounted** (Claude·Codex 독립안 → 교차 리뷰 합의) | 재접기 후 오류 발견성(WCAG 3.3.1 흐름 유지), Figma 에 상태 frame 없음 → 사용자 요구로 추가. unmount 가 error map 을 비우는 실측 때문에 재파싱 대신 mount 유지 채택 | `SectionCard errorCount/keepMounted`, `useFormSections invalidFields`, ADR 0014 이유, 재검증 절차 제거 |
 
 ## 8-1. 진행 표면 정책 (2026-09-02 사용자 요구)
 

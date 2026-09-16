@@ -53,19 +53,19 @@ screen:       const detail = use{Entity}Detail(id)
 
 ## 형태
 
-폴더는 `screens/{entity}-detail/`. 조회 화면을 새로 만들면 앞의 둘은 생기고, 나머지는 그 책임이 있을 때만이다. 섹션 하나·액션 하나를 바꾸는 요청은 그 파일만 건드린다 — 이 표는 탐색 위치이지 scaffolding 지시가 아니다.
+**책임이 있으면 이 이름·이 자리에 둔다. 없으면 파일도 없다.** 폴더는 `screens/{entity}-detail/`.
 
-| 파일 | 담는 것 |
+| 책임 | 있으면 이 자리 |
 | --- | --- |
-| `api/use{Entity}Detail.ts` | ID·locale 를 묶는 API-only 훅(도메인 `api/`) |
-| `ui/{Entity}DetailScreen.tsx` | `{ id, onEdit?, onMessage?, ... }` → 헤더 + 상태 경계 + `{Entity}DetailContent` |
-| `model/{entity}-history.ts` | 이력 mapper — 이력이 있을 때 |
-| `ui/{Entity}ActionForm.tsx` | 입력 액션 다이얼로그 — 입력 액션이 있을 때 |
-| `ui/{Entity}{Section}Section.tsx` · `ui/{Name}Dialog.tsx` | 자기 query·폼·액션을 가진 섹션이나 다이얼로그 — 있을 때. 읽기 전용 섹션은 Screen 안 인라인 |
-| `src/routes/_app/…/$id/index.tsx` | `loader: loadRequired(...)` + Screen mount([router 형태](router.md#형태)) |
+| ID·locale 를 query options 에 묶는 실행 | `api/use{Entity}Detail.ts`(도메인 `api/`) |
+| 헤더 + 상태 경계 + 내용 조립 | `ui/{Entity}DetailScreen.tsx` |
+| 서버 변경 로그 → 표시 줄 mapper | `model/{entity}-history.ts` |
+| 입력이 필요한 액션의 다이얼로그 | `ui/{Entity}ActionForm.tsx` |
+| 자기 query·폼·액션을 가진 섹션이나 다이얼로그 | `ui/{Entity}{Section}Section.tsx` · `ui/{Name}Dialog.tsx` |
+| 진입(레코드 await)과 화면 mount | `src/routes/…/$id/index.tsx`([router 형태](router.md#형태)) |
 
-- 테스트는 `{Entity}DetailScreen.test.tsx` 하나: 읽기 표시(마스킹·빈 값), 상태별 액션 가시성, 확인 취소 → 로그 없음, 확정 → 요청 함수 로그, 입력 액션의 검증·dirty 닫기, 없는 ID 의 notFound 문구. `TestQueryLocaleProvider` + `UnsavedChangesProvider` 안에서 렌더하고 Router 의 `useBlocker` 는 mock 한다.
-- `model/{entity}-history.test.ts` 는 mapper 가 secret·서버 코드를 노출하지 않음을 고정한다.
+- 읽기 전용 섹션은 Screen 안 인라인이 기본이다. 섹션이 자기 상태를 갖거나 Screen 이 읽기 어려워질 때 파일로 나눈다.
+- 테스트는 파일 수가 아니라 **닫아야 할 동작**으로 고른다: 읽기 표시(마스킹·빈 값), 상태별 액션 가시성, 확인 취소가 아무것도 부르지 않음, 확정이 요청에 한 번 닿음, 입력 액션의 검증과 dirty 닫기, 없는 ID. 이력 mapper 가 있으면 secret·서버 코드가 새지 않음을 따로 고정한다.
 
 ## Verification
 

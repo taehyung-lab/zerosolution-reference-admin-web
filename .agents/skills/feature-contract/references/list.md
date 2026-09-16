@@ -99,27 +99,27 @@ shared 가 소유하는 것: 위 표의 mechanic 과 렌더 계약([catalog](../
 
 ## 형태
 
-**목록 화면 하나를 새로 만들 때**의 파일 집합이다. 위 절들의 책임이 어디에 사는가를 이름으로 고정한 것이고, 목록이라면 그 책임이 다 있으므로 여덟이 다 생긴다. 마지막 두 행은 그 책임이 있을 때만이다. 폴더는 항상 `screens/{entity}-list/`([folder-structure](../../folder-structure-contract/SKILL.md)).
+**책임이 있으면 이 이름·이 자리에 둔다. 없으면 파일도 없다.** 파일 개수는 규칙이 아니다 — 기간·검색어·다중선택이 다 있는 목록과 텍스트 하나로 거르는 목록은 책임 수가 다르고, 그러면 파일 수도 다르다. 이 표가 고정하는 것은 "있을 때 어디서 찾는가" 뿐이다. 폴더는 `screens/{entity}-list/`([folder-structure](../../folder-structure-contract/SKILL.md)).
 
-**요청이 화면 하나가 아니면 이 표를 채우지 않는다.** 필터만·컬럼만·액션만 바꾸는 요청은 그 책임의 파일만 건드리고 나머지를 빈 어댑터로 만들지 않는다. `contracts:check` 도 파일 수를 세지 않는다 — 이 표는 탐색 위치를 고정하는 것이지 scaffolding 지시가 아니다.
-
-| 파일 | 담는 것 |
+| 책임 | 있으면 이 자리 |
 | --- | --- |
-| `model/{entity}-list-search.ts` | [URL](#url) 의 선언·타입·`to{Entity}ListRequest` |
-| `model/use{Entity}ListFilter.ts` | [Filter](#filter) |
-| `model/use{Entity}ListData.ts` | [Query](#query) |
-| `ui/{entity}-list-columns.tsx` | 컬럼 + `meta.sort`([Sorting](#sorting)) |
-| `ui/use{Entity}ListResult.ts` | selection·view·columns 조립 |
-| `ui/{Entity}ListFilters.tsx` | 필터 패널 렌더와 라벨 |
-| `ui/{Entity}ListResult.tsx` | 건수·툴바·표·페이지 렌더 |
-| `ui/{Entity}ListScreen.tsx` | `{ search, onSearchChange, onActivate, onCreate, ... }` 를 받아 위 넷을 배선한다. 상태를 들지 않는다 |
-| `model/use{Entity}ListActions.ts` · `ui/{Entity}ListActions.tsx` | [Selection and actions](#selection-and-actions) — 있을 때만 |
-| `model/{entity}-list-definition.ts` | URL 변형의 typed definition — 변형이 있을 때만 |
+| URL 필드 선언·해소·canonical·요청 mapper([URL](#url)) | `model/{entity}-list-search.ts` |
+| 필터 초안과 두 커밋([Filter](#filter)) | `model/use{Entity}ListFilter.ts` |
+| 조회 사실([Query](#query)) | `model/use{Entity}ListData.ts` |
+| 컬럼과 정렬 매핑([Sorting](#sorting)) | `ui/{entity}-list-columns.tsx` |
+| 선택·보기 컨트롤·컬럼 조립 | `ui/use{Entity}ListResult.ts` |
+| 필터 패널 렌더와 라벨 | `ui/{Entity}ListFilters.tsx` |
+| 건수·툴바·표·페이지 렌더 | `ui/{Entity}ListResult.tsx` |
+| 선택 요구 액션([Selection and actions](#selection-and-actions)) | `model/use{Entity}ListActions.ts` · `ui/{Entity}ListActions.tsx` |
+| URL 변형의 고정 조건 | `model/{entity}-list-definition.ts` |
+| 위의 것들을 배선하고 URL·이동 callback 을 받는 진입 | `ui/{Entity}ListScreen.tsx` |
 
+- **작은 목록은 나누지 않아도 된다.** 필터가 텍스트 하나면 그 상태를 Screen 이 직접 들 수 있고, 결과가 표 하나면 Result 컴포넌트를 따로 만들지 않아도 된다. 나누는 기준은 파일 수가 아니라 **한 파일이 두 가지 상태를 소유하기 시작할 때**다. 한 번 나누면 위 이름을 쓴다.
+- 반대로 빈 어댑터는 만들지 않는다. 책임이 없는데 파일만 있으면 읽는 사람이 없는 상태를 찾게 된다.
 - 두 화면이 같은 의미·상태 전이·실패로 쓰는 조각만 `mechanics/{capability}/{ui,model}` 로 올린다. 화면이 형제 화면을 import 하는 것은 lint 가 막는다.
-- fixture 행은 예시임이 드러나는 값(`Example …`)을 쓴다.
-- route 는 [router 형태](router.md#형태)를 따르고 `tests/e2e/search-contract.spec.ts` 의 경로 배열에 들어간다(`contracts:check`).
-- 테스트는 소유자 옆에 둘: `{entity}-list-search.test.ts`(키 집합·기본값·canonical·복구·mapper), `{Entity}ListScreen.test.tsx`(진입·검색·초기화·정렬·페이지·선택·액션 → 요청 함수 로그). route 검색 상태를 되돌려 주는 stateful harness 로 Screen 을 렌더한다.
+- 서버 연결 전 예시 행은 예시임이 드러나는 값을 쓴다.
+- route 는 [router 형태](router.md#형태)를 따른다. 목록 route 를 저장소의 검색 계약 e2e 경로 배열에 등록하는 규칙이 있으면 `contracts:check` 가 본다.
+- 테스트는 파일 수가 아니라 **닫아야 할 동작**으로 고른다: URL 계약(키 집합·기본값·canonical·불량 값 복구·요청 mapper)과 화면 동작(진입 상태·검색·초기화·정렬·페이지·선택·액션의 거절/취소/확정). 소유자 옆에 두고, 화면 테스트는 route 처럼 커밋된 검색을 되돌려 주는 harness 로 렌더한다.
 
 ## Verification
 

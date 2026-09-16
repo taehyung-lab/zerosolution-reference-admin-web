@@ -40,7 +40,7 @@ src/
   test/                        # vitest setup, msw server, 여러 화면을 조립하는 workflow 테스트
 ```
 
-화면 폴더 이름은 **항상** `{entity}-list`·`{entity}-detail`·`{entity}-form` 이다. 도메인의 대표 엔티티라도 접두를 생략하지 않는다 — 한 도메인에 목록이 여덟 개 있어도 폴더 이름만 보고 무엇의 목록인지 읽힌다. 한 목록의 URL 변형(탭·경로별 고정 필터)은 같은 `{entity}-list` 를 쓰고 `model/{entity}-list-definition.ts` 가 차이를 표현한다. route 가 여는 다이얼로그 하나도 그것을 여는 화면의 `ui/` 에 둔다. 별도 `pages` 레이어는 없다.
+화면 폴더 이름은 **항상** `{entity}-list`·`{entity}-detail`·`{entity}-form` 이다. 도메인의 대표 엔티티라도 접두를 생략하지 않는다 — 폴더 이름만 보고 무엇의 목록인지 읽혀야 한다. 한 목록의 URL 변형(탭·경로별 고정 필터)은 같은 `{entity}-list` 를 쓰고 `model/{entity}-list-definition.ts` 가 차이를 표현한다. route 가 여는 다이얼로그 하나도 그것을 여는 화면의 `ui/` 에 둔다. 별도 `pages` 레이어는 없다.
 
 화면과 mechanic 안에는 `ui`·`model` 만 만든다(`lib`·`config` 는 실제 순수 도우미·정적 구성이 있을 때만). API는 domain/api에 모아 서버 계약의 탐색 위치를 고정한다. 단일 화면 전용 API도 여기 두되 화면 상태는 가져오지 않는다. domain 루트에 화면명, form, hooks, types, common을 나란히 추가하지 않는다.
 

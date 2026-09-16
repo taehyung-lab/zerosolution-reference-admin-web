@@ -2,7 +2,7 @@ import { render, screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { UpdateHistory } from './UpdateHistory'
 
-const labels = { date: 'Updated at', change: 'Change', actor: 'Manager' }
+const labels = { date: 'Updated at', change: 'Change', actor: 'Actor' }
 
 describe('UpdateHistory', () => {
   it('renders the empty text instead of a table when there are no entries', () => {
@@ -22,7 +22,7 @@ describe('UpdateHistory', () => {
         emptyText="No history"
       />,
     )
-    expect(screen.getAllByRole('columnheader').map((h) => h.textContent)).toEqual(['Updated at', 'Change', 'Manager'])
+    expect(screen.getAllByRole('columnheader').map((h) => h.textContent)).toEqual(['Updated at', 'Change', 'Actor'])
     const rows = screen.getAllByRole('row').slice(1)
     expect(rows).toHaveLength(2)
     expect(within(rows[0]!).getAllByRole('listitem').map((li) => li.textContent)).toEqual(['Updated', 'Name: A > B'])

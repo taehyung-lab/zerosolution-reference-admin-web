@@ -391,7 +391,7 @@ export function productNameNotices(files, { terms = PRODUCT_DOMAIN_TERMS, featur
       const found = productTermsInLine(line, terms, featureDirs)
       if (found.length) hits.push(`${index + 1}: ${found.join('·')}`)
     })
-    if (hits.length) notices.push(`공용 skill에 제품 이름 ${hits.length}줄: ${file} — ${hits.join(' / ')}. 제품 사실은 product reference·ADR 근거·consumer 코드와 테스트로 옮긴다.`)
+    if (hits.length) notices.push(`이관 대상에 제품 이름 ${hits.length}줄: ${file} — ${hits.join(' / ')}. 제품 사실은 product reference·ADR 근거·consumer 코드와 테스트로 옮긴다.`)
   }
   return notices
 }

@@ -57,20 +57,21 @@ const save = useSaveForm({
 
 ## 형태
 
-**등록·수정 한 쌍을 새로 만들 때**의 파일 집합이다. 등록·수정 어느 한쪽만 있어도 폴더 이름은 `{entity}-form` 이고, 그 한쪽만 있으면 Screen 파일도 하나다. 공유 필드가 없으면 `{Entity}Form.tsx` 를 만들지 않는다. 기존 폼의 필드 하나·검증 하나를 바꾸는 요청은 그 파일만 건드린다 — 이 표는 탐색 위치이지 scaffolding 지시가 아니다.
+**책임이 있으면 이 이름·이 자리에 둔다. 없으면 파일도 없다.** 등록·수정 어느 한쪽만 있어도 폴더 이름은 `{entity}-form` 이고, 그 한쪽만 있으면 Screen 도 하나다.
 
-| 파일 | 담는 것 |
+| 책임 | 있으면 이 자리 |
 | --- | --- |
-| `model/{entity}-form-schema.ts` | 입력 Zod schema(등록·수정), `TInput`/`TOutput` 타입, 화면 순서의 `*FieldOrder` |
-| `model/{entity}-form-defaults.ts` | 등록 빈 기본값, `to{Entity}EditDefaults(record)` |
-| `model/{entity}-form-request.ts` | 검증된 값 → 저장 입력 mapper. UI 전용 필드(확인 비밀번호)는 여기서 떨어진다 |
-| `ui/{Entity}Form.tsx` | 공유 입력 조립([Fields](#fields)) |
-| `ui/{Entity}CreateScreen.tsx` | `{ onSaved, onCancel }` → 헤더 + `useSaveForm` + Form |
-| `ui/{Entity}EditScreen.tsx` | `{ id, onSaved, onCancel }` → 헤더 + 상태 경계 + `key={record.id}` 폼 |
+| 입력 schema 와 화면 순서 | `model/{entity}-form-schema.ts` |
+| 빈 초기값·레코드 → 입력값 | `model/{entity}-form-defaults.ts` |
+| 검증된 값 → 저장 입력 mapper | `model/{entity}-form-request.ts` |
+| 등록·수정이 공유하는 입력 조립([Fields](#fields)) | `ui/{Entity}Form.tsx` |
+| 등록 진입 | `ui/{Entity}CreateScreen.tsx` |
+| 수정 진입(레코드 뒤에 폼 mount) | `ui/{Entity}EditScreen.tsx` |
 
+- 등록·수정의 필드·검증이 갈라지면 schema·기본값·mapper 를 각각 선언하고, **공유 필드가 없으면 `{Entity}Form.tsx` 를 만들지 않는다.** 작은 폼은 schema 와 기본값이 한 파일에 있어도 된다 — 나누는 기준은 파일 수가 아니라 등록·수정이 실제로 갈라지는 지점이다.
 - 저장 mutation 은 도메인 `api/mutations.ts`, 선택지 훅은 도메인 `api/`. 화면 폴더에 mutation 훅을 만들지 않는다.
-- route: 등록은 loader 없음(선택지는 필드가 스스로 연다), 수정은 상세 options 를 `loadRequired` 로 기다린다([router 형태](router.md#형태)). `onSaved` 는 등록 → 목록, 수정 → 조회가 관례지만 원장이 다르게 말하면 원장을 따른다.
-- 테스트는 셋: `{entity}-form-schema.test.ts`(순서 = schema 키, 빈 제출 거부 집합, mapper 가 UI 필드를 떨어뜨림), `{Entity}CreateScreen.test.tsx`(빈 저장 → 첫 오류 focus·확인창 없음, 유효 → 확인 취소 → 로그 없음 → 확인 → 저장 완료 → `onSaved`, 비밀번호가 로그에 없음, dirty 로 guard 가 켜짐, 선택지 실패 → 필드 재시도), `{Entity}EditScreen.test.tsx`(조회 값 채움·읽기 전용, 종속 값 비우기, 저장 → 조회 이동, 없는 ID → notFound 문구·폼 없음).
+- route: 등록은 loader 없음(선택지는 필드가 스스로 연다), 수정은 상세 options 를 `loadRequired` 로 기다린다([router 형태](router.md#형태)). 저장·취소의 목적지는 그 화면의 원장이 말한다.
+- 테스트는 파일 수가 아니라 **닫아야 할 동작**으로 고른다: 입력 계약(화면 순서 = schema 키, 빈 제출이 거부하는 필드 집합, mapper 가 UI 전용 필드를 떨어뜨림)과 저장 동작(빈 저장은 첫 오류로 focus 하고 확인창을 열지 않음, 확인 취소는 아무것도 부르지 않음, 확정은 요청 → 완료 → 목적지, 비밀·개인 값이 로그에 없음, dirty 가 이탈 보호를 켬, 선택지 실패의 필드 재시도, 수정의 읽기 전용·종속 값·없는 ID).
 
 ## Verification
 
