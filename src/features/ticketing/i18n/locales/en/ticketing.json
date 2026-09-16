@@ -1,0 +1,158 @@
+{
+  "printer": {
+    "title": "Smart printers",
+    "breadcrumb": {
+      "ticketing": "Ticketing",
+      "extras": "Extras",
+      "printers": "Smart printers",
+      "detail": "Details",
+      "create": "Register",
+      "edit": "Edit"
+    },
+    "filter": {
+      "title": "Search",
+      "collapse": "Collapse search",
+      "expand": "Expand search",
+      "submit": "Search",
+      "reset": "Reset",
+      "all": "All",
+      "status": "Status",
+      "purpose": "Purpose",
+      "usage": "Use state",
+      "period": {
+        "label": "Period",
+        "criterion": "Period basis",
+        "presetGroup": "Period preset",
+        "from": "Start date",
+        "to": "End date",
+        "calendar": "Calendar"
+      },
+      "keyword": {
+        "label": "Keyword",
+        "field": "Search target",
+        "add": "Add",
+        "remove": "Remove {{value}}",
+        "chip": "{{field}} : {{value}}"
+      }
+    },
+    "columns": {
+      "name": "Device name",
+      "serialNo": "Serial number",
+      "model": "Model",
+      "manufacturer": "Manufacturer",
+      "location": "Storage location",
+      "status": "Device status",
+      "measures": "Action taken",
+      "purchasedAt": "Purchase date",
+      "purpose": "Purpose",
+      "usage": "Use state",
+      "timestamps": "Registered / last updated"
+    },
+    "sort": {
+      "registeredAt": "Registered date",
+      "updatedAt": "Updated date",
+      "name": "Device name",
+      "serialNo": "Serial number",
+      "model": "Model",
+      "manufacturer": "Manufacturer",
+      "location": "Storage location",
+      "status": "Device status",
+      "measures": "Action taken",
+      "purchasedAt": "Purchase date",
+      "purpose": "Purpose",
+      "usage": "Use state"
+    },
+    "result": {
+      "pageSize": "Per page",
+      "sort": "Sort",
+      "empty": "No results match the search conditions.",
+      "selectAll": "Select every smart printer on this page",
+      "selectRow": "Select {{name}}",
+      "bulkField": "Bulk change target",
+      "bulkPlaceholder": "Select",
+      "bulkOption": {
+        "purpose": "Purpose > {{value}}",
+        "usage": "Use state > {{value}}"
+      },
+      "bulkChange": "Change",
+      "copy": "Copy selected",
+      "create": "Register",
+      "pagination": {
+        "label": "Pagination",
+        "previous": "Previous",
+        "next": "Next"
+      }
+    },
+    "detail": {
+      "title": "Smart printer details",
+      "section": "Basic information",
+      "emptyValue": "-",
+      "history": "Update history",
+      "historyDate": "Updated on",
+      "historyChange": "Update details",
+      "historyManager": "Manager",
+      "historyEmpty": "There is no update history.",
+      "historyCreated": "Registered",
+      "historyUpdated": "Updated",
+      "historyLine": "{{field}} : {{before}} > {{after}}",
+      "historyUnknownField": "An unknown field was changed.",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "form": {
+      "createTitle": "Register smart printer",
+      "editTitle": "Edit smart printer",
+      "section": "Basic information",
+      "name": "Device name",
+      "namePlaceholder": "Device name (1-{{max}} characters)",
+      "serialNo": "Serial number",
+      "serialNoPlaceholder": "Serial number (1-{{max}} characters)",
+      "model": "Model",
+      "modelPlaceholder": "Model (up to {{max}} characters)",
+      "manufacturer": "Manufacturer",
+      "purchasedAt": "Purchase date",
+      "location": "Storage location",
+      "status": "Status",
+      "measures": "Action taken",
+      "purpose": "Purpose",
+      "usage": "Use state",
+      "errors": {
+        "name": "Enter the device name.",
+        "nameLength": "Enter the device name within 100 characters.",
+        "serialNo": "Enter the serial number.",
+        "serialNoLength": "Enter the serial number within 100 characters.",
+        "modelLength": "Enter the model within 100 characters.",
+        "status": "Select the status.",
+        "purpose": "Select the purpose.",
+        "usage": "Select the use state."
+      }
+    },
+    "values": {
+      "periodType": {
+        "registeredAt": "Registered date",
+        "updatedAt": "Last updated date"
+      },
+      "keywordField": {
+        "name": "Device name",
+        "serialNo": "Serial number",
+        "model": "Model",
+        "manufacturer": "Manufacturer",
+        "location": "Storage location",
+        "measures": "Action taken"
+      },
+      "status": {
+        "NORMAL": "Normal",
+        "BROKEN": "Broken",
+        "REPAIR": "Under repair"
+      },
+      "purpose": {
+        "INTERNAL": "Internal ticketing",
+        "EXTERNAL": "On-site ticketing"
+      },
+      "usage": {
+        "IN_USE": "In use",
+        "NOT_IN_USE": "Not in use"
+      }
+    }
+  }
+}

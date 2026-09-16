@@ -5,14 +5,15 @@
 export interface AppNavigationItem {
   readonly id: string;
   readonly labelKey: string;
-  readonly to?: "/performances" | "/managers" | "/community/boards" | "/members/active/all" | "/members/active/general" | "/members/active/flagged" | "/members/dormant" | "/members/withdrawn" | "/members/counsel" | "/members/appeals" | "/members/access";
+  readonly to?: "/performances" | "/managers" | "/community/boards" | "/ticketing/printers" | "/members/active/all" | "/members/active/general" | "/members/active/flagged" | "/members/dormant" | "/members/withdrawn" | "/members/counsel" | "/members/appeals" | "/members/access";
 }
 
 export const appNavigationItems: readonly AppNavigationItem[] = [
   { id: "dashboard", labelKey: "shell.navigation.dashboard" },
   { id: "members", labelKey: "shell.navigation.members", to: "/members/active/all" },
   { id: "performances", labelKey: "shell.navigation.performances", to: "/performances" },
-  { id: "ticketing", labelKey: "shell.navigation.ticketing" },
+  // 발권 업무군에서 구현된 화면은 부가기능 > 스마트프린터 하나뿐이라 그 화면을 진입으로 쓴다(설정 → 운영자와 같다).
+  { id: "ticketing", labelKey: "shell.navigation.ticketing", to: "/ticketing/printers" },
   { id: "exhibitions", labelKey: "shell.navigation.exhibitions" },
   { id: "promotions", labelKey: "shell.navigation.promotions" },
   { id: "community", labelKey: "shell.navigation.community", to: "/community/boards" },

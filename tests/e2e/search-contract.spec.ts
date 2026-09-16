@@ -17,6 +17,7 @@ for (const path of [
   "/members/appeals",
   "/performances",
   "/community/boards",
+  "/ticketing/printers",
 ]) {
   test(`@reference search/defaults preserve view, double reset and history: ${path}`, async ({
     page,
@@ -28,6 +29,7 @@ for (const path of [
       "/members/appeals",
       "/performances",
       "/community/boards",
+      "/ticketing/printers",
     ].includes(path);
     await expect(page.getByRole("table")).toHaveCount(immediate ? 1 : 0);
     await page
@@ -153,6 +155,7 @@ for (const path of [
   "/members/appeals",
   "/performances",
   "/community/boards",
+  "/ticketing/printers",
 ]) {
   test(`@reference closed dates recover URL and submitted drafts: ${path}`, async ({
     page,
