@@ -4,6 +4,7 @@ title: 공연 수정 — 입장안내정보
 role: form
 status: 관찰됨
 related: [PERF-DETAIL]
+legacyId: performance-edit
 sources:
   - kind: figma
     ref: "5.2.3 공연 수정 · 5.2.3.1 Case 정의 (Notion KeyScreen 이미지) · 43656:6312 (5.2.2 입력전) · 5.2.2.1 입력후"

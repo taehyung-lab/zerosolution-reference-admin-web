@@ -807,10 +807,21 @@ const PROHIBITED_ABSTRACTION_BINDINGS = new Map([
 ])
 `
     const exists = (path) => !path.endsWith('list-detail.md')
+    // 파일은 있는데 그 금지를 말하지 않는 경우(대조군): evidence.md 에는 useListTable 이 없다.
+    const read = (path) => (path.endsWith('source-structure.md') ? 'ResourcePage 를 만들지 않는다' : '무관한 내용')
 
-    expect(prohibitedAbstractionSourceFailures(config, exists)).toEqual([
+    expect(prohibitedAbstractionSourceFailures(config, exists, read)).toEqual([
+      // 파일은 있으나 그 금지를 말하지 않는다 — 존재 검사로는 통과하던 자리다
+      "eslint.config.js: 'ResourcePage' 근거 'form.md' 에 그 이름이 없다 — 근거 문서가 이 금지를 말하지 않는다",
       "eslint.config.js: 'useListTable' 근거 'list-detail.md' 가 실존 규범 파일이 아니다",
+      "eslint.config.js: 'useListTable' 근거 'evidence.md' 에 그 이름이 없다 — 근거 문서가 이 금지를 말하지 않는다",
     ])
+    // 근거 문서가 실제로 그 이름을 말하면 통과한다.
+    expect(prohibitedAbstractionSourceFailures(
+      "const PROHIBITED_ABSTRACTION_BINDINGS = new Map([\n  ['ResourcePage', 'source-structure.md'],\n])",
+      () => true,
+      read,
+    )).toEqual([])
   })
 })
 

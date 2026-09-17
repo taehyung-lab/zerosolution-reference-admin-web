@@ -169,7 +169,7 @@ export function delinkUntravelled(text, { sourceFile, targetPath, source, target
       /^(src\/features\/|src\/routes\/|tests\/e2e\/)/.test(sourceAbsolute)
     )
     if (!productEvidence && (staged.has(targetAbsolute) || existsSync(join(targetRoot, targetAbsolute)))) return match
-    const requiredContract = sourceAbsolute.startsWith('.agents/skills/') ||
+    const requiredContract = sourceAbsolute.startsWith('contracts/') || sourceAbsolute.startsWith('product/policies/') ||
       (sourceAbsolute.startsWith('docs/decisions/') && !retired.some((id) => posix.basename(sourceAbsolute).startsWith(`${id}-`)))
     if (requiredContract) throw new Error(`Missing normative transplant dependency: ${sourceAbsolute}`)
     const link = `${sourceAbsolute}${anchor}`

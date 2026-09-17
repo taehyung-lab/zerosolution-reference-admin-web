@@ -253,6 +253,11 @@ export function transplantSentinelFailures(files) {
  * 주석·표·근거 문자열 속 이름은 이 목록으로 잡는다. 이름을 지울 때 여기서도 지운다.
  */
 export const RETIRED_DOCUMENT_NAMES = [
+  // 2026-09-17 새 문서 체계: screen-loop 와 .agents/skills 전체가 contracts/ · product/ 로 갔다.
+  // 그 전환을 결정한 ADR 과 당시를 기록한 문서는 이 이름을 불러야 하므로 예외를 준다.
+  { name: 'screen-loop', allowIn: ['docs/decisions/', 'docs/reference/zero-sol-figma-analysis.md'] },
+  { name: '.agents/skills', allowIn: ['docs/decisions/'] },
+
   '2026-09-14-reference-document-loop-redesign.md',
   'list-detail.md',
   'screen-anatomy.md',
@@ -296,14 +301,24 @@ export const RETIRED_DOCUMENT_NAMES = [
   'use-confirmation.ts',
 ]
 
+/**
+ * 폐기 이름은 문자열이거나 `{ name, allowIn }` 이다.
+ *
+ * `allowIn` 은 **그 이름을 적는 것이 정당한 파일**이다 — 그 체계를 결정한 ADR 과 무슨 일이 있었는지
+ * 적은 기록은 폐기된 이름을 불러야 한다. 예외가 없으면 검사를 통과시키려고 역사를 지우게 된다.
+ * 예외는 "과거를 말하는 문서"에만 주고, 살아 있는 소유자를 지목하는 문장에는 주지 않는다.
+ */
 export function retiredDocumentNameFailures(files, names = RETIRED_DOCUMENT_NAMES) {
+  const entries = names.map((item) => (typeof item === 'string' ? { name: item, allowIn: [] } : item))
   const failures = []
   for (const file of files) {
     if (!existsSync(resolve(file))) continue
     const lines = readFileSync(resolve(file), 'utf8').split('\n')
     lines.forEach((line, index) => {
-      for (const name of names) {
-        if (line.includes(name)) failures.push(`${file}:${index + 1}: 삭제된 문서 이름 → ${name}`)
+      for (const { name, allowIn } of entries) {
+        if (!line.includes(name)) continue
+        if (allowIn.some((prefix) => file.startsWith(prefix))) continue
+        failures.push(`${file}:${index + 1}: 삭제된 문서 이름 → ${name}`)
       }
     })
   }
@@ -314,7 +329,11 @@ export function retiredDocumentNameFailures(files, names = RETIRED_DOCUMENT_NAME
  * `local/no-prohibited-abstraction`의 근거 문자열이 가리키는 규범 파일은 실존해야 한다.
  * 근거는 `<skill> SKILL.md`, `<reference>.md`, `ADR NNNN` 형태만 인정한다.
  */
-export function prohibitedAbstractionSourceFailures(eslintConfig, exists = (path) => existsSync(resolve(path))) {
+export function prohibitedAbstractionSourceFailures(
+  eslintConfig,
+  exists = (path) => existsSync(resolve(path)),
+  readContent = (path) => readFileSync(resolve(path), 'utf8'),
+) {
   const block = /PROHIBITED_ABSTRACTION_BINDINGS\s*=\s*new Map\(\[([\s\S]*?)\]\)/.exec(eslintConfig)
   if (block === null) return ['eslint.config.js: PROHIBITED_ABSTRACTION_BINDINGS 를 찾을 수 없다']
   const failures = []
@@ -322,13 +341,25 @@ export function prohibitedAbstractionSourceFailures(eslintConfig, exists = (path
     for (const token of source.split(',').map((part) => part.trim()).filter(Boolean)) {
       const adr = /^ADR (\d{4})$/.exec(token)
       const reference = /^([a-z0-9-]+\.md)$/.exec(token)
-      const found = adr
-        ? readdirSync(resolve('docs/decisions')).some((file) => file.startsWith(`${adr[1]}-`))
-        : reference
-          ? ['contracts/direct', 'contracts/contract', 'product/policies']
-            .some((dir) => exists(`${dir}/${reference[1]}`))
-          : false
-      if (!found) failures.push(`eslint.config.js: '${name}' 근거 '${token}' 가 실존 규범 파일이 아니다`)
+      if (adr) {
+        if (!readdirSync(resolve('docs/decisions')).some((file) => file.startsWith(`${adr[1]}-`))) {
+          failures.push(`eslint.config.js: '${name}' 근거 '${token}' 가 실존 규범 파일이 아니다`)
+        }
+        continue
+      }
+      if (!reference) {
+        failures.push(`eslint.config.js: '${name}' 근거 '${token}' 가 실존 규범 파일이 아니다`)
+        continue
+      }
+      // 파일이 있는지가 아니라 **그 파일이 이 금지를 실제로 말하는지**를 본다.
+      // 존재만 보면 근거를 옮기다 내용을 빠뜨려도 통과한다 — 실제로 한 번 그렇게 빠졌다.
+      const dirs = ['contracts/direct', 'contracts/contract', 'product/policies']
+      const hosting = dirs.map((dir) => `${dir}/${reference[1]}`).filter((path) => exists(path))
+      if (hosting.length === 0) {
+        failures.push(`eslint.config.js: '${name}' 근거 '${token}' 가 실존 규범 파일이 아니다`)
+      } else if (!hosting.some((path) => readContent(path).includes(name))) {
+        failures.push(`eslint.config.js: '${name}' 근거 '${token}' 에 그 이름이 없다 — 근거 문서가 이 금지를 말하지 않는다`)
+      }
     }
   }
   return failures

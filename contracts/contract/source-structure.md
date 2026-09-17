@@ -116,6 +116,10 @@ leaf 는 평면 파일, leaf 가 둘 이상인 segment 는 디렉터리 + `index
 - 훅 하나는 상태·동작 소유자 하나를 갖는다. query·mutation·form·dialog·toast·navigation·permission 을
   한 page controller 훅에 묶지 않는다.
 - 업무 차이를 흡수하는 범용 CRUD 훅·resource 서술자·resource framework 를 만들지 않는다.
+  `useCrud`·`ResourcePage`·`useListTable`·`usePagedTable` 같은 이름이 그 신호다 — 자원 종류를
+  인자로 받아 화면을 만들어 내는 단위는 업무 차이를 설정으로 숨기고, 그러면 어느 화면이 무엇을
+  하는지 코드에서 읽히지 않는다. 화면마다 필요한 조각을 명시적으로 조립하고, 반복되는 JSX 는
+  허용한다. `eslint.config.js` 가 이 이름들의 선언·import 를 막고, 이 문단을 근거로 지목한다.
 
 위 경계 중 기계가 보는 것은 `eslint.config.js` 와 `scripts/` 의 검사다. 문서는 이유와 예외 경로만
 설명한다.

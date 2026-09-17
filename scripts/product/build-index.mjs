@@ -7,12 +7,19 @@
  *
  * `--check` 는 생성 결과가 디스크와 같은지만 보고 쓰지 않는다(CI 용).
  */
-import { readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 
 const root = resolve(process.cwd())
 const factsDir = join(root, 'product/facts')
 const indexPath = join(root, 'product/generated-index.md')
+/**
+ * 아직 fact 로 옮기지 않은 화면의 원장. 색인은 이것도 함께 보여 준다 — 옮기지 않았다는 사실과
+ * 어디를 읽어야 하는지를 말하지 않으면, 에이전트가 "색인에 없음 = 미확인"으로 읽고 존재하는
+ * 관찰을 보류한다. 그 거짓말이 이관이 끝날 때까지의 가장 큰 위험이다.
+ * 마지막 화면을 옮기면 이 경로와 아래 분기를 함께 지운다.
+ */
+const legacyIndexPath = join(root, 'docs/reference/zero-sol/context.json')
 const checkOnly = process.argv.includes('--check')
 
 const REQUIRED = ['id', 'title', 'role', 'status']
@@ -94,11 +101,37 @@ const rows = facts
   .map((fact) => `| \`${fact.id}\` | ${fact.title} | ${fact.role} | ${fact.status} | [${fact.file}](facts/${fact.file}) |`)
   .join('\n')
 
+/** 아직 fact 가 없는 화면. 옛 원장 경로를 그대로 가리킨다. */
+const legacy = existsSync(legacyIndexPath)
+  ? JSON.parse(readFileSync(legacyIndexPath, 'utf8')).surfaces
+      .filter((surface) => !facts.some((fact) => fact.legacyId === surface.id))
+      .map((surface) => ({ id: surface.id, title: surface.title, inventory: surface.inventory }))
+  : []
+
+const legacyRows = legacy
+  .map((surface) => `| \`${surface.id}\` | ${surface.title} | — | **미이관** | [${surface.inventory}](../${surface.inventory}) |`)
+  .join('\n')
+
+const legacySection = legacy.length === 0 ? '' : `
+## 아직 fact 로 옮기지 않은 화면
+
+여기 있는 surface 는 **관찰이 존재한다.** 형식만 옛 원장이다. 대상이 이 표에 있으면 \`미확인\` 이라고
+쓰지 말고 그 원장을 읽는다 — 다만 원장은 한 파일이 여러 화면을 담으므로 **그 화면의 행만** 읽고,
+다른 화면의 값을 근거로 쓰지 않는다. 그 화면을 실제로 구현하거나 고치는 작업에서 fact 로 옮긴다.
+
+| 옛 ID | 제목 | 역할 | 상태 | 원장 |
+| --- | --- | --- | --- | --- |
+${legacyRows}
+
+총 ${legacy.length}개.
+`
+
 const rendered = `<!-- 생성물이다. scripts/product/build-index.mjs 가 만든다. 손으로 고치지 않는다. -->
 # 제품 사실 색인
 
-요청이 제품 값에 의존하면 여기서 대상 ID 를 찾고 **그 fact 만** 연다. 관례로 여러 개를 열지 않는다.
-여기 없으면 \`미확인\`이지 부재가 아니다 — 무엇을 누구에게 물어야 하는지 적고 그 부분만 보류한다.
+요청이 제품 값에 의존하면 여기서 대상을 찾고 **그 하나만** 연다. 관례로 여러 개를 열지 않는다.
+아래 **두 표를 모두** 본 뒤에도 없으면 그때가 \`미확인\`이다 — 무엇을 누구에게 물어야 하는지 적고
+그 부분만 보류한다. 첫 표에 없다는 것만으로 부재라고 쓰지 않는다.
 
 이 표의 이름·역할·상태는 각 fact 파일의 frontmatter 가 소유한다. 이 파일을 고치지 말고 fact 를 고친 뒤
 \`pnpm product:index\` 를 다시 돌린다.
@@ -108,7 +141,7 @@ const rendered = `<!-- 생성물이다. scripts/product/build-index.mjs 가 만�
 ${rows}
 
 총 ${facts.length}개.
-`
+${legacySection}`
 
 if (checkOnly) {
   const current = readFileSync(indexPath, 'utf8')
@@ -116,8 +149,8 @@ if (checkOnly) {
     console.error('  ✗ product/generated-index.md 가 fact 와 어긋난다. `pnpm product:index` 를 돌린다')
     process.exit(1)
   }
-  console.log(`  ✓ 제품 사실 색인 ${facts.length}개가 fact 와 일치`)
+  console.log(`  ✓ 제품 사실 색인 ${facts.length}개가 fact 와 일치 (미이관 ${legacy.length}개 포함)`)
 } else {
   writeFileSync(indexPath, rendered)
-  console.log(`  ✓ product/generated-index.md 생성 — fact ${facts.length}개`)
+  console.log(`  ✓ product/generated-index.md 생성 — fact ${facts.length}개, 미이관 ${legacy.length}개`)
 }

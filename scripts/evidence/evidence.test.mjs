@@ -22,8 +22,8 @@ function fixture() {
   write('scripts/contracts/check.mjs', 'console.log("fixture contract passed")\n')
   write('docs/reference/product.json', JSON.stringify({ inventory: 'docs/reference/zero-sol', judgment: 'docs/reference/zero-sol-figma-analysis.md', scenarios: 'docs/reference/scenarios', index: 'docs/reference/zero-sol/context.json' }))
   write('AGENTS.md', '# Root\nGlobal constraints.\n')
-  write('.agents/skills/feature-contract/SKILL.md', '# Feature\nOwnership.\n')
-  write('.agents/skills/screen-loop/SKILL.md', '# Loop\nEntry and return points.\n')
+  write('contracts/feature-contract/SKILL.md', '# Feature\nOwnership.\n')
+  write('contracts/direct/list.md', '# Loop\nEntry and return points.\n')
   write(inventory, '# Performance\nCommon policy.\n## List\nNo selection column.\n## Edit\nSection-owned save.\n')
   write(scenario, '# Scenario\nEntry loads; reset clears.\n')
   write('docs/reference/zero-sol/context.json', JSON.stringify({ judgment: [], surfaces: [
@@ -116,7 +116,7 @@ it('discovers valid seed bundle IDs and their four roots without reading the dec
 
 it.skip('fails a surface that cites a skill file without its 형태 heading', () => {
   const { root, write } = fixture()
-  const skill = '.agents/skills/feature-contract/references/list.md'
+  const skill = 'contracts/feature-contract/references/list.md'
   write(skill, '# List\n\n## Confirm\nA.\n\n## 형태\nFiles.\n')
   const indexPath = join(root, 'docs/reference/zero-sol/context.json')
   const index = JSON.parse(readFileSync(indexPath, 'utf8'))

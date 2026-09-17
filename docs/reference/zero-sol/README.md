@@ -5,7 +5,7 @@ Figma `ZEROsol (For Kakao)`(`Ogb6WpSpwCVhKggQ1NLRlQ`) 78 page와 Notion `DB: Wor
 런타임 상태 전이·실패·복구는 화면을 봐서 알 수 없으므로 [시나리오 원장](../scenarios/README.md)이 따로 소유한다.
 판정(공용 / feature / 미확인)은 여기에 쓰지 않는다. 판정과 그 근거는
 [zero-sol-figma-analysis.md](../zero-sol-figma-analysis.md), 승격 절차는
-`.agents/skills/shared-ui-contract/references/promotion.md`, 단계는 `docs/decisions/0014-single-screen-shape.md`가 소유한다.
+`contracts/contract/source-structure.md` 의 공용 단위의 승격, 단계는 `docs/decisions/0014-single-screen-shape.md`가 소유한다.
 
 ## 프로젝트 사실
 
@@ -38,7 +38,7 @@ Figma `ZEROsol (For Kakao)`(`Ogb6WpSpwCVhKggQ1NLRlQ`) 78 page와 Notion `DB: Wor
 [context.json](context.json)은 이 인벤토리의 **연결 정보**만 소유한다. 제품 정책은 아래 원장과
 시나리오에 그대로 둔다. `node scripts/evidence/cli.mjs context`로 대상 목록을, 뒤에 ID를 붙여 해당
 인벤토리·시나리오·관련 내부 surface·기존 코드 경로를 찾는다. 구현 절차는
-[screen-loop](../../../AGENTS.md)가, 검사 계약은
+[`AGENTS.md`](../../../AGENTS.md)가, 검사 계약은
 [검사 안내](../../../scripts/contracts/README.md)가 소유한다.
 
 현재 15개 인벤토리군을 연결하고 공연과 메시지의 일부 내부 surface를 별도로 이름 붙였다.
@@ -77,7 +77,7 @@ Figma와 Notion은 이 제품 사실의 1순위 입력이다. 둘이 **같은 �
 - 작업의 지속 근거는 첫 판독부터 해당 원장 셀에 갱신하고 경로가 바뀌면 기존 색인을 정정한다. 워커가 판독한 요구·원문 위치·시점·방법·한계는 코드와 분리해 기존 정본에 수용한다.
   `.ai-work/` 기록을 근거 원장 대신 만들지 않는다. 구현 branch를 수용하지 않아도 근거 변경은 버리지 않으며, 수용자는 실제 근거 diff와 출처를 대조한다.
   구현한 surface의 지속 가능한 근거와 색인은 `settled` 전에 갖춘다. 근거가 없을 때의 진입은
-  [screen-loop](../../../AGENTS.md)의 실패 복귀 표가 소유한다.
+  [`AGENTS.md`](../../../AGENTS.md)의 전역 완료 기준이 소유한다.
 - 읽기 비용은 동일 작업에서 실제로 읽은 절의 양으로 비교한다. 필요한 근거·상위 제약·예외·확정 답·미확인이
   보존됐는지 먼저 대조한 뒤 전체 파일 선택을 좁힌다. 파일 수나 링크 도달만으로 절감·정확도를 판정하지 않는다.
 

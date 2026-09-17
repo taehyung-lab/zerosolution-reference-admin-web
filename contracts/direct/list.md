@@ -120,4 +120,4 @@ shared 가 소유하는 것: 위 표의 mechanic 과 렌더 계약([catalog](sha
 
 바뀐 전이만 실측한다: canonical URL 복구와 history, 초안 재생성, Query `enabled` 와 key·params 동일성, 다섯 결과 상태 도달, 페이지 리셋, 접근 가능한 이름, stable row ID, 선택 해제, 액션의 거절·취소·확정 각 한 번. 브라우저 증거는 어떤 URL 에서 무엇을 눌러 URL·화면이 어떻게 됐는지를 적는다.
 
-실측한 것 중 되돌아올 전이 하나를 `tests/e2e/` 에 회귀 앵커로 남긴다([screen-loop 실측](../../AGENTS.md)).
+실측한 것 중 되돌아올 전이 하나를 `tests/e2e/` 에 회귀 앵커로 남긴다([브라우저로 판정되는 결과](../../AGENTS.md#브라우저로-판정되는-결과)).
