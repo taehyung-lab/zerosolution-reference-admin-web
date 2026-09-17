@@ -262,7 +262,7 @@ export function transplantSentinelFailures(files) {
  * 넘으면 늘리지 말고 내린다 — 조건부로만 필요한 것은 그것을 소유한 계약으로, 절차는 스크립트로.
  * 계약 문서는 판단이라 숫자를 맞추려고 자르면 안 되므로 이 게이트의 대상이 아니다.
  */
-export const ROOT_LINE_BUDGET = 209
+export const ROOT_LINE_BUDGET = 205
 
 export function rootBudgetFailures(document, budget = ROOT_LINE_BUDGET) {
   const lines = document.split('\n').filter((line, index, all) => index < all.length - 1 || line !== '').length

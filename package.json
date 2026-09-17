@@ -22,6 +22,7 @@
     "contracts:check": "node scripts/contracts/check.mjs",
     "product:index": "node scripts/product/build-index.mjs",
     "product:check": "node scripts/product/build-index.mjs --check",
+    "observe": "node scripts/observe/entry.mjs",
     "transplant:plan": "node scripts/transplant/transplant.mjs plan",
     "transplant:stage": "node scripts/transplant/transplant.mjs stage",
     "transplant:apply": "node scripts/transplant/transplant.mjs apply",
