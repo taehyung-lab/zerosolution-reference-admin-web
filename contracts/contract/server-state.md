@@ -118,6 +118,16 @@ The mutation declares what its success makes stale in `meta.invalidates: QueryKe
 
 Read [query-cache.md](api-wire.md) only when defining or changing key families or query identity; consuming an already exported key does not require the whole query reference.
 
+## Locale and cache identity
+
+Read this file only when responses may vary by UI locale, `Accept-Language` changes, or locale changes can reuse stale cache. ADR 0005 owns the current conservative decision.
+
+- The transport sends the confirmed UI locale through `Accept-Language`.
+- Decide which response families are localized from the server contract, not translated UI labels.
+- Encode locale policy once in query-option/key construction so language changes cannot reuse stale localized data.
+- While localized response families remain unconfirmed, use `localizedQueryKey(uiLocale, ...segments)` for every API-backed key, rooted at `['api', uiLocale, ...segments]`.
+- Narrow the conservative policy only when ADR 0005's disposal condition is met; do not make each feature decide independently.
+
 ## 이 계약의 검증 대상
 
 | 축 | 무엇을 확인하나 |

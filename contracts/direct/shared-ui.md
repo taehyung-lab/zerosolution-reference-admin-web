@@ -178,6 +178,101 @@ primitive 만 Radix 를 import 한다. 문구는 props 로 받고, `shared` name
 | `blockingProgress`, `contentProgress`, `inlineProgress` (`query-meta.ts`) | — | `meta.progress` 어휘, `meta.invalidates` 타입 | 어느 query 가 어느 progress 인가 |
 | `loadRequired(queryClient, options, { preload })` (`src/app/router/required-loader.ts`) | 상세 options | not-found → Router `notFound({ data: { kind: 'record' } })`, forbidden → incident 재발행(preload 제외), 그 외 rethrow | 화면 |
 
+## Primitive 내부와 렌더 성능
+
+Read this file only for a shadcn-style copied component, Radix primitive, Tailwind token/variant, focus, keyboard behavior, primitive accessibility, or React rendering/compiler questions. The public contract of each primitive is a row in [catalog.md](shared-ui.md#primitives).
+
+- `shared/ui/primitives` owns Radix/native wiring, focus, keyboard, ARIA semantics, Tailwind tokens, and visual variants.
+- Only primitives import Radix directly. A shadcn-style copied component is source-owned project code, not an external black box. Implementation choices per primitive are recorded in [ADR 0008](../../docs/decisions/0008-primitive-implementation-selection.md); the public contract does not change when the implementation does.
+- Add only the primitive and variants the current screen uses; do not install or prebuild a component catalog. An accessibility or design-token invariant justifies a source-owned primitive at first real use; it does not justify a shared workflow or page pattern.
+- A primitive receives visible content, controlled values, and callbacks. It knows no feature, server DTO, Query, Router, permission, or mutation. Copy arrives as props; `Calendar` alone reads the `shared` namespace for its navigation labels and locale.
+- Keep the public contract domain-neutral and preserve native semantics instead of recreating them with generic elements.
+- React 19: a primitive receives `ref` as an ordinary prop; do not add `forwardRef` wrappers.
+
+## Native passthrough primitives
+
+`Button`, `Input`, `Checkbox`, and `Table`/`TableHead`/`TableCell` forward native props and add tokens only. They interpret no value: `Button` defaults to `type="button"`; `Input` has no value/default/empty policy; `Checkbox` is a native checkbox plus an `indeterminate` prop that renders `aria-checked="mixed"`; the table primitives provide `table`/`th`/`td` styling while the caller writes `thead`/`tbody`/`tr`. Name a native control with `<label htmlFor>` or `aria-label`, not both.
+
+`Popover` takes `trigger` (a button element that accepts a ref), `children`, and `contentLabel`; it owns outside-click dismissal and focus return to the trigger. Open state is uncontrolled by default; a consumer that must render the same state elsewhere (`Combobox` and its trigger `aria-expanded`) passes `open`/`onOpenChange` so there is exactly one owner. `Combobox` and the `PeriodField` calendar consume it; a feature does not compose `Popover` directly for a new surface.
+
+Which primitive a feature may use directly: `Button`, `Input`, `Checkbox`, `Badge`, `Table*`, `Select`, `Combobox`, `InlineSearchSelect`, `MultiSelect`, `RadioGroup`, `Calendar`, `FileInput`, `Dialog`, `Tabs*`, `Tooltip`. Consumed only through a pattern: `Accordion` (→ `SectionCard`), `Popover` (→ `Combobox`, `PeriodField`), `BlockingProgress` and `ModalCover` (→ app shell and incident boundary).
+
+## Selection controls — which one
+
+- Few options, all visible, inline with a leading "전체": `CheckboxTree`.
+- Many options, searched, or shown as removable tokens: `MultiSelect`.
+- Mutually exclusive choices all visible (period presets, a recipient-type choice): `RadioGroup`. More than a handful, or a dropdown in the design: `Select`.
+- Searchable single selection over a reference entity: `Combobox` (local options) or `InlineSearchSelect` (inline candidates). Remote search with pending/error, an unresolved selected label, and custom entry are unimplemented candidates that the first such consumer defines rather than widening these contracts silently.
+- Rows × function columns with per-column select-all: a feature composition of `Table` + `Checkbox`; `CheckboxTree` supplies only the row-hierarchy algebra.
+
+Unconfirmed until a consumer asks: partial selection rendered as `aria-checked="mixed"`, the closed-section disclosure glyph, a sibling-trigger arrow order across several `Accordion` items.
+
+## Controlled tabs
+
+`Tabs`, `TabsList`, `TabsTrigger(value)`, `TabsContent(value)` wrap Radix Tabs: Radix owns tab/tabpanel linkage and roving keyboard focus; the wrappers add tokens. The feature owns the selected value, labels, initial value and whether it belongs in local state or URL; a locale tab is not a UI-locale switch. Inactive content unmounts by default; a caller requiring retained panels passes `forceMount` and the panel stays hidden. Tests that click a tab use `mouseDown` (Radix activates on pointer down).
+
+## React Compiler and rendering
+
+React Compiler is on for the React 19 app and the official hooks/compiler lint rules stay active. Do not add `memo`, `useMemo`, or `useCallback` by habit. Manual identity stabilization is justified only when the compiler skips the component or file, an external API requires a stable reference, code must run outside the compiled boundary, or profiling demonstrates a material regression. Keep exhaustive dependencies correct for every remaining hook; the compiler does not repair stale dependency arrays.
+
+TanStack Table v9 names: `useTable` (v8 `useReactTable`), `tableFeatures` for feature slots, `table.FlexRender`. The shared `DataTable` calls `useTable` internally and owns the `features`/`TFeatures` contract; do not wrap it in project hooks such as `useListTable` or return the Table instance to feature code. A nested component that reads changing table state adds the narrowest `Subscribe` boundary or receives the value as a prop; do not subscribe every row. Virtualization is opt-in after row volume and profiling justify it.
+
+Derive values during render; use effects only for external synchronization. Subscribe to the smallest Query/store/Table state the rendered output needs. Import modules directly instead of broad barrels. Lazy-load heavy editors or charts only with bundle evidence. Next.js, RSC, and Server Actions are not part of this Vite SPA. A profiling-based exception records the interaction, before/after trace, and retained identity requirement in the change report.
+
+Test the interaction actually changed: accessible name/description, keyboard operation, focus entry/restoration, disabled state, controlled value, and relevant visual variants.
+
+## i18n
+
+Read this file only for translation namespaces, adding a key, product-generic copy ownership, or locale parity.
+
+- Locales are `ko`, `en`, `ja` with equal key sets; `pnpm i18n:check` fails on any missing key. The initial locale is `ko` and fallback is disabled (`fallbackLng: false`); a missing key throws in every environment (`missingKeyHandler`) instead of rendering the key path, so parity is the only safety net.
+- `src/shared/i18n/locale.ts` is the single runtime-independent source for `UI_LOCALES`, `UiLocale`, and `DEFAULT_UI_LOCALE`. `LocaleProvider` owns the current value and i18n/transport synchronization. Components use `useLocale().locale`; route loaders use the typed Router `context.locale`. Do not cast `i18n.language`, put the i18n instance in Router context, or derive timezone from locale.
+- Namespaces: `shared` (product-generic copy that belongs to a shared pattern's interaction contract — `error.*`, `list.total`, `list.periodPresets`, `formSave.*`, `formCancel.*`, `unsavedChanges.*`, `alert.title`, `progress.*`), `app` (app shell and bootstrap/route copy — `shell.*`, `bootstrap.*`; read by `src/app/shell/**` and `src/routes/**` only), `auth` (login feature), and one namespace per feature (`<feature>`). A shared component reads only `shared`; a feature reads its own namespace and `shared`; nothing under `src/shared` reads `app`.
+- Registration: `src/shared/i18n/i18n.ts` creates the instance and registers only `shared`. `src/app/i18n/resources.ts` (`registerAppI18nResources`) adds `app`, `auth`, and feature bundles (`src/features/<domain>/i18n/locales/<locale>/<domain>.json`) with `addResourceBundle`; `LocaleProvider` calls it for the app and `src/test/setup.ts` calls it once for every test, so `TestLocaleProvider` and direct `i18n` imports in tests receive the same namespaces. Each namespace resource lives with its owner: `shared` under `src/shared/i18n/locales/{locale}/shared.json`, `app` under `src/app/i18n/locales`, and every feature namespace under `src/features/<domain>/i18n/locales`. `pnpm i18n:check` discovers every `i18n/locales` root under `src` and fails both on key parity and on a namespace stored outside its owner.
+- A key moves to `shared` only when the same sentence is confirmed across screens and a shared pattern renders it ([공용 단위의 승격](../contract/source-structure.md#공용-단위의-승격)). Domain meaning — status names, column labels, empty/not-searched sentences — stays in the feature namespace.
+- `usePeriodPresetLabels()` returns one label per declared preset value plus `CUSTOM`, from `shared:list.periodPresets`. Which values exist is product config, not a shared contract. A caller adopting shared preset wording passes the values it adopts to `usePeriodPresets(values)` (same file) and gets the `{ presets, customLabel }` pair `PeriodField` takes — the argument is the opt-in, so there is no default and a subset needs no extra machinery. Different **wording** for the same values is not a parameter: that sentence is domain meaning, so the screen owns the keys in its own namespace and composes the list itself. `CUSTOM` never joins the options either way. Adding a period *value* is not a hook change at all: `PeriodPreset`, `periodPresetRange`, the `inferPeriodPreset` candidates (`datetime.ts`), the `shared:list.periodPresets` keys in three locales, and `standardPeriodPresetValues` change together (아래 [Model](#model)).
+- Server response locale is sent from the UI locale by the transport; server-side locale coverage is whatever the contract snapshot declares.
+- Whether a sentence may exist at all — its trigger and the form the product states it in — belongs to [제품 사실 정책](../../product/policies/evidence.md#화면에-문장을-더하려면-원문이-그-문장을-말해야-한다), not here. This file owns shape: locales, namespaces, registration, promotion. Equal key sets across `ko`/`en`/`ja` never establish that the product says it.
+- Copy in code is a lint error (`local/no-user-facing-literal`); placeholders, aria labels, and dialog text all go through `t`.
+
+Test that a new key exists in all three locale files and that the component reads the namespace it is allowed to.
+- Product-generic copy confirmed across several screens keeps one translation per locale across every feature namespace that carries it. A feature namespace does not drift from a sibling's translation without a recorded decision; moving such a key to `shared:` goes through [공용 단위의 승격](../contract/source-structure.md#공용-단위의-승격).
+
+## 공용 UI 를 바꿀 때의 경계
+
+## Read only what applies
+
+| Request | Read |
+| --- | --- |
+| What a shared unit takes, owns, and refuses — any `shared/ui`, `shared/model`, `shared/lib`, or `src/api` unit by name | the unit's row in [catalog.md](#primitives) (`Primitives`, `Form`, `Filter`, `List`, `Detail`, `Dialog`, `Feedback`, `Model`, `Lib`, `API`) |
+| Promoting, confirming, narrowing, demoting, or deleting a shared unit; a caller that needs a new prop | [promotion.md](../contract/source-structure.md#공용-단위의-승격) |
+| Radix/Tailwind primitive internals, focus, keyboard, tokens, which selection control, React Compiler, TanStack Table v9 | [primitives-and-tokens.md](#primitive-내부와-렌더-성능) |
+| Translation namespaces, adding a key, product-generic copy, locale parity | [i18n.md](#i18n) |
+| How a screen composes these units | [feature-contract](list.md) (`list.md`, `detail.md`, `form.md`) |
+| Server state, keys, mutations | [api-contract](../contract/api-wire.md) |
+
+File creation, relocation and feature-local reuse placement follow [folder-structure-contract](../contract/source-structure.md). This skill owns whether a contract is domain-free enough to be shared.
+
+## UI layers
+
+1. `shared/ui/primitives`: source-owned Radix primitive plus Tailwind tokens and accessibility behavior.
+2. `shared/ui/{dialog,feedback,filter,list,detail,layout}`: domain-neutral composition proven by real screens, grouped by the render contract it owns.
+3. `shared/ui/form`: thin TanStack Form adapters around primitives and `FormField`, plus the save lifecycle (`useSaveForm`).
+4. `shared/model` (state lifetime and policy values), `shared/lib` (pure calculation), `src/api` (query/mutation projection above transport).
+5. `features/*/**`: columns, status UI, forms, permissions, workflow dialogs, and all domain-aware components.
+
+Only `shared/ui/primitives` imports Radix directly. Shared UI must not accept a resource name, server DTO, query result, permission code, or mode switch that selects domain behavior. A pattern may read the `shared` translation namespace only when confirmed product-generic copy is part of its own interaction contract; domain nouns, feature labels, and workflow-specific wording remain caller-owned.
+
+Do not prebuild a component catalog. "Approved" means the current requirement needs the unit, not that reuse seems likely. Add the minimum primitive or pattern required by that screen, then test its interaction contract. The `Form*Field` adapter set in the catalog is the one declared exception: it stays for the declared input kinds even with zero consumers, and no alias is added beside it.
+
+## Common mistakes
+
+- Promoting on visual similarity or a mechanical third occurrence
+- Building `ResourcePage`, schema forms, permission buttons, or universal CRUD tables
+- Putting translation fragments, domain keys, navigation, toast, or mutation handling inside primitives
+- Adding memoization or virtualization without a specific identity contract or measurement
+- Adding a prop to a shared unit so that one caller fits instead of composing feature-locally
+
 ## 이 계약의 검증 대상
 
 | 축 | 무엇을 확인하나 |
