@@ -13,6 +13,7 @@ import { resolve } from 'node:path'
 import { surfaceIndexFailures } from '../evidence/context.mjs'
 import { productPaths } from './product-paths.mjs'
 import { evidencePreservationFailures } from './evidence-preservation.mjs'
+import { checkNegativeControlFailures } from './meta.mjs'
 import {
   claudeAgentsImportFailure,
   ciVerifyStageFailures,
@@ -151,6 +152,7 @@ const citingFiles = [
   ...listSourceFiles('scripts').filter((file) => !file.startsWith('scripts/contracts/')),
 ].filter((file) => existsSync(resolve(file)))
 failures.push(...retiredDocumentNameFailures(citingFiles))
+failures.push(...checkNegativeControlFailures())
 failures.push(...prohibitedAbstractionSourceFailures(readFileSync(resolve('eslint.config.js'), 'utf8')))
 // 새 문서 체계: 제품 사실 색인의 정합성은 `pnpm product:check` 가 fact frontmatter 에서 직접 본다.
 // 아래 세 검사는 은퇴한 4경로 원장 모델(inventory README + judgment + scenarios + JSON context)을

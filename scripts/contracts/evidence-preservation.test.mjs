@@ -13,7 +13,8 @@ const run = (after, headText = before) =>
 describe('원장 근거 보존', () => {
   it('구현 포인터로 날짜 실측 기록을 덮으면 실패한다', () => {
     const after = [HEADER, SEP, row('`content-list-columns.tsx` + `DataTable`')].join('\n')
-    expect(run(after).some((failure) => failure.includes('2026-09-11'))).toBe(true)
+    // 대조군: 일부러 어긴 입력이 **빈 배열이 아닌** 실패를 내야 한다. 빈 배열이면 검사가 죽은 것이다.
+    expect(run(after)).toEqual(expect.arrayContaining([expect.stringContaining('2026-09-11')]))
   })
 
   it('기존 기록을 남기고 포인터를 더하면 통과한다', () => {

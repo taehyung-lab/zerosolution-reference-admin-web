@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process'
+import { checkNegativeControlFailures } from './meta.mjs'
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { basename, join, relative, resolve } from 'node:path'
@@ -20,6 +21,7 @@ import {
   parseVerifyChain,
   pnpmCommandFailures,
   readLocalLinkFailures,
+  citedContractPathFailures,
   prohibitedAbstractionSourceFailures,
   retiredDocumentNameFailures,
   transplantSentinelFailures,
@@ -924,5 +926,36 @@ describe('scenario ledger index', () => {
 
   it('holds for the real ledger', () => {
     expect(ledgerIndexFailures()).toEqual([])
+  })
+})
+
+describe('백틱으로 가리킨 계약·제품 문서', () => {
+  const files = [{ file: 'AGENTS.md', content: '읽을 계약은 `contracts/direct/list.md` 와 `contracts/contract/gone.md` 다.' }]
+
+  it('가리킨 문서가 없으면 실패한다', () => {
+    // 대조군: 링크가 아니라 백틱 표기라 markdown link 검사는 이 자리를 보지 못한다.
+    expect(citedContractPathFailures(files, (path) => path !== 'contracts/contract/gone.md')).toEqual([
+      'AGENTS.md: 백틱으로 가리킨 계약·제품 문서가 없다 → contracts/contract/gone.md',
+    ])
+  })
+
+  it('전부 실존하면 통과한다', () => {
+    expect(citedContractPathFailures(files, () => true)).toEqual([])
+  })
+})
+
+describe('검사가 자기를 검사한다', () => {
+  const source = { file: 'scripts/x.mjs', content: 'export function fooFailures(input) { return [] }' }
+
+  it('대조군이 없는 검사 함수를 실패로 낸다', () => {
+    const tests = [{ file: 'scripts/x.test.mjs', content: "it('통과한다', () => {\n  expect(fooFailures('ok')).toEqual([])\n})" }]
+    expect(checkNegativeControlFailures([source, ...tests])).toEqual([
+      'scripts/x.mjs: fooFailures 에 대조군이 없다 — 일부러 어긴 입력에서 실패를 내는 테스트가 있어야 등록된다',
+    ])
+  })
+
+  it('빈 배열이 아닌 결과를 기대하는 테스트가 있으면 통과한다', () => {
+    const tests = [{ file: 'scripts/x.test.mjs', content: "it('어기면 실패한다', () => {\n  expect(fooFailures('bad')).toEqual(['boom'])\n})" }]
+    expect(checkNegativeControlFailures([source, ...tests])).toEqual([])
   })
 })
