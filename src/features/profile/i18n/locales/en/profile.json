@@ -1,0 +1,43 @@
+{
+  "path": {
+    "profile": "My info",
+    "detail": "View",
+    "edit": "Edit"
+  },
+  "detailTitle": "My info",
+  "editTitle": "Edit my info",
+  "section": "Operator information",
+  "fields": {
+    "id": "ID",
+    "password": "Password",
+    "name": "Name",
+    "phone": "Mobile number",
+    "email": "Email",
+    "organization": "Organization",
+    "registrationRoute": "Sign-up route",
+    "accountStatus": "Account status"
+  },
+  "detail": {
+    "emptyValue": "-"
+  },
+  "actions": {
+    "edit": "Edit",
+    "changePassword": "Change password",
+    "changePasswordDescription": "Enter the new password.",
+    "changePasswordCompleted": "The password has been changed.",
+    "withdraw": "Withdraw",
+    "withdrawDescription": "Withdrawal takes effect immediately and cannot be undone.\nDo you want to proceed with the withdrawal?",
+    "withdrawCompleted": "The withdrawal is complete."
+  },
+  "form": {
+    "passwordEdit": "Change",
+    "password": "Password",
+    "passwordConfirm": "Confirm password",
+    "passwordPlaceholder": "At least 3 of uppercase, lowercase, number and symbol; 8 to 20 characters",
+    "passwordConfirmPlaceholder": "Confirm password",
+    "errors": {
+      "password": "Combine at least 3 of uppercase letters, lowercase letters, numbers and symbols.",
+      "passwordMismatch": "Enter the same value as the password."
+    }
+  }
+}

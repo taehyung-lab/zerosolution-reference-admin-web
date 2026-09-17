@@ -365,20 +365,28 @@ test('@reference member create reaches its request without clearing private inpu
   await expect(page).toHaveURL(/\/members\/active\/all$/);
 });
 
-test('@reference shell search and profile expose their unconnected destinations', async ({ page }) => {
+test('@reference shell search exposes its unconnected destination and keeps the keyword', async ({ page }) => {
   const observed = observeRequests(page);
   await page.goto('/members/active/all');
   const header = page.getByRole('banner');
   await header.getByRole('textbox', { name: '통합검색' }).fill('검색어를 콘솔에 출력하지 않음');
   await header.getByRole('button', { name: '검색', exact: true }).click();
   await expect.poll(() => observed.logs).toEqual(['[시나리오] 통합검색: 검색 입력 수신 → API·결과 화면 연결 대기']);
-  await header.locator('summary').filter({ hasText: '내 정보' }).click();
-  await header.getByRole('button', { name: '내 정보', exact: true }).click();
-  await expect.poll(() => observed.logs).toEqual([
-    '[시나리오] 통합검색: 검색 입력 수신 → API·결과 화면 연결 대기',
-    '[시나리오] 내 정보 이동: 진입 요청 확인 → 대상 화면 연결 대기',
-  ]);
   expect(observed.writes).toEqual([]);
   await expect(page).toHaveURL(/members\/active\/all$/);
   await expect(header.getByRole('textbox', { name: '통합검색' })).toHaveValue('검색어를 콘솔에 출력하지 않음');
+});
+
+// `내 정보` 는 더 이상 미연결 진입이 아니다 — 목적지가 확정돼 route 로 간다(2026-09-17).
+test('@reference shell profile menu navigates to the profile screen', async ({ page }) => {
+  const observed = observeRequests(page);
+  await page.goto('/members/active/all');
+  const header = page.getByRole('banner');
+  await header.locator('summary').filter({ hasText: '내 정보' }).click();
+  await header.getByRole('link', { name: '내 정보', exact: true }).click();
+
+  await expect(page).toHaveURL(/\/profile$/);
+  await expect(page.getByRole('heading', { name: '내정보 조회' })).toBeVisible();
+  expect(observed.logs).toEqual([]);
+  expect(observed.writes).toEqual([]);
 });

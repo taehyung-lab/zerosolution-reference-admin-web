@@ -346,3 +346,92 @@ describe('useSaveForm — 닫힌 섹션과 오류 노출', () => {
     await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('textbox', { name: /^email/ })))
   })
 })
+
+/**
+ * `blurValidator` 는 제출 전에도 알려야 하는 교차 필드 불일치 하나를 위한 자리다. 훅은 값만 넘기고
+ * 필드 이름의 의미를 모른다 — 여기서는 email 이 name 과 같아야 한다는 가짜 규칙으로 그것을 본다.
+ */
+function BlurHarness() {
+  const save = useSaveForm({
+    schema,
+    defaultValues: { name: '', email: '' } satisfies Input,
+    sections: { info: fields },
+    blurValidator: (values) => ({
+      email: values.email !== '' && values.email !== values.name ? 'must match name' : undefined,
+    }),
+    save: { run: async (values) => await run(values), isPending: false },
+    mapError: () => undefined,
+    onDone: () => undefined,
+  })
+  return (
+    <>
+      {save.dialogs}
+      <form
+        onSubmit={(event) => {
+          event.preventDefault()
+          void save.submit.run()
+        }}
+      >
+        <SectionCard title="info" {...save.sections.sectionProps('info')}>
+          <FormTextField form={save.form} name="name" label="name" />
+          <FormTextField form={save.form} name="email" label="email" />
+        </SectionCard>
+        <button type="submit">save</button>
+      </form>
+    </>
+  )
+}
+
+describe('useSaveForm — blur 에서 알리는 불일치', () => {
+  function renderBlurForm() {
+    // guard 가 앱의 Router blocker 하나에 등록되므로 이 harness 도 실제 Router 위에서 돈다.
+    const blurRoot = createRootRoute({
+      component: () => (
+        <UnsavedChangesProvider>
+          <Outlet />
+        </UnsavedChangesProvider>
+      ),
+    })
+    const blurRoute = createRoute({ getParentRoute: () => blurRoot, path: '/form', component: BlurHarness })
+    render(
+      <I18nextProvider i18n={i18n}>
+        <RouterProvider
+          router={createRouter({
+            routeTree: blurRoot.addChildren([blurRoute]),
+            history: createMemoryHistory({ initialEntries: ['/form'] }),
+          })}
+        />
+      </I18nextProvider>,
+    )
+  }
+
+  it('제출 전에도 포커스가 떠나면 불일치를 말하고, 맞추면 지운다', async () => {
+    renderBlurForm()
+    await screen.findByRole('button', { name: 'save' })
+    type('name', 'Kim')
+    const email = screen.getByRole('textbox', { name: /^email/ })
+    fireEvent.change(email, { target: { value: 'Lee' } })
+    fireEvent.blur(email)
+
+    expect(await screen.findByText('must match name')).toBeInTheDocument()
+    noDialog()
+
+    fireEvent.change(email, { target: { value: 'Kim' } })
+    fireEvent.blur(email)
+    await waitFor(() => expect(screen.queryByText('must match name')).toBeNull())
+  })
+
+  it('불일치인 채 제출하면 확인창이 열리지 않는다', async () => {
+    run.mockResolvedValue(undefined)
+    renderBlurForm()
+    await screen.findByRole('button', { name: 'save' })
+    type('name', 'Kim')
+    fireEvent.change(screen.getByRole('textbox', { name: /^email/ }), { target: { value: 'Lee' } })
+
+    submit()
+
+    expect(await screen.findByText('must match name')).toBeInTheDocument()
+    noDialog()
+    expect(run).not.toHaveBeenCalled()
+  })
+})

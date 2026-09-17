@@ -20,6 +20,8 @@ import { Route as AppMembersDormantRouteImport } from './routes/_app/members/dor
 import { Route as AppMembersNewRouteImport } from './routes/_app/members/new'
 import { Route as AppPerformancesIndexRouteImport } from './routes/_app/performances/index'
 import { Route as AppPerformancesContentsRouteImport } from './routes/_app/performances/contents'
+import { Route as AppProfileIndexRouteImport } from './routes/_app/profile/index'
+import { Route as AppProfileEditRouteImport } from './routes/_app/profile/edit'
 import { Route as AppCommunityBoardsIndexRouteImport } from './routes/_app/community/boards/index'
 import { Route as AppCommunityBoardsNewRouteImport } from './routes/_app/community/boards/new'
 import { Route as AppManagersManagerIdIndexRouteImport } from './routes/_app/managers/$managerId/index'
@@ -94,6 +96,16 @@ const AppPerformancesIndexRoute = AppPerformancesIndexRouteImport.update({
 const AppPerformancesContentsRoute = AppPerformancesContentsRouteImport.update({
   id: '/performances/contents',
   path: '/performances/contents',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProfileIndexRoute = AppProfileIndexRouteImport.update({
+  id: '/profile/',
+  path: '/profile/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProfileEditRoute = AppProfileEditRouteImport.update({
+  id: '/profile/edit',
+  path: '/profile/edit',
   getParentRoute: () => AppRoute,
 } as any)
 const AppCommunityBoardsIndexRoute = AppCommunityBoardsIndexRouteImport.update({
@@ -223,8 +235,10 @@ export interface FileRoutesByFullPath {
   '/members/dormant': typeof AppMembersDormantRoute
   '/members/new': typeof AppMembersNewRoute
   '/performances/contents': typeof AppPerformancesContentsRoute
+  '/profile/edit': typeof AppProfileEditRoute
   '/managers/': typeof AppManagersIndexRoute
   '/performances/': typeof AppPerformancesIndexRoute
+  '/profile/': typeof AppProfileIndexRoute
   '/community/boards/new': typeof AppCommunityBoardsNewRoute
   '/managers/$managerId/edit': typeof AppManagersManagerIdEditRoute
   '/members/$memberId/edit': typeof AppMembersMemberIdEditRoute
@@ -256,8 +270,10 @@ export interface FileRoutesByTo {
   '/members/dormant': typeof AppMembersDormantRoute
   '/members/new': typeof AppMembersNewRoute
   '/performances/contents': typeof AppPerformancesContentsRoute
+  '/profile/edit': typeof AppProfileEditRoute
   '/managers': typeof AppManagersIndexRoute
   '/performances': typeof AppPerformancesIndexRoute
+  '/profile': typeof AppProfileIndexRoute
   '/community/boards/new': typeof AppCommunityBoardsNewRoute
   '/managers/$managerId/edit': typeof AppManagersManagerIdEditRoute
   '/members/$memberId/edit': typeof AppMembersMemberIdEditRoute
@@ -291,8 +307,10 @@ export interface FileRoutesById {
   '/_app/members/dormant': typeof AppMembersDormantRoute
   '/_app/members/new': typeof AppMembersNewRoute
   '/_app/performances/contents': typeof AppPerformancesContentsRoute
+  '/_app/profile/edit': typeof AppProfileEditRoute
   '/_app/managers/': typeof AppManagersIndexRoute
   '/_app/performances/': typeof AppPerformancesIndexRoute
+  '/_app/profile/': typeof AppProfileIndexRoute
   '/_app/community/boards/new': typeof AppCommunityBoardsNewRoute
   '/_app/managers/$managerId/edit': typeof AppManagersManagerIdEditRoute
   '/_app/members/$memberId/edit': typeof AppMembersMemberIdEditRoute
@@ -326,8 +344,10 @@ export interface FileRouteTypes {
     | '/members/dormant'
     | '/members/new'
     | '/performances/contents'
+    | '/profile/edit'
     | '/managers/'
     | '/performances/'
+    | '/profile/'
     | '/community/boards/new'
     | '/managers/$managerId/edit'
     | '/members/$memberId/edit'
@@ -359,8 +379,10 @@ export interface FileRouteTypes {
     | '/members/dormant'
     | '/members/new'
     | '/performances/contents'
+    | '/profile/edit'
     | '/managers'
     | '/performances'
+    | '/profile'
     | '/community/boards/new'
     | '/managers/$managerId/edit'
     | '/members/$memberId/edit'
@@ -393,8 +415,10 @@ export interface FileRouteTypes {
     | '/_app/members/dormant'
     | '/_app/members/new'
     | '/_app/performances/contents'
+    | '/_app/profile/edit'
     | '/_app/managers/'
     | '/_app/performances/'
+    | '/_app/profile/'
     | '/_app/community/boards/new'
     | '/_app/managers/$managerId/edit'
     | '/_app/members/$memberId/edit'
@@ -501,6 +525,20 @@ declare module '@tanstack/react-router' {
       path: '/performances/contents'
       fullPath: '/performances/contents'
       preLoaderRoute: typeof AppPerformancesContentsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/profile/': {
+      id: '/_app/profile/'
+      path: '/profile'
+      fullPath: '/profile/'
+      preLoaderRoute: typeof AppProfileIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/profile/edit': {
+      id: '/_app/profile/edit'
+      path: '/profile/edit'
+      fullPath: '/profile/edit'
+      preLoaderRoute: typeof AppProfileEditRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/community/boards/': {
@@ -660,8 +698,10 @@ interface AppRouteChildren {
   AppMembersDormantRoute: typeof AppMembersDormantRoute
   AppMembersNewRoute: typeof AppMembersNewRoute
   AppPerformancesContentsRoute: typeof AppPerformancesContentsRoute
+  AppProfileEditRoute: typeof AppProfileEditRoute
   AppManagersIndexRoute: typeof AppManagersIndexRoute
   AppPerformancesIndexRoute: typeof AppPerformancesIndexRoute
+  AppProfileIndexRoute: typeof AppProfileIndexRoute
   AppCommunityBoardsNewRoute: typeof AppCommunityBoardsNewRoute
   AppManagersManagerIdEditRoute: typeof AppManagersManagerIdEditRoute
   AppMembersMemberIdEditRoute: typeof AppMembersMemberIdEditRoute
@@ -692,8 +732,10 @@ const AppRouteChildren: AppRouteChildren = {
   AppMembersDormantRoute: AppMembersDormantRoute,
   AppMembersNewRoute: AppMembersNewRoute,
   AppPerformancesContentsRoute: AppPerformancesContentsRoute,
+  AppProfileEditRoute: AppProfileEditRoute,
   AppManagersIndexRoute: AppManagersIndexRoute,
   AppPerformancesIndexRoute: AppPerformancesIndexRoute,
+  AppProfileIndexRoute: AppProfileIndexRoute,
   AppCommunityBoardsNewRoute: AppCommunityBoardsNewRoute,
   AppManagersManagerIdEditRoute: AppManagersManagerIdEditRoute,
   AppMembersMemberIdEditRoute: AppMembersMemberIdEditRoute,
