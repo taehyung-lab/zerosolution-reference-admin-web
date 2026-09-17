@@ -27,6 +27,7 @@ import {
   transplantSentinelFailures,
   transplantSentinelOccurrences,
   rootBudgetFailures,
+  skillAdapterFailures,
 } from './contracts.mjs'
 import {
   collectImportClosure,
@@ -445,6 +446,9 @@ describe('contracts check CLI wiring', () => {
     fixtureRoot = resolve(fixtureParent, 'repo')
     cpSync(projectRoot, fixtureRoot, {
       recursive: true,
+      // `cpSync` 는 기본값에서 심링크를 절대경로로 바꿔 복사한다. 그러면 사본의 `.claude/skills` 가
+      // **원본 체크아웃**을 가리키고, 사본을 고쳐도 원본이 읽힌다. 링크는 링크 그대로 옮긴다.
+      verbatimSymlinks: true,
       filter: (source) => !excludedDirectories.has(basename(source)),
     })
   })
@@ -977,5 +981,33 @@ describe('루트 예산', () => {
     const real = readFileSync(resolve('AGENTS.md'), 'utf8')
     expect(rootBudgetFailures(real)).toEqual([])
     expect(rootBudgetFailures(`${real}\n한 줄 더`)).toHaveLength(1)
+  })
+})
+
+describe('skill 어댑터', () => {
+  const linked = (target) => () => target
+
+  it('정본을 가리키는 링크면 통과한다', () => {
+    expect(skillAdapterFailures('.claude/skills', '.agents/skills', linked('../.agents/skills'), () => true)).toEqual([])
+  })
+
+  it('대조군 — 링크가 아니라 디렉터리면 실패한다. 이관이 실제로 22파일을 복제했던 자리다', () => {
+    const failures = skillAdapterFailures('.claude/skills', '.agents/skills', linked(null), () => true)
+    expect(failures).toHaveLength(1)
+    expect(failures[0]).toContain('복사본은 정본과 어긋난다')
+  })
+
+  it('대조군 — 엉뚱한 곳을 가리키면 어디를 가리키는지 말한다', () => {
+    const failures = skillAdapterFailures('.claude/skills', '.agents/skills', linked('../docs/skills'), () => true)
+    expect(failures).toEqual(['.claude/skills 가 docs/skills 를 가리킨다. .agents/skills 이어야 한다'])
+  })
+
+  it('대조군 — 정본이 사라지면 그것부터 말한다', () => {
+    expect(skillAdapterFailures('.claude/skills', '.agents/skills', linked('../.agents/skills'), () => false))
+      .toEqual(['.agents/skills 이 없다 — 계약의 정본이 사라졌다'])
+  })
+
+  it('이 저장소의 실제 배치가 통과한다', () => {
+    expect(skillAdapterFailures()).toEqual([])
   })
 })

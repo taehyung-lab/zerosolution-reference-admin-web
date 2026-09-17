@@ -20,7 +20,7 @@
  */
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { cpSync, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+import { cpSync, existsSync, mkdirSync, readFileSync, statSync, writeFileSync, lstatSync, readlinkSync, symlinkSync} from 'node:fs'
 import { dirname, join, posix, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { productTermsInLine, TRANSPLANT_SENTINEL } from '../contracts/contracts.mjs'
@@ -79,8 +79,13 @@ function relativeTo(root, path) {
   return relative(root, path).split('\\').join('/')
 }
 
+/** `stat` 은 링크를 따라가므로 판정은 `lstat` 으로 한다. */
+const isSymlink = (path) => existsSync(path) && lstatSync(path).isSymbolicLink()
+
 function sha256(path) {
-  return createHash('sha256').update(readFileSync(path)).digest('hex')
+  // 링크는 내용이 없다. 가리키는 곳이 그 정체이므로 그것을 해시한다.
+  const bytes = isSymlink(path) ? Buffer.from(readlinkSync(path)) : readFileSync(path)
+  return createHash('sha256').update(bytes).digest('hex')
 }
 
 /** 텍스트 파일에 ADR 재번호와 예시 심볼 치환을 적용한다. `retired` 에 든 번호는 재번호하지 않고 인용만 표시한다. */
@@ -498,12 +503,15 @@ export function stageTransplant(targetRoot, outRoot, sourceRoot = SOURCE_ROOT, o
       writeFileSync(stagedPath, `TRANSPLANT_PENDING_README: 대상 저장소의 이름·런타임·scripts·verify 투영·문서 지도를 사람이 다시 쓴다. 레퍼런스 README 는 구조만 참고한다.\n\n${rewrite(readFileSync(sourcePath, 'utf8'), item.file, item.targetPath)}`)
     } else if (item.action === 'conditional') {
       writeFileSync(stagedPath, `> TRANSPLANT_PENDING_ADR_PIN: 레퍼런스 ${item.file} 의 버전 근거다. 대상 package.json·lockfile 과 대조해 채택하면 이 줄을 지우고 개정하며, 다르면 대상 결정으로 다시 쓴다.\n\n${rewrite(readFileSync(sourcePath, 'utf8'), item.file, item.targetPath)}`)
+    } else if (isSymlink(sourcePath)) {
+      // 어댑터는 링크로 옮긴다. 복사하면 정본과 어긋나고, 그 어긋남은 아무도 보지 않는다.
+      symlinkSync(readlinkSync(sourcePath), stagedPath)
     } else if (isTextFile(item.file)) {
       writeFileSync(stagedPath, rewrite(sourceText(sourcePath, item.file, selected, stagedPaths), item.file, item.targetPath))
     } else {
       cpSync(sourcePath, stagedPath)
     }
-    const staged = readFileSync(stagedPath)
+    const staged = isSymlink(stagedPath) ? Buffer.from(readlinkSync(stagedPath)) : readFileSync(stagedPath)
     const text = isTextFile(item.targetPath) ? staged.toString('utf8') : ''
     const isTest = /\.test\.(ts|tsx|mjs)$/.test(item.file)
     if (!isTest) for (const [, id] of text.matchAll(TRANSPLANT_SENTINEL)) pending.push({ file: item.targetPath, id })
@@ -589,7 +597,8 @@ export function applyTransplant(targetRoot, outRoot) {
       continue
     }
     mkdirSync(dirname(destination), { recursive: true })
-    cpSync(stagedPath, destination)
+    if (isSymlink(stagedPath)) symlinkSync(readlinkSync(stagedPath), destination)
+    else cpSync(stagedPath, destination)
     copied.push(item.targetPath)
   }
   return { copied, skipped }

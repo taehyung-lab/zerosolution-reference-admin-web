@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, readdirSync } from 'node:fs'
+import { existsSync, lstatSync, readdirSync, readFileSync, readlinkSync, statSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 
 export const DOCUMENT_LINE_BUDGET = 200
@@ -232,6 +232,8 @@ export function transplantSentinelOccurrences(files) {
   const occurrences = []
   for (const file of files) {
     if (!existsSync(resolve(file))) continue
+    // manifest 는 파일뿐 아니라 어댑터 링크도 옮긴다. sentinel 은 파일 안에만 있다.
+    if (!statSync(resolve(file)).isFile()) continue
     const lines = readFileSync(resolve(file), 'utf8').split('\n')
     lines.forEach((line, index) => {
       for (const [, id] of line.matchAll(TRANSPLANT_SENTINEL)) {
@@ -268,6 +270,42 @@ export function rootBudgetFailures(document, budget = ROOT_LINE_BUDGET) {
   const lines = document.split('\n').filter((line, index, all) => index < all.length - 1 || line !== '').length
   if (lines <= budget) return []
   return [`AGENTS.md 가 ${lines}줄이다(상한 ${budget}). 늘리지 말고 내린다 — 조건부로만 필요한 것은 그것을 소유한 계약으로, 절차는 스크립트로.`]
+}
+
+/**
+ * `.claude/skills` 는 `.agents/skills` 를 가리키는 **링크여야 한다.**
+ *
+ * 복사본이면 정본과 어긋나고, 그 어긋남은 아무도 보지 않는다. 실제로 이관이 한 번 링크를 따라가
+ * 22파일을 복제했다 — `stat` 이 심링크를 따라가기 때문이었고, 그때 아무 검사도 울리지 않았다.
+ * 존재가 아니라 **무엇인지**를 본다(ADR 0016).
+ */
+export function skillAdapterFailures(
+  adapter = '.claude/skills',
+  canonical = '.agents/skills',
+  link = (path) => (existsSync(resolve(path)) && lstatSync(resolve(path)).isSymbolicLink() ? readlinkSync(resolve(path)) : null),
+  exists = (path) => existsSync(resolve(path)),
+) {
+  if (!exists(canonical)) return [`${canonical} 이 없다 — 계약의 정본이 사라졌다`]
+  const target = link(adapter)
+  if (target === null) {
+    return [`${adapter} 가 링크가 아니다. 복사본은 정본과 어긋난다 — \`ln -s ../${canonical} ${adapter}\``]
+  }
+  const resolved = posixResolve(dirname(adapter), target)
+  if (resolved !== canonical) {
+    return [`${adapter} 가 ${resolved} 를 가리킨다. ${canonical} 이어야 한다`]
+  }
+  return []
+}
+
+/** 링크 대상은 POSIX 경로다. 파일 시스템을 건드리지 않고 문자열로 정규화한다. */
+function posixResolve(from, target) {
+  const parts = []
+  for (const segment of `${from}/${target}`.split('/')) {
+    if (segment === '' || segment === '.') continue
+    if (segment === '..') parts.pop()
+    else parts.push(segment)
+  }
+  return parts.join('/')
 }
 
 export const RETIRED_DOCUMENT_NAMES = [
@@ -342,6 +380,8 @@ export function retiredDocumentNameFailures(files, names = RETIRED_DOCUMENT_NAME
   const failures = []
   for (const file of files) {
     if (!existsSync(resolve(file))) continue
+    // manifest 는 파일뿐 아니라 어댑터 링크도 옮긴다. sentinel 은 파일 안에만 있다.
+    if (!statSync(resolve(file)).isFile()) continue
     const lines = readFileSync(resolve(file), 'utf8').split('\n')
     lines.forEach((line, index) => {
       for (const { name, allowIn, pattern } of entries) {

@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
+import { existsSync, lstatSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { dirname, relative, resolve } from 'node:path'
 import { PRODUCT_POINTER, productPaths } from './product-paths.mjs'
 
@@ -833,8 +833,11 @@ export function productLedgerManifest(root = process.cwd()) {
 function expandManifestEntry(entry, root = process.cwd()) {
   const absolute = resolve(root, entry)
   if (!existsSync(absolute)) return []
+  // `lstat` 이 먼저다. `stat` 은 심링크를 따라가므로 `.claude/skills` 같은 어댑터가 디렉터리로 보이고,
+  // 그러면 이관이 링크 대신 **복사본**을 만든다 — 복사본은 정본과 어긋난다(ADR 0016).
+  if (lstatSync(absolute).isSymbolicLink()) return [relativeToRoot(absolute, root)]
   const stat = statSync(absolute)
-  if (stat.isFile() || stat.isSymbolicLink()) return [relativeToRoot(absolute, root)]
+  if (stat.isFile()) return [relativeToRoot(absolute, root)]
   return readdirSync(absolute, { recursive: true, withFileTypes: true })
     .filter((item) => item.isFile() || item.isSymbolicLink())
     .map((item) => relativeToRoot(resolve(item.parentPath, item.name), root))
