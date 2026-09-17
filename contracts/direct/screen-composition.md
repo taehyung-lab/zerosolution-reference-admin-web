@@ -28,7 +28,7 @@ Every list, detail, and form in every domain classifies its responsibilities the
 
 ## Placement and naming
 
-파일 생성·이동과 배치 판단은 [folder-structure-contract](../contract/source-structure.md)가 소유한다. 화면은 `screens/{entity}-list|detail|form`, 도메인 내부 재사용 기능은 `mechanics/{capability}` 아래 필요한 목적별 segment 를 둔다. 표시 조립 훅은 ui, 실행·상태·업무 정책은 model 에 둔다. 타입만 공유하더라도 화면이나 UI 를 역참조하지 않고 실제 공통 값의 소유 위치(`model/`)를 바로잡는다.
+파일 생성·이동과 배치 판단은 [`source-structure.md`](../contract/source-structure.md)가 소유한다. 화면은 `screens/{entity}-list|detail|form`, 도메인 내부 재사용 기능은 `mechanics/{capability}` 아래 필요한 목적별 segment 를 둔다. 표시 조립 훅은 ui, 실행·상태·업무 정책은 model 에 둔다. 타입만 공유하더라도 화면이나 UI 를 역참조하지 않고 실제 공통 값의 소유 위치(`model/`)를 바로잡는다.
 
 ## Extending an existing screen
 

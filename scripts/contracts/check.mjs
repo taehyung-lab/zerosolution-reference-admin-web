@@ -34,7 +34,7 @@ import {
   citedContractPathFailures,
   retiredDocumentNameFailures,
   transplantSentinelFailures,
-  transplantSentinelOccurrences,
+  transplantSentinelOccurrences, rootBudgetFailures,
 } from './contracts.mjs'
 import {
   findContractPathMismatches,
@@ -153,6 +153,7 @@ const citingFiles = [
 ].filter((file) => existsSync(resolve(file)))
 failures.push(...retiredDocumentNameFailures(citingFiles))
 failures.push(...checkNegativeControlFailures())
+failures.push(...rootBudgetFailures(readFileSync(resolve('AGENTS.md'), 'utf8')))
 failures.push(...prohibitedAbstractionSourceFailures(readFileSync(resolve('eslint.config.js'), 'utf8')))
 // 제품 사실 색인의 정합성은 `pnpm product:check` 가 fact frontmatter 에서 본다. 여기서는 **관찰이
 // 사라지지 않았는지**를 본다 — fact 는 늘, 아직 옮기지 않은 옛 원장은 그것이 남아 있는 동안.

@@ -12,6 +12,16 @@ A route owns validation, entry guards, loader orchestration, and one feature scr
 
 For cross-feature dialogs, the source feature owns the action intent, selected target IDs, recipient projection, and open/close lifecycle; the destination feature owns its form and validation. The route may invoke the source feature's focused hook and connect its public values/callbacks to the destination UI. It does not duplicate that state with route-local `useState`, query fixtures to resolve recipients, or implement eligibility/policy decisions. Mounting two features together permits wiring, not workflow ownership. Do not evade this boundary by making either feature import the other's UI or adding an app-level domain controller.
 
+## 도달 가능한 진입점
+
+화면을 만드는 요청의 기본 범위는 **그 화면과 그것을 실제로 여는 최소 연결**이다. 앱에서 도달 가능한
+실제 route 나, 기존 host 에서 그 화면을 여는 조립 중 하나가 있어야 한다. 둘 다 없으면 요청을
+수행하는 최소 route 나 host 를 **같은 작업에서 만든다.** 사용자가 component 나 한 surface 만
+요청한 경우에만 진입점 연결을 범위에서 뺀다.
+
+화면 파일을 직접 render 한 테스트는 연결이 아니다. 빈 route·stub 도 아니다 — 그것들은 "열린다"를
+증명하지 않는다.
+
 ## Route file layout
 
 Route files mirror the URL. A single leaf stays a flat file (`<domain>/new.tsx`). A param or static segment with more than one leaf becomes a directory: `<domain>/$<id>/index.tsx` (detail) and `<domain>/$<id>/edit.tsx` (edit). A directory alone creates no route, so these leaves are siblings under `<domain>`; add `$<id>/route.tsx` only when the screens actually share chrome (header, tabs) and must render through an `<Outlet />`. Do not use the flat non-nesting escape (`$<id>_.edit.tsx`): it needs a comment to explain and hides the layout decision. Co-located tests match `routeFileIgnorePattern` and are not routes.

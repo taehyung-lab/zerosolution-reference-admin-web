@@ -22,7 +22,6 @@ function fixture() {
   const scenario = 'docs/reference/scenarios/performance.md'
   write('scripts/contracts/check.mjs', 'console.log("fixture contract passed")\n')
   write('AGENTS.md', '# Root\nGlobal constraints.\n')
-  write('contracts/feature-contract/SKILL.md', '# Feature\nOwnership.\n')
   write('contracts/direct/list.md', '# Loop\nEntry and return points.\n')
   write(inventory, '# Performance\nCommon policy.\n## List\nNo selection column.\n## Edit\nSection-owned save.\n')
   write(scenario, '# Scenario\nEntry loads; reset clears.\n')

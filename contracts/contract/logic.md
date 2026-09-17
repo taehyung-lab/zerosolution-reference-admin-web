@@ -16,8 +16,9 @@ API wire 를 추가로 확인한다. 실제 성공 조건에 렌더·포커스·
 1. **실제 호출자.** 이 심볼을 지금 누가 부르는가. 호출자가 하나면 공용화 후보가 아니다.
 2. **설치된 버전의 타입 정의.** 기억이나 검색 결과가 아니라 `node_modules`의 현행 타입.
 3. **가장 가까운 기존 테스트.** 이미 무엇이 계약으로 고정돼 있는지.
-4. **경계 계약.** 서버 wire·cache가 걸리면 [api-contract](source-structure.md),
-   배치·import 방향이 걸리면 [folder-structure-contract](source-structure.md)의 해당 절만.
+4. **경계 계약.** 서버 wire 가 걸리면 [`api-wire.md`](api-wire.md), 조회·캐시가 걸리면
+   [`server-state.md`](server-state.md), 배치·import 방향이 걸리면
+   [`source-structure.md`](source-structure.md)의 해당 절만.
 
 ## 관찰표 — 3단계에서 채운다
 

@@ -189,7 +189,7 @@ describe('delinkUntravelled', () => {
   })
 
   it('does not disguise a missing normative skill dependency as source provenance', () => {
-    expect(() => delinkUntravelled('[계약](../../contracts/api-contract/SKILL.md)', { ...context, collect: [] }))
+    expect(() => delinkUntravelled('[계약](../../contracts/contract/nowhere.md)', { ...context, collect: [] }))
       .toThrow(/normative/)
   })
 })

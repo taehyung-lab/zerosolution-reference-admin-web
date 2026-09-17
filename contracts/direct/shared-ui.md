@@ -245,13 +245,13 @@ Test that a new key exists in all three locale files and that the component read
 | Request | Read |
 | --- | --- |
 | What a shared unit takes, owns, and refuses — any `shared/ui`, `shared/model`, `shared/lib`, or `src/api` unit by name | the unit's row in [catalog.md](#primitives) (`Primitives`, `Form`, `Filter`, `List`, `Detail`, `Dialog`, `Feedback`, `Model`, `Lib`, `API`) |
-| Promoting, confirming, narrowing, demoting, or deleting a shared unit; a caller that needs a new prop | [promotion.md](../contract/source-structure.md#공용-단위의-승격) |
-| Radix/Tailwind primitive internals, focus, keyboard, tokens, which selection control, React Compiler, TanStack Table v9 | [primitives-and-tokens.md](#primitive-내부와-렌더-성능) |
-| Translation namespaces, adding a key, product-generic copy, locale parity | [i18n.md](#i18n) |
-| How a screen composes these units | [feature-contract](list.md) (`list.md`, `detail.md`, `form.md`) |
-| Server state, keys, mutations | [api-contract](../contract/api-wire.md) |
+| Promoting, confirming, narrowing, demoting, or deleting a shared unit; a caller that needs a new prop | [공용 단위의 승격](../contract/source-structure.md#공용-단위의-승격) |
+| Radix/Tailwind primitive internals, focus, keyboard, tokens, which selection control, React Compiler, TanStack Table v9 | [primitive 내부와 렌더 성능](#primitive-내부와-렌더-성능) |
+| Translation namespaces, adding a key, product-generic copy, locale parity | [i18n](#i18n) |
+| How a screen composes these units | [`list.md`](list.md) · [`detail.md`](detail.md) · [`form.md`](form.md) |
+| Server state, keys, mutations | [`api-wire.md`](../contract/api-wire.md) · [`server-state.md`](../contract/server-state.md) |
 
-File creation, relocation and feature-local reuse placement follow [folder-structure-contract](../contract/source-structure.md). This skill owns whether a contract is domain-free enough to be shared.
+File creation, relocation and feature-local reuse placement follow [`source-structure.md`](../contract/source-structure.md). This skill owns whether a contract is domain-free enough to be shared.
 
 ## UI layers
 

@@ -97,7 +97,7 @@ Neither check reads a request body. A missing required field still passes both, 
 - Routes, screens, and components never import Axios or generated operations.
 - `src/api/http/**` owns the Axios instance, authentication, locale header, cancellation, and transport-error normalization.
 - Feature API modules own query/mutation options, keys and API-only execution hooks. A mutation declares its cache consequence in `meta.invalidates`; screens run it with `useMutation` and own navigation and acknowledgement (ADR 0014).
-- File creation, relocation and API input type placement follow [folder-structure-contract](source-structure.md).
+- File creation, relocation and API input type placement follow [`source-structure.md`](source-structure.md).
 - Generated files are never edited or committed.
 
 If runtime behavior contradicts the snapshot, stop and report the endpoint, request/response evidence, and blocked work. Do not hide divergence with casts, optional fields, fallback values, or silent response reshaping. A temporary adapter requires explicit approval, an ADR, tests, and a removal condition.

@@ -1,7 +1,7 @@
 import { Button } from '../primitives/Button'
 import { Dialog } from '../primitives/Dialog'
 
-/** Owns: single-acknowledgement layout. Rejects: copy, mutation, error handling and navigation. API: open,onOpenChange,title,description,acknowledgeLabel,onAcknowledge. Boundary: domain-neutral acknowledgement mechanics (shared-ui-contract `catalog.md` Dialog). */
+/** Owns: single-acknowledgement layout. Rejects: copy, mutation, error handling and navigation. API: open,onOpenChange,title,description,acknowledgeLabel,onAcknowledge. Boundary: domain-neutral acknowledgement mechanics (`shared-ui.md` Dialog). */
 export function AlertDialog({
   open,
   onOpenChange,

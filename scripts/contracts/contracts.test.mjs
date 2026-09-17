@@ -26,6 +26,7 @@ import {
   retiredDocumentNameFailures,
   transplantSentinelFailures,
   transplantSentinelOccurrences,
+  rootBudgetFailures,
 } from './contracts.mjs'
 import {
   collectImportClosure,
@@ -957,5 +958,23 @@ describe('검사가 자기를 검사한다', () => {
   it('빈 배열이 아닌 결과를 기대하는 테스트가 있으면 통과한다', () => {
     const tests = [{ file: 'scripts/x.test.mjs', content: "it('어기면 실패한다', () => {\n  expect(fooFailures('bad')).toEqual(['boom'])\n})" }]
     expect(checkNegativeControlFailures([source, ...tests])).toEqual([])
+  })
+})
+
+describe('루트 예산', () => {
+  it('상한 이하면 통과한다', () => {
+    expect(rootBudgetFailures('a\nb\nc\n', 3)).toEqual([])
+  })
+
+  it('상한을 넘으면 실패하고 몇 줄인지 말한다', () => {
+    const failures = rootBudgetFailures('a\nb\nc\nd\n', 3)
+    expect(failures).toHaveLength(1)
+    expect(failures[0]).toContain('4줄')
+  })
+
+  it('대조군 — 실제 AGENTS.md 에 한 줄을 더하면 잡힌다', () => {
+    const real = readFileSync(resolve('AGENTS.md'), 'utf8')
+    expect(rootBudgetFailures(real)).toEqual([])
+    expect(rootBudgetFailures(`${real}\n한 줄 더`)).toHaveLength(1)
   })
 })

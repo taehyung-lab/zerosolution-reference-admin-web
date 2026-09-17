@@ -15,7 +15,7 @@ Figma `ZEROsol (For Kakao)`(`Ogb6WpSpwCVhKggQ1NLRlQ`) 78 page와 Notion `DB: Wor
 - 배포 환경: 미확인. API base URL, CORS·cookie domain·SameSite 정책이 확정되기 전에는 bootstrap 완료로 보지 않는다.
 - Admin OpenAPI URL: 미확인. 신규 백엔드가 아직 없다.
 - 계약 snapshot: `openapi/admin.snapshot.json`. 현재 값은 신규 제품 계약이 아니라 격리된 리허설 계약이다. 출처와 폐기 조건은 `openapi/README.md`와 `docs/decisions/0001-rehearsal-api-contract.md`가 소유한다. 리허설의 endpoint·DTO·enum·status·permission을 `shared`, `app/config`, 번역의 제품 진실로 삼지 않는다.
-- 기술 스택·버전·검증 명령: `README.md`와 `package.json`이 소유한다. 생성 범위 정책은 `api-contract`가 소유한다.
+- 기술 스택·버전·검증 명령: `README.md`와 `package.json`이 소유한다. 생성 범위 정책은 `contracts/contract/api-wire.md`가 소유한다.
 - 다국어: UI 카피는 `ko`, `en`, `ja` parity. 서버 응답 로케일 지원 범위는 계약 snapshot이 선언한 값을 따른다.
 - 날짜·시간: instant request는 `UTC`, 화면 표시와 달력의 하루 경계는 브라우저 IANA zone을 쓴다. locale에서 zone을 추정하거나 상태를 복제하지 않는다. 변환·API 파라미터·재검토 조건은 [날짜 계약](../../decisions/0003-datetime-utc.md)이 소유한다.
 - 권한 기준선: 권한 코드와 역할 체계는 미확인이다. 화면은 "권한이 있으면 이렇게 동작한다"를 기준으로 설계하고 권한 유무 분기를 화면 설계 축으로 삼지 않는다. 접근권한은 `화면 × 기능` 조합이며 화면마다 가능한 기능 집합이 다르다. 거부는 app-level 단일 surface로 수렴하고 실제 식별자는 신규 프로젝트 이관 시 sentinel로 추적한다.

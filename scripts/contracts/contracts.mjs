@@ -252,11 +252,35 @@ export function transplantSentinelFailures(files) {
  * 삭제된 규범 문서의 이름은 어디에도 남으면 안 된다. link 검사는 Markdown link만 보므로
  * 주석·표·근거 문자열 속 이름은 이 목록으로 잡는다. 이름을 지울 때 여기서도 지운다.
  */
+/**
+ * 루트는 **항상 로드된다.** 커지면 모든 세션이 그 비용을 낸다.
+ *
+ * 이 저장소의 루트는 162 → 50 → 172 → 209 로 두 번 자랐고, 두 번 다 아무것도 잡지 않았다. 문서
+ * 예산을 `notice` 로 두면 자라는 것이 정상으로 읽히기 때문이다. 그래서 루트만 `fail` 이다.
+ *
+ * 이 숫자는 **내려가기만 한다.** 오늘의 값은 오늘의 크기이고, 무언가를 내릴 때마다 함께 내린다.
+ * 넘으면 늘리지 말고 내린다 — 조건부로만 필요한 것은 그것을 소유한 계약으로, 절차는 스크립트로.
+ * 계약 문서는 판단이라 숫자를 맞추려고 자르면 안 되므로 이 게이트의 대상이 아니다.
+ */
+export const ROOT_LINE_BUDGET = 209
+
+export function rootBudgetFailures(document, budget = ROOT_LINE_BUDGET) {
+  const lines = document.split('\n').filter((line, index, all) => index < all.length - 1 || line !== '').length
+  if (lines <= budget) return []
+  return [`AGENTS.md 가 ${lines}줄이다(상한 ${budget}). 늘리지 말고 내린다 — 조건부로만 필요한 것은 그것을 소유한 계약으로, 절차는 스크립트로.`]
+}
+
 export const RETIRED_DOCUMENT_NAMES = [
   // 2026-09-17 새 문서 체계: screen-loop 와 .agents/skills 전체가 contracts/ · product/ 로 갔다.
   // 그 전환을 결정한 ADR 과 당시를 기록한 문서는 이 이름을 불러야 하므로 예외를 준다.
   { name: 'screen-loop', allowIn: ['docs/decisions/', 'docs/reference/zero-sol-figma-analysis.md'] },
   { name: '.agents/skills', allowIn: ['docs/decisions/'] },
+  // 같은 전환에서 skill 이름 자체도 은퇴했다. 경로만 고치고 링크 라벨에 옛 이름을 남기면
+  // 읽는 사람은 없는 문서를 찾는다 — 실제로 9곳이 그렇게 남아 있었다.
+  { name: 'feature-contract', allowIn: ['docs/decisions/'] },
+  { name: 'api-contract', allowIn: ['docs/decisions/'] },
+  { name: 'shared-ui-contract', allowIn: ['docs/decisions/'] },
+  { name: 'folder-structure-contract', allowIn: ['docs/decisions/'] },
 
   '2026-09-14-reference-document-loop-redesign.md',
   'list-detail.md',
@@ -309,14 +333,17 @@ export const RETIRED_DOCUMENT_NAMES = [
  * 예외는 "과거를 말하는 문서"에만 주고, 살아 있는 소유자를 지목하는 문장에는 주지 않는다.
  */
 export function retiredDocumentNameFailures(files, names = RETIRED_DOCUMENT_NAMES) {
+  // 폐기 이름이 더 긴 이름의 조각일 때 잡으면 안 된다 — `0001-rehearsal-api-contract.md` 는
+  // 살아 있는 ADR 파일 이름이지 `api-contract` 를 부르는 것이 아니다.
   const entries = names.map((item) => (typeof item === 'string' ? { name: item, allowIn: [] } : item))
+    .map((entry) => ({ ...entry, pattern: new RegExp(`(?<![\\w-])${entry.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w-])`) }))
   const failures = []
   for (const file of files) {
     if (!existsSync(resolve(file))) continue
     const lines = readFileSync(resolve(file), 'utf8').split('\n')
     lines.forEach((line, index) => {
-      for (const { name, allowIn } of entries) {
-        if (!line.includes(name)) continue
+      for (const { name, allowIn, pattern } of entries) {
+        if (!pattern.test(line)) continue
         if (allowIn.some((prefix) => file.startsWith(prefix))) continue
         failures.push(`${file}:${index + 1}: 삭제된 문서 이름 → ${name}`)
       }
