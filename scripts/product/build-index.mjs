@@ -9,6 +9,7 @@
  */
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
+import { LEGACY_LEDGER } from '../contracts/product-paths.mjs'
 
 const root = resolve(process.cwd())
 const factsDir = join(root, 'product/facts')
@@ -19,7 +20,7 @@ const indexPath = join(root, 'product/generated-index.md')
  * 관찰을 보류한다. 그 거짓말이 이관이 끝날 때까지의 가장 큰 위험이다.
  * 마지막 화면을 옮기면 이 경로와 아래 분기를 함께 지운다.
  */
-const legacyIndexPath = join(root, 'docs/reference/zero-sol/context.json')
+const legacyIndexPath = join(root, LEGACY_LEDGER.index)
 const checkOnly = process.argv.includes('--check')
 
 const REQUIRED = ['id', 'title', 'role', 'status']
@@ -52,6 +53,12 @@ function parseFrontmatter(text, file) {
   return out
 }
 
+/** 옛 원장의 인용은 경로 문자열이거나 `{ file, heading }` 이다. */
+const referenceFile = (reference) => (typeof reference === 'string' ? reference : reference.file)
+/** 한 원장 파일이 여러 화면을 담으므로, 절이 지정돼 있으면 **그 절만** 읽으라고 표에 적는다. */
+const referenceLabel = (reference) =>
+  typeof reference === 'string' ? reference : `${reference.file} § ${reference.heading}`
+
 function stripBrackets(value) {
   if (Array.isArray(value)) return value
   if (typeof value !== 'string') return []
@@ -59,38 +66,53 @@ function stripBrackets(value) {
   return inner === '' ? [] : inner.split(',').map((item) => item.trim()).filter(Boolean)
 }
 
-const files = readdirSync(factsDir).filter((name) => name.endsWith('.md')).sort()
-const facts = []
-const errors = []
-
-for (const file of files) {
-  const text = readFileSync(join(factsDir, file), 'utf8')
-  let meta
-  try {
-    meta = parseFrontmatter(text, file)
-  } catch (error) {
-    errors.push(error.message)
-    continue
+/**
+ * fact 집합의 정합성을 본다. 색인이 생성물이므로 **틀린 색인은 만들어질 수 없고**, 대신 여기서
+ * 멈춘다. 옛 체계에서는 손으로 쓴 색인의 dangling·중복을 별도 검사가 봤다 — 그 판단의 소유자가
+ * 여기로 옮겨 왔다.
+ *
+ * @param entries `{ file, text }` 목록
+ * @returns `{ facts, errors }`
+ */
+export function factIndexFailures(entries) {
+  const facts = []
+  const errors = []
+  for (const { file, text } of entries) {
+    let meta
+    try {
+      meta = parseFrontmatter(text, file)
+    } catch (error) {
+      errors.push(error.message)
+      continue
+    }
+    for (const key of REQUIRED) {
+      if (!meta[key] || (Array.isArray(meta[key]) && meta[key].length === 0)) {
+        errors.push(`${file}: frontmatter 에 ${key} 가 없다`)
+      }
+    }
+    if (meta.id && file !== `${meta.id}.md`) {
+      errors.push(`${file}: 파일 이름이 id(${meta.id}) 와 다르다. id 는 불변이며 파일 이름이 그것을 따른다`)
+    }
+    if (meta.role && !ROLES.has(meta.role)) errors.push(`${file}: 모르는 role "${meta.role}"`)
+    if (meta.status && !STATUSES.has(meta.status)) errors.push(`${file}: 모르는 status "${meta.status}"`)
+    facts.push({ ...meta, file, related: stripBrackets(meta.related) })
   }
-  for (const key of REQUIRED) {
-    if (!meta[key] || (Array.isArray(meta[key]) && meta[key].length === 0)) {
-      errors.push(`${file}: frontmatter 에 ${key} 가 없다`)
+  const ids = new Set(facts.map((fact) => fact.id))
+  for (const fact of facts) {
+    if (facts.filter((other) => other.id === fact.id).length > 1) {
+      errors.push(`${fact.file}: id ${fact.id} 가 중복이다`)
+    }
+    for (const related of fact.related) {
+      if (!ids.has(related)) errors.push(`${fact.file}: related 의 ${related} 를 가진 fact 가 없다`)
     }
   }
-  if (meta.id && file !== `${meta.id}.md`) {
-    errors.push(`${file}: 파일 이름이 id(${meta.id}) 와 다르다. id 는 불변이며 파일 이름이 그것을 따른다`)
-  }
-  if (meta.role && !ROLES.has(meta.role)) errors.push(`${file}: 모르는 role "${meta.role}"`)
-  if (meta.status && !STATUSES.has(meta.status)) errors.push(`${file}: 모르는 status "${meta.status}"`)
-  facts.push({ ...meta, file, related: stripBrackets(meta.related) })
+  return { facts, errors: [...new Set(errors)].sort() }
 }
 
-const ids = new Set(facts.map((fact) => fact.id))
-for (const fact of facts) {
-  for (const related of fact.related) {
-    if (!ids.has(related)) errors.push(`${fact.file}: related 의 ${related} 를 가진 fact 가 없다`)
-  }
-}
+const files = readdirSync(factsDir).filter((name) => name.endsWith('.md')).sort()
+const { facts, errors } = factIndexFailures(
+  files.map((file) => ({ file, text: readFileSync(join(factsDir, file), 'utf8') })),
+)
 
 if (errors.length > 0) {
   for (const message of errors) console.error(`  ✗ ${message}`)
@@ -108,8 +130,17 @@ const legacy = existsSync(legacyIndexPath)
       .map((surface) => ({ id: surface.id, title: surface.title, inventory: surface.inventory }))
   : []
 
+// 미이관 행은 "여기를 읽어라"는 지시다. 가리키는 원장이 없으면 그 지시가 거짓말이 된다.
+const missingLedger = legacy.filter((surface) => !existsSync(join(root, referenceFile(surface.inventory))))
+if (missingLedger.length > 0) {
+  for (const surface of missingLedger) {
+    console.error(`  \u2717 ${legacyIndexPath}: ${surface.id} 가 가리키는 원장 ${referenceFile(surface.inventory)} 가 없다`)
+  }
+  process.exit(1)
+}
+
 const legacyRows = legacy
-  .map((surface) => `| \`${surface.id}\` | ${surface.title} | — | **미이관** | [${surface.inventory}](../${surface.inventory}) |`)
+  .map((surface) => `| \`${surface.id}\` | ${surface.title} | — | **미이관** | [${referenceLabel(surface.inventory)}](../${referenceFile(surface.inventory)}) |`)
   .join('\n')
 
 const legacySection = legacy.length === 0 ? '' : `

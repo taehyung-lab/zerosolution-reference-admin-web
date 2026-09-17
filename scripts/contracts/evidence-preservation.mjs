@@ -9,6 +9,8 @@ import { tableRows } from '../evidence/screen-rows.mjs'
  * 금지: 날짜 붙은 실측 기록의 삭제, 보호 열의 관찰·정책 표식 삭제, 비어 있지 않던 `미확인`의 제거.
  */
 const PROTECTED_COLUMNS = ['Figma 관찰', 'Notion 동작·정책', '미확인']
+/** fact 는 표가 아니라 절로 관찰을 담는다. 같은 판단을 절 구조에 적용한다. */
+const PROTECTED_SECTIONS = ['관찰', '정책', '미확인']
 const KEY_COLUMNS = ['화면', 'surface']
 const DATE = /\d{4}-\d{2}-\d{2}/g
 const MARKER = /\*\*[^*\n]+\*\*/g
@@ -23,6 +25,25 @@ function headContent(root, file) {
   } catch {
     return null // HEAD 에 없는 새 파일이거나 git 이 없는 실행. 대조할 이전 상태가 없다.
   }
+}
+
+/** `## 제목` 단위로 본문을 모은다. 하위 `###` 는 그 절의 본문으로 함께 센다. */
+function sections(content) {
+  const found = new Map()
+  let name = null
+  let body = []
+  for (const line of content.split('\n')) {
+    const heading = /^##\s+(.+?)\s*#*$/.exec(line)
+    if (!heading) {
+      if (name !== null) body.push(line)
+      continue
+    }
+    if (name !== null) found.set(name, body.join('\n'))
+    name = heading[1].trim()
+    body = []
+  }
+  if (name !== null) found.set(name, body.join('\n'))
+  return found
 }
 
 function keyedRows(content) {
@@ -86,6 +107,26 @@ export function evidencePreservationFailures(root, inventoryDir, read = (file) =
         for (const marker of tokens(oldCell, MARKER)) {
           if (!newCell.includes(marker)) failures.push(`원장 근거 삭제: ${file} 행 "${key}" 의 ${column} 에서 ${marker} 가 사라졌다.`)
         }
+      }
+    }
+
+    // 절 단위: 보호 절은 사라지거나 비워지지 않고, 그 안의 관찰 표식도 지워지지 않는다.
+    const sectionsBefore = sections(before)
+    const sectionsAfter = sections(after)
+    for (const name of PROTECTED_SECTIONS) {
+      const oldBody = sectionsBefore.get(name)
+      if (oldBody === undefined || blank(oldBody.replace(/\s+/g, ' '))) continue
+      const newBody = sectionsAfter.get(name)
+      if (newBody === undefined) {
+        failures.push(`원장 근거 삭제: ${file} 의 \`## ${name}\` 절이 사라졌다. 관찰은 새 관찰로만 바뀐다.`)
+        continue
+      }
+      if (blank(newBody.replace(/\s+/g, ' '))) {
+        failures.push(`원장 근거 삭제: ${file} 의 \`## ${name}\` 절이 비워졌다.`)
+        continue
+      }
+      for (const marker of tokens(oldBody, MARKER)) {
+        if (!newBody.includes(marker)) failures.push(`원장 근거 삭제: ${file} 의 \`## ${name}\` 에서 ${marker} 가 사라졌다.`)
       }
     }
   }

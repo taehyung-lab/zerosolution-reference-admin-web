@@ -37,3 +37,44 @@ describe('원장 근거 보존', () => {
     expect(run('| 화면 |\n| --- |\n| 새 파일 |', null)).toEqual([])
   })
 })
+
+describe('fact 절 보존', () => {
+  const fact = [
+    '# 스마트프린터 목록',
+    '',
+    '## 관찰',
+    '',
+    '검색 조건은 기간 · 검색어 · 상태. 다중 선택 셋은 **default 가 전체**다.',
+    '',
+    '## 정책',
+    '',
+    '절 제목이 리스트 조회이므로 **진입 즉시 조회**다.',
+    '',
+    '## 미확인',
+    '',
+    '1. 정렬 default 가 마지막 설정값인지.',
+    '',
+  ].join('\n')
+  const runFact = (after, headText = fact) =>
+    evidencePreservationFailures(process.cwd(), 'product/facts', (file) => (file.endsWith('PRINTER-LIST.md') ? after : ''), (file) => (file.endsWith('PRINTER-LIST.md') ? headText : null))
+
+  it('비어 있지 않던 미확인 절을 비우면 실패한다', () => {
+    const after = fact.replace('1. 정렬 default 가 마지막 설정값인지.', '')
+    expect(runFact(after).some((failure) => failure.includes('미확인'))).toBe(true)
+  })
+
+  it('관찰 절을 통째로 지우면 실패한다', () => {
+    const after = fact.replace(/## 관찰[\s\S]*?(?=## 정책)/, '')
+    expect(runFact(after).some((failure) => failure.includes('관찰'))).toBe(true)
+  })
+
+  it('구현 설명으로 관찰 표식을 지우면 실패한다', () => {
+    const after = fact.replace('**진입 즉시 조회**', '`useListView` 가 진입 시 조회한다')
+    expect(runFact(after).some((failure) => failure.includes('진입 즉시 조회'))).toBe(true)
+  })
+
+  it('관찰을 남기고 문장을 더하면 통과한다', () => {
+    const after = fact.replace('1. 정렬 default 가 마지막 설정값인지.', '1. 정렬 default 가 마지막 설정값인지. (2026-09-17 재관찰: 원문 그대로)')
+    expect(runFact(after)).toEqual([])
+  })
+})

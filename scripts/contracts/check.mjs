@@ -11,7 +11,7 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { surfaceIndexFailures } from '../evidence/context.mjs'
-import { productPaths } from './product-paths.mjs'
+import { LEGACY_LEDGER, PRODUCT_PATHS } from './product-paths.mjs'
 import { evidencePreservationFailures } from './evidence-preservation.mjs'
 import { checkNegativeControlFailures } from './meta.mjs'
 import {
@@ -154,15 +154,15 @@ const citingFiles = [
 failures.push(...retiredDocumentNameFailures(citingFiles))
 failures.push(...checkNegativeControlFailures())
 failures.push(...prohibitedAbstractionSourceFailures(readFileSync(resolve('eslint.config.js'), 'utf8')))
-// 새 문서 체계: 제품 사실 색인의 정합성은 `pnpm product:check` 가 fact frontmatter 에서 직접 본다.
-// 아래 세 검사는 은퇴한 4경로 원장 모델(inventory README + judgment + scenarios + JSON context)을
-// 전제하므로 그 모델이 남아 있을 때만 돈다. 보류를 통과로 읽지 않는다 — 이 영역의 이관은 남아 있다.
-if (existsSync(resolve(productPaths(process.cwd()).inventory, 'README.md'))) {
-  try { failures.push(...ledgerIndexFailures(productPaths(process.cwd()).scenarios)) } catch (error) { failures.push(error.message) }
-  try { failures.push(...evidencePreservationFailures(process.cwd(), productPaths(process.cwd()).inventory)) } catch (error) { failures.push(error.message) }
+// 제품 사실 색인의 정합성은 `pnpm product:check` 가 fact frontmatter 에서 본다. 여기서는 **관찰이
+// 사라지지 않았는지**를 본다 — fact 는 늘, 아직 옮기지 않은 옛 원장은 그것이 남아 있는 동안.
+failures.push(...evidencePreservationFailures(process.cwd(), PRODUCT_PATHS.facts))
+if (existsSync(resolve(LEGACY_LEDGER.inventory, 'README.md'))) {
+  try { failures.push(...ledgerIndexFailures(LEGACY_LEDGER.scenarios)) } catch (error) { failures.push(error.message) }
+  try { failures.push(...evidencePreservationFailures(process.cwd(), LEGACY_LEDGER.inventory)) } catch (error) { failures.push(error.message) }
   failures.push(...surfaceIndexFailures(process.cwd()))
 } else {
-  notes.push('제품 사실 색인 검사는 `pnpm product:check` 가 소유한다 (구 원장 모델 검사 3종은 이관 대기)')
+  notes.push('옛 원장이 없다: 모든 화면이 fact 로 옮겨졌다면 LEGACY_LEDGER 와 scripts/evidence/ 를 함께 지운다')
 }
 
 // 문서 안의 sentinel 은 어느 모드에서도 결정 미해소다.

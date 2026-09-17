@@ -41,10 +41,10 @@
 | `promotion` | 프로모션 APP PUSH | — | **미이관** | [docs/reference/zero-sol/08-promotion.md](../docs/reference/zero-sol/08-promotion.md) |
 | `community` | 게시판·게시물·작성자 검색 팝업 | — | **미이관** | [docs/reference/zero-sol/09-community.md](../docs/reference/zero-sol/09-community.md) |
 | `statistics` | 통계 집계·회차·전치 표 | — | **미이관** | [docs/reference/zero-sol/10-statistics.md](../docs/reference/zero-sol/10-statistics.md) |
-| `manager-list` | 운영자 목록 | — | **미이관** | [[object Object]](../[object Object]) |
-| `manager-detail` | 운영자 상세 | — | **미이관** | [[object Object]](../[object Object]) |
-| `manager-create` | 운영자 등록 | — | **미이관** | [[object Object]](../[object Object]) |
-| `manager-edit` | 운영자 수정 | — | **미이관** | [[object Object]](../[object Object]) |
+| `manager-list` | 운영자 목록 | — | **미이관** | [docs/reference/zero-sol/11-settings.md § 11.1 운영자 — 목록](../docs/reference/zero-sol/11-settings.md) |
+| `manager-detail` | 운영자 상세 | — | **미이관** | [docs/reference/zero-sol/11-settings.md § 11.1 운영자 — 상세](../docs/reference/zero-sol/11-settings.md) |
+| `manager-create` | 운영자 등록 | — | **미이관** | [docs/reference/zero-sol/11-settings.md § 11.1 운영자 — 등록](../docs/reference/zero-sol/11-settings.md) |
+| `manager-edit` | 운영자 수정 | — | **미이관** | [docs/reference/zero-sol/11-settings.md § 11.1 운영자 — 수정](../docs/reference/zero-sol/11-settings.md) |
 | `settings` | 운영자·약관·정책·권한·로그 | — | **미이관** | [docs/reference/zero-sol/11-settings.md](../docs/reference/zero-sol/11-settings.md) |
 | `search` | 통합검색의 독립 결과 영역 | — | **미이관** | [docs/reference/zero-sol/12-search.md](../docs/reference/zero-sol/12-search.md) |
 | `profile` | 내정보 조회·수정 | — | **미이관** | [docs/reference/zero-sol/13-profile.md](../docs/reference/zero-sol/13-profile.md) |

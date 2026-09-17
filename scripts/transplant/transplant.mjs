@@ -24,7 +24,7 @@ import { cpSync, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } 
 import { dirname, join, posix, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { productTermsInLine, TRANSPLANT_SENTINEL } from '../contracts/contracts.mjs'
-import { PRODUCT_POINTER, productPaths } from '../contracts/product-paths.mjs'
+import { productPaths } from '../contracts/product-paths.mjs'
 import {
   FORBIDDEN_SEED_PATTERNS,
   listSeedFiles,
@@ -169,7 +169,9 @@ export function delinkUntravelled(text, { sourceFile, targetPath, source, target
       /^(src\/features\/|src\/routes\/|tests\/e2e\/)/.test(sourceAbsolute)
     )
     if (!productEvidence && (staged.has(targetAbsolute) || existsSync(join(targetRoot, targetAbsolute)))) return match
-    const requiredContract = sourceAbsolute.startsWith('contracts/') || sourceAbsolute.startsWith('product/policies/') ||
+    // 디렉터리를 가리키는 링크(문서 지도의 `contracts/direct/`)는 파일 의존이 아니다.
+    const requiredContract = (sourceAbsolute.endsWith('.md')
+      && (sourceAbsolute.startsWith('contracts/') || sourceAbsolute.startsWith('product/policies/'))) ||
       (sourceAbsolute.startsWith('docs/decisions/') && !retired.some((id) => posix.basename(sourceAbsolute).startsWith(`${id}-`)))
     if (requiredContract) throw new Error(`Missing normative transplant dependency: ${sourceAbsolute}`)
     const link = `${sourceAbsolute}${anchor}`
@@ -241,94 +243,77 @@ function danglingLinks(text, targetPath, stagedPaths, targetRoot) {
   return hits
 }
 
-/** 한 절의 heading 줄부터 같은 깊이 이상의 다음 heading 직전까지. 문서 서문·상위 절은 붙이지 않는다. */
-function sectionBody(text, heading) {
-  const lines = text.split('\n')
-  const start = lines.findIndex((line) => /^#{1,6} /.test(line) && line.replace(/^#+ /, '').trim() === heading)
-  if (start === -1) throw new Error(`레퍼런스 원장 절이 없다: ${heading}`)
-  const level = lines[start].match(/^#+/)[0].length
-  let end = lines.length
-  for (let index = start + 1; index < lines.length; index += 1) {
-    const match = lines[index].match(/^(#{1,6}) /)
-    if (match && match[1].length <= level) { end = index; break }
-  }
-  return lines.slice(start, end).join('\n').trimEnd()
-}
-
-/** `](../x)` 링크를 fromDir 기준에서 toDir 기준으로 다시 계산한다. 외부 URL·루트 절대 경로·앵커만 있는 링크는 그대로. */
-function relocateLinks(text, fromDir, toDir) {
-  return text.replace(/\]\(([^)\s#]+)(#[^)]*)?\)/g, (match, path, anchor = '') => {
-    if (/^[a-z]+:/i.test(path) || path.startsWith('/')) return match
-    const absolute = posix.normalize(posix.join(fromDir, path))
-    return `](${posix.relative(toDir, absolute)}${anchor})`
-  })
-}
-
-function readSource(sourceRoot, file) {
-  return readFileSync(join(sourceRoot, file), 'utf8')
-}
-
 /**
- * 대상 포인터 경로에 놓는 빈 원장 뼈대. 절 구조·표 형식·근거 수명처럼 파서와 skill 이 의존하는 절은 레퍼런스 원장에서
- * 그대로 옮기고(제품 사실이 아니라 절차), 판독 우선순위·제품 이름·원문 출처는 sentinel 로 남긴다. 링크는 새 깊이로 재계산한다.
+ * 대상 제품에 놓는 **빈 제품 사실 뼈대**.
+ *
+ * 옛 체계는 inventory·judgment·scenarios·index 네 파일을 만들었고, 그 넷이 같은 surface 의 사실을
+ * 나눠 가져 갱신마다 세 곳이 어긋났다. 지금은 한 surface 를 fact 하나가 소유하고 색인은 생성물이라,
+ * 뼈대는 **fact 쓰는 법**과 **빈 색인** 둘뿐이다. 판독 규칙(`product/policies/`)은 절차라서
+ * manifest 가 그대로 옮기고 여기서 다시 만들지 않는다.
+ *
+ * 레퍼런스 제품의 관찰·정책·미확인은 하나도 가져가지 않는다 — 그것이 이 저장소의 목적이다.
  */
 export function ledgerTemplates(sourceRoot, source, target) {
-  const inventoryReadme = readSource(sourceRoot, `${source.inventory}/README.md`)
-  const scenariosReadme = readSource(sourceRoot, `${source.scenarios}/README.md`)
-  const move = (text, from, to) => rewriteProductPaths(relocateLinks(text, from, to), source, target)
+  void sourceRoot
+  void source
   const files = new Map()
-  files.set(PRODUCT_POINTER, `${JSON.stringify(target, null, 2)}\n`)
   files.set(`${target.inventory}/README.md`, [
-    '# 제품 surface 인벤토리',
+    '# 제품 사실 — fact 쓰는 법',
     '',
-    'TRANSPLANT_PENDING_INVENTORY: 이 제품의 원문(디자인 파일·정책 문서)과 관찰 방법·시점을 적고, 섹션 파일을 화면 × surface 단위로 채운다. 레퍼런스 제품의 관찰은 가져오지 않았다.',
-    `[${posix.basename(target.index)}](${posix.relative(target.inventory, target.index)})은 이 인벤토리의 연결 정보만 소유한다. 경로는 \`${PRODUCT_POINTER}\` 이 가리킨다.`,
+    'surface 하나의 **관찰 · 정책 · 전이 · 미확인 · 현재 코드**를 이 폴더의 파일 하나가 소유한다.',
+    '파일 이름은 `<ID>.md` 이고 그 `ID` 는 **불변**이다. 색인은 frontmatter 에서 생성되므로',
+    `[${posix.basename(target.index)}](${posix.relative(target.inventory, target.index)}) 를 손으로 고치지 않는다.`,
     '',
-    '## 프로젝트 사실',
+    'TRANSPLANT_PENDING_FACTS: 이 제품의 원문(디자인 파일·기능 문서)과 접근 방법을 확정하고, 화면마다',
+    'fact 를 만든다. 레퍼런스 제품의 관찰은 하나도 가져오지 않았다.',
     '',
-    'TRANSPLANT_PENDING_FACTS: 대상 제품과 사용자, 배포 환경, API 정본, 언어·시간·권한 정책을 실제 제품 근거로 확정한다. 원본 프로젝트 사실은 이관하지 않는다.',
+    '## frontmatter',
     '',
-    move(sectionBody(inventoryReadme, '근거의 수명과 읽기 범위'), source.inventory, target.inventory),
+    '```yaml',
+    'id: <불변 ID. 파일 이름과 같다>',
+    'title: <사람이 읽는 화면 이름>',
+    'role: list | detail | form | collection | shared-ui | api | policy',
+    'status: 관찰됨 | 확정됨 | 미확인',
+    'related: [<다른 fact 의 ID>]',
+    'sources:',
+    '  - kind: <원문 종류>',
+    '    ref: <원문 URL 과 그 안의 위치>',
+    '    observed: <YYYY-MM-DD>',
+    '    how: <어떤 경로로 읽었는가>',
+    '```',
     '',
-    move(sectionBody(inventoryReadme, '표 형식'), source.inventory, target.inventory),
+    '`role` 이 기본으로 읽을 역할 계약을 말한다. 요청이 API·상태·route·구조를 추가로 건드리면',
+    '그 계약도 함께 읽는다 — `role` 은 기본값이지 배제 목록이 아니다.',
     '',
-    '## 판독 규칙',
+    '## 본문의 절',
     '',
-    'TRANSPLANT_PENDING_READING_RULES: 두 원문이 같은 사실을 다르게 말할 때 어느 쪽을 정본으로 읽는지, 구성(항목·순서·초기 상태)은 어느 원문만이 열거하는지 이 제품에서 확정한다.',
-    '',
-    '## 섹션 파일',
-    '',
-    '| 파일 | 원문 위치 |',
+    '| 절 | 무엇을 적나 |',
     '| --- | --- |',
+    '| 관찰 | 원문에서 **본 것**. 항목·순서·필수·선택지·문구 |',
+    '| 정책 | 원문이 말한 동작과 전이. 두 원문이 다르게 말하면 둘 다 적고 미확인으로 |',
+    '| 상태와 소유자 | 그 화면의 값이 어디에 사는가 |',
+    '| 전이 | 무엇을 누르면 어디로 가는가 |',
+    '| 미확인 | 무엇이 미확인인가 · 답에 따라 무엇이 달라지나 · 누구에게 묻나 |',
+    '| 현재 코드 | 어디까지 구현됐고 무엇이 보류인가 |',
+    '',
+    '관찰을 갱신하면 **무엇이 달라졌는지**를 남긴다. 조용히 덮어쓰지 않는다.',
+    '근거의 종류와 수명, 원문을 읽는 경로는 `product/policies/` 가 소유한다.',
     '',
   ].join('\n'))
-  files.set(target.index, `${JSON.stringify({ judgment: [], surfaces: [] }, null, 2)}\n`)
-  files.set(target.judgment, [
-    '# 공용화 판정',
+  files.set(target.index, [
+    '<!-- 생성물이다. scripts/product/build-index.mjs 가 만든다. 손으로 고치지 않는다. -->',
+    '# 제품 사실 색인',
     '',
-    'TRANSPLANT_PENDING_JUDGMENT: 이 제품의 인벤토리와 시나리오를 근거로 surface 별 공용 / feature / 미확인 판정을 적는다. 레퍼런스 제품의 판정은 가져오지 않았다.',
+    'TRANSPLANT_PENDING_INDEX: fact 를 하나라도 만든 뒤 `pnpm product:index` 로 다시 생성한다.',
     '',
-    '## 1. 판정 원칙',
+    '| ID | 제목 | 역할 | 상태 | fact |',
+    '| --- | --- | --- | --- | --- |',
     '',
-    '## 5. 미확인 — 답이 구현을 바꾸는 질문',
-    '',
-  ].join('\n'))
-  files.set(`${target.scenarios}/README.md`, [
-    '# 시나리오 원장',
-    '',
-    'TRANSPLANT_PENDING_SCENARIOS: 화면이 무엇으로 보이는지가 아니라 런타임에 무엇이 실제로 일어나는지를 카드로 기록한다. 아래 표에 없는 카드는 라우팅에서 도달하지 못한다.',
-    '',
-    move(sectionBody(scenariosReadme, '카드 한 장의 절 구조'), source.scenarios, target.scenarios),
-    '',
-    '## 현재 카드',
-    '',
-    '| 카드 | 다루는 것 | 연결된 이슈 |',
-    '| --- | --- | --- |',
+    '총 0개.',
     '',
   ].join('\n'))
   return files
 }
-
 /**
  * 반출 전 원본 텍스트. seed 카탈로그는 선택한 bundle 만 남기고, 검사 스크립트 기본값과
  * `package.json` 초안은 대상 모드를 가리킨다(source 모드는 이 레퍼런스의 폐쇄 검사다).
@@ -397,14 +382,16 @@ function renamedPath(path, retired) {
 }
 
 /**
- * 이번 이관의 입력을 한 번에 정한다: 선택 bundle, 원장 포인터(대상이 가진 것이 이기고 없으면 product-paths 기본값;
- * `--with-ledger` 이고 대상 포인터가 없으면 레퍼런스 포인터 그대로), 활성 원장 포함 여부.
+ * 이번 이관의 입력을 한 번에 정한다: 선택 bundle, 제품 사실 경로, 활성 원장 포함 여부.
+ *
+ * 옛 체계는 대상이 `docs/reference/product.json` 으로 원장 위치를 선언할 수 있었고, 이관은 그
+ * 선언에 맞춰 모든 인용을 다시 썼다. 지금은 경로가 상수(`product/facts` · `product/generated-index.md`)
+ * 라서 원본과 대상이 같고 **다시 쓸 것이 없다** — 대상이 이미 쓴 fact 는 `merge` 로 보존한다.
  */
 function transplantInputs(targetRoot, { bundles, withLedger = false, sourceRoot = SOURCE_ROOT } = {}) {
-  const source = productPaths(sourceRoot)
-  const targetHasPointer = existsSync(join(targetRoot, PRODUCT_POINTER))
-  const target = withLedger && !targetHasPointer ? source : productPaths(targetRoot)
-  return { selected: selectBundles(bundles), source, target, withLedger, sourceRoot }
+  void targetRoot
+  const paths = productPaths(sourceRoot)
+  return { selected: selectBundles(bundles), source: paths, target: paths, withLedger, sourceRoot }
 }
 
 /** 반출 대상 전체를 분류한다. plan 과 stage 가 같은 결과를 쓴다. 결과 배열에 `inputs` 가 붙는다. */
