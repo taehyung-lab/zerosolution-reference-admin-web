@@ -1,7 +1,11 @@
 import { expect, test } from "@playwright/test";
 
 /** 필터 form 의 접근 이름이 `검색 조건` 인 화면. 나머지는 `검색` 이다. */
-const searchConditionForms = ["/performances", "/community/boards"];
+const searchConditionForms = [
+  "/performances",
+  "/performances/contents",
+  "/community/boards",
+];
 const filterFormName = (path: string) =>
   searchConditionForms.includes(path) ? "검색 조건" : "검색";
 
@@ -16,6 +20,7 @@ for (const path of [
   "/members/counsel",
   "/members/appeals",
   "/performances",
+  "/performances/contents",
   "/community/boards",
   "/ticketing/printers",
 ]) {
@@ -28,6 +33,7 @@ for (const path of [
       "/members/counsel",
       "/members/appeals",
       "/performances",
+      "/performances/contents",
       "/community/boards",
       "/ticketing/printers",
     ].includes(path);
@@ -156,6 +162,7 @@ for (const path of [
   "/members/counsel",
   "/members/appeals",
   "/performances",
+  "/performances/contents",
   "/community/boards",
   "/ticketing/printers",
 ]) {

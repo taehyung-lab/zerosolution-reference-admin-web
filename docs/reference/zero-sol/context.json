@@ -457,7 +457,13 @@
       "scenarios": [
         "docs/reference/scenarios/performance-and-content.md"
       ],
-      "paths": [],
+      "paths": [
+        "src/features/performances/screens/content-list/",
+        "src/features/performances/api/",
+        "src/features/performances/model/content.ts",
+        "src/features/performances/fixtures/contents.ts",
+        "src/routes/_app/performances/contents.tsx"
+      ],
       "references": [
         {
           "file": "docs/reference/zero-sol/notion/05-performances.md",
@@ -539,7 +545,9 @@
       "scenarios": [
         "docs/reference/scenarios/performance-and-content.md"
       ],
-      "paths": [],
+      "paths": [
+        "src/features/performances/screens/content-list/ui/ContentPreviewDialog.tsx"
+      ],
       "references": [
         ".agents/skills/feature-contract/references/detail.md",
         {
@@ -1312,7 +1320,11 @@
       "scenarios": [
         "docs/reference/scenarios/performance-and-content.md"
       ],
-      "paths": [],
+      "paths": [
+        "src/features/performances/screens/content-list/model/useContentListActions.ts",
+        "src/features/performances/screens/content-list/ui/ContentListActions.tsx",
+        "src/features/performances/api/mutations.ts"
+      ],
       "related": [],
       "gap": "콘텐츠 변경 API와 성공 이후 계약은 미확인이다. 기존 인벤토리의 호출 직전 동작만 근거로 삼는다.",
       "id": "content-bulk",

@@ -2,8 +2,10 @@ import { queryOptions } from '@tanstack/react-query';
 import { localizedQueryKey } from '@/api/query-key';
 import { inlineProgress } from '@/api/query-meta';
 import type { UiLocale } from '@/shared/i18n/locale';
+import { readContentPage, readContentPreview } from '../fixtures/contents';
 import { readPerformanceDetail } from '../fixtures/performance-details';
 import { readPerformancePage, readPerformanceVenues } from '../fixtures/performances';
+import type { ContentListRequest } from '../model/content';
 import type { PerformanceListRequest } from '../model/performance';
 
 /**
@@ -37,6 +39,28 @@ export function performanceVenuesQuery(locale: UiLocale) {
     queryKey: localizedQueryKey(locale, 'performances', 'venues'),
     queryFn: () => readPerformanceVenues(),
     staleTime: Infinity,
+    ...inlineProgress,
+  });
+}
+
+/**
+ * 5.1 콘텐츠 목록 조회. 화면·테스트가 같은 정의를 소비한다.
+ *
+ * TRANSPLANT_PENDING_CONTENT_QUERY: queryFn 은 아직 임시 응답 함수다. 실제 endpoint 가 확정되면
+ * 여기서 생성된 operation 을 호출하고 fixtures 를 지운다.
+ */
+export function contentListQueryOptions(locale: UiLocale, request: ContentListRequest) {
+  return queryOptions({
+    queryKey: [...localizedQueryKey(locale, 'performances', 'contents'), request] as const,
+    queryFn: () => readContentPage(request),
+  });
+}
+
+/** 목록 행의 `미리보기` 가 여는 팝업의 내용. 팝업이 열릴 때만 조회한다. */
+export function contentPreviewQueryOptions(locale: UiLocale, contentId: string) {
+  return queryOptions({
+    queryKey: localizedQueryKey(locale, 'performances', 'content-preview', contentId),
+    queryFn: () => readContentPreview(contentId),
     ...inlineProgress,
   });
 }

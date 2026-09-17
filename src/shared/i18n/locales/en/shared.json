@@ -72,7 +72,8 @@
     "missingSelection": "Select items to change.",
     "confirm": "Change the selected items?",
     "acknowledge": "Confirm",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "completed": "The selected items were changed."
   },
   "formSave": {
     "confirmDescription": "Would you like to save?",
