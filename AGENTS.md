@@ -31,10 +31,11 @@ secret·token·개인정보는 코드·문서·로그·응답에 노출하지 �
 
 | 결과를 판정하려면 | 읽을 계약 |
 | --- | --- |
-| 브라우저에서 렌더·포커스·키보드·문구·이동을 봐야 한다 | `contracts/direct/` 의 해당 역할 |
-| 시각 표면 없이 입출력·상태 전이·실패로 닫힌다 | 그 값을 소유한 `contracts/` 문서 |
-| 실제 주고받는 요청·응답·캐시를 봐야 한다 | `contracts/contract/api-wire.md` · `server-state.md` |
-| 파일이 어디 있고 무엇을 import 하는가 | `contracts/contract/source-structure.md` |
+| 브라우저에서 렌더·포커스·키보드·문구·이동을 봐야 한다 | `contracts/direct/` 의 해당 역할 — `list.md` · `detail.md` · `form.md` · `collection.md` · `route-composition.md` · `shared-ui.md` |
+| 시각 표면 없이 입출력·상태 전이·실패로 닫힌다 | 그 값을 소유한 계약. 공용 훅·순수 함수면 `contracts/direct/shared-ui.md` |
+| 실제 주고받는 요청·응답을 봐야 한다 | `contracts/contract/api-wire.md` (인증·재발급이면 `contracts/contract/auth-session.md`) |
+| 무엇을 조회·저장하고 성공 뒤 무엇이 낡는가 | `contracts/contract/server-state.md` |
+| 파일이 어디 있고 무엇을 import 하며 어떤 이름인가 | `contracts/contract/source-structure.md` |
 
 한 요청이 여러 칸에 걸리면 걸린 칸을 모두 읽는다. 임의로 하나만 남기지 않는다.
 

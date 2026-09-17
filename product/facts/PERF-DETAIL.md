@@ -6,11 +6,11 @@ status: 관찰됨
 related: [PERF-EDIT-ADMISSION]
 sources:
   - kind: figma
-    ref: "43656:6312 (5.2.2 입력전) · 5.2.2.1 입력후"
+    ref: "https://www.figma.com/design/Ogb6WpSpwCVhKggQ1NLRlQ/ZEROsol--For-Kakao- 의 `43656:6312`(5.2.2 입력전) · 5.2.2.1 입력후"
     observed: 2026-09-08
     how: aside-browser 선택 영역 확대 후 시각 대조
   - kind: notion
-    ref: "Feature-3c85169ef2f080a1a2a9c65db1982def"
+    ref: "https://app.notion.com/p/Feature-3c85169ef2f080a1a2a9c65db1982def"
     observed: 2026-09-08
     how: 원문 직접 재대조
 ---

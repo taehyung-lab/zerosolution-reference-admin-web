@@ -12,7 +12,7 @@ const PNPM_BUILTINS = new Set([
 ])
 
 /** 정합성 대조 대상 문서. 임시 작업물(.ai-work)은 저장소 산출물이 아니므로 제외한다. */
-const DOCUMENT_ROOTS = ['docs', '.agents']
+const DOCUMENT_ROOTS = ['.agents', 'docs', 'contracts', 'product']
 const DOCUMENT_FILES = [
   'AGENTS.md',
   'README.md',
@@ -173,6 +173,24 @@ function decodedAnchor(anchor) {
  * 로컬 Markdown link 의 대상 파일과 `#앵커` 가 실재하는지 확인한다. 외부 URL 은 대상이 아니다.
  * 2026-09-10 까지 앵커를 보지 않아 루트가 깊은 절을 11곳 가리키면서도 절 제목 변경을 잡을 수 없었다.
  */
+/**
+ * 계약·제품 문서를 **백틱 이름으로** 가리키는 문장이 실존 파일을 가리키는지 본다.
+ *
+ * markdown link 검사는 `[label](path)` 만 본다. 라우팅 표는 경로를 `` `contracts/direct/list.md` ``
+ * 처럼 코드 표기로 쓰는 일이 많고, 그 자리가 끊겨도 아무도 잡지 못했다 — 새 문서 체계 첫 드릴에서
+ * 워커가 없는 계약 3개를 만나 직접 보고했다. 존재가 아니라 **가리킨 대상이 실재하는가**를 본다.
+ */
+export function citedContractPathFailures(files, exists) {
+  const failures = []
+  const pattern = /`((?:contracts|product)\/[A-Za-z0-9._/-]+\.md)`/g
+  for (const { file, content } of files) {
+    for (const [, cited] of content.matchAll(pattern)) {
+      if (!exists(cited)) failures.push(`${file}: 백틱으로 가리킨 계약·제품 문서가 없다 → ${cited}`)
+    }
+  }
+  return [...new Set(failures)].sort()
+}
+
 export function readLocalLinkFailures(files) {
   const failures = []
   const anchorCache = new Map()

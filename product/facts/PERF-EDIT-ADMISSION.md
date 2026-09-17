@@ -10,7 +10,7 @@ sources:
     observed: 2026-09-17
     how: Notion 원문이 싣고 있는 두 frame 이미지(5.2.3 · 5.2.3.1)를 원본 해상도로 내려 확대 판독
   - kind: notion
-    ref: "Feature-3c85169ef2f080a1a2a9c65db1982def 「입장안내정보를 수정할 수 있다」"
+    ref: "https://app.notion.com/p/Feature-3c85169ef2f080a1a2a9c65db1982def 「입장안내정보를 수정할 수 있다」"
     observed: 2026-09-17
     how: 원문 직접 재대조 (페이지 최종 수정 2026-08-31, 2026-09-08 관찰 이후 본문 변경 없음)
 ---

@@ -63,13 +63,15 @@ src/shared/       도메인·서버 계약을 모르는 UI와 순수 공용 코�
 | 위치 | 내용 |
 | ---- | ---- |
 | [`AGENTS.md`](AGENTS.md) | 전역 라우팅, 저장소 함정, 완료 기준. 사람과 에이전트 모두 여기서 시작한다 |
-| `.agents/skills/screen-loop/` | 구현 요청의 요구 고정·증거 선택·설계·구현·검증·복귀 지점. 범위가 정해지기 전에 읽는 진입 skill |
-| `.agents/skills/{folder-structure-contract,api-contract,feature-contract,shared-ui-contract}/` | 반복 구현 절차의 정본. 편집 범위가 정해진 뒤 필요한 reference만 읽는다 |
+| [`contracts/direct/`](contracts/direct/) | 브라우저로 판정되는 결과의 역할 계약 — 목록·상세·폼·행 집합·route 조립·공용 UI |
+| [`contracts/contract/`](contracts/contract/) | 시각 표면 밖의 계약 — API wire·서버 상태·인증 세션·소스 배치 |
+| [`product/facts/`](product/facts/) | **이 제품의 사실.** 한 surface 의 관찰·정책·전이·미확인을 한 파일이 소유한다 |
+| [`product/policies/`](product/policies/) | 여러 fact 에 걸친 판독 규칙과 근거 수명 |
+| [`product/generated-index.md`](product/generated-index.md) | fact frontmatter 에서 생성한 색인. 손으로 고치지 않는다(`pnpm product:index`) |
 | `docs/decisions/` | 결정 이유·대안·상태·재검토 조건을 보존하는 ADR |
-| [`docs/reference/`](docs/reference/) | **이 제품의 사실.** 화면별 필드·문구·옵션·권한·이동·구현 상태. 구현 대상 화면의 원장만 읽고 다른 화면의 값을 근거로 쓰지 않는다 |
 | [`openapi/README.md`](openapi/README.md) | 현재 snapshot의 사용법·금지 사항·검증 명령. 채택 이유와 폐기 조건은 ADR 0001이 소유한다 |
 
-**구현 입력은 넷이다.** `AGENTS.md`(요청 처리 원칙과 소유권) → 요청 종류에 맞는 **공용 계약 하나**(list·detail·form 또는 catalog 의 그 행) → **구현 대상 화면 자신의 제품 원장** → 필요한 shared 계약. 공용 계약은 "어떻게 나누고 연결하는가"만 정하고 "무엇을 구현하는가"는 그 화면의 원장만 말한다. 다른 도메인의 문서·코드·값은 근거가 아니다.
+**구현 입력은 셋이다.** `AGENTS.md`(안전·라우팅·완료 기준) → 두 질문이 고른 **계약** → 그 대상의 **fact 한 파일**. 계약은 "어떻게 나누고 연결하는가"만 정하고 "무엇을 구현하는가"는 그 fact 만 말한다. 다른 도메인의 문서·코드·값은 근거가 아니다.
 
 활성 ADR은 번호 순서가 아니라 관련 작업의 Skill·README·다른 ADR에서 진입하며, 구현 중에 읽어야 하는 ADR 은 보통 없다. 인증 토큰 결정(ADR 0006)은 api-contract `auth-session.md`, primitive 선택(ADR 0008)은 shared-ui-contract `primitives-and-tokens.md`가 연결한다. 번호 0007·0009~0012는 결번이다 — 재사용하지 않고, 대체·삭제된 결정의 과거는 git history가 소유한다. 0002·0004는 설계가 아니라 버전 고정 기록이라 해당 버전을 바꾸는 작업에서만 읽는다.
 

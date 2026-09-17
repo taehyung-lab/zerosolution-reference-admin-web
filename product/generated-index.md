@@ -11,5 +11,8 @@
 | --- | --- | --- | --- | --- |
 | `PERF-DETAIL` | 공연 조회 | detail | 관찰됨 | [PERF-DETAIL.md](facts/PERF-DETAIL.md) |
 | `PERF-EDIT-ADMISSION` | 공연 수정 — 입장안내정보 | form | 관찰됨 | [PERF-EDIT-ADMISSION.md](facts/PERF-EDIT-ADMISSION.md) |
+| `PRINTER-DETAIL` | 스마트프린터 조회 | detail | 관찰됨 | [PRINTER-DETAIL.md](facts/PRINTER-DETAIL.md) |
+| `PRINTER-FORM` | 스마트프린터 등록·수정 | form | 관찰됨 | [PRINTER-FORM.md](facts/PRINTER-FORM.md) |
+| `PRINTER-LIST` | 스마트프린터 목록 | list | 관찰됨 | [PRINTER-LIST.md](facts/PRINTER-LIST.md) |
 
-총 2개.
+총 5개.

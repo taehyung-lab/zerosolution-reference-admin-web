@@ -30,6 +30,7 @@ import {
   productNameNotices,
   prohibitedAbstractionSourceFailures,
   readLocalLinkFailures,
+  citedContractPathFailures,
   retiredDocumentNameFailures,
   transplantSentinelFailures,
   transplantSentinelOccurrences,
@@ -95,6 +96,10 @@ if (projected === null) {
 const documents = collectDocumentFiles()
 failures.push(...pnpmCommandFailures(documents, packageJson.scripts ?? {}))
 failures.push(...readLocalLinkFailures(documents))
+failures.push(...citedContractPathFailures(
+  documents.map((file) => ({ file, content: readFileSync(resolve(file), 'utf8') })),
+  (path) => existsSync(resolve(path)),
+))
 const budgetNotices = documentBudgetNotices(documents)
 notes.push(...productNameNotices(documents.filter((file) => file.startsWith('.agents/skills/'))))
 
