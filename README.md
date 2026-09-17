@@ -80,4 +80,4 @@ src/shared/       도메인·서버 계약을 모르는 UI와 순수 공용 코�
 
 작업 전에 [`AGENTS.md`](AGENTS.md)를 읽는다. 확인되지 않은 제품 정책·서버 계약·권한·enum 의미는 추측하지 않고 미확인으로 보고한다.
 
-파일 생성·이동과 폴더 배치 기준은 `.agents/skills/source-structure/SKILL.md`가 소유한다. 루트 `AGENTS.md` 의 두 질문에서 진입하고, 화면·API·공용 코드의 동작 계약은 `contracts/` 의 해당 문서를 따른다.
+파일 생성·이동과 폴더 배치 기준은 `.agents/skills/source-structure/SKILL.md`가 소유한다. 루트 `AGENTS.md` 에서 진입하고, 화면·API·공용 코드의 동작 계약은 `.agents/skills/` 의 해당 skill 을 따른다.
