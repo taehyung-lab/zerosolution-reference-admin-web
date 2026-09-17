@@ -40,7 +40,17 @@ const save = useSaveForm({
 
 `ui/{Entity}Form.tsx` 는 등록·수정이 공유하는 입력 조립이다. 공유 필드가 없으면 만들지 않는다.
 
-- props: `{ save, identity?: ReactNode, onCancel }`. 등록만 있는 필드(아이디·비밀번호)는 `identity` slot 에 넣고 수정은 읽기 전용 `FormTextField` 를 넣는다.
+**등록·수정의 차이가 도구를 고른다.** 형태를 먼저 정하고 차이를 밀어 넣지 않는다.
+
+| 등록·수정의 차이 | schema | 도구 |
+| --- | --- | --- |
+| 없다 | 1개 | 없다. 한 폼을 그대로 공유한다 |
+| 필드별 `disabled` 나 문구만 다르다(자리 수 무관) | 1개 | `mode` prop 을 받아 그 필드에서 읽는다 |
+| 한쪽에만 있는 필드가 있고 화면 순서상 **한 자리**에 모인다 | 2개 | `children` 자리에 그 필드군을 넣는다 |
+| 한쪽에만 있는 필드가 화면 순서상 **여러 자리**로 흩어진다 | 2개 | `{Entity}CreateForm`·`{Entity}EditForm` 으로 나눈다 |
+
+- `readOnly` 는 schema 를 가른다. `FormTextField` 의 `readOnly: true` 는 `form`·`name` 을 받지 않는 배타 오버로드라, 읽기 전용이 되는 필드는 입력 값이 아니라 레코드에서 온 정적 표시가 된다. `disabled` 는 `InputProps` 라 필드가 폼에 묶인 채로 꺼진다.
+- `children` 을 쓰는 폼의 props 는 `{ save, children: ReactNode, onCancel }` 다. 한쪽에만 있는 필드는 **호출 화면이** 그린다 — 그 화면만 자기 입력 타입을 알기 때문이고, 공유 조립은 공통 부분집합만 알면 된다. 구멍을 둘 이상 뚫지 않는다; 그 요구가 나오면 위 표의 마지막 행이다.
 - 렌더 순서: `{save.dialogs}` → `<form noValidate onSubmit={preventDefault + save.submit.run()}>` → `stage.kind === 'failed'` 면 `FormSaveFailureMessage` → `SectionCard title {...save.sections.sectionProps('info')}` 안에 `Form*Field` 들 → `FormSubmitButton pending` + `FormCancelButton onClick={() => save.guard.leave(onCancel)}`.
 - 어댑터는 `FormTextField`·`FormSelectField`·`FormMultiSelectField`·`FormComboboxField`·`FormCheckboxField`·`FormRadioGroupField`·`FormDateField`·`FormDateRangeField`·`FormFileField`·`FormPermissionTreeField`·`FormArrayField` 다([catalog Form](../../shared-ui-contract/references/catalog.md#form)). 소비자가 없어도 이 집합은 남는다; 다른 이름의 별칭은 만들지 않는다.
 - 서버 선택지는 `api/use{Entity}Options.ts` 훅의 `{ state, items, retry }` 를 `FormSelectField state/onRetry` 에 그대로 넘긴다. 종속 선택지(유형 → 권한)는 훅의 `enabled` 로 선행 조건을 표현하고, 종속 값 비우기는 그 필드의 `onValueChange` 에서 `form.setFieldValue` 로 한다 — effect 가 아니다.
@@ -76,3 +86,5 @@ const save = useSaveForm({
 ## Verification
 
 바뀐 것만: 검증 문구와 focus, 확인·완료 쌍, 서버 필드·root 실패 배치, 기준선 갱신과 guard 해제, 종속 선택지, 취소·이탈 각 경로. 브라우저 증거는 어떤 값을 넣어 무엇을 눌렀고 어디로 갔는지를 적는다.
+
+실측한 것 중 되돌아올 전이 하나를 `tests/e2e/` 에 회귀 앵커로 남긴다([screen-loop 실측](../../screen-loop/SKILL.md)).

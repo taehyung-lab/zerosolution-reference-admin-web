@@ -8,7 +8,7 @@ import { PageHeader } from '@/shared/ui/layout/PageHeader';
 import { managerCreateDefaults } from '../model/manager-form-defaults';
 import { toManagerCreateSettings } from '../model/manager-form-request';
 import { managerCreateFieldOrder, managerCreateSchema } from '../model/manager-form-schema';
-import { ManagerCreateIdentityFields, ManagerForm } from './ManagerForm';
+import { ManagerCreateOnlyFields, ManagerForm } from './ManagerForm';
 
 /**
  * 11.1.3 운영자 등록. 검증 → 저장 확인 → mutation → 저장 완료 → 목록. 서버가 없는 동안 mutation 은
@@ -42,7 +42,9 @@ export function ManagerCreateScreen({
         breadcrumbs={[t('path.settings'), t('path.managers'), t('path.create')]}
         title={t('form.createTitle')}
       />
-      <ManagerForm save={save} identity={<ManagerCreateIdentityFields form={save.form} />} onCancel={onCancel} />
+      <ManagerForm save={save} onCancel={onCancel}>
+        <ManagerCreateOnlyFields form={save.form} />
+      </ManagerForm>
     </section>
   );
 }

@@ -70,3 +70,5 @@ screen:       const detail = use{Entity}Detail(id)
 ## Verification
 
 바뀐 것만: ID·key 동일성, ready·error·notFound 매핑과 재시도, 상태별 액션 가시성, 확인·입력 액션이 요청 함수에 닿는 한 번, 목적지. 브라우저 증거는 어떤 상태의 어떤 레코드를 열어 어떤 액션을 눌렀는지를 적는다.
+
+실측한 것 중 되돌아올 전이 하나를 `tests/e2e/` 에 회귀 앵커로 남긴다([screen-loop 실측](../../screen-loop/SKILL.md)).

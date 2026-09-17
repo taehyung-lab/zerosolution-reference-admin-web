@@ -8,7 +8,7 @@ import { PageHeader } from '@/shared/ui/layout/PageHeader';
 import { memberCreateDefaults } from '../model/member-form-defaults';
 import { toMemberCreateSettings } from '../model/member-form-request';
 import { memberCreateFieldOrder, memberCreateSchema } from '../model/member-form-schema';
-import { MemberCreateIdentityFields, MemberForm } from './MemberForm';
+import { MemberCreateOnlyFields, MemberForm } from './MemberForm';
 
 /**
  * 4.2.2 회원 등록. 검증 → 저장 확인 → mutation → 저장 완료 → 목록. 서버가 없는 동안 mutation 은
@@ -39,7 +39,9 @@ export function MemberCreateScreen({
   return (
     <section>
       <PageHeader breadcrumbs={[t('path.members'), t('path.active'), t('path.create')]} title={t('form.createTitle')} />
-      <MemberForm save={save} identity={<MemberCreateIdentityFields form={save.form} />} onCancel={onCancel} />
+      <MemberForm save={save} onCancel={onCancel}>
+        <MemberCreateOnlyFields form={save.form} />
+      </MemberForm>
     </section>
   );
 }

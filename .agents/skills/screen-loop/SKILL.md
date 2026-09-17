@@ -49,9 +49,19 @@ description: Use for any request to implement or change a screen, part of a scre
 둘 다 없으면 요청을 수행하는 최소 route나 host를 같은 작업에서 만든다. 사용자가 명시적으로
 component·slice만 요청한 경우에만 진입점 연결을 범위에서 뺀다. 화면 파일을 직접 render한 테스트는
 component·slice의 증거일 뿐, 진입점이 없는 screen을 구현 완료로 바꾸지 않는다.
-`screen` 검증은 로컬 앱을 실행하고 localhost의 실제 route나 host에 프로젝트가 선언한 브라우저 검증 수단으로
-진입한다 — 이 저장소에서는 Playwright이며, 이관 대상에서는 그 제품이 선언한 수단으로 바꾼다. 직접 render한
-unit test·typecheck·lint·build는 screen 완료의 증거가 아니다. 실행 명령은 README와 `package.json`이 소유한다.
+**결과가 `render`면 요청 크기와 무관하게 브라우저로 실측한다.** screen이든 버튼 하나든 같다 — 가르는 것은
+요청 문장의 크기가 아니라 결과가 렌더로만 판정되는가다. 직접 render한 unit test·typecheck·lint·build는
+그 실측을 대신하지 않는다.
+
+실측은 이미 떠 있는 로컬 앱의 실제 route나 host에 **그 저장소가 선언한 브라우저 수단**으로 진입한다 —
+이 저장소에서는 `aside-browser`로 `http://localhost:5174`에 들어간다 — 인증 API의 CORS 허용 목록에 있는 origin이고, `5173`은 이관 대상 저장소가 쓴다. 포트를 바꿀 때는 그 저장소의 dev 서버가 실제로 그 포트를 서비스하는지 먼저 확인한다.
+실 세션·실 토큰으로 보는 것이 실측이며, 이관 대상에서는 그 제품이 선언한 수단과 origin으로 바꾼다.
+실행 명령은 README와 `package.json`이 소유한다.
+
+`tests/e2e/`의 Playwright는 **실측 수단이 아니라 회귀 그물**이다. 가짜 토큰과 mock으로 돌아 로그인·실
+서버를 타지 않으므로 수용을 증명하지 못한다(아래 [도달 상태](#도달-상태)). 실측한 것 중 되돌아올 전이
+하나를 그 화면·전이를 만든 같은 작업에서 spec으로 남기고, 단언은 전이·URL·상태 보존 같은 제품 동작으로
+한정한다 — fixture의 id·값에 걸면 이관에서 죽는다. 이미 앵커가 없는 기존 화면을 소급해 채우지 않는다.
 원장의 진입·실행·취소·다음 이동을 성공 조건에 넣고, 기존 구현을 먼저 재사용한다.
 목적지가 없다는 사실은 범위 질문의 사유가 아니다. 확정된 전이에 필요한 실제 목적지를 같은 작업에서 구현한다.
 목적지의 구성·정책은 그 목적지 원문으로 확인하며 요청 화면이나 다른 도메인에서 복사하지 않는다.
