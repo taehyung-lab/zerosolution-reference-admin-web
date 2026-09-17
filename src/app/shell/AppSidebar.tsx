@@ -3,8 +3,17 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   memberNavigationItems,
+  performanceNavigationItems,
   type AppNavigationItem,
+  type AppNavigationLink,
 } from "@/app/config/navigation";
+
+/** LNB 의 하위 항목을 가진 업무군. 없는 업무군은 빈 배열이라 하위 목록을 그리지 않는다. */
+function children(id: string): readonly AppNavigationLink[] {
+  if (id === "members") return memberNavigationItems;
+  if (id === "performances") return performanceNavigationItems;
+  return [];
+}
 
 export function AppSidebar({
   appName,
@@ -55,9 +64,9 @@ export function AppSidebar({
                   {collapsed ? t(item.labelKey).slice(0, 1) : t(item.labelKey)}
                 </Link>
               )}
-              {item.id === "members" && !collapsed ? (
+              {children(item.id).length > 0 && !collapsed ? (
                 <ul className="ml-3 border-l border-neutral-600">
-                  {memberNavigationItems.map((child) => (
+                  {children(item.id).map((child) => (
                     <li key={child.id}>
                       <Link
                         className="block px-3 py-2 text-sm text-white hover:bg-neutral-700"

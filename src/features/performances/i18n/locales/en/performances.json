@@ -100,5 +100,81 @@
     "pagination": "Performance pages",
     "previous": "Previous",
     "next": "Next"
+  },
+  "content": {
+    "title": "Contents",
+    "filters": {
+      "title": "Search filters",
+      "collapse": "Collapse search filters",
+      "expand": "Expand search filters",
+      "search": "Search",
+      "reset": "Reset",
+      "period": "Period",
+      "periodType": "Date field",
+      "preset": "Date range",
+      "from": "Start date",
+      "to": "End date",
+      "calendar": "Calendar",
+      "keyword": "Keyword",
+      "keywordType": "Search field",
+      "add": "Add",
+      "remove": "Remove {{value}}",
+      "all": "All",
+      "venue": "Venue",
+      "venueSearch": "Search venues",
+      "clearVenue": "Clear selected venue",
+      "usageStatus": "Usage status"
+    },
+    "fields": {
+      "performedAt": "Performance date",
+      "registeredAt": "Registration date",
+      "updatedAt": "Last updated",
+      "ticketKind": "Ticket type",
+      "performanceType": "Performance type",
+      "title": "Performance name",
+      "sessionCount": "Sessions",
+      "performers": "Performers",
+      "organizer": "Organizer",
+      "period": "Performance period",
+      "usageStatus": "Usage status",
+      "preview": "Preview",
+      "registeredUpdatedAt": "Registered / last updated"
+    },
+    "options": {
+      "inUse": "In use",
+      "notInUse": "Not in use"
+    },
+    "result": {
+      "notSearched": "Set your filters, then search.",
+      "pageSize": "Page size",
+      "sort": "Sort",
+      "empty": "No matching results.",
+      "pagination": "Content pages",
+      "previous": "Previous",
+      "next": "Next",
+      "emptyValue": "-",
+      "selectPage": "Select all rows on this page",
+      "selectRow": "Select {{title}}"
+    },
+    "bulk": {
+      "field": "Usage status",
+      "select": "Select",
+      "change": "Change",
+      "missingValue": "Select the usage status to apply."
+    },
+    "preview": {
+      "title": "Preview",
+      "close": "Close",
+      "open": "Preview {{title}}",
+      "session": "Session",
+      "language": "Language",
+      "languages": {
+        "ko": "Korean",
+        "ja": "Japanese",
+        "en": "English"
+      },
+      "imageArea": "Image area",
+      "videoArea": "Video thumbnail area"
+    }
   }
 }

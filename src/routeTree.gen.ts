@@ -19,6 +19,7 @@ import { Route as AppMembersCounselRouteImport } from './routes/_app/members/cou
 import { Route as AppMembersDormantRouteImport } from './routes/_app/members/dormant'
 import { Route as AppMembersNewRouteImport } from './routes/_app/members/new'
 import { Route as AppPerformancesIndexRouteImport } from './routes/_app/performances/index'
+import { Route as AppPerformancesContentsRouteImport } from './routes/_app/performances/contents'
 import { Route as AppCommunityBoardsIndexRouteImport } from './routes/_app/community/boards/index'
 import { Route as AppCommunityBoardsNewRouteImport } from './routes/_app/community/boards/new'
 import { Route as AppManagersManagerIdIndexRouteImport } from './routes/_app/managers/$managerId/index'
@@ -87,6 +88,11 @@ const AppMembersNewRoute = AppMembersNewRouteImport.update({
 const AppPerformancesIndexRoute = AppPerformancesIndexRouteImport.update({
   id: '/performances/',
   path: '/performances/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPerformancesContentsRoute = AppPerformancesContentsRouteImport.update({
+  id: '/performances/contents',
+  path: '/performances/contents',
   getParentRoute: () => AppRoute,
 } as any)
 const AppCommunityBoardsIndexRoute = AppCommunityBoardsIndexRouteImport.update({
@@ -209,6 +215,7 @@ export interface FileRoutesByFullPath {
   '/members/counsel': typeof AppMembersCounselRoute
   '/members/dormant': typeof AppMembersDormantRoute
   '/members/new': typeof AppMembersNewRoute
+  '/performances/contents': typeof AppPerformancesContentsRoute
   '/managers/': typeof AppManagersIndexRoute
   '/performances/': typeof AppPerformancesIndexRoute
   '/community/boards/new': typeof AppCommunityBoardsNewRoute
@@ -240,6 +247,7 @@ export interface FileRoutesByTo {
   '/members/counsel': typeof AppMembersCounselRoute
   '/members/dormant': typeof AppMembersDormantRoute
   '/members/new': typeof AppMembersNewRoute
+  '/performances/contents': typeof AppPerformancesContentsRoute
   '/managers': typeof AppManagersIndexRoute
   '/performances': typeof AppPerformancesIndexRoute
   '/community/boards/new': typeof AppCommunityBoardsNewRoute
@@ -273,6 +281,7 @@ export interface FileRoutesById {
   '/_app/members/counsel': typeof AppMembersCounselRoute
   '/_app/members/dormant': typeof AppMembersDormantRoute
   '/_app/members/new': typeof AppMembersNewRoute
+  '/_app/performances/contents': typeof AppPerformancesContentsRoute
   '/_app/managers/': typeof AppManagersIndexRoute
   '/_app/performances/': typeof AppPerformancesIndexRoute
   '/_app/community/boards/new': typeof AppCommunityBoardsNewRoute
@@ -306,6 +315,7 @@ export interface FileRouteTypes {
     | '/members/counsel'
     | '/members/dormant'
     | '/members/new'
+    | '/performances/contents'
     | '/managers/'
     | '/performances/'
     | '/community/boards/new'
@@ -337,6 +347,7 @@ export interface FileRouteTypes {
     | '/members/counsel'
     | '/members/dormant'
     | '/members/new'
+    | '/performances/contents'
     | '/managers'
     | '/performances'
     | '/community/boards/new'
@@ -369,6 +380,7 @@ export interface FileRouteTypes {
     | '/_app/members/counsel'
     | '/_app/members/dormant'
     | '/_app/members/new'
+    | '/_app/performances/contents'
     | '/_app/managers/'
     | '/_app/performances/'
     | '/_app/community/boards/new'
@@ -469,6 +481,13 @@ declare module '@tanstack/react-router' {
       path: '/performances'
       fullPath: '/performances/'
       preLoaderRoute: typeof AppPerformancesIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/performances/contents': {
+      id: '/_app/performances/contents'
+      path: '/performances/contents'
+      fullPath: '/performances/contents'
+      preLoaderRoute: typeof AppPerformancesContentsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/community/boards/': {
@@ -620,6 +639,7 @@ interface AppRouteChildren {
   AppMembersCounselRoute: typeof AppMembersCounselRoute
   AppMembersDormantRoute: typeof AppMembersDormantRoute
   AppMembersNewRoute: typeof AppMembersNewRoute
+  AppPerformancesContentsRoute: typeof AppPerformancesContentsRoute
   AppManagersIndexRoute: typeof AppManagersIndexRoute
   AppPerformancesIndexRoute: typeof AppPerformancesIndexRoute
   AppCommunityBoardsNewRoute: typeof AppCommunityBoardsNewRoute
@@ -650,6 +670,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppMembersCounselRoute: AppMembersCounselRoute,
   AppMembersDormantRoute: AppMembersDormantRoute,
   AppMembersNewRoute: AppMembersNewRoute,
+  AppPerformancesContentsRoute: AppPerformancesContentsRoute,
   AppManagersIndexRoute: AppManagersIndexRoute,
   AppPerformancesIndexRoute: AppPerformancesIndexRoute,
   AppCommunityBoardsNewRoute: AppCommunityBoardsNewRoute,

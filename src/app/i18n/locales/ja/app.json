@@ -39,7 +39,9 @@
       "withdrawnMembers": "退会会員",
       "memberCounsel": "会員相談",
       "memberAppeals": "不良会員の弁明申請",
-      "memberAccess": "会員アクセス"
+      "memberAccess": "会員アクセス",
+      "performanceList": "公演一覧",
+      "performanceContents": "コンテンツ"
     }
   },
   "bootstrap": {

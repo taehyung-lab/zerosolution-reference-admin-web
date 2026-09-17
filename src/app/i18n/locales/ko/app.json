@@ -39,7 +39,9 @@
       "withdrawnMembers": "탈퇴회원",
       "memberCounsel": "회원상담",
       "memberAppeals": "불량회원 소명신청",
-      "memberAccess": "회원접속"
+      "memberAccess": "회원접속",
+      "performanceList": "공연목록",
+      "performanceContents": "콘텐츠"
     }
   },
   "bootstrap": {

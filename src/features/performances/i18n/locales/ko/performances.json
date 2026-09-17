@@ -100,5 +100,81 @@
     "pagination": "공연 목록 페이지",
     "previous": "이전",
     "next": "다음"
+  },
+  "content": {
+    "title": "콘텐츠",
+    "filters": {
+      "title": "검색 조건",
+      "collapse": "검색 조건 접기",
+      "expand": "검색 조건 펼치기",
+      "search": "검색",
+      "reset": "초기화",
+      "period": "기간",
+      "periodType": "기간 기준",
+      "preset": "기간 선택",
+      "from": "시작일",
+      "to": "종료일",
+      "calendar": "달력",
+      "keyword": "검색어",
+      "keywordType": "검색 대상",
+      "add": "추가",
+      "remove": "{{value}} 삭제",
+      "all": "전체",
+      "venue": "공연장",
+      "venueSearch": "공연장 검색",
+      "clearVenue": "공연장 선택 해제",
+      "usageStatus": "사용상태"
+    },
+    "fields": {
+      "performedAt": "공연일",
+      "registeredAt": "등록일",
+      "updatedAt": "최근업데이트일",
+      "ticketKind": "구분",
+      "performanceType": "공연유형",
+      "title": "공연명",
+      "sessionCount": "총회차",
+      "performers": "출연자",
+      "organizer": "주최/기획",
+      "period": "공연기간",
+      "usageStatus": "사용 상태",
+      "preview": "미리보기",
+      "registeredUpdatedAt": "등록일/최근업데이트일"
+    },
+    "options": {
+      "inUse": "사용",
+      "notInUse": "사용안함"
+    },
+    "result": {
+      "notSearched": "검색 조건을 설정한 후 검색해 주세요.",
+      "pageSize": "보기",
+      "sort": "정렬",
+      "empty": "일치하는 검색결과가 없습니다.",
+      "pagination": "콘텐츠 목록 페이지",
+      "previous": "이전",
+      "next": "다음",
+      "emptyValue": "-",
+      "selectPage": "현재 페이지 전체 선택",
+      "selectRow": "{{title}} 선택"
+    },
+    "bulk": {
+      "field": "사용 상태",
+      "select": "선택",
+      "change": "변경",
+      "missingValue": "변경할 사용 상태를 선택해주세요."
+    },
+    "preview": {
+      "title": "미리보기",
+      "close": "닫기",
+      "open": "{{title}} 미리보기",
+      "session": "회차",
+      "language": "언어",
+      "languages": {
+        "ko": "한국어",
+        "ja": "일본어",
+        "en": "영어"
+      },
+      "imageArea": "이미지 영역",
+      "videoArea": "영상 썸네일 영역"
+    }
   }
 }

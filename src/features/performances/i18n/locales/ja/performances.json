@@ -100,5 +100,81 @@
     "pagination": "公演一覧のページ",
     "previous": "前へ",
     "next": "次へ"
+  },
+  "content": {
+    "title": "コンテンツ",
+    "filters": {
+      "title": "検索条件",
+      "collapse": "検索条件を折りたたむ",
+      "expand": "検索条件を開く",
+      "search": "検索",
+      "reset": "リセット",
+      "period": "期間",
+      "periodType": "日付の基準",
+      "preset": "期間選択",
+      "from": "開始日",
+      "to": "終了日",
+      "calendar": "カレンダー",
+      "keyword": "キーワード",
+      "keywordType": "検索対象",
+      "add": "追加",
+      "remove": "{{value}}を削除",
+      "all": "すべて",
+      "venue": "会場",
+      "venueSearch": "会場を検索",
+      "clearVenue": "会場の選択を解除",
+      "usageStatus": "利用状態"
+    },
+    "fields": {
+      "performedAt": "公演日",
+      "registeredAt": "登録日",
+      "updatedAt": "最終更新日",
+      "ticketKind": "区分",
+      "performanceType": "公演種別",
+      "title": "公演名",
+      "sessionCount": "総公演回数",
+      "performers": "出演者",
+      "organizer": "主催・企画",
+      "period": "公演期間",
+      "usageStatus": "利用状態",
+      "preview": "プレビュー",
+      "registeredUpdatedAt": "登録日/最終更新日"
+    },
+    "options": {
+      "inUse": "利用",
+      "notInUse": "未利用"
+    },
+    "result": {
+      "notSearched": "検索条件を設定して検索してください。",
+      "pageSize": "表示件数",
+      "sort": "並び順",
+      "empty": "一致する検索結果がありません。",
+      "pagination": "コンテンツ一覧のページ",
+      "previous": "前へ",
+      "next": "次へ",
+      "emptyValue": "-",
+      "selectPage": "現在のページをすべて選択",
+      "selectRow": "{{title}}を選択"
+    },
+    "bulk": {
+      "field": "利用状態",
+      "select": "選択",
+      "change": "変更",
+      "missingValue": "変更する利用状態を選択してください。"
+    },
+    "preview": {
+      "title": "プレビュー",
+      "close": "閉じる",
+      "open": "{{title}}のプレビュー",
+      "session": "公演回",
+      "language": "言語",
+      "languages": {
+        "ko": "韓国語",
+        "ja": "日本語",
+        "en": "英語"
+      },
+      "imageArea": "画像エリア",
+      "videoArea": "動画サムネイルエリア"
+    }
   }
 }

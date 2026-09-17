@@ -5,7 +5,7 @@
 export interface AppNavigationItem {
   readonly id: string;
   readonly labelKey: string;
-  readonly to?: "/performances" | "/managers" | "/community/boards" | "/ticketing/printers" | "/members/active/all" | "/members/active/general" | "/members/active/flagged" | "/members/dormant" | "/members/withdrawn" | "/members/counsel" | "/members/appeals" | "/members/access";
+  readonly to?: "/performances" | "/performances/contents" | "/managers" | "/community/boards" | "/ticketing/printers" | "/members/active/all" | "/members/active/general" | "/members/active/flagged" | "/members/dormant" | "/members/withdrawn" | "/members/counsel" | "/members/appeals" | "/members/access";
 }
 
 export const appNavigationItems: readonly AppNavigationItem[] = [
@@ -34,4 +34,10 @@ export const memberNavigationItems: readonly AppNavigationLink[] = [
   { id: 'memberCounsel', labelKey: 'shell.navigation.memberCounsel', to: '/members/counsel' },
   { id: 'memberAppeals', labelKey: 'shell.navigation.memberAppeals', to: '/members/appeals' },
   { id: 'memberAccess', labelKey: 'shell.navigation.memberAccess', to: '/members/access' },
+];
+
+/** LNB 공연 하위: Figma 5.1/5.2 가 `공연목록`·`콘텐츠` 두 화면을 같은 업무군으로 그린다. */
+export const performanceNavigationItems: readonly AppNavigationLink[] = [
+  { id: 'performanceList', labelKey: 'shell.navigation.performanceList', to: '/performances' },
+  { id: 'performanceContents', labelKey: 'shell.navigation.performanceContents', to: '/performances/contents' },
 ];
