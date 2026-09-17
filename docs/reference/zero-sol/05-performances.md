@@ -1,5 +1,10 @@
 # 5. 공연
 
+> **이 문서는 5.2 공연 조회·수정에 대해 대체됐다.** 그 surface 의 관찰·정책·미확인은
+> [`product/facts/PERF-DETAIL.md`](../../../product/facts/PERF-DETAIL.md) 와
+> [`product/facts/PERF-EDIT-ADMISSION.md`](../../../product/facts/PERF-EDIT-ADMISSION.md) 가 소유한다.
+> 아래 5.2 서술은 이관 원본이며 근거로 쓰지 않는다.
+
 표 형식은 [README.md](README.md). Notion 열의 `(대기)`는 아래 **Notion 요점**과 `notion/` 원문으로 대체한다.
 
 ## 5.1 콘텐츠 · 5.2 공연목록 — 리스트

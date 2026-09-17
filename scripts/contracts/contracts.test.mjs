@@ -708,10 +708,10 @@ describe('seed contract bundles', () => {
 
 describe('transplant manifest and seed negative controls', () => {
   it('carries the folder placement contract with the root instructions into a new project', () => {
-    expect(listTransplantManifestFiles()).toContain('.agents/skills/folder-structure-contract/SKILL.md')
-    // The loop that turns "implement this screen" into a procedure travels too; without it the target
-    // project has the contracts but not the entry that finds them.
-    expect(listTransplantManifestFiles()).toContain('.agents/skills/screen-loop/SKILL.md')
+    expect(listTransplantManifestFiles()).toContain('contracts/contract/source-structure.md')
+    // 근거의 종류와 수명을 정하는 정책도 함께 나간다; 없으면 대상 프로젝트는 계약만 갖고
+    // 그 계약이 무엇을 근거로 삼는지를 잃는다.
+    expect(listTransplantManifestFiles()).toContain('product/policies/evidence.md')
   })
   it('flags feature code, rehearsal output, and domain translations inside the seed', () => {
     expect(findForbiddenSeedFiles([
@@ -747,7 +747,7 @@ describe('transplant manifest and seed negative controls', () => {
       ])
     expect(validateTransplantManifest()).toEqual([])
     expect(listTransplantManifestFiles()).toEqual(expect.arrayContaining([
-      '.agents/skills/feature-contract/SKILL.md',
+      'contracts/direct/form.md',
       'eslint.config.js',
       'src/test/setup.ts',
       'tsconfig.base.json',
@@ -801,8 +801,8 @@ describe('sentinel occurrences and citation drift', () => {
   it('requires every prohibited-abstraction source to be a real skill, reference, or ADR', () => {
     const config = `
 const PROHIBITED_ABSTRACTION_BINDINGS = new Map([
-  ['ResourcePage', 'feature-contract SKILL.md, list.md'],
-  ['useListTable', 'list-detail.md, primitives-and-tokens.md'],
+  ['ResourcePage', 'source-structure.md, form.md'],
+  ['useListTable', 'list-detail.md, evidence.md'],
   ['UniversalList', 'ADR 0014'],
 ])
 `

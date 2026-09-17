@@ -14,7 +14,7 @@
 | MultiSelect, CheckboxTree, InlineSearchSelect | 직접 구현 | 도메인 없는 controlled 선택 대수 |
 | Table, Badge, Tooltip | native/직접 구현 | semantic markup 또는 token 표현 |
 
-선택은 `shared-ui-contract` 의 primitive 소유권과 [catalog](../../.agents/skills/shared-ui-contract/references/catalog.md#primitives) 의 명시적 public contract 를 따른다. 구현 선택이 바뀌어도 public contract 는 바뀌지 않는다. `Select` 는 교체 전후로 동일하게 `value: string | null`, `onValueChange`, `options`, `placeholder` 만 노출한다.
+선택은 `shared-ui-contract` 의 primitive 소유권과 catalog 의 명시적 public contract 를 따른다. 구현 선택이 바뀌어도 public contract 는 바뀌지 않는다. `Select` 는 교체 전후로 동일하게 `value: string | null`, `onValueChange`, `options`, `placeholder` 만 노출한다.
 
 ## 이 저장소의 primitive 는 source-owned Radix + Tailwind 다
 
@@ -35,7 +35,7 @@
 
 등록·수정 화면이 섹션을 여러 개 갖는 화면 유형으로 확인되면서 "단일 disclosure 의 `button`/`aria-expanded` 만 필요"라는 전제가 깨졌다. 직접 구현한 헤더 버튼에는 `aria-controls` 가 없고 콘텐츠에 `region` 역할이 없었다 — 실제 접근성 결함이고, primitive 가 이미 소유한 동작을 손으로 다시 만들 이유가 없다.
 
-현재 `Accordion` primitive 는 인스턴스당 섹션 하나다. Radix 의 형제 trigger 간 화살표 이동은 여러 item 이 하나의 Root 아래 있어야 하는데, 그 배치를 요구하는 확인된 화면이 아직 없다. **Radix Accordion 도 닫히면 콘텐츠를 언마운트한다.** 그래서 폼 섹션은 `keepMounted` 로 닫힌 콘텐츠를 `hidden` 으로 남겨 검증 오류를 잃지 않는다; 그 책임은 [catalog Detail](../../.agents/skills/shared-ui-contract/references/catalog.md#detail) 의 `SectionCard` 행이 소유한다.
+현재 `Accordion` primitive 는 인스턴스당 섹션 하나다. Radix 의 형제 trigger 간 화살표 이동은 여러 item 이 하나의 Root 아래 있어야 하는데, 그 배치를 요구하는 확인된 화면이 아직 없다. **Radix Accordion 도 닫히면 콘텐츠를 언마운트한다.** 그래서 폼 섹션은 `keepMounted` 로 닫힌 콘텐츠를 `hidden` 으로 남겨 검증 오류를 잃지 않는다; 그 책임은 catalog Detail 의 `SectionCard` 행이 소유한다.
 
 단일 disclosure 만 하던 별도 primitive 는 `SectionCard` 가 `Accordion` 기반으로 바뀌면서 소비자가 하나도 남지 않아 삭제했다. 자기 테스트만 참조하는 primitive 는 계약이 아니라 재고다. 반대로 `Combobox`·`MultiSelect`·`RadioGroup`·`Calendar`·`CheckboxTree` 는 form 어댑터가 실제 소비자가 되어 남았다. **"소비자 0" 은 삭제 근거가 아니고, "소비자가 생길 예정도 없음" 이 삭제 근거다.**
 

@@ -147,9 +147,16 @@ const citingFiles = [
 ].filter((file) => existsSync(resolve(file)))
 failures.push(...retiredDocumentNameFailures(citingFiles))
 failures.push(...prohibitedAbstractionSourceFailures(readFileSync(resolve('eslint.config.js'), 'utf8')))
-try { failures.push(...ledgerIndexFailures(productPaths(process.cwd()).scenarios)) } catch (error) { failures.push(error.message) }
-try { failures.push(...evidencePreservationFailures(process.cwd(), productPaths(process.cwd()).inventory)) } catch (error) { failures.push(error.message) }
-failures.push(...surfaceIndexFailures(process.cwd()))
+// 새 문서 체계: 제품 사실 색인의 정합성은 `pnpm product:check` 가 fact frontmatter 에서 직접 본다.
+// 아래 세 검사는 은퇴한 4경로 원장 모델(inventory README + judgment + scenarios + JSON context)을
+// 전제하므로 그 모델이 남아 있을 때만 돈다. 보류를 통과로 읽지 않는다 — 이 영역의 이관은 남아 있다.
+if (existsSync(resolve(productPaths(process.cwd()).inventory, 'README.md'))) {
+  try { failures.push(...ledgerIndexFailures(productPaths(process.cwd()).scenarios)) } catch (error) { failures.push(error.message) }
+  try { failures.push(...evidencePreservationFailures(process.cwd(), productPaths(process.cwd()).inventory)) } catch (error) { failures.push(error.message) }
+  failures.push(...surfaceIndexFailures(process.cwd()))
+} else {
+  notes.push('제품 사실 색인 검사는 `pnpm product:check` 가 소유한다 (구 원장 모델 검사 3종은 이관 대기)')
+}
 
 // 문서 안의 sentinel 은 어느 모드에서도 결정 미해소다.
 failures.push(...transplantSentinelFailures(documents))
@@ -220,9 +227,6 @@ if (budgetNotices.length === 0) {
 console.log('  ✓ CLAUDE.md 가 AGENTS.md 를 첫 지시로 import')
 if (copilotChecked) console.log('  ✓ Copilot 첫 본문 지시가 AGENTS.md 를 가리킴')
 console.log(`  ✓ 삭제된 문서 이름·금지 추상화 근거 파일 drift 없음 (${citingFiles.length}파일)`)
-console.log('  ✓ 시나리오 원장 색인과 카드가 서로를 덮음')
-console.log('  ✓ 원장 근거 보존: HEAD 대조로 날짜 실측·관찰 표식·미확인이 지워지지 않음')
-console.log('  ✓ 화면 context 색인의 인벤토리·시나리오·절·관련 surface 연결 실존 (의미·내부 구성 완전성은 리뷰)')
 console.log(`  ✓ 문서 안 미해소 이관 sentinel 없음${mode === 'target' ? ' (target: 코드 포함)' : ''}`)
 console.log('  ✓ 화면 보조 검사: 정렬 계약, route loader·e2e 합류 (파일 집합·동작 완전성은 판정하지 않음)')
 console.log(

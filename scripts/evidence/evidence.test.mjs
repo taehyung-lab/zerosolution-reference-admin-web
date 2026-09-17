@@ -1,3 +1,8 @@
+/**
+ * 새 문서 체계 시제품 보류: 이 파일은 은퇴한 JSON context 색인과 4경로 원장 모델을 단언한다.
+ * 그 역할은 `product/facts/*.md` frontmatter + `scripts/product/build-index.mjs --check` 로 옮겼다.
+ * 보류를 통과로 읽지 않는다 — 이 영역의 이관은 남아 있다.
+ */
 import { afterEach, expect, it } from 'vitest'
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { selectedDocuments, sectionText } from './documents.mjs'
@@ -76,7 +81,7 @@ it('delivers overlapping sections and their ancestor introductions only once', (
   expect(() => selectedDocuments(root, [...refs, {file: inventory, heading:'Child', marker:'missing'}])).toThrow(/marker/)
 })
 
-it('rejects index drift with normal and negative controls', () => {
+it.skip('rejects index drift with normal and negative controls', () => {
   const { root, write } = fixture()
   expect(surfaceIndexFailures(root)).toEqual([])
   const indexPath = 'docs/reference/zero-sol/context.json'
@@ -109,7 +114,7 @@ it('discovers valid seed bundle IDs and their four roots without reading the dec
   expect(invalid.status).toBe(1)
 })
 
-it('fails a surface that cites a skill file without its 형태 heading', () => {
+it.skip('fails a surface that cites a skill file without its 형태 heading', () => {
   const { root, write } = fixture()
   const skill = '.agents/skills/feature-contract/references/list.md'
   write(skill, '# List\n\n## Confirm\nA.\n\n## 형태\nFiles.\n')

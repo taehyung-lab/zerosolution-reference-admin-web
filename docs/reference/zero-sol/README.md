@@ -38,12 +38,12 @@ Figma `ZEROsol (For Kakao)`(`Ogb6WpSpwCVhKggQ1NLRlQ`) 78 page와 Notion `DB: Wor
 [context.json](context.json)은 이 인벤토리의 **연결 정보**만 소유한다. 제품 정책은 아래 원장과
 시나리오에 그대로 둔다. `node scripts/evidence/cli.mjs context`로 대상 목록을, 뒤에 ID를 붙여 해당
 인벤토리·시나리오·관련 내부 surface·기존 코드 경로를 찾는다. 구현 절차는
-[screen-loop](../../../.agents/skills/screen-loop/SKILL.md)가, 검사 계약은
+[screen-loop](../../../AGENTS.md)가, 검사 계약은
 [검사 안내](../../../scripts/contracts/README.md)가 소유한다.
 
 현재 15개 인벤토리군을 연결하고 공연과 메시지의 일부 내부 surface를 별도로 이름 붙였다.
 `group`은 업무군 진입점이며 하위 화면 전체를 기계적으로 열거한 상태가 아니다. `surface`도
-관찰·[시나리오 구현 완료](../../../.agents/skills/screen-loop/SKILL.md#도달-상태)를 뜻하지 않는다. 내정보·알림 등 시나리오 미확인과 대표 카드만 연결된
+관찰·[시나리오 구현 완료](../../../AGENTS.md#도달-상태)를 뜻하지 않는다. 내정보·알림 등 시나리오 미확인과 대표 카드만 연결된
 부분은 `gap`에 적었다. KEYSCREEN의 별도 판독 범위는 아래 표에 유지하며 이 색인에 포함됐다고
 주장하지 않는다. 이관 때는 새 제품의 원장·경로로 연결을 다시 구성한다.
 
@@ -77,7 +77,7 @@ Figma와 Notion은 이 제품 사실의 1순위 입력이다. 둘이 **같은 �
 - 작업의 지속 근거는 첫 판독부터 해당 원장 셀에 갱신하고 경로가 바뀌면 기존 색인을 정정한다. 워커가 판독한 요구·원문 위치·시점·방법·한계는 코드와 분리해 기존 정본에 수용한다.
   `.ai-work/` 기록을 근거 원장 대신 만들지 않는다. 구현 branch를 수용하지 않아도 근거 변경은 버리지 않으며, 수용자는 실제 근거 diff와 출처를 대조한다.
   구현한 surface의 지속 가능한 근거와 색인은 `settled` 전에 갖춘다. 근거가 없을 때의 진입은
-  [screen-loop](../../../.agents/skills/screen-loop/SKILL.md)의 실패 복귀 표가 소유한다.
+  [screen-loop](../../../AGENTS.md)의 실패 복귀 표가 소유한다.
 - 읽기 비용은 동일 작업에서 실제로 읽은 절의 양으로 비교한다. 필요한 근거·상위 제약·예외·확정 답·미확인이
   보존됐는지 먼저 대조한 뒤 전체 파일 선택을 좁힌다. 파일 수나 링크 도달만으로 절감·정확도를 판정하지 않는다.
 

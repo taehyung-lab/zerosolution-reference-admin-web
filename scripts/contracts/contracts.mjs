@@ -302,17 +302,14 @@ export function prohibitedAbstractionSourceFailures(eslintConfig, exists = (path
   const failures = []
   for (const [, name, source] of block[1].matchAll(/\['([^']+)',\s*'([^']+)'\]/g)) {
     for (const token of source.split(',').map((part) => part.trim()).filter(Boolean)) {
-      const skill = /^([a-z-]+) SKILL\.md$/.exec(token)
       const adr = /^ADR (\d{4})$/.exec(token)
       const reference = /^([a-z0-9-]+\.md)$/.exec(token)
-      const found = skill
-        ? exists(`.agents/skills/${skill[1]}/SKILL.md`)
-        : adr
-          ? readdirSync(resolve('docs/decisions')).some((file) => file.startsWith(`${adr[1]}-`))
-          : reference
-            ? ['api-contract', 'feature-contract', 'shared-ui-contract']
-              .some((skillName) => exists(`.agents/skills/${skillName}/references/${reference[1]}`))
-            : false
+      const found = adr
+        ? readdirSync(resolve('docs/decisions')).some((file) => file.startsWith(`${adr[1]}-`))
+        : reference
+          ? ['contracts/direct', 'contracts/contract', 'product/policies']
+            .some((dir) => exists(`${dir}/${reference[1]}`))
+          : false
       if (!found) failures.push(`eslint.config.js: '${name}' 근거 '${token}' 가 실존 규범 파일이 아니다`)
     }
   }
