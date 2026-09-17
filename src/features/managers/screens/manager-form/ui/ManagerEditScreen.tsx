@@ -70,10 +70,8 @@ function ManagerEditForm({
     onDone: onSaved,
   });
   return (
-    <ManagerForm
-      save={save}
-      identity={<FormTextField readOnly label={t('form.id')} value={manager.id} />}
-      onCancel={onCancel}
-    />
+    <ManagerForm save={save} onCancel={onCancel}>
+      <FormTextField readOnly label={t('form.id')} value={manager.id} />
+    </ManagerForm>
   );
 }

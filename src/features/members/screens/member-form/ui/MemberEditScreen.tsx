@@ -11,7 +11,7 @@ import { PageHeader } from '@/shared/ui/layout/PageHeader';
 import { toMemberEditDefaults } from '../model/member-form-defaults';
 import { toMemberSettings } from '../model/member-form-request';
 import { memberEditFieldOrder, memberEditSchema } from '../model/member-form-schema';
-import { MemberEditIdentityFields, MemberForm } from './MemberForm';
+import { MemberEditOnlyFields, MemberForm } from './MemberForm';
 
 /**
  * 4.2.3 회원 수정: 조회 값으로 항목을 채우고 이메일은 읽기 전용, 계정 상태에 따라 활동제한이 열린다.
@@ -67,10 +67,8 @@ function MemberEditForm({
   });
 
   return (
-    <MemberForm
-      save={save}
-      identity={<MemberEditIdentityFields form={save.form} email={member.email} />}
-      onCancel={onCancel}
-    />
+    <MemberForm save={save} onCancel={onCancel}>
+      <MemberEditOnlyFields form={save.form} email={member.email} />
+    </MemberForm>
   );
 }

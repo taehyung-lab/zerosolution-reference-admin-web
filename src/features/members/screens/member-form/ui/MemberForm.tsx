@@ -1,7 +1,7 @@
 /**
  * 회원 등록·수정 폼 — Figma 4.2.2 등록 / 4.2.3 수정 frame 의 `회원정보` 섹션. 두 frame 의 공통 항목(이름·생년월일·
- * 휴대폰번호)을 이 조립이 소유하고, 등록은 `identity` slot 에 이메일·비밀번호를, 수정은 계정 상태·활동제한과
- * 읽기 전용 이메일을 넣는다. 활동제한은 불량회원일 때만 보이되 초안은 숨긴 채 유지한다(`Activity`).
+ * 휴대폰번호)을 이 조립이 소유하고, 한쪽에만 있는 필드는 `children` 자리에 온다 — 등록은 이메일·비밀번호,
+ * 수정은 계정 상태·활동제한과 읽기 전용 이메일. 활동제한은 불량회원일 때만 보이되 초안은 숨긴 채 유지한다(`Activity`).
  */
 import { useSelector } from '@tanstack/react-form';
 import { Activity, type ReactNode } from 'react';
@@ -26,11 +26,11 @@ export type MemberSaveForm<TInput extends MemberProfileInput, TOutput> = ReturnT
 
 export function MemberForm<TInput extends MemberProfileInput, TOutput>({
   save,
-  identity,
+  children,
   onCancel,
 }: {
   readonly save: MemberSaveForm<TInput, TOutput>;
-  readonly identity: ReactNode;
+  readonly children: ReactNode;
   readonly onCancel: () => void;
 }) {
   const { t } = useTranslation('members');
@@ -49,7 +49,7 @@ export function MemberForm<TInput extends MemberProfileInput, TOutput>({
         {save.stage.kind === 'failed' ? <FormSaveFailureMessage failure={save.stage.root} /> : null}
         <SectionCard title={t('form.section')} {...save.sections.sectionProps('info')}>
           <div className="grid gap-x-8 gap-y-5 md:grid-cols-2">
-            {identity}
+            {children}
             <FormTextField form={form} label={t('form.name')} name="name" required />
             <FormDateField
               form={form}
@@ -71,7 +71,7 @@ export function MemberForm<TInput extends MemberProfileInput, TOutput>({
 }
 
 /** 등록에만 있는 이메일·비밀번호. */
-export function MemberCreateIdentityFields({ form }: { readonly form: FieldForm<MemberCreateInput> }) {
+export function MemberCreateOnlyFields({ form }: { readonly form: FieldForm<MemberCreateInput> }) {
   const { t } = useTranslation('members');
   return (
     <>
@@ -89,7 +89,7 @@ export function MemberCreateIdentityFields({ form }: { readonly form: FieldForm<
 }
 
 /** 수정에만 있는 계정 상태·활동제한과 읽기 전용 이메일. 활동제한은 불량회원일 때만 보인다. */
-export function MemberEditIdentityFields({
+export function MemberEditOnlyFields({
   form,
   email,
 }: {

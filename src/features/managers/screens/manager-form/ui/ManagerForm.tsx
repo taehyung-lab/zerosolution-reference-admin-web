@@ -1,7 +1,7 @@
 /**
  * 운영자 등록·수정 폼 — Figma 11.1.3 등록 / 11.1.4 수정 frame 의 `운영자정보` 섹션을 화면 순서대로 조립한다.
- * 두 frame 의 공통 항목·필수·선택지가 같아 등록·수정이 이 조립을 공유하고, 등록만 `identity` slot 에
- * 아이디·비밀번호 입력을, 수정은 읽기 전용 아이디를 넣는다. 권한 선택지는 선택한 유형에 종속되므로
+ * 두 frame 의 공통 항목·필수·선택지가 같아 등록·수정이 이 조립을 공유하고, 한쪽에만 있는 필드는
+ * `children` 자리에 온다 — 등록은 아이디·비밀번호 입력, 수정은 읽기 전용 아이디. 권한 선택지는 선택한 유형에 종속되므로
  * 유형이 바뀌면 권한을 비운다(11-settings.md 11.1).
  */
 import { useSelector, type DeepValue } from '@tanstack/react-form';
@@ -24,11 +24,11 @@ export type ManagerSaveForm<TInput extends ManagerEditInput, TOutput> = ReturnTy
 
 export function ManagerForm<TInput extends ManagerEditInput, TOutput>({
   save,
-  identity,
+  children,
   onCancel,
 }: {
   readonly save: ManagerSaveForm<TInput, TOutput>;
-  readonly identity: ReactNode;
+  readonly children: ReactNode;
   readonly onCancel: () => void;
 }) {
   const { t } = useTranslation('managers');
@@ -75,7 +75,7 @@ export function ManagerForm<TInput extends ManagerEditInput, TOutput>({
               placeholder={placeholder}
               required
             />
-            {identity}
+            {children}
             <FormTextField form={form} label={t('form.name')} name="name" placeholder={t('form.namePlaceholder')} required />
             <FormTextField form={form} label={t('form.phone')} name="phone" placeholder={t('form.phonePlaceholder')} required />
             <FormTextField form={form} label={t('form.email')} name="email" placeholder={t('form.emailPlaceholder')} required />
@@ -97,7 +97,7 @@ export function ManagerForm<TInput extends ManagerEditInput, TOutput>({
 }
 
 /** 등록에만 있는 아이디·비밀번호·비밀번호 확인. 수정 화면은 아이디를 읽기 전용으로 보여 준다. */
-export function ManagerCreateIdentityFields({ form }: { readonly form: FieldForm<ManagerCreateInput> }) {
+export function ManagerCreateOnlyFields({ form }: { readonly form: FieldForm<ManagerCreateInput> }) {
   const { t } = useTranslation('managers');
   return (
     <>
