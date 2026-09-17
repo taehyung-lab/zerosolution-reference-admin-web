@@ -6,7 +6,7 @@
 
 | id | 종류 | 화면 | surface | Figma 관찰 | Notion 동작·정책 | 미확인 | 현재 코드 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `performance-content.entry` | 서술 | 5.1 (`129:21882`) | 검색 전 상태 | 검색전 frame 없음(`5.1.1 콘텐츠 리스트` 단일). 2026-09-17 원본 해상도 재판독: 기간 기준 닫힌 값 `공연일`·preset `전체`, 보기 `100`, 정렬 `등록일` | 「공연 리스트를 조회할 수 있다.」 절이므로 [README 진입 판독 규칙](README.md#현재-제품의-공통-정책)이 **진입 즉시 조회**로 읽는다. 「초기화 → 검색 조건을 default로 설정값을 변경 및 검색 전 상태로 변경」은 2026-09-15 확정대로 최초 진입 계약의 재적용이다 | 실제 API 계약 | `ContentListScreen` · `content-list-search.ts` |
+| `performance-content.entry` | 서술 | 5.1 (`129:21882`) | 검색 전 상태 | 검색전 frame 없음(`5.1.1 콘텐츠 리스트` 단일). 2026-09-17 원본 해상도 재판독: 기간 기준 닫힌 값 `공연일`·preset `전체`, 보기 `100`, 정렬 `등록일` | 「공연 리스트를 조회할 수 있다.」 절이므로 [README 진입 판독 규칙](README.md#현재-제품의-공통-정책)이 **진입 즉시 조회**로 읽는다. 「초기화 → 검색 조건을 default로 설정값을 변경 및 검색 전 상태로 변경」은 2026-09-15 확정대로 최초 진입 계약의 재적용이다 | 실제 API 계약 | `PerformanceContentListScreen` · `content-list-search.ts` |
 | `performance-content.period` | 열거 | 5.1 | 기간 | 기준 공연일·등록일·최근업데이트일. preset·range는 회원과 동일. 2026-09-17 재판독: preset 전체·1년 전·6개월 전·3개월 전·1개월 전·7일 전·어제·오늘 | 「검색 영역 → 기간 : 공연일, 등록일, 최근업데이트일」 | — | `PeriodField` + `ContentListFilters` |
 | `performance-content.keyword` | 열거 | 5.1 | 검색어 | 대상 공연명·출연자·주최/기획 + 추가 chip("공연명 : 팬미팅") | 「검색 영역 → 검색어 : 공연명, 출연자, 주최/기획」·「다중 키워드 검색 허용」 | — | `KeywordChipField` + `ContentListFilters` |
 | `performance-content.filters` | 열거 | 5.1 (`129:21800` Case) | 다중선택 | 구분(전체·일일권·기간권), 공연유형(전체·콘서트·뮤지컬·전시·…), 사용상태(전체·사용·사용안함). 2026-09-17 재판독: 공연유형 7개(콘서트·뮤지컬·전시·페스티벌·연극·스포츠·멤버십), **예매처 없음**(5.2 와 다름) | 「구분 → default : 전체」·「공연유형 → default : 전체」·「사용상태 → default : 전체」 | API 식별자 | `ContentListFilters` + `CheckboxTree(emptyMeansAll)` |

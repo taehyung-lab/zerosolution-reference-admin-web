@@ -25,7 +25,7 @@
 
 2026-09-17 콘텐츠 목록(5.1): Notion 절 제목이 「공연 리스트를 조회할 수 있다」이므로 [README 진입 판독
 규칙](../zero-sol/README.md)대로 **진입 즉시 조회**로 확정했다. 초기화는 최초 진입 URL 을 다시 커밋하고
-결과는 남는다. `ContentListScreen` 은 검색·보기·정렬·헤더 방향·페이지 전이를 canonical URL 로 커밋하고,
+결과는 남는다. `PerformanceContentListScreen` 은 검색·보기·정렬·헤더 방향·페이지 전이를 canonical URL 로 커밋하고,
 행 선택은 확정 검색 단위로 살아 있다. 일괄변경은 Notion 3단계(미선택 거절 → 변경 확인 → 변경 완료)를 돌고
 완료를 확인하면 선택이 풀린다 — 호출은 `scenarioRequest('콘텐츠 사용상태 일괄변경')` 의 로그 한 줄까지이며
 실제 mutation 계약은 미확인이다. 미리보기 팝업은 회차·언어 select 와 타이틀·이미지·영상 영역까지 렌더하고

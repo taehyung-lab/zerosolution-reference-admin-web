@@ -19,7 +19,7 @@ import { useContentListResult } from './useContentListResult';
  * route 는 검증한 sparse search 를 넘기고 화면이 한 번 해소한다. 모든 URL 전이는 `commit` 한 곳으로
  * 나가며 canonical 로 줄여 `onSearchChange` 에 넘긴다. 미리보기 팝업의 열림은 이 화면의 일시 상태다.
  */
-export function ContentListScreen({
+export function PerformanceContentListScreen({
   search: sparse,
   onSearchChange,
 }: {

@@ -4,7 +4,7 @@ import type { readContentPage } from '@/features/performances/fixtures/contents'
 import type { ContentRow } from '@/features/performances/model/content';
 import { TestQueryLocaleProvider } from '@/test/query-locale';
 import type { ContentListSearch } from '../model/content-list-search';
-import { ContentListScreen } from './ContentListScreen';
+import { PerformanceContentListScreen } from './PerformanceContentListScreen';
 
 const { readPage } = vi.hoisted(() => ({ readPage: vi.fn<typeof readContentPage>() }));
 vi.mock(import('@/features/performances/fixtures/contents'), async (importOriginal) => ({
@@ -33,13 +33,13 @@ function setup(search: ContentListSearch = {}) {
   const onSearchChange = vi.fn<(value: ContentListSearch) => void>();
   const view = (value: ContentListSearch) => (
     <TestQueryLocaleProvider>
-      <ContentListScreen search={value} onSearchChange={onSearchChange} />
+      <PerformanceContentListScreen search={value} onSearchChange={onSearchChange} />
     </TestQueryLocaleProvider>
   );
   return { ...render(view(search)), view, onSearchChange };
 }
 
-describe('ContentListScreen (5.1 콘텐츠 목록)', () => {
+describe('PerformanceContentListScreen (5.1 콘텐츠 목록)', () => {
   beforeEach(() => {
     readPage.mockReset().mockResolvedValue({ rows: [registered, withoutPreview], total: 2 });
   });

@@ -458,7 +458,7 @@
         "docs/reference/scenarios/performance-and-content.md"
       ],
       "paths": [
-        "src/features/performances/screens/content-list/",
+        "src/features/performances/screens/performance-content-list/",
         "src/features/performances/api/",
         "src/features/performances/model/content.ts",
         "src/features/performances/fixtures/contents.ts",
@@ -546,7 +546,7 @@
         "docs/reference/scenarios/performance-and-content.md"
       ],
       "paths": [
-        "src/features/performances/screens/content-list/ui/ContentPreviewDialog.tsx"
+        "src/features/performances/screens/performance-content-list/ui/ContentPreviewDialog.tsx"
       ],
       "references": [
         ".agents/skills/feature-contract/references/detail.md",
@@ -1321,8 +1321,8 @@
         "docs/reference/scenarios/performance-and-content.md"
       ],
       "paths": [
-        "src/features/performances/screens/content-list/model/useContentListActions.ts",
-        "src/features/performances/screens/content-list/ui/ContentListActions.tsx",
+        "src/features/performances/screens/performance-content-list/model/useContentListActions.ts",
+        "src/features/performances/screens/performance-content-list/ui/ContentListActions.tsx",
         "src/features/performances/api/mutations.ts"
       ],
       "related": [],

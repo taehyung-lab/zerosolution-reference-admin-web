@@ -40,7 +40,7 @@ src/
   test/                        # vitest setup, msw server, 여러 화면을 조립하는 workflow 테스트
 ```
 
-화면 폴더 이름은 **항상** `{entity}-list`·`{entity}-detail`·`{entity}-form` 이다. 도메인의 대표 엔티티라도 접두를 생략하지 않는다 — 폴더 이름만 보고 무엇의 목록인지 읽혀야 한다. 한 목록의 URL 변형(탭·경로별 고정 필터)은 같은 `{entity}-list` 를 쓰고 `model/{entity}-list-definition.ts` 가 차이를 표현한다. route 가 여는 다이얼로그 하나도 그것을 여는 화면의 `ui/` 에 둔다. 별도 `pages` 레이어는 없다.
+화면 폴더 이름은 **항상** `{entity}-list`·`{entity}-detail`·`{entity}-form` 이다. `{entity}` 는 surface ID 도 route segment 도 model 타입 이름도 아니다 — **그 폴더 이름만 보고 무엇을 다루는 화면인지 읽히는 최소 한정자**이며 singular kebab-case 다. 기본 명사만으로 읽히면 그대로 쓰고(`board-list`·`printer-list`), 읽히지 않으면 상위 대상을 앞에 붙인다(`counsel-list` 는 무엇의 상담인지 읽히지 않으므로 `member-counsel-list`, `content-list` 는 무엇의 콘텐츠인지 읽히지 않으므로 `performance-content-list`). 읽히는가의 기준은 도메인 폴더 경로가 아니라 **폴더 이름 단독**이다 — 도메인의 대표 엔티티라도 접두를 생략하지 않는다. model 타입과 1:1 이 아니어도 된다(`member-dormant-list` 의 행 타입은 `DormantMemberRow` 이고, 하나의 `member-list` 가 `/active/all|general|flagged` 를 연다). **한정자는 폴더 이름과 진입 `{Entity}...Screen` 에만 붙인다** — 폴더 안의 파일은 그 폴더 안에서 읽히므로 짧은 이름을 쓴다(`screens/member-counsel-list/ui/MemberCounselListScreen.tsx` 옆에 `model/counsel-list-search.ts`·`ui/CounselListResult.tsx`). 한 목록의 URL 변형(탭·경로별 고정 필터)은 같은 `{entity}-list` 를 쓰고 `model/{entity}-list-definition.ts` 가 차이를 표현한다. route 가 여는 다이얼로그 하나도 그것을 여는 화면의 `ui/` 에 둔다. 별도 `pages` 레이어는 없다.
 
 화면과 mechanic 안에는 `ui`·`model` 만 만든다(`lib`·`config` 는 실제 순수 도우미·정적 구성이 있을 때만). API는 domain/api에 모아 서버 계약의 탐색 위치를 고정한다. 단일 화면 전용 API도 여기 두되 화면 상태는 가져오지 않는다. domain 루트에 화면명, form, hooks, types, common을 나란히 추가하지 않는다.
 

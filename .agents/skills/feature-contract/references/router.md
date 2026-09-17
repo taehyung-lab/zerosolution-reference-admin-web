@@ -12,6 +12,8 @@ For cross-feature dialogs, the source feature owns the action intent, selected t
 
 Route files mirror the URL. A single leaf stays a flat file (`<domain>/new.tsx`). A param or static segment with more than one leaf becomes a directory: `<domain>/$<id>/index.tsx` (detail) and `<domain>/$<id>/edit.tsx` (edit). A directory alone creates no route, so these leaves are siblings under `<domain>`; add `$<id>/route.tsx` only when the screens actually share chrome (header, tabs) and must render through an `<Outlet />`. Do not use the flat non-nesting escape (`$<id>_.edit.tsx`): it needs a comment to explain and hides the layout decision. Co-located tests match `routeFileIgnorePattern` and are not routes.
 
+Segment names are the product's external URL contract and need not match the screen folder name ([folder structure](../../folder-structure-contract/SKILL.md)). A resource collection defaults to the plural noun (`/community/boards`, `/ticketing/printers`). A state, workflow, or fixed view takes the name the product's IA gives it, which is often not a plural (`/members/dormant`, `/members/counsel`). A URL the product has already fixed wins over both defaults.
+
 ## Search and navigation
 
 Use a feature-owned Zod 4 schema directly as TanStack Router's Standard Schema validator; do not add `@tanstack/zod-adapter` while its peer contract is Zod 3. Invalid optional search fields recover to declared defaults with schema fallback, while missing resource params/not-found remain explicit failures. A loader that reads search declares `loaderDeps` from validated search.
