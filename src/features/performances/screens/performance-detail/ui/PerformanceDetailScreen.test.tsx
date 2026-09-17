@@ -37,7 +37,7 @@ describe('PerformanceDetailScreen (5.2 공연 조회)', () => {
     expect(screen.queryByText('Reference Performance 1')).toBeNull();
     expect(screen.getByText('Reference Sound Check')).toBeVisible();
     expect(screen.getByText('Reference Hall A')).toBeVisible();
-    expect(screen.getByText('Reference Grade A')).toBeVisible();
+    expect(screen.getByText('Reference Grade A, Reference Grade B')).toBeVisible();
 
     fireEvent.click(screen.getByRole('button', { name: '수정' }));
     expect(onEdit).toHaveBeenCalledWith('reference-performance-1');

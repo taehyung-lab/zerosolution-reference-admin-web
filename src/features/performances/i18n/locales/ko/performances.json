@@ -38,6 +38,23 @@
     "sessionSeats": "{{number}}회차: 판매 {{sold}}, 미판매 {{unsold}}",
     "grades": "등급"
   },
+  "edit": {
+    "title": "공연 수정",
+    "selectFile": "파일선택",
+    "removeFile": "선택한 파일 삭제",
+    "select": "선택",
+    "gateFor": "게이트 {{order}}",
+    "areaFor": "구역 {{order}}",
+    "gradeFor": "등급 {{order}}",
+    "removeGrade": "{{value}} 삭제",
+    "add": "추가",
+    "remove": "삭제",
+    "removeRow": "{{order}}번째 게이트 삭제",
+    "guideHint": {
+      "zone": "* 게이트에 따라 안내할 관람객의 구역을 입력해주세요. 동일 게이트이더라도 구역은 개별로 입력해주세요.",
+      "grade": "* 게이트에 따라 안내할 관람객의 등급을 선택해주세요."
+    }
+  },
   "title": "공연 목록",
   "filters": {
     "title": "검색 조건",

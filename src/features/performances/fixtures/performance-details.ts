@@ -81,8 +81,15 @@ const details: readonly PerformanceDetail[] = [1, 2].map((number) => ({
       },
     ],
     venueName: number === 1 ? "Reference Hall A" : "Reference Hall B",
+    gates: [
+      { id: "reference-gate-a", name: "Reference Gate A" },
+      { id: "reference-gate-b", name: "Reference Gate B" },
+    ],
     totalSeats: 200,
-    grades: [{ id: "reference-grade-1", name: "Reference Grade A" }],
+    grades: [
+      { id: "reference-grade-1", name: "Reference Grade A" },
+      { id: "reference-grade-2", name: "Reference Grade B" },
+    ],
   },
 }));
 

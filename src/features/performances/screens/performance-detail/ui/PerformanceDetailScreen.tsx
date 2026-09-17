@@ -9,9 +9,9 @@ import { DetailStateBoundary } from '@/shared/ui/detail/DetailStateBoundary';
 import { UpdateHistory } from '@/shared/ui/detail/UpdateHistory';
 import { PageHeader } from '@/shared/ui/layout/PageHeader';
 import { SectionCard } from '@/shared/ui/layout/SectionCard';
+import { PerformanceBasicSection } from '@/features/performances/mechanics/basic-info/ui/PerformanceBasicSection';
 import { toPerformanceHistoryEntries } from '../model/performance-history';
 import { PerformanceAdmissionSection } from './PerformanceAdmissionSection';
-import { PerformanceBasicSection } from './PerformanceBasicSection';
 
 export function PerformanceDetailScreen({
   performanceId,

@@ -13,7 +13,10 @@ function dateTime(value: string) {
   return `${formatDate(value)} ${formatTimeInTimeZone(value, displayTimeZone())}`;
 }
 
-/** `기본정보` 섹션. 번역된 내용은 UI locale 과 별개로 언어 탭이 고른다. */
+/**
+ * `기본정보` 섹션. 번역된 내용은 UI locale 과 별개로 언어 탭이 고른다.
+ * 조회(5.2.2)와 수정(5.2.3) 두 화면이 같은 읽기 조립을 그리므로 소유자가 여기다.
+ */
 export function PerformanceBasicSection({ basic }: { readonly basic: PerformanceBasicInfo }) {
   const { t } = useTranslation('performances');
   const [language, setLanguage] = useState('ko');

@@ -38,6 +38,23 @@
     "sessionSeats": "第{{number}}回: 販売済み {{sold}}、未販売 {{unsold}}",
     "grades": "等級"
   },
+  "edit": {
+    "title": "公演編集",
+    "selectFile": "ファイル選択",
+    "removeFile": "選択したファイルを削除",
+    "select": "選択",
+    "gateFor": "ゲート {{order}}",
+    "areaFor": "区域 {{order}}",
+    "gradeFor": "等級 {{order}}",
+    "removeGrade": "{{value}} を削除",
+    "add": "追加",
+    "remove": "削除",
+    "removeRow": "{{order}}番目のゲートを削除",
+    "guideHint": {
+      "zone": "* ゲートごとに案内する観覧客の区域を入力してください。同じゲートでも区域は個別に入力してください。",
+      "grade": "* ゲートごとに案内する観覧客の等級を選択してください。"
+    }
+  },
   "title": "公演一覧",
   "filters": {
     "title": "検索条件",
