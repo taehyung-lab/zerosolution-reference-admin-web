@@ -147,7 +147,7 @@ describe('PrinterListScreen (6.7.1 스마트프린터 목록)', () => {
     expect(await screen.findByText('변경할 항목을 선택해주세요.')).toBeInTheDocument();
   });
 
-  it('선택 + 변경 값 + 확인까지 통과하면 일괄변경 요청 함수에 닿고 확인창이 닫힌다 — 원문 Case02', async () => {
+  it('선택 + 변경 값 + 확인 → 요청 함수 → 완료 alert, 확인하면 선택이 풀린다 — 원문 Case02', async () => {
     const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
     renderScreen();
     await screen.findByRole('cell', { name: firstRowName });
@@ -161,8 +161,12 @@ describe('PrinterListScreen (6.7.1 스마트프린터 목록)', () => {
     expect(log).not.toHaveBeenCalled();
     fireEvent.click(within(dialog).getByRole('button', { name: '확인' }));
 
-    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('dialog')).toHaveTextContent('변경되었습니다.'));
     expect(log).toHaveBeenCalledWith(expect.stringContaining('[시나리오] 스마트프린터 일괄변경'));
+
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: '확인' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.getByRole('checkbox', { name: `${firstRowName} 선택` })).not.toBeChecked();
     log.mockRestore();
   });
 

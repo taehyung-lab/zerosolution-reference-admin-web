@@ -51,7 +51,11 @@ export function PrinterListScreen({
         total={total}
         result={result}
         actions={
-          <PrinterListActions selectedIds={result.selection.selectedIds} onCreate={onCreate} />
+          <PrinterListActions
+            selectedIds={result.selection.selectedIds}
+            onChanged={result.selection.clear}
+            onCreate={onCreate}
+          />
         }
         onActivate={onActivate}
       />
