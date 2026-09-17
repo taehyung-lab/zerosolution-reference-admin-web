@@ -34,7 +34,7 @@ export function accessListColumns({
     selectionColumn({
       selection,
       pageLabel: t('result.selectPage'),
-      rowLabel: (row) => t('result.selectRow', { name: row.email }),
+      rowLabel: (row) => t('result.selectRow', { name: row.name }),
     }),
     sortable('grade', (row) => row.grade),
     sortable('email', (row) => maskEmail(row.email)),

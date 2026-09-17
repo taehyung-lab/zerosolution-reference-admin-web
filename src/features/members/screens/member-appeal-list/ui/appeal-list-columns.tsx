@@ -34,7 +34,7 @@ export function appealListColumns({
     selectionColumn({
       selection,
       pageLabel: t('result.selectPage'),
-      rowLabel: (row) => t('result.selectRow', { name: row.email }),
+      rowLabel: (row) => t('result.selectRow', { name: row.name }),
     }),
     sortable('email', (row) => maskEmail(row.email)),
     sortable('name', (row) => row.name),

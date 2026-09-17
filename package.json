@@ -22,6 +22,7 @@
     "contracts:check": "node scripts/contracts/check.mjs",
     "product:index": "node scripts/product/build-index.mjs",
     "product:check": "node scripts/product/build-index.mjs --check",
+    "product:values": "node scripts/verify/contact-masking.mjs",
     "observe": "node scripts/observe/entry.mjs",
     "transplant:plan": "node scripts/transplant/transplant.mjs plan",
     "transplant:stage": "node scripts/transplant/transplant.mjs stage",
@@ -35,10 +36,10 @@
     "build": "vite build",
     "test:e2e:smoke": "playwright test --project=chromium --grep @smoke",
     "test:e2e:mock": "PLAYWRIGHT_API_MOCK=true playwright test --project=chromium",
-    "ci:static": "pnpm api:check && pnpm contracts:check && pnpm product:check && pnpm typecheck && pnpm lint && pnpm i18n:check && pnpm gates:negative && pnpm build",
+    "ci:static": "pnpm api:check && pnpm contracts:check && pnpm product:check && pnpm product:values && pnpm typecheck && pnpm lint && pnpm i18n:check && pnpm gates:negative && pnpm build",
     "ci:unit": "pnpm test:unit",
     "ci:e2e": "pnpm test:e2e:verify",
-    "verify": "pnpm api:check && pnpm contracts:check && pnpm product:check && pnpm typecheck && pnpm lint && pnpm test:unit && pnpm i18n:check && pnpm gates:negative && pnpm build && pnpm test:e2e:verify",
+    "verify": "pnpm api:check && pnpm contracts:check && pnpm product:check && pnpm product:values && pnpm typecheck && pnpm lint && pnpm test:unit && pnpm i18n:check && pnpm gates:negative && pnpm build && pnpm test:e2e:verify",
     "test:e2e:verify": "playwright test --project=chromium --grep \"@smoke|@reference\""
   },
   "dependencies": {

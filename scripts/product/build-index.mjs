@@ -94,6 +94,10 @@ export function factIndexFailures(entries) {
       errors.push(`${file}: 파일 이름이 id(${meta.id}) 와 다르다. id 는 불변이며 파일 이름이 그것을 따른다`)
     }
     if (meta.role && !ROLES.has(meta.role)) errors.push(`${file}: 모르는 role "${meta.role}"`)
+    // fact 가 기계 검사를 선언하면 그 검사기는 실재해야 한다. 없으면 fact 가 거짓말을 한다.
+    for (const [, path] of text.matchAll(/^\s+verify:\s*(\S+)\s*$/gm)) {
+      if (!existsSync(resolve(root, path))) errors.push(`${file}: checks 가 가리키는 ${path} 가 없다`)
+    }
     if (meta.status && !STATUSES.has(meta.status)) errors.push(`${file}: 모르는 status "${meta.status}"`)
     facts.push({ ...meta, file, related: stripBrackets(meta.related) })
   }

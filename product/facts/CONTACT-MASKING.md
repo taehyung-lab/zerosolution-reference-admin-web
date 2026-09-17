@@ -13,6 +13,10 @@ sources:
     ref: "옛 원장 11.1 의 `개인정보 전체보기` 항목 — 「현재 운영자 비밀번호 입력까지만. 성공을 가장해 마스킹을 해제하지 않는다」"
     observed: 2026-09-06
     how: 원장의 직접 대조 기록을 옮김
+checks:
+  - id: contact-masking
+    says: 목록·조회가 연락처를 그리면 마스킹한 값을 보인다
+    verify: scripts/verify/contact-masking.mjs
 ---
 
 # 목록·조회의 연락처 마스킹
