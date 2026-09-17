@@ -169,9 +169,9 @@ export function delinkUntravelled(text, { sourceFile, targetPath, source, target
       /^(src\/features\/|src\/routes\/|tests\/e2e\/)/.test(sourceAbsolute)
     )
     if (!productEvidence && (staged.has(targetAbsolute) || existsSync(join(targetRoot, targetAbsolute)))) return match
-    // 디렉터리를 가리키는 링크(문서 지도의 `contracts/direct/`)는 파일 의존이 아니다.
+    // 디렉터리를 가리키는 링크(문서 지도의 `.agents/skills/`)는 파일 의존이 아니다.
     const requiredContract = (sourceAbsolute.endsWith('.md')
-      && (sourceAbsolute.startsWith('contracts/') || sourceAbsolute.startsWith('product/policies/'))) ||
+      && (sourceAbsolute.startsWith('.agents/skills/') || sourceAbsolute.startsWith('product/policies/'))) ||
       (sourceAbsolute.startsWith('docs/decisions/') && !retired.some((id) => posix.basename(sourceAbsolute).startsWith(`${id}-`)))
     if (requiredContract) throw new Error(`Missing normative transplant dependency: ${sourceAbsolute}`)
     const link = `${sourceAbsolute}${anchor}`

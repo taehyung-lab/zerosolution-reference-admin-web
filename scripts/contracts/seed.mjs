@@ -14,7 +14,7 @@ export const SEED_BUNDLES = [
   {
     id: 'ascii-triplet',
     code: ['src/shared/lib/ascii-triplet.ts'],
-    skills: [location('contracts/direct/shared-ui.md', 'Lib', '`hasRepeatedOrSequentialAsciiTriplet`')],
+    skills: [location('.agents/skills/shared-ui/references/catalog.md', 'Lib', '`hasRepeatedOrSequentialAsciiTriplet`')],
     adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/shared/lib/ascii-triplet.test.ts'],
     ownership: { shared: 'Detects case-insensitive repeated or sequential ASCII letter/digit triplets.', feature: 'Owns password length, character classes, schema, copy, and server checks.' },
@@ -22,7 +22,7 @@ export const SEED_BUNDLES = [
   {
     id: 'confirmation',
     code: ['src/shared/ui/dialog/useConfirmation.tsx', 'src/shared/model/use-selection-gate.ts', 'src/shared/ui/dialog/SelectionAlert.tsx'],
-    skills: [location('contracts/direct/shared-ui.md', 'Dialog', '`useConfirmation<TValues>(')],
+    skills: [location('.agents/skills/shared-ui/references/catalog.md', 'Dialog', '`useConfirmation<TValues>(')],
     adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/shared/ui/dialog/useConfirmation.test.tsx', 'src/shared/ui/dialog/SelectionAlert.test.tsx'],
     ownership: { shared: 'Owns the request → confirm → run → close lifecycle with its dialog node, the pending guard and the failure line, and the one selection-rejection alert; no form or API knowledge.', feature: 'Owns what is confirmed, the target ids, the copy, the run promise, and everything after success.' },
@@ -30,7 +30,7 @@ export const SEED_BUNDLES = [
   {
     id: 'contact-masking',
     code: ['src/shared/lib/mask-contact.ts'],
-    skills: [location('contracts/direct/shared-ui.md', 'Lib', '`maskEmail`')],
+    skills: [location('.agents/skills/shared-ui/references/catalog.md', 'Lib', '`maskEmail`')],
     adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/shared/lib/mask-contact.test.ts'],
     ownership: { shared: 'Applies the currently shared string-only contact masking algorithm.', feature: 'Owns raw data, permission, disclosure, and adoption of product masking rules.' },
@@ -48,7 +48,7 @@ export const SEED_BUNDLES = [
       'src/shared/ui/list/ResultSummary.tsx',
       'src/shared/ui/list/ResultTotal.tsx',
     ],
-    skills: [location('contracts/direct/list.md', 'Result', '`ListResult`')],
+    skills: [location('.agents/skills/list-contract/SKILL.md', 'Result', '`ListResult`')],
     adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: [
       'src/shared/ui/list/list-patterns.test.tsx',
@@ -63,7 +63,7 @@ export const SEED_BUNDLES = [
   {
     id: 'detail-state-boundary',
     code: ['src/shared/ui/detail/DetailStateBoundary.tsx'],
-    skills: [location('contracts/direct/detail.md', 'State', '`DetailStateBoundary`')],
+    skills: [location('.agents/skills/detail-contract/SKILL.md', 'State', '`DetailStateBoundary`')],
     adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/shared/ui/detail/DetailStateBoundary.test.tsx'],
     ownership: {
@@ -74,7 +74,7 @@ export const SEED_BUNDLES = [
   {
     id: 'detail-query',
     code: ['src/api/required-query.ts'],
-    skills: [location('contracts/direct/detail.md', 'State', '`resolveRequiredQueryOutcome`')],
+    skills: [location('.agents/skills/detail-contract/SKILL.md', 'State', '`resolveRequiredQueryOutcome`')],
     adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/api/required-query.test.tsx'],
     ownership: {
@@ -85,7 +85,7 @@ export const SEED_BUNDLES = [
   {
     id: 'update-history',
     code: ['src/shared/ui/detail/UpdateHistory.tsx'],
-    skills: [location('contracts/direct/shared-ui.md', 'Detail', '`UpdateHistory`')],
+    skills: [location('.agents/skills/shared-ui/references/catalog.md', 'Detail', '`UpdateHistory`')],
     adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/shared/ui/detail/UpdateHistory.test.tsx'],
     ownership: {
@@ -96,7 +96,7 @@ export const SEED_BUNDLES = [
   {
     id: 'blocking-progress',
     code: ['src/shared/ui/primitives/BlockingProgress.tsx', 'src/api/query-meta.ts'],
-    skills: [location('contracts/direct/shared-ui.md', 'Primitives', '`BlockingProgress`')],
+    skills: [location('.agents/skills/shared-ui/references/catalog.md', 'Primitives', '`BlockingProgress`')],
     adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/app/shell/AppShell.test.tsx'],
     ownership: {
@@ -135,8 +135,8 @@ export const SEED_BUNDLES = [
       'src/shared/ui/list/SortableList.tsx',
     ],
     skills: [
-      location('contracts/direct/form.md', '저장 lifecycle', 'onServer'),
-      location('contracts/direct/shared-ui.md', 'Form', '`FormField`'),
+      location('.agents/skills/form-contract/SKILL.md', '저장 lifecycle', 'onServer'),
+      location('.agents/skills/shared-ui/references/catalog.md', 'Form', '`FormField`'),
     ],
     adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: [
@@ -173,8 +173,8 @@ export const SEED_BUNDLES = [
     }],
     code: ['src/shared/model/use-draft-commit.ts', 'src/shared/model/use-list-filter-draft.ts'],
     skills: [
-      location('contracts/contract/source-structure.md', 'Shared logic', 'draft preservation while a caller identity is equal'),
-      location('contracts/direct/shared-ui.md', 'Model', '`useListFilterDraft('),
+      location('.agents/skills/source-structure/references/promotion.md', 'Shared logic', 'draft preservation while a caller identity is equal'),
+      location('.agents/skills/shared-ui/references/catalog.md', 'Model', '`useListFilterDraft('),
     ],
     adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/shared/model/use-draft-commit.test.tsx', 'src/shared/model/use-list-filter-draft.test.tsx'],
@@ -186,7 +186,7 @@ export const SEED_BUNDLES = [
   {
     id: 'period-draft',
     code: ['src/shared/model/use-period-draft.ts'],
-    skills: [location('contracts/contract/source-structure.md', 'Shared logic', 'period preset/custom transitions')],
+    skills: [location('.agents/skills/source-structure/references/promotion.md', 'Shared logic', 'period preset/custom transitions')],
     adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/shared/model/use-period-draft.test.tsx'],
     ownership: {
@@ -198,9 +198,9 @@ export const SEED_BUNDLES = [
     id: 'search-partition',
     code: ['src/shared/lib/search-partition.ts', 'src/shared/lib/search-fields.ts', 'src/shared/lib/search-codecs.ts', 'src/shared/lib/search.ts'],
     skills: [
-      location('contracts/direct/shared-ui.md', 'Lib', 'filterPartitionKey'),
-      location('contracts/direct/shared-ui.md', 'Lib', 'defineSearchFields'),
-      location('contracts/direct/list.md', 'URL', 'defineSearchFields'),
+      location('.agents/skills/shared-ui/references/catalog.md', 'Lib', 'filterPartitionKey'),
+      location('.agents/skills/shared-ui/references/catalog.md', 'Lib', 'defineSearchFields'),
+      location('.agents/skills/list-contract/SKILL.md', 'URL', 'defineSearchFields'),
     ],
     adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/shared/lib/search-partition.test.ts', 'src/shared/lib/search-fields.test.ts', 'src/shared/lib/search-codecs.test.ts', 'src/shared/lib/search.test.ts'],
@@ -213,7 +213,7 @@ export const SEED_BUNDLES = [
     id: 'list-query',
     code: ['src/api/list-query.ts'],
     skills: [location(
-      'contracts/contract/server-state.md',
+      '.agents/skills/server-state/SKILL.md',
       '서버 연결 전후의 책임',
       '`useListQuery`',
     )],
@@ -232,7 +232,7 @@ export const SEED_BUNDLES = [
       'src/shared/model/list-options.ts',
       'src/shared/i18n/use-period-presets.ts',
     ],
-    skills: [location('contracts/direct/shared-ui.md', 'Model', 'standardPageSizeOptions')],
+    skills: [location('.agents/skills/shared-ui/references/catalog.md', 'Model', 'standardPageSizeOptions')],
     adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: [
       'src/shared/model/list-options.test.ts',
@@ -246,7 +246,7 @@ export const SEED_BUNDLES = [
   {
     id: 'keyword-draft',
     code: ['src/shared/model/use-keyword-draft.ts'],
-    skills: [location('contracts/contract/source-structure.md', 'Shared logic', 'pending keyword add/remove/trim')],
+    skills: [location('.agents/skills/source-structure/references/promotion.md', 'Shared logic', 'pending keyword add/remove/trim')],
     adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/shared/model/use-keyword-draft.test.tsx'],
     ownership: {
@@ -265,12 +265,12 @@ export const SEED_BUNDLES = [
     ],
     skills: [
       location(
-        'contracts/contract/api-wire.md',
+        '.agents/skills/api-wire/SKILL.md',
         'Envelope and errors',
         '`ApiError.kind` is the closed 12-kind taxonomy',
       ),
       location(
-        'contracts/contract/auth-session.md',
+        '.agents/skills/auth-session/SKILL.md',
         '계약 — 인증과 세션',
         "HTTP 401 runs the contract's reissue endpoint once",
       ),
@@ -299,7 +299,7 @@ export const SEED_BUNDLES = [
       'src/shared/ui/filter/KeywordFilterField.tsx',
       'src/shared/ui/feedback/AsyncFieldBoundary.tsx',
     ],
-    skills: [location('contracts/direct/shared-ui.md', 'Filter', '`FilterPanel`')],
+    skills: [location('.agents/skills/shared-ui/references/catalog.md', 'Filter', '`FilterPanel`')],
     adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: [
       'src/shared/ui/list/list-patterns.test.tsx',
@@ -313,7 +313,7 @@ export const SEED_BUNDLES = [
   {
     id: 'inline-search-select',
     code: ['src/shared/ui/primitives/InlineSearchSelect.tsx'],
-    skills: [location('contracts/direct/shared-ui.md', 'Primitives', '`InlineSearchSelect`')],
+    skills: [location('.agents/skills/shared-ui/references/catalog.md', 'Primitives', '`InlineSearchSelect`')],
     adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/shared/ui/primitives/InlineSearchSelect.test.tsx'],
     ownership: {
@@ -333,7 +333,7 @@ export const SEED_BUNDLES = [
       doNotCopy: 'That domain\'s fields, sort keys, direction defaults or destinations.',
     }],
     code: ['src/shared/ui/list/DataTable.tsx', 'src/shared/ui/list/selection-column.tsx'],
-    skills: [location('contracts/direct/shared-ui.md', 'List', '`meta.sort'), location('contracts/direct/shared-ui.md', 'List', '`selectionColumn(')],
+    skills: [location('.agents/skills/shared-ui/references/catalog.md', 'List', '`meta.sort'), location('.agents/skills/shared-ui/references/catalog.md', 'List', '`selectionColumn(')],
     adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/shared/ui/list/DataTable.test.tsx', 'src/shared/ui/list/selection-column.test.tsx'],
     ownership: {
@@ -348,7 +348,7 @@ export const SEED_BUNDLES = [
       'src/shared/ui/list/PageSizeControl.tsx',
       'src/shared/ui/list/SortControl.tsx',
     ],
-    skills: [location('contracts/direct/shared-ui.md', 'List', '`Pagination`')],
+    skills: [location('.agents/skills/shared-ui/references/catalog.md', 'List', '`Pagination`')],
     adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/shared/ui/list/list-patterns.test.tsx'],
     ownership: {
@@ -359,7 +359,7 @@ export const SEED_BUNDLES = [
   {
     id: 'page-header',
     code: ['src/shared/ui/layout/PageHeader.tsx'],
-    skills: [location('contracts/direct/shared-ui.md', 'Detail', '`PageHeader`')],
+    skills: [location('.agents/skills/shared-ui/references/catalog.md', 'Detail', '`PageHeader`')],
     adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/shared/ui/layout/PageHeader.test.tsx'],
     ownership: {
@@ -370,7 +370,7 @@ export const SEED_BUNDLES = [
   {
     id: 'section-card',
     code: ['src/shared/ui/layout/SectionCard.tsx'],
-    skills: [location('contracts/direct/shared-ui.md', 'Detail', '`SectionCard`')],
+    skills: [location('.agents/skills/shared-ui/references/catalog.md', 'Detail', '`SectionCard`')],
     adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/shared/ui/detail/DetailField.test.tsx'],
     ownership: {
@@ -381,7 +381,7 @@ export const SEED_BUNDLES = [
   {
     id: 'detail-field',
     code: ['src/shared/ui/detail/DetailField.tsx'],
-    skills: [location('contracts/direct/shared-ui.md', 'Detail', '`DetailField`')],
+    skills: [location('.agents/skills/shared-ui/references/catalog.md', 'Detail', '`DetailField`')],
     adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/shared/ui/detail/DetailField.test.tsx'],
     ownership: {
@@ -393,8 +393,8 @@ export const SEED_BUNDLES = [
     id: 'list-view',
     code: ['src/shared/lib/list-view.ts', 'src/shared/lib/list-sort.ts'],
     skills: [
-      location('contracts/direct/list.md', 'URL', '`listViewControls('),
-      location('contracts/direct/list.md', 'Sorting', '`headerSortDirection('),
+      location('.agents/skills/list-contract/SKILL.md', 'URL', '`listViewControls('),
+      location('.agents/skills/list-contract/SKILL.md', 'Sorting', '`headerSortDirection('),
     ],
     adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/shared/lib/list-view.test.ts', 'src/shared/lib/list-sort.test.ts'],
@@ -406,7 +406,7 @@ export const SEED_BUNDLES = [
   {
     id: 'scenario-request',
     code: ['src/api/scenario.ts'],
-    skills: [location('contracts/contract/server-state.md', '시나리오 요청', '`scenarioRequest')],
+    skills: [location('.agents/skills/server-state/SKILL.md', '시나리오 요청', '`scenarioRequest')],
     adrs: [location('docs/decisions/0014-single-screen-shape.md', '버린 대안', '미연결 쓰기를 실패로 둔다')],
     tests: ['src/api/scenario.test.ts'],
     ownership: {
@@ -757,7 +757,8 @@ export function findBundleClosureLeaks(bundles = SEED_BUNDLES) {
  */
 export const TRANSPLANT_MANIFEST = {
   skills: [
-    'contracts',
+    '.agents/skills',
+    '.claude/skills',
     'product/policies',
     'scripts/product/build-index.mjs',
   ],

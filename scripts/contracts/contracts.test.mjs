@@ -711,7 +711,7 @@ describe('seed contract bundles', () => {
 
 describe('transplant manifest and seed negative controls', () => {
   it('carries the folder placement contract with the root instructions into a new project', () => {
-    expect(listTransplantManifestFiles()).toContain('contracts/contract/source-structure.md')
+    expect(listTransplantManifestFiles()).toContain('.agents/skills/source-structure/SKILL.md')
     // 근거의 종류와 수명을 정하는 정책도 함께 나간다; 없으면 대상 프로젝트는 계약만 갖고
     // 그 계약이 무엇을 근거로 삼는지를 잃는다.
     expect(listTransplantManifestFiles()).toContain('product/policies/evidence.md')
@@ -750,7 +750,7 @@ describe('transplant manifest and seed negative controls', () => {
       ])
     expect(validateTransplantManifest()).toEqual([])
     expect(listTransplantManifestFiles()).toEqual(expect.arrayContaining([
-      'contracts/direct/form.md',
+      '.agents/skills/form-contract/SKILL.md',
       'eslint.config.js',
       'src/test/setup.ts',
       'tsconfig.base.json',
@@ -809,7 +809,8 @@ const PROHIBITED_ABSTRACTION_BINDINGS = new Map([
   ['UniversalList', 'ADR 0014'],
 ])
 `
-    const exists = (path) => !path.endsWith('list-detail.md')
+    // `list-detail` 은 skill 로도 reference 로도 없다 — 어느 후보 경로에도 존재하지 않는다.
+    const exists = (path) => !path.includes('list-detail')
     // 파일은 있는데 그 금지를 말하지 않는 경우(대조군): evidence.md 에는 useListTable 이 없다.
     const read = (path) => (path.endsWith('source-structure.md') ? 'ResourcePage 를 만들지 않는다' : '무관한 내용')
 
@@ -931,7 +932,7 @@ describe('scenario ledger index', () => {
 })
 
 describe('백틱으로 가리킨 계약·제품 문서', () => {
-  const files = [{ file: 'AGENTS.md', content: '읽을 계약은 `contracts/direct/list.md` 와 `contracts/contract/gone.md` 다.' }]
+  const files = [{ file: 'AGENTS.md', content: '읽을 계약은 `.agents/skills/list-contract/SKILL.md` 와 `contracts/contract/gone.md` 다.' }]
 
   it('가리킨 문서가 없으면 실패한다', () => {
     // 대조군: 링크가 아니라 백틱 표기라 markdown link 검사는 이 자리를 보지 못한다.

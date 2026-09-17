@@ -1,10 +1,17 @@
+---
+name: server-state
+description: >
+  Use when reads and writes are organised — 조회 키, queryOptions, enabled 게이트, 성공 뒤 무효화 범위, 낙관적 갱신, 서버 계약이 아직 없는 쓰기. TanStack Query, query key, cache, invalidate, stale, mutation, fixture, mock.
+  Do not use for 요청·응답이 실제로 어떤 모양인가와 실패 어휘 (api-wire), 폼의 저장 UI 흐름과 확인·완료 (form-contract), 파일 transport (file-workflow).
+---
+
 # 계약 — 서버 상태 (조회와 쓰기)
 
 **답하는 질문**: 무엇을 어떤 키로 조회하고, 쓰기가 성공하면 무엇이 낡으며, 서버가 아직 없을 때
 어디까지 가는가.
 
-**담지 않는 것**: 요청·응답의 모양과 실패 어휘 — `contracts/contract/api-wire.md` 다.
-화면이 그 결과를 어떻게 그리는가 — `contracts/direct/list.md`·`detail.md`·`form.md` 다.
+**담지 않는 것**: 요청·응답의 모양과 실패 어휘 — `.agents/skills/api-wire/SKILL.md` 다.
+화면이 그 결과를 어떻게 그리는가 — `.agents/skills/list-contract/SKILL.md`·`detail.md`·`form.md` 다.
 
 Read this file only for query options, loader prefetch, mutations, query keys, cache updates, or invalidation.
 
@@ -25,10 +32,10 @@ features/{domain}/api/
 ## Testing without a server
 
 HTTP mocks replace responses below generated API calls; Query hooks and screens keep the same execution path.
-The current test handlers and their supported scope live in [src/api/mocks/README.md](../../src/api/mocks/README.md).
+The current test handlers and their supported scope live in [src/api/mocks/README.md](../../../src/api/mocks/README.md).
 When the server contract changes, update generated code, feature mappings and mock responses together.
 Keep useful mocks for tests after live integration. An example response does not establish business state transitions.
-- Export reusable `queryOptions` so loaders and hooks use one key and raw cache definition. API-only hooks may live in `features/{domain}/api`: they bind locale/explicit inputs to a query and return data, query facts or stable option projections. URL/search gates, selection and form dependencies remain in the screen `model/`; a mutation declares its cache consequence in `meta.invalidates` ([`api-wire.md`](api-wire.md)). Placement examples and the decision table are owned by [`source-structure.md`](source-structure.md).
+- Export reusable `queryOptions` so loaders and hooks use one key and raw cache definition. API-only hooks may live in `features/{domain}/api`: they bind locale/explicit inputs to a query and return data, query facts or stable option projections. URL/search gates, selection and form dependencies remain in the screen `model/`; a mutation declares its cache consequence in `meta.invalidates` ([`api-wire.md`](../api-wire/SKILL.md)). Placement examples and the decision table are owned by [`source-structure.md`](../source-structure/SKILL.md).
 - A required single-record query (detail, edit load) runs through `useDetailQuery(options)` from `src/api/required-query.ts`; it owns the `ready | error | notFound` decision and the incident/not-found/cached-data priority so screens never re-derive them. List queries keep their own facts.
 - Retry is `createQueryClient`'s `retryOnce` (`src/app/providers/AppProviders.tsx`): a deterministic `ApiError` (`not-found`, `forbidden`, `unauthorized`, `validation`, `business`, `conflict`) is never retried — the answer would not change, the not-found page would arrive a backoff later, and a retried 403 publishes its incident twice; every other failure is retried once. Tests that need the production behaviour use `createQueryClient()` rather than `retry: false`.
 - Query progress is explicit: list entry requests spread `blockingProgress`, mounted content transitions spread `contentProgress`, and option/lookup `queryOptions` spread `inlineProgress` (all from `src/api/query-meta.ts`). AppShell does not infer blocking from a missing meta value. Option queries usually use `staleTime: Infinity`; `Register.queryMeta` is typed centrally and features do not add ad-hoc meta keys.
@@ -55,9 +62,9 @@ If any condition differs, keep separate feature queries. Never mirror reference 
 
 ## Loader and screen
 
-Route loaders and screens use the same exported query options. Router trigger and waiting rules are owned by [router.md](../direct/route-composition.md). Components never call generated operations, assemble raw keys, or copy server data into local state.
+Route loaders and screens use the same exported query options. Router trigger and waiting rules are owned by [router.md](../route-composition/SKILL.md). Components never call generated operations, assemble raw keys, or copy server data into local state.
 
-Mutation and invalidation rules are owned by [mutations.md](api-wire.md).
+Mutation and invalidation rules are owned by [mutations.md](../api-wire/SKILL.md).
 
 ## 서버 연결 전후의 책임
 
@@ -96,7 +103,7 @@ The mutation declares what its success makes stale in `meta.invalidates: QueryKe
 
 - Enumerate the affected families. A domain records prefix (list + detail, not options) is the usual key; a root key is allowed only when it is the confirmed aggregate family and narrower membership is unknowable. Record the reason on the key factory.
 - Prefer invalidation over an exact cache write. An exact update or optimistic write requires a material UX benefit, a rollback test, and the real server response shape.
-- The calling screen owns navigation, dialog closure, acknowledgement copy, and focus after success ([form](../direct/form.md#저장-lifecycle), [detail Actions](../direct/detail.md#actions), [list Selection and actions](../direct/list.md#selection-and-actions)).
+- The calling screen owns navigation, dialog closure, acknowledgement copy, and focus after success ([form](../form-contract/SKILL.md#저장-lifecycle), [detail Actions](../detail-contract/SKILL.md#actions), [list Selection and actions](../list-contract/SKILL.md#selection-and-actions)).
 - Field errors are normalized by transport into `ApiError.fieldErrors` and classified for the form by `classifyFormError`; transport does not know the form.
 
 ## 시나리오 요청
@@ -110,13 +117,13 @@ The mutation declares what its success makes stale in `meta.invalidates: QueryKe
 
 ### 시나리오 상태와 관찰 범위
 
-상태 어휘와 정의는 [도달 상태](../../AGENTS.md#도달-상태)가 소유한다. 여기는 각 상태를 주장하려면 어디까지 관찰해야 하는가만 적는다.
+상태 어휘와 정의는 [도달 상태](../../../AGENTS.md#도달-상태)가 소유한다. 여기는 각 상태를 주장하려면 어디까지 관찰해야 하는가만 적는다.
 
 - **시나리오 확정됨** — 검색은 조건 조립·URL 커밋·요청 전 검증까지, 저장은 폼 검증·확인 alert·검증된 업무 입력 조립과 요청 함수 호출까지. 상세는 그 화면의 모든 최종 액션(행 액션, 다이얼로그 열기/선택/반환, 탭 이동, 인라인 저장, 선택 삭제)을 빠짐없이 포함한다.
 - **시나리오 구현 완료** — 미연결 액션을 브라우저에서 최종 확인까지 눌러 요청 함수의 `console.log` 한 줄과 그 뒤 전이(완료 alert·이동)를 관찰한다. 검색·이동·다이얼로그 선택 같은 내부 전이는 실제 URL 과 화면 상태로 확인한다. 목록·상세 fixture 응답의 성공은 등록·수정의 성공 증거가 아니다.
 - 실서버 이후 동작(권한·enum 의미·실패 코드)은 별도 미확인으로 남긴다. 신규 API 연결 시 `mutationFn` 을 교체하고 이관 sentinel 을 해소한다.
 
-Read [query-cache.md](api-wire.md) only when defining or changing key families or query identity; consuming an already exported key does not require the whole query reference.
+Read [query-cache.md](../api-wire/SKILL.md) only when defining or changing key families or query identity; consuming an already exported key does not require the whole query reference.
 
 ## Locale and cache identity
 

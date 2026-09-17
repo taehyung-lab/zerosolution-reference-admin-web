@@ -1,14 +1,21 @@
+---
+name: auth-session
+description: >
+  Use when credentials or the session lifecycle are in question — 자격증명을 어디에 두는가, 재발급, 만료, 401·403 처리, 로그인·로그아웃 전이, 동시 요청의 재발급 경합. auth, token, refresh, session, login, logout, 401, 403, unauthorized.
+  Do not use for 실패를 화면 어디에 어떤 문구로 보여주는가 (api-wire 와 해당 역할 계약), 권한에 따라 route 를 막는 조립 (route-composition).
+---
+
 # 계약 — 인증과 세션
 
 **답하는 질문**: 자격증명을 어디에 두고, 재발급·만료·거절을 누가 처리하는가.
 
-**담지 않는 것**: 실패의 표시 위치 — `contracts/contract/api-wire.md` 다.
+**담지 않는 것**: 실패의 표시 위치 — `.agents/skills/api-wire/SKILL.md` 다.
 
 Read this file only for token storage, refresh cookies, reissue, replay, 401/403, or cross-tab auth coordination.
 
 The portable boundary is one-way: transport emits facts; app/feature owns credentials policy, incident UI and navigation. Before adoption, establish the target’s credential model, storage/lifetime, refresh contract, replay safety and cookie deployment from its own auth policy and OpenAPI. Do not infer them from a reference implementation.
 
-**Current implementation candidate, not a new-product default.** The following behaviour describes the existing coupled `transport-auth` implementation. ADR 0006 owns this repository’s policy decision and its limits. Until the target confirms these assumptions, exclude this bundle; do not copy its storage/reissue implementation merely to obtain an HTTP client. The [phased transfer procedure](../../scripts/contracts/README.md) owns that adoption boundary.
+**Current implementation candidate, not a new-product default.** The following behaviour describes the existing coupled `transport-auth` implementation. ADR 0006 owns this repository’s policy decision and its limits. Until the target confirms these assumptions, exclude this bundle; do not copy its storage/reissue implementation merely to obtain an HTTP client. The [phased transfer procedure](../../../scripts/contracts/README.md) owns that adoption boundary.
 
 - Store the access token through the approved try/catch adapter with an in-memory mirror; read it into `Authorization`.
 - The login ID lives beside the access token with the same lifetime and the same adapter. The current reissue request body requires it, so a reload that keeps only the token cannot refresh. This is a credential-model dependency of the current implementation, not permission to persist a target product’s identifier. Clearing the token clears the login ID.

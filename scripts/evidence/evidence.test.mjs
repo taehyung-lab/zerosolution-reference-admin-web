@@ -22,7 +22,7 @@ function fixture() {
   const scenario = 'docs/reference/scenarios/performance.md'
   write('scripts/contracts/check.mjs', 'console.log("fixture contract passed")\n')
   write('AGENTS.md', '# Root\nGlobal constraints.\n')
-  write('contracts/direct/list.md', '# Loop\nEntry and return points.\n')
+  write('.agents/skills/list-contract/SKILL.md', '# Loop\nEntry and return points.\n')
   write(inventory, '# Performance\nCommon policy.\n## List\nNo selection column.\n## Edit\nSection-owned save.\n')
   write(scenario, '# Scenario\nEntry loads; reset clears.\n')
   write('docs/reference/zero-sol/context.json', JSON.stringify({ judgment: [], surfaces: [
@@ -74,13 +74,13 @@ it('rejects index drift with normal and negative controls', () => {
 
 it('계약을 인용하면서 그 계약의 `형태` 절을 빼면 실패한다', () => {
   const { root, write } = fixture()
-  const contract = 'contracts/direct/list.md'
+  const contract = '.agents/skills/list-contract/SKILL.md'
   write(contract, '# List\n\n## Confirm\nA.\n\n## 형태\nFiles.\n')
   const indexPath = 'docs/reference/zero-sol/context.json'
   const index = JSON.parse(readFileSync(join(root, indexPath), 'utf8'))
   index.surfaces[0].references = [{ file: contract, heading: 'Confirm' }]
   write(indexPath, JSON.stringify(index))
-  expect(surfaceIndexFailures(root).join('\n')).toMatch(/performance-list cites .*list.md without heading 형태/)
+  expect(surfaceIndexFailures(root).join('\n')).toMatch(/performance-list cites .*list-contract.*without heading 형태/)
   index.surfaces[0].references = [contract]
   write(indexPath, JSON.stringify(index))
   expect(surfaceIndexFailures(root).filter((item) => item.includes('형태'))).toEqual([])

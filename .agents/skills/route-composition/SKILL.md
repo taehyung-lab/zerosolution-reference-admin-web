@@ -1,3 +1,10 @@
+---
+name: route-composition
+description: >
+  Use when the request touches routing itself — route 파일·URL segment·params/search 검증·진입 guard·loader·preload·not-found, 여러 feature 를 한 route 에 조립, 화면이 앱에서 도달 가능한가. route, URL, guard, loader, preload, navigation entry, not found.
+  Do not use for 화면 안의 상태와 동작 (list-contract·detail-contract·form-contract), 폴더·파일 이름과 import 경계 (source-structure), 토큰 저장과 재발급 자체 (auth-session).
+---
+
 # 역할 계약 — route 조립
 
 **답하는 질문**: URL 검증·guard·loader·navigation 과 여러 feature 의 조립을 route 가 어디까지 하는가.
@@ -26,13 +33,13 @@ For cross-feature dialogs, the source feature owns the action intent, selected t
 
 Route files mirror the URL. A single leaf stays a flat file (`<domain>/new.tsx`). A param or static segment with more than one leaf becomes a directory: `<domain>/$<id>/index.tsx` (detail) and `<domain>/$<id>/edit.tsx` (edit). A directory alone creates no route, so these leaves are siblings under `<domain>`; add `$<id>/route.tsx` only when the screens actually share chrome (header, tabs) and must render through an `<Outlet />`. Do not use the flat non-nesting escape (`$<id>_.edit.tsx`): it needs a comment to explain and hides the layout decision. Co-located tests match `routeFileIgnorePattern` and are not routes.
 
-Segment names are the product's external URL contract and need not match the screen folder name ([folder structure](../contract/source-structure.md)). A resource collection defaults to the plural noun. A state, workflow, or fixed view takes the name the product's IA gives it, which is often not a plural. A URL the product has already fixed wins over both defaults.
+Segment names are the product's external URL contract and need not match the screen folder name ([folder structure](../source-structure/SKILL.md)). A resource collection defaults to the plural noun. A state, workflow, or fixed view takes the name the product's IA gives it, which is often not a plural. A URL the product has already fixed wins over both defaults.
 
 ## Search and navigation
 
 Use a feature-owned Zod 4 schema directly as TanStack Router's Standard Schema validator; do not add `@tanstack/zod-adapter` while its peer contract is Zod 3. Invalid optional search fields recover to declared defaults with schema fallback, while missing resource params/not-found remain explicit failures. A loader that reads search declares `loaderDeps` from validated search.
 
-Committed filter, sort, page, page size, and shareable tab state live in route search. Field declarations, resolution, canonical form, and transitions are owned by [list.md](list.md#url). This file owns only their Router integration.
+Committed filter, sort, page, page size, and shareable tab state live in route search. Field declarations, resolution, canonical form, and transitions are owned by [list.md](../list-contract/SKILL.md#url). This file owns only their Router integration.
 
 ## Loader and preload
 
@@ -42,7 +49,7 @@ Trigger and waiting are separate decisions. Use the current QueryClient `query` 
 
 Independent prerequisites may use `Promise.all`. Do not create a second loader-only query definition or fetch generated operations directly.
 
-A detail or edit route awaits its record: `loader: ({ context, params, preload }) => loadRequired(context.queryClient, xDetailQueryOptions(context.locale, params.id), { preload })` (`src/app/router/required-loader.ts`). `loadRequired` turns a `not-found` ApiError into Router `notFound({ data: { kind: 'record' } })`, so a missing ID renders the not-found page with the record sentence — inside the shell, because `_app` declares `notFoundComponent`/`errorComponent` around the same components the root declares shell-less. A 403 belongs to `IncidentBoundary` alone: the loader republishes the incident with `origin: 'route-loader'` (never on preload), the boundary shows the access cover, and the error component renders nothing underneath ([catalog Feedback](shared-ui.md#feedback)). Any other failure renders the unexpected-error page. The screen keeps `useDetailQuery` + `DetailStateBoundary` for transitions after entry only (refetch failure, a record deleted meanwhile), so detail queries do not declare `blockingProgress`; the awaited query has no observer while the loader runs, and the router's `defaultPendingComponent` (`RoutePending`) is the wait surface after the router's default pending delay. `contracts:check` fails a `$param` route leaf under `src/routes/_app` without a loader.
+A detail or edit route awaits its record: `loader: ({ context, params, preload }) => loadRequired(context.queryClient, xDetailQueryOptions(context.locale, params.id), { preload })` (`src/app/router/required-loader.ts`). `loadRequired` turns a `not-found` ApiError into Router `notFound({ data: { kind: 'record' } })`, so a missing ID renders the not-found page with the record sentence — inside the shell, because `_app` declares `notFoundComponent`/`errorComponent` around the same components the root declares shell-less. A 403 belongs to `IncidentBoundary` alone: the loader republishes the incident with `origin: 'route-loader'` (never on preload), the boundary shows the access cover, and the error component renders nothing underneath ([catalog Feedback](../shared-ui/references/catalog.md#feedback)). Any other failure renders the unexpected-error page. The screen keeps `useDetailQuery` + `DetailStateBoundary` for transitions after entry only (refetch failure, a record deleted meanwhile), so detail queries do not declare `blockingProgress`; the awaited query has no observer while the loader runs, and the router's `defaultPendingComponent` (`RoutePending`) is the wait surface after the router's default pending delay. `contracts:check` fails a `$param` route leaf under `src/routes/_app` without a loader.
 
 Option queries declare `meta.progress: 'inline'` and their field renders its own loading/error/retry state, so a route works without warming them. A route may still warm them with `void queryClient.query(options).catch(() => undefined)`; with `defaultPreload: 'intent'` this runs on link hover. Warming is optional; the field state is the contract.
 
@@ -51,7 +58,7 @@ Loaders read `context.locale`; components read `useLocale().locale`. The app-lev
 ## 형태
 
 목록 route 본문의 요소는 셋이다: `validateSearch: {entity}ListSearch.schema`, `beforeLoad: canonicalSearchGuard({entity}ListSearch.canonical)`, 그리고 `component` 가 `<{Entity}ListScreen search={Route.useSearch()} onSearchChange={(next) => void navigate({ search: () => next })} onActivate={(id) => void navigate({ to: …, params })} onCreate={() => void navigate({ to: … })} />` 를 mount 한다. URL 변형은 같은 화면에 `definition` 을 넘긴다. 다른 feature 의 다이얼로그를 함께 조립하는 것은 위 [Thin route](#thin-route) 가 허용하는 배선이다.
-**목록 자체의 query 는 진입 즉시 조회 화면이어도 loader 에서 await 하지 않는다** — 진입 progress 는 `useListQuery` 가, 이후 전이는 `contentProgress` 가 소유하며 `loaderDeps` 로 검색을 loader 에 묶으면 정렬·페이지마다 loader 가 다시 돈다. 해소(`resolve`)는 route 가 아니라 화면이 한다. 검색 정책(즉시 조회인가 검색 뒤 조회인가)은 제품 원장에서 읽고 [list URL](list.md#url) 의 두 선언 함수 중 하나로 표현한다.
+**목록 자체의 query 는 진입 즉시 조회 화면이어도 loader 에서 await 하지 않는다** — 진입 progress 는 `useListQuery` 가, 이후 전이는 `contentProgress` 가 소유하며 `loaderDeps` 로 검색을 loader 에 묶으면 정렬·페이지마다 loader 가 다시 돈다. 해소(`resolve`)는 route 가 아니라 화면이 한다. 검색 정책(즉시 조회인가 검색 뒤 조회인가)은 제품 원장에서 읽고 [list URL](../list-contract/SKILL.md#url) 의 두 선언 함수 중 하나로 표현한다.
 
 상세·수정 route 본문의 요소는 둘이다: `loader: ({ context, params, preload }) => loadRequired(context.queryClient, {entity}DetailQueryOptions(context.locale, params.id), { preload })` 와 화면을 mount 하는 `component`(`key={id}` 로 ID 가 바뀌면 새 수명). 없는 ID·그 외 실패는 app error boundary 가 셸 안에서 상태 페이지를 그리고, 403 은 접근 제한 표면, 401 은 인증 진입 이동 하나가 소유한다(`{ preload }` 를 빼면 hover 예열마다 제한 표면이 뜬다). 화면의 `DetailStateBoundary` 는 진입 이후 전이만 담당한다.
 

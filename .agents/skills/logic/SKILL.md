@@ -1,24 +1,31 @@
+---
+name: logic
+description: >
+  Use when the result is judged without a browser — 훅, 순수 함수, 파서, 매퍼, 검증 규칙, 날짜·숫자·문자열 계산, 도메인 mechanic. pure function, utility, custom hook, parser, mapper, formatter, calculation, type error.
+  Do not use for 렌더·포커스·문구·이동을 봐야 닫히는 변경 (list-contract·detail-contract·form-contract), 공용으로 올릴지 여부 (shared-ui), 파일 위치와 import 경계 (source-structure).
+---
+
 # 계약 — 시각 표면 없는 결과
 
 **답하는 질문**: 렌더로 판정되지 않는 것(훅·순수 유틸·mechanic·파서·매퍼·검증 규칙)을 무엇으로 닫는가.
 
-**담지 않는 것**: 브라우저로 판정되는 결과 — `contracts/direct/` 다. 제품 값 — fact 다.
+**담지 않는 것**: 브라우저로 판정되는 결과 — 역할 계약(`list-contract`·`detail-contract`·`form-contract`) 이다. 제품 값 — fact 다.
 
 시각 surface 없이 호출자·입출력·부작용·실패로 결과를 닫을 수 있는 요청에서 읽는다. 훅, 순수 유틸,
-도메인 mechanic, 파서, 매퍼, 검증 규칙, 파일 배치가 여기 해당한다. 완료 기준과 도달 상태는 [`AGENTS.md`](../../AGENTS.md)가 소유하며 여기서 반복하지 않는다.
+도메인 mechanic, 파서, 매퍼, 검증 규칙, 파일 배치가 여기 해당한다. 완료 기준과 도달 상태는 [`AGENTS.md`](../../../AGENTS.md)가 소유하며 여기서 반복하지 않는다.
 
 **원장과 디자인 원문을 강제로 열지 않는다.** 제품 값이 결과를 바꾸지 않는 요청에서 화면 근거를
 찾는 것은 범위 이탈이다. 제품 사실이 필요해도 시각 결과가 없다면 이 계약을 유지하고 해당 fact 나
-API wire 를 추가로 확인한다. 실제 성공 조건에 렌더·포커스·문구·navigation 관찰이 생기면 그때 `contracts/direct/` 의 역할 계약을 함께 읽는다.
+API wire 를 추가로 확인한다. 실제 성공 조건에 렌더·포커스·문구·navigation 관찰이 생기면 그때 해당 역할 계약을 함께 읽는다.
 
 ## 근거를 읽는 순서
 
 1. **실제 호출자.** 이 심볼을 지금 누가 부르는가. 호출자가 하나면 공용화 후보가 아니다.
 2. **설치된 버전의 타입 정의.** 기억이나 검색 결과가 아니라 `node_modules`의 현행 타입.
 3. **가장 가까운 기존 테스트.** 이미 무엇이 계약으로 고정돼 있는지.
-4. **경계 계약.** 서버 wire 가 걸리면 [`api-wire.md`](api-wire.md), 조회·캐시가 걸리면
-   [`server-state.md`](server-state.md), 배치·import 방향이 걸리면
-   [`source-structure.md`](source-structure.md)의 해당 절만.
+4. **경계 계약.** 서버 wire 가 걸리면 [`api-wire.md`](../api-wire/SKILL.md), 조회·캐시가 걸리면
+   [`server-state.md`](../server-state/SKILL.md), 배치·import 방향이 걸리면
+   [`source-structure.md`](../source-structure/SKILL.md)의 해당 절만.
 
 ## 관찰표 — 3단계에서 채운다
 
@@ -35,7 +42,7 @@ API wire 를 추가로 확인한다. 실제 성공 조건에 렌더·포커스·
 **현재 호출자 한 곳만 보고 shared/feature를 결정하지 않는다.** 두 번째 소비자에서 같은 의미·
 상태 전이·실패가 확인될 때만 공용 후보다. 확인되지 않으면 소비 도메인이 소유한다.
 도메인 차이를 인자로 흡수해 공용을 넓히는 것은 승격이 아니라 결합이다.
-심사 기준은 [승격 심사](source-structure.md#공용-단위의-승격)가 소유한다.
+심사 기준은 [승격 심사](../source-structure/references/promotion.md)가 소유한다.
 
 ## 실측 방법
 

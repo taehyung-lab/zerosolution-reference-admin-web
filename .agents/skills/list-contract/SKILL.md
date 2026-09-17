@@ -1,9 +1,16 @@
+---
+name: list-contract
+description: >
+  Use when the request changes a list screen entered by its own URL — 목록 화면의 검색·필터·정렬·페이지·행 선택·일괄 동작·툴바 버튼을 더하거나 고칠 때, 그 값들이 URL 에 남고 새로고침으로 복원돼야 할 때. list, search, filter, sort, pagination, row selection, bulk action, toolbar.
+  Do not use for 레코드 하나를 여는 화면 (detail-contract), 등록·수정 폼 (form-contract), 자기 route 없이 화면 안에 놓인 표·반복 행 (collection-contract), route 검증·guard·loader (route-composition), 조회 키·무효화 (server-state), 어떤 필터·컬럼·문구가 있는가 (product-evidence).
+---
+
 # 역할 계약 — 목록
 
 **답하는 질문**: 검색·조회·결과·선택·액션의 상태를 누가 소유하고, 무엇을 봐야 그 변경이 닫히는가.
 
 **담지 않는 것**: 어떤 필터·컬럼·문구가 있는가 — 그 화면의 fact 다. 파일이 어디 놓이는가 —
-`contracts/contract/source-structure.md` 다.
+`.agents/skills/source-structure/SKILL.md` 다.
 
 목록 화면 하나의 계약이다: URL 검색 필드, 조회, 필터 초안, 결과, 정렬, 행 선택과 액션, 파일 집합.
 읽는 순서는 요청이 바꾸는 절만이다. 도메인 이름은 어디에도 없다 — `{entity}` 자리에 그 화면의 엔티티가 들어간다.
@@ -19,7 +26,7 @@
 | 액션의 확인·거절 문구 | 액션 컴포넌트 (`useConfirmation`, `useSelectionGate`) |
 
 feature 가 소유하는 것: 필드와 enum 의미, 기본값, 선택지 출처, 라벨, 컬럼, 요청 mapper, 검색 정책(즉시 조회인가 검색 뒤 조회인가), 액션의 대상·문구·권한.
-shared 가 소유하는 것: 위 표의 mechanic 과 렌더 계약([catalog](shared-ui.md)). 검색 정책·기본값·"조건 없음"의 뜻은 제품 원장에서 읽고, 형제 화면에서 복사하지 않는다.
+shared 가 소유하는 것: 위 표의 mechanic 과 렌더 계약([catalog](../shared-ui/SKILL.md)). 검색 정책·기본값·"조건 없음"의 뜻은 제품 원장에서 읽고, 형제 화면에서 복사하지 않는다.
 
 ## URL
 
@@ -49,7 +56,7 @@ shared 가 소유하는 것: 위 표의 mechanic 과 렌더 계약([catalog](sha
 
 - `searched` 는 Query `enabled` 와 결과의 `notSearched` 를 함께 정하는 **한 사실**이다. 즉시 조회 목록은 `true` 를 넘긴다.
 - 진입 fetch 만 `blockingProgress`, 이후 검색·정렬·페이지는 `contentProgress` + `keepPreviousData` — `useListQuery` 가 정하므로 화면이 meta 를 다시 쓰지 않는다. 빈 페이지는 결과이고 오류가 아니다. 세션·권한 실패는 목록의 오류가 아니라 incident 표면의 것이다.
-- 목록 route 는 목록 query 를 loader 에서 기다리지 않는다([router 형태](route-composition.md#형태)).
+- 목록 route 는 목록 query 를 loader 에서 기다리지 않는다([router 형태](../route-composition/SKILL.md#형태)).
 - 선택지 query 는 `api/queries.ts` 에 `inlineProgress` + `staleTime: Infinity` 로 따로 선언하고, `api/use{Entity}Options.ts` 의 훅이 `{ state: 'loading' | 'error' | 'ready', items, retry }` 로 투영한다. 필터와 폼이 같은 훅을 쓴다. `data ?? []` 로 실패를 빈 목록으로 접지 않는다.
 
 ## Filter
@@ -59,7 +66,7 @@ shared 가 소유하는 것: 위 표의 mechanic 과 렌더 계약([catalog](sha
 - `submit`: `preventDefault` → `prepareSubmit()` → `commit({ ...search, ...filters, ...range, keywords, page: 1 })`. gated 목록은 `searched: true` 를 더한다. 보기·정렬은 유지한다.
 - `reset`: `resetDrafts()` → 즉시 조회 목록은 `commit({ ...defaults })`, gated 목록은 `commit({ ...defaults, searched: false })`(검색 전 복귀).
 - `scope` 는 초안의 정체성에 들어간다. gated 목록은 `search.searched` 를 넘겨 검색 전·뒤 초안이 섞이지 않게 한다.
-- 라벨·선택지·"전체" 항목·`AsyncFieldBoundary` 배치는 `ui/{Entity}ListFilters.tsx` 가 소유한다. 훅은 문구를 모른다. 필드 렌더 계약은 [catalog Filter](shared-ui.md#filter).
+- 라벨·선택지·"전체" 항목·`AsyncFieldBoundary` 배치는 `ui/{Entity}ListFilters.tsx` 가 소유한다. 훅은 문구를 모른다. 필드 렌더 계약은 [catalog Filter](../shared-ui/references/catalog.md#filter).
 - 기간·검색어의 수명이 다른 화면(즉시 검색 하나, 텍스트 하나)은 `usePeriodDraft`·`useKeywordDraft` 를 직접 조립한다. 없는 입력에 빈 상태를 만들지 않는다.
 
 ## Result
@@ -86,15 +93,15 @@ shared 가 소유하는 것: 위 표의 mechanic 과 렌더 계약([catalog](sha
 - 컴포넌트: 버튼과 값 select 를 그리고 `<SelectionAlert controller={gate} />` 와 `{dialog}` 를 **자기 안에** 렌더한다. `searched` 로 가리는 것은 버튼이지 다이얼로그 소유자가 아니다 — 소유자가 `ListResult` 의 ready 분기나 `searched` 분기 안에 있으면 확인 뒤 refetch 의 loading 이 다이얼로그를 떨어뜨린다.
 - 헤더 체크박스는 현재 페이지의 선택 가능 행이다. 확정 검색(페이지·보기·정렬·필터)이 바뀌면 선택이 사라지고, 같은 검색의 refetch 는 남아 있는 선택 가능 ID 만 유지한다. 검색 결과 전체 선택은 서버가 조건 기반 payload 를 선언할 때 별도 계약이다.
 - payload 는 stable ID 배열이다. 부분 성공은 응답이 행 단위 결과를 노출할 때만 보고한다. 클라이언트 배치·폴링·재시도 정책을 만들지 않는다.
-- 미연결 mutation 은 [mutations](../contract/server-state.md#시나리오-요청) 의 `scenarioRequest(label)` 로 성공 경로를 끝까지 돈다. 확인창이 닫히는 것으로 완료를 주장하지 않고, 요청 함수의 로그 한 줄을 관찰한다.
+- 미연결 mutation 은 [mutations](../server-state/SKILL.md#시나리오-요청) 의 `scenarioRequest(label)` 로 성공 경로를 끝까지 돈다. 확인창이 닫히는 것으로 완료를 주장하지 않고, 요청 함수의 로그 한 줄을 관찰한다.
 
 ## Collections elsewhere
 
-목록 결과 밖의 행 집합(상세 섹션의 표, 폼의 반복 행, 다이얼로그의 검색 결과)은 이 문서가 아니라 [collection](collection.md) 이 분류한다. 그 분류가 다시 이 문서를 가리키는 것은 **필터·정렬·페이지를 가진 집합**뿐이고, 그때도 URL 은 독립 route 로 진입할 때만 쓴다.
+목록 결과 밖의 행 집합(상세 섹션의 표, 폼의 반복 행, 다이얼로그의 검색 결과)은 이 문서가 아니라 [collection](../collection-contract/SKILL.md) 이 분류한다. 그 분류가 다시 이 문서를 가리키는 것은 **필터·정렬·페이지를 가진 집합**뿐이고, 그때도 URL 은 독립 route 로 진입할 때만 쓴다.
 
 ## 형태
 
-**책임이 있으면 이 이름·이 자리에 둔다. 없으면 파일도 없다.** 파일 개수는 규칙이 아니다 — 기간·검색어·다중선택이 다 있는 목록과 텍스트 하나로 거르는 목록은 책임 수가 다르고, 그러면 파일 수도 다르다. 이 표가 고정하는 것은 "있을 때 어디서 찾는가" 뿐이다. 폴더는 `screens/{entity}-list/`([folder-structure](../contract/source-structure.md)).
+**책임이 있으면 이 이름·이 자리에 둔다. 없으면 파일도 없다.** 파일 개수는 규칙이 아니다 — 기간·검색어·다중선택이 다 있는 목록과 텍스트 하나로 거르는 목록은 책임 수가 다르고, 그러면 파일 수도 다르다. 이 표가 고정하는 것은 "있을 때 어디서 찾는가" 뿐이다. 폴더는 `screens/{entity}-list/`([folder-structure](../source-structure/SKILL.md)).
 
 | 책임 | 있으면 이 자리 |
 | --- | --- |
@@ -113,11 +120,11 @@ shared 가 소유하는 것: 위 표의 mechanic 과 렌더 계약([catalog](sha
 - 반대로 빈 어댑터는 만들지 않는다. 책임이 없는데 파일만 있으면 읽는 사람이 없는 상태를 찾게 된다.
 - 두 화면이 같은 의미·상태 전이·실패로 쓰는 조각만 `mechanics/{capability}/{ui,model}` 로 올린다. 화면이 형제 화면을 import 하는 것은 lint 가 막는다.
 - 서버 연결 전 예시 행은 예시임이 드러나는 값을 쓴다.
-- route 는 [router 형태](route-composition.md#형태)를 따른다. 목록 route 를 저장소의 검색 계약 e2e 경로 배열에 등록하는 규칙이 있으면 `contracts:check` 가 본다.
+- route 는 [router 형태](../route-composition/SKILL.md#형태)를 따른다. 목록 route 를 저장소의 검색 계약 e2e 경로 배열에 등록하는 규칙이 있으면 `contracts:check` 가 본다.
 - 테스트는 파일 수가 아니라 **닫아야 할 동작**으로 고른다: URL 계약(키 집합·기본값·canonical·불량 값 복구·요청 mapper)과 화면 동작(진입 상태·검색·초기화·정렬·페이지·선택·액션의 거절/취소/확정). 소유자 옆에 두고, 화면 테스트는 route 처럼 커밋된 검색을 되돌려 주는 harness 로 렌더한다.
 
 ## Verification
 
 바뀐 전이만 실측한다: canonical URL 복구와 history, 초안 재생성, Query `enabled` 와 key·params 동일성, 다섯 결과 상태 도달, 페이지 리셋, 접근 가능한 이름, stable row ID, 선택 해제, 액션의 거절·취소·확정 각 한 번. 브라우저 증거는 어떤 URL 에서 무엇을 눌러 URL·화면이 어떻게 됐는지를 적는다.
 
-실측한 것 중 되돌아올 전이 하나를 `tests/e2e/` 에 회귀 앵커로 남긴다([브라우저로 판정되는 결과](../../AGENTS.md#브라우저로-판정되는-결과)).
+실측한 것 중 되돌아올 전이 하나를 `tests/e2e/` 에 회귀 앵커로 남긴다([브라우저로 판정되는 결과](../../../AGENTS.md#브라우저로-판정되는-결과)).

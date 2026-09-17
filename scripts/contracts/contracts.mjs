@@ -12,7 +12,7 @@ const PNPM_BUILTINS = new Set([
 ])
 
 /** 정합성 대조 대상 문서. 임시 작업물(.ai-work)은 저장소 산출물이 아니므로 제외한다. */
-const DOCUMENT_ROOTS = ['.agents', 'docs', 'contracts', 'product']
+const DOCUMENT_ROOTS = ['.agents', 'docs', 'product']
 const DOCUMENT_FILES = [
   'AGENTS.md',
   'README.md',
@@ -176,7 +176,7 @@ function decodedAnchor(anchor) {
 /**
  * 계약·제품 문서를 **백틱 이름으로** 가리키는 문장이 실존 파일을 가리키는지 본다.
  *
- * markdown link 검사는 `[label](path)` 만 본다. 라우팅 표는 경로를 `` `contracts/direct/list.md` ``
+ * markdown link 검사는 `[label](path)` 만 본다. 라우팅 표는 경로를 `` `.agents/skills/list-contract/SKILL.md` ``
  * 처럼 코드 표기로 쓰는 일이 많고, 그 자리가 끊겨도 아무도 잡지 못했다 — 새 문서 체계 첫 드릴에서
  * 워커가 없는 계약 3개를 만나 직접 보고했다. 존재가 아니라 **가리킨 대상이 실재하는가**를 본다.
  */
@@ -262,7 +262,7 @@ export function transplantSentinelFailures(files) {
  * 넘으면 늘리지 말고 내린다 — 조건부로만 필요한 것은 그것을 소유한 계약으로, 절차는 스크립트로.
  * 계약 문서는 판단이라 숫자를 맞추려고 자르면 안 되므로 이 게이트의 대상이 아니다.
  */
-export const ROOT_LINE_BUDGET = 205
+export const ROOT_LINE_BUDGET = 153
 
 export function rootBudgetFailures(document, budget = ROOT_LINE_BUDGET) {
   const lines = document.split('\n').filter((line, index, all) => index < all.length - 1 || line !== '').length
@@ -271,10 +271,12 @@ export function rootBudgetFailures(document, budget = ROOT_LINE_BUDGET) {
 }
 
 export const RETIRED_DOCUMENT_NAMES = [
-  // 2026-09-17 새 문서 체계: screen-loop 와 .agents/skills 전체가 contracts/ · product/ 로 갔다.
+  // 2026-09-17 새 문서 체계: screen-loop 가 두 질문 라우팅과 역할 계약으로 갈렸다.
   // 그 전환을 결정한 ADR 과 당시를 기록한 문서는 이 이름을 불러야 하므로 예외를 준다.
   { name: 'screen-loop', allowIn: ['docs/decisions/', 'docs/reference/zero-sol-figma-analysis.md'] },
-  { name: '.agents/skills', allowIn: ['docs/decisions/'] },
+  // 2026-09-17 skill 라우팅: 계약이 `contracts/` 에서 `.agents/skills/*/SKILL.md` 로 돌아갔다.
+  { name: 'contracts/direct', allowIn: ['docs/decisions/'] },
+  { name: 'contracts/contract', allowIn: ['docs/decisions/'] },
   // 같은 전환에서 skill 이름 자체도 은퇴했다. 경로만 고치고 링크 라벨에 옛 이름을 남기면
   // 읽는 사람은 없는 문서를 찾는다 — 실제로 9곳이 그렇게 남아 있었다.
   { name: 'feature-contract', allowIn: ['docs/decisions/'] },
@@ -352,6 +354,12 @@ export function retiredDocumentNameFailures(files, names = RETIRED_DOCUMENT_NAME
   return failures
 }
 
+/** `.agents/skills` 아래 skill 디렉터리 이름. 없으면 빈 목록이다(이식 대상의 초기 상태). */
+function skillDirectories(root = '.agents/skills') {
+  if (!existsSync(resolve(root))) return []
+  return readdirSync(resolve(root), { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name)
+}
+
 /**
  * `local/no-prohibited-abstraction`의 근거 문자열이 가리키는 규범 파일은 실존해야 한다.
  * 근거는 `<skill> SKILL.md`, `<reference>.md`, `ADR NNNN` 형태만 인정한다.
@@ -380,8 +388,15 @@ export function prohibitedAbstractionSourceFailures(
       }
       // 파일이 있는지가 아니라 **그 파일이 이 금지를 실제로 말하는지**를 본다.
       // 존재만 보면 근거를 옮기다 내용을 빠뜨려도 통과한다 — 실제로 한 번 그렇게 빠졌다.
-      const dirs = ['contracts/direct', 'contracts/contract', 'product/policies']
-      const hosting = dirs.map((dir) => `${dir}/${reference[1]}`).filter((path) => exists(path))
+      // 근거는 skill 이름(`source-structure.md` → 그 skill 의 SKILL.md)이거나 그 skill 의
+      // reference, 또는 판독 정책이다. 이름 하나로 세 자리를 다 본다.
+      const stem = reference[1].replace(/\.md$/, '')
+      const candidates = [
+        `.agents/skills/${stem}/SKILL.md`,
+        ...skillDirectories().map((dir) => `.agents/skills/${dir}/references/${reference[1]}`),
+        `product/policies/${reference[1]}`,
+      ]
+      const hosting = candidates.filter((path) => exists(path))
       if (hosting.length === 0) {
         failures.push(`eslint.config.js: '${name}' 근거 '${token}' 가 실존 규범 파일이 아니다`)
       } else if (!hosting.some((path) => readContent(path).includes(name))) {

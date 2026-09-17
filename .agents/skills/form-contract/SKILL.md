@@ -1,10 +1,17 @@
+---
+name: form-contract
+description: >
+  Use when the request changes a create or edit form — 저장 lifecycle, 확인·완료 쌍, 검증 실패와 focus, 서버 필드 오류 배치, dirty 이탈 질문, 취소. form, create, edit, save, submit, validation, dirty guard, cancel, confirm.
+  Do not use for 어떤 필드가 있고 무엇이 필수이며 문구가 무엇인가 (product-evidence), 폼 안의 반복 행 표 (collection-contract), 파일 업로드·다운로드 transport (file-workflow), mutation 키와 성공 뒤 무효화 (server-state).
+---
+
 # 역할 계약 — 폼 (등록·수정)
 
 **답하는 질문**: 등록·수정 한 쌍에서 저장 lifecycle·필드·취소·이탈을 누가 소유하고, 무엇을 봐야
 그 변경이 닫히는가.
 
 **담지 않는 것**: 어떤 필드가 있고 무엇이 필수이며 문구가 무엇인가 — 그것은 그 화면의 fact 다.
-파일이 어디 놓이는가 — `contracts/contract/source-structure.md` 다.
+파일이 어디 놓이는가 — `.agents/skills/source-structure/SKILL.md` 다.
 
 ## 소유
 
@@ -74,7 +81,7 @@ const save = useSaveForm({
 
 - 렌더 순서: `{save.dialogs}` → `<form noValidate onSubmit={preventDefault + save.submit.run()}>`
   → 실패면 폼 위 한 줄 → 섹션 안에 필드들 → 제출 버튼 + 취소 버튼(`save.guard.leave(onCancel)`).
-- 어댑터 집합은 `contracts/direct/shared-ui.md` 의 Form 행이 소유한다. 다른 이름의 별칭은 만들지
+- 어댑터 집합은 `.agents/skills/shared-ui/SKILL.md` 의 Form 행이 소유한다. 다른 이름의 별칭은 만들지
   않는다.
 - 서버 선택지는 `{ state, items, retry }` 를 그대로 넘긴다. 종속 선택지는 훅의 `enabled` 로 선행
   조건을 표현하고, 종속 값 비우기는 그 필드의 `onValueChange` 에서 한다 — effect 가 아니다.

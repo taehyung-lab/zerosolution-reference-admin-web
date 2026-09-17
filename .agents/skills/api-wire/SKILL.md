@@ -1,10 +1,17 @@
+---
+name: api-wire
+description: >
+  Use when the actual shape on the wire is in question — transport, 요청 헤더, 응답 봉투, business error 분류, OpenAPI snapshot, 생성 클라이언트, 서버와 스키마가 어긋남. axios, request, response envelope, error code, OpenAPI, orval, generated client, contract validation.
+  Do not use for 무엇을 언제 조회·저장하고 성공 뒤 무엇이 낡는가 (server-state), 토큰 저장·재발급·만료 (auth-session), 오류 문구를 화면 어디에 놓는가 (form-contract·detail-contract).
+---
+
 # 계약 — API wire
 
 **답하는 질문**: 요청과 응답이 실제로 어떤 모양으로 오가고, 실패가 어떤 어휘로 분류되며, 그 실패가
 어디에 표시되는가.
 
-**담지 않는 것**: 무엇을 언제 조회·저장하는가 — `contracts/contract/server-state.md` 다.
-어떤 문구를 보여 주는가 — 그 화면의 fact 와 `contracts/direct/shared-ui.md` 다.
+**담지 않는 것**: 무엇을 언제 조회·저장하는가 — `.agents/skills/server-state/SKILL.md` 다.
+어떤 문구를 보여 주는가 — 그 화면의 fact 와 `.agents/skills/shared-ui/SKILL.md` 다.
 
 
 ## Transport boundary
@@ -23,7 +30,7 @@ Canonicalize supported failure `data` shapes into one field-error array. Keep se
 
 Kind does not choose a UI location. The operation context owns the result: cancelled work the user left has no surface; recoverable feature operations render in place; terminal auth/access is an app incident; render, route-loader, unhandled fatal, and route not-found belong to root. A recoverable `contract` failure stays in place, while a render/loader contract failure belongs to root.
 
-The four outcomes `none | feature | incident | root` are decided only in `src/api/error-outcome.ts` (`resolveErrorOutcome(context, kind)`, `isFeatureError(error)`); the UI-side placement of each outcome is [공용 UI 의 Feedback](../direct/shared-ui.md#feedback).
+The four outcomes `none | feature | incident | root` are decided only in `src/api/error-outcome.ts` (`resolveErrorOutcome(context, kind)`, `isFeatureError(error)`); the UI-side placement of each outcome is [공용 UI 의 Feedback](../shared-ui/references/catalog.md#feedback).
 Feature consumers use its context-free feature predicate instead of repeating cancelled/unauthorized/forbidden
 comparisons. Context remains only for real differences such as observerless prefetch, pre-auth failures that end no
 session, and root failures.
@@ -32,7 +39,7 @@ Never expose `resultMessage`, another raw server message, or a stack in UI. Safe
 
 Do not copy `X-Client-Path`, `X-Menu-Id`, `X-Write-Consistency`, a guessed replication-delay window, or SSE recovery coupling without a new backend contract. No reverse import from transport to app exists.
 
-Auth/reissue rules are owned by `contracts/contract/auth-session.md`(미작성 — 인증·재발급을 바꿀 때 쓴다). Locale-sensitive transport and cache identity are owned by `contracts/contract/server-state.md`.
+Auth/reissue rules are owned by `.agents/skills/auth-session/SKILL.md`(미작성 — 인증·재발급을 바꿀 때 쓴다). Locale-sensitive transport and cache identity are owned by `.agents/skills/server-state/SKILL.md`.
 
 ## OpenAPI snapshot
 
@@ -97,7 +104,7 @@ Neither check reads a request body. A missing required field still passes both, 
 - Routes, screens, and components never import Axios or generated operations.
 - `src/api/http/**` owns the Axios instance, authentication, locale header, cancellation, and transport-error normalization.
 - Feature API modules own query/mutation options, keys and API-only execution hooks. A mutation declares its cache consequence in `meta.invalidates`; screens run it with `useMutation` and own navigation and acknowledgement (ADR 0014).
-- File creation, relocation and API input type placement follow [`source-structure.md`](source-structure.md).
+- File creation, relocation and API input type placement follow [`source-structure.md`](../source-structure/SKILL.md).
 - Generated files are never edited or committed.
 
 If runtime behavior contradicts the snapshot, stop and report the endpoint, request/response evidence, and blocked work. Do not hide divergence with casts, optional fields, fallback values, or silent response reshaping. A temporary adapter requires explicit approval, an ADR, tests, and a removal condition.

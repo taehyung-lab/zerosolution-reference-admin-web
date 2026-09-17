@@ -117,7 +117,7 @@ anonymous ──sign-in 200 (accessToken 없음)──▶ challenge-pending ─�
 
 ### 4.6 가져오지 말아야 할 것 `[추론]`
 
-- **roles/permission을 클라이언트 저장소에 복제하는 것.** 이전 분석의 "해롭다" 판정을 다시 검토했고 **유지한다.** 근거 셋: (a) 복제본은 서버가 권한을 바꿔도 스스로 낡아, 권한을 바꾸는 화면마다 갱신을 호출해야 하는 규율이 생기고 규율은 검사되지 않는다. (b) 소유자가 둘이 되면 어느 쪽이 진실인지 아무도 확인하지 않는다 — 실제로 한쪽 경로가 죽은 채 오래 살아남았다(관측 실패 3). (c) `roles`는 서버가 "메뉴 목록"이라 선언한 화면 접근 판정의 입력이므로(`:18350`), 낡은 사본은 곧 잘못된 접근 허용 또는 차단이다. 대신 roles/permission은 서버 데이터이므로 **TanStack Query 한 곳**이 소유하고, 진입 권한이 필요한 route는 loader에서 그 query options를 await한다(`contracts/direct/route-composition.md` §Guards). 부팅 시점의 공백은 우리 가드가 이미 "자격증명 존재만 본다"로 좁혀 두었으므로(`src/routes/_app.tsx:11-15`) 복제본 없이 성립한다.
+- **roles/permission을 클라이언트 저장소에 복제하는 것.** 이전 분석의 "해롭다" 판정을 다시 검토했고 **유지한다.** 근거 셋: (a) 복제본은 서버가 권한을 바꿔도 스스로 낡아, 권한을 바꾸는 화면마다 갱신을 호출해야 하는 규율이 생기고 규율은 검사되지 않는다. (b) 소유자가 둘이 되면 어느 쪽이 진실인지 아무도 확인하지 않는다 — 실제로 한쪽 경로가 죽은 채 오래 살아남았다(관측 실패 3). (c) `roles`는 서버가 "메뉴 목록"이라 선언한 화면 접근 판정의 입력이므로(`:18350`), 낡은 사본은 곧 잘못된 접근 허용 또는 차단이다. 대신 roles/permission은 서버 데이터이므로 **TanStack Query 한 곳**이 소유하고, 진입 권한이 필요한 route는 loader에서 그 query options를 await한다(`.agents/skills/route-composition/SKILL.md` §Guards). 부팅 시점의 공백은 우리 가드가 이미 "자격증명 존재만 본다"로 좁혀 두었으므로(`src/routes/_app.tsx:11-15`) 복제본 없이 성립한다.
 - **명령형 "역할 갱신" 함수와 그 전파용 커스텀 이벤트.** 필요한 것은 "권한을 바꾼 mutation이 권한 query를 무효화한다" 한 줄이지 새 이벤트 채널이 아니다.
 - **엔드포인트별로 갈라진 세션 저장 경로**(4.1).
 - **HTTP status만으로 종결을 판정하는 것**(관측 실패 4).
@@ -127,7 +127,7 @@ anonymous ──sign-in 200 (accessToken 없음)──▶ challenge-pending ─�
 
 | 요구하는 것 | 근거 | 판정 |
 | --- | --- | --- |
-| pre-auth 실패를 세션 종료로 접지 않기 | `src/api/error-outcome.ts:33-37`, `contracts/contract/auth-session.md:8`, `docs/decisions/0006-auth-token-storage.md:27-30` | 커버됨 |
+| pre-auth 실패를 세션 종료로 접지 않기 | `src/api/error-outcome.ts:33-37`, `.agents/skills/auth-session/SKILL.md:8`, `docs/decisions/0006-auth-token-storage.md:27-30` | 커버됨 |
 | 2FA 경로에 `Authorization` 미부착 | `src/api/http/credential.ts:117`(`/auth/2fa/` 포함, 이관 sentinel 표시됨) | 커버됨 |
 | 2차 인증 4개 operation 생성물 | `src/api/generated/endpoints.ts:2352,2366,2382,2396`(`verifyGoogleOtp`·`generateGoogleOtp`·`verifyEmail`·`sendEmail`) | 커버됨 |
 | `accessToken` 없는 sign-in 200을 정상 흐름으로 다루기 | `src/features/auth/model/session.ts:12-14`가 예외를 던진다. 계약은 그 경우를 정상으로 선언(`openapi/admin.snapshot.json:6909`) | 수정 필요 |
@@ -141,9 +141,9 @@ anonymous ──sign-in 200 (accessToken 없음)──▶ challenge-pending ─�
 | 탭 간 자격증명 동기화 | `src/api/http/incident.ts:86-97` | 커버됨 |
 | roles/permission의 단일 소유자 | `src/app/config/navigation.ts:2` — 메뉴/권한 계약 미확인, 로컬 자리표시자 카탈로그 | 아예 없음 |
 | 계정 잠금(5회) 안내 분기 | `src/features/auth/screens/login/ui/LoginScreen.tsx:81-84`가 `unauthorized`·`business`를 한 문구로 접는다. 잠금 코드가 계약에 선언되지 않음 | 아예 없음 |
-| 30분 초과·잠금 alert의 dialog primitive | `contracts/direct/shared-ui.md#dialog:9`(`AlertDialog`) | 커버됨 |
+| 30분 초과·잠금 alert의 dialog primitive | `.agents/skills/shared-ui/SKILL.md#dialog:9`(`AlertDialog`) | 커버됨 |
 | 로그인 실패를 화면 안에 렌더 | `src/features/auth/screens/login/ui/LoginScreen.tsx:56-87` | 커버됨 |
-| 2차 인증 화면의 route·surface 조립, 코드 입력 폼·검증 | `contracts/direct/route-composition.md` §Thin route, `docs/reference/zero-sol/02-auth.md:7` | feature 소유 |
+| 2차 인증 화면의 route·surface 조립, 코드 입력 폼·검증 | `.agents/skills/route-composition/SKILL.md` §Thin route, `docs/reference/zero-sol/02-auth.md:7` | feature 소유 |
 | 성립 후 착지 화면 결정("가장 좌측 메뉴") | 메뉴 권한 계약이 없어 판정 불가(`src/app/config/navigation.ts:2`, `notion/02-auth.md:13`) | 아예 없음 |
 | 인증코드 유효시간 값 | `notion/02-auth.md:12`(5분) vs `openapi/admin.snapshot.json:7169`(6분) | 수정 필요 |
 

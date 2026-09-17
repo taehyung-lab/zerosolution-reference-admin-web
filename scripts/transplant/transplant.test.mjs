@@ -189,7 +189,7 @@ describe('delinkUntravelled', () => {
   })
 
   it('does not disguise a missing normative skill dependency as source provenance', () => {
-    expect(() => delinkUntravelled('[계약](../../contracts/contract/nowhere.md)', { ...context, collect: [] }))
+    expect(() => delinkUntravelled('[계약](../../.agents/skills/nowhere/SKILL.md)', { ...context, collect: [] }))
       .toThrow(/normative/)
   })
 })
@@ -303,7 +303,7 @@ describe('plan / stage / apply against a target directory', () => {
     // Product workflow tests live in the harness directory but import feature screens; they are excluded, not copied.
     expect(byFile.get('src/test/workflows/closed-search.test.ts').action).toBe('exclude')
     expect(byFile.get('src/test/setup.ts').action).toBe('copy')
-    expect(plan.some((item) => item.file.startsWith('contracts/'))).toBe(true)
+    expect(plan.some((item) => item.file.startsWith('.agents/skills/'))).toBe(true)
     // The active source-product ledger stays home; the target gets neutral ledger shells at its pointer paths.
     expect(plan.some((item) => item.file.startsWith('docs/reference/zero-sol'))).toBe(false)
     expect(plan.some((item) => item.file.startsWith('docs/reference/scenarios/') && item.file !== 'docs/reference/scenarios/README.md')).toBe(false)
@@ -323,7 +323,7 @@ describe('plan / stage / apply against a target directory', () => {
     expect(agents).toContain('product/generated-index.md')
     expect(readFileSync(join(out, 'CLAUDE.md'), 'utf8').split('\n')[0]).toBe('@AGENTS.md')
     expect(readFileSync(join(out, 'docs/decisions/0006-typescript-version-pin.md'), 'utf8')).toContain('TRANSPLANT_PENDING_ADR_PIN')
-    const skill = readFileSync(join(out, 'contracts/direct/list.md'), 'utf8')
+    const skill = readFileSync(join(out, '.agents/skills/list-contract/SKILL.md'), 'utf8')
     // 계약은 도메인 이름을 담지 않으므로 이관해도 제품 이름이 남지 않는다.
     expect(skill).not.toContain('zero-sol')
     const inventoryReadme = readFileSync(join(out, 'product/facts/README.md'), 'utf8')
@@ -411,7 +411,7 @@ describe('plan / stage / apply against a target directory', () => {
     expect(plan.some((item) => item.action === 'generate')).toBe(false)
 
     stageTransplant(target, out, undefined, { withLedger: true })
-    expect(readFileSync(join(out, 'contracts/direct/list.md'), 'utf8')).not.toContain('zero-sol')
+    expect(readFileSync(join(out, '.agents/skills/list-contract/SKILL.md'), 'utf8')).not.toContain('zero-sol')
     expect(readFileSync(join(out, 'product/facts/PRINTER-LIST.md'), 'utf8')).toContain('스마트프린터 목록')
     expect(existsSync(join(out, 'product/generated-index.md'))).toBe(true)
   })
@@ -425,7 +425,7 @@ describe('plan / stage / apply against a target directory', () => {
     expect(files.has('src/shared/lib/ascii-triplet.ts')).toBe(true)
     expect(files.has('src/shared/lib/ascii-triplet.test.ts')).toBe(true)
     expect(files.has('src/shared/ui/list/ListResult.tsx')).toBe(false)
-    expect(files.has('contracts/direct/list.md')).toBe(true)
+    expect(files.has('.agents/skills/list-contract/SKILL.md')).toBe(true)
     // The skills and eslint.config.js travel whole and name these decisions, so the decisions travel with them.
     for (const adr of [
       'docs/decisions/0006-auth-token-storage.md',
