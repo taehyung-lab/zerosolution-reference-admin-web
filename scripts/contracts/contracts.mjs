@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, readdirSync } from 'node:fs'
+import { existsSync, lstatSync, readdirSync, readFileSync, readlinkSync, statSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 
 export const DOCUMENT_LINE_BUDGET = 200
@@ -12,7 +12,7 @@ const PNPM_BUILTINS = new Set([
 ])
 
 /** 정합성 대조 대상 문서. 임시 작업물(.ai-work)은 저장소 산출물이 아니므로 제외한다. */
-const DOCUMENT_ROOTS = ['docs', '.agents']
+const DOCUMENT_ROOTS = ['.agents', 'docs', 'product']
 const DOCUMENT_FILES = [
   'AGENTS.md',
   'README.md',
@@ -173,6 +173,24 @@ function decodedAnchor(anchor) {
  * 로컬 Markdown link 의 대상 파일과 `#앵커` 가 실재하는지 확인한다. 외부 URL 은 대상이 아니다.
  * 2026-09-10 까지 앵커를 보지 않아 루트가 깊은 절을 11곳 가리키면서도 절 제목 변경을 잡을 수 없었다.
  */
+/**
+ * 계약·제품 문서를 **백틱 이름으로** 가리키는 문장이 실존 파일을 가리키는지 본다.
+ *
+ * markdown link 검사는 `[label](path)` 만 본다. 라우팅 표는 경로를 `` `.agents/skills/list-contract/SKILL.md` ``
+ * 처럼 코드 표기로 쓰는 일이 많고, 그 자리가 끊겨도 아무도 잡지 못했다 — 새 문서 체계 첫 드릴에서
+ * 워커가 없는 계약 3개를 만나 직접 보고했다. 존재가 아니라 **가리킨 대상이 실재하는가**를 본다.
+ */
+export function citedContractPathFailures(files, exists) {
+  const failures = []
+  const pattern = /`((?:contracts|product)\/[A-Za-z0-9._/-]+\.md)`/g
+  for (const { file, content } of files) {
+    for (const [, cited] of content.matchAll(pattern)) {
+      if (!exists(cited)) failures.push(`${file}: 백틱으로 가리킨 계약·제품 문서가 없다 → ${cited}`)
+    }
+  }
+  return [...new Set(failures)].sort()
+}
+
 export function readLocalLinkFailures(files) {
   const failures = []
   const anchorCache = new Map()
@@ -214,6 +232,8 @@ export function transplantSentinelOccurrences(files) {
   const occurrences = []
   for (const file of files) {
     if (!existsSync(resolve(file))) continue
+    // manifest 는 파일뿐 아니라 어댑터 링크도 옮긴다. sentinel 은 파일 안에만 있다.
+    if (!statSync(resolve(file)).isFile()) continue
     const lines = readFileSync(resolve(file), 'utf8').split('\n')
     lines.forEach((line, index) => {
       for (const [, id] of line.matchAll(TRANSPLANT_SENTINEL)) {
@@ -234,7 +254,74 @@ export function transplantSentinelFailures(files) {
  * 삭제된 규범 문서의 이름은 어디에도 남으면 안 된다. link 검사는 Markdown link만 보므로
  * 주석·표·근거 문자열 속 이름은 이 목록으로 잡는다. 이름을 지울 때 여기서도 지운다.
  */
+/**
+ * 루트는 **항상 로드된다.** 커지면 모든 세션이 그 비용을 낸다.
+ *
+ * 이 저장소의 루트는 162 → 50 → 172 → 209 로 두 번 자랐고, 두 번 다 아무것도 잡지 않았다. 문서
+ * 예산을 `notice` 로 두면 자라는 것이 정상으로 읽히기 때문이다. 그래서 루트만 `fail` 이다.
+ *
+ * 이 숫자는 **내려가기만 한다.** 오늘의 값은 오늘의 크기이고, 무언가를 내릴 때마다 함께 내린다.
+ * 넘으면 늘리지 말고 내린다 — 조건부로만 필요한 것은 그것을 소유한 계약으로, 절차는 스크립트로.
+ * 계약 문서는 판단이라 숫자를 맞추려고 자르면 안 되므로 이 게이트의 대상이 아니다.
+ */
+export const ROOT_LINE_BUDGET = 153
+
+export function rootBudgetFailures(document, budget = ROOT_LINE_BUDGET) {
+  const lines = document.split('\n').filter((line, index, all) => index < all.length - 1 || line !== '').length
+  if (lines <= budget) return []
+  return [`AGENTS.md 가 ${lines}줄이다(상한 ${budget}). 늘리지 말고 내린다 — 조건부로만 필요한 것은 그것을 소유한 계약으로, 절차는 스크립트로.`]
+}
+
+/**
+ * `.claude/skills` 는 `.agents/skills` 를 가리키는 **링크여야 한다.**
+ *
+ * 복사본이면 정본과 어긋나고, 그 어긋남은 아무도 보지 않는다. 실제로 이관이 한 번 링크를 따라가
+ * 22파일을 복제했다 — `stat` 이 심링크를 따라가기 때문이었고, 그때 아무 검사도 울리지 않았다.
+ * 존재가 아니라 **무엇인지**를 본다(ADR 0016).
+ */
+export function skillAdapterFailures(
+  adapter = '.claude/skills',
+  canonical = '.agents/skills',
+  link = (path) => (existsSync(resolve(path)) && lstatSync(resolve(path)).isSymbolicLink() ? readlinkSync(resolve(path)) : null),
+  exists = (path) => existsSync(resolve(path)),
+) {
+  if (!exists(canonical)) return [`${canonical} 이 없다 — 계약의 정본이 사라졌다`]
+  const target = link(adapter)
+  if (target === null) {
+    return [`${adapter} 가 링크가 아니다. 복사본은 정본과 어긋난다 — \`ln -s ../${canonical} ${adapter}\``]
+  }
+  const resolved = posixResolve(dirname(adapter), target)
+  if (resolved !== canonical) {
+    return [`${adapter} 가 ${resolved} 를 가리킨다. ${canonical} 이어야 한다`]
+  }
+  return []
+}
+
+/** 링크 대상은 POSIX 경로다. 파일 시스템을 건드리지 않고 문자열로 정규화한다. */
+function posixResolve(from, target) {
+  const parts = []
+  for (const segment of `${from}/${target}`.split('/')) {
+    if (segment === '' || segment === '.') continue
+    if (segment === '..') parts.pop()
+    else parts.push(segment)
+  }
+  return parts.join('/')
+}
+
 export const RETIRED_DOCUMENT_NAMES = [
+  // 2026-09-17 새 문서 체계: screen-loop 가 두 질문 라우팅과 역할 계약으로 갈렸다.
+  // 그 전환을 결정한 ADR 과 당시를 기록한 문서는 이 이름을 불러야 하므로 예외를 준다.
+  { name: 'screen-loop', allowIn: ['docs/decisions/', 'docs/reference/zero-sol-figma-analysis.md'] },
+  // 2026-09-17 skill 라우팅: 계약이 `contracts/` 에서 `.agents/skills/*/SKILL.md` 로 돌아갔다.
+  { name: 'contracts/direct', allowIn: ['docs/decisions/'] },
+  { name: 'contracts/contract', allowIn: ['docs/decisions/'] },
+  // 같은 전환에서 skill 이름 자체도 은퇴했다. 경로만 고치고 링크 라벨에 옛 이름을 남기면
+  // 읽는 사람은 없는 문서를 찾는다 — 실제로 9곳이 그렇게 남아 있었다.
+  { name: 'feature-contract', allowIn: ['docs/decisions/'] },
+  { name: 'api-contract', allowIn: ['docs/decisions/'] },
+  { name: 'shared-ui-contract', allowIn: ['docs/decisions/'] },
+  { name: 'folder-structure-contract', allowIn: ['docs/decisions/'] },
+
   '2026-09-14-reference-document-loop-redesign.md',
   'list-detail.md',
   'screen-anatomy.md',
@@ -278,42 +365,83 @@ export const RETIRED_DOCUMENT_NAMES = [
   'use-confirmation.ts',
 ]
 
+/**
+ * 폐기 이름은 문자열이거나 `{ name, allowIn }` 이다.
+ *
+ * `allowIn` 은 **그 이름을 적는 것이 정당한 파일**이다 — 그 체계를 결정한 ADR 과 무슨 일이 있었는지
+ * 적은 기록은 폐기된 이름을 불러야 한다. 예외가 없으면 검사를 통과시키려고 역사를 지우게 된다.
+ * 예외는 "과거를 말하는 문서"에만 주고, 살아 있는 소유자를 지목하는 문장에는 주지 않는다.
+ */
 export function retiredDocumentNameFailures(files, names = RETIRED_DOCUMENT_NAMES) {
+  // 폐기 이름이 더 긴 이름의 조각일 때 잡으면 안 된다 — `0001-rehearsal-api-contract.md` 는
+  // 살아 있는 ADR 파일 이름이지 `api-contract` 를 부르는 것이 아니다.
+  const entries = names.map((item) => (typeof item === 'string' ? { name: item, allowIn: [] } : item))
+    .map((entry) => ({ ...entry, pattern: new RegExp(`(?<![\\w-])${entry.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w-])`) }))
   const failures = []
   for (const file of files) {
     if (!existsSync(resolve(file))) continue
+    // manifest 는 파일뿐 아니라 어댑터 링크도 옮긴다. sentinel 은 파일 안에만 있다.
+    if (!statSync(resolve(file)).isFile()) continue
     const lines = readFileSync(resolve(file), 'utf8').split('\n')
     lines.forEach((line, index) => {
-      for (const name of names) {
-        if (line.includes(name)) failures.push(`${file}:${index + 1}: 삭제된 문서 이름 → ${name}`)
+      for (const { name, allowIn, pattern } of entries) {
+        if (!pattern.test(line)) continue
+        if (allowIn.some((prefix) => file.startsWith(prefix))) continue
+        failures.push(`${file}:${index + 1}: 삭제된 문서 이름 → ${name}`)
       }
     })
   }
   return failures
 }
 
+/** `.agents/skills` 아래 skill 디렉터리 이름. 없으면 빈 목록이다(이식 대상의 초기 상태). */
+function skillDirectories(root = '.agents/skills') {
+  if (!existsSync(resolve(root))) return []
+  return readdirSync(resolve(root), { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name)
+}
+
 /**
  * `local/no-prohibited-abstraction`의 근거 문자열이 가리키는 규범 파일은 실존해야 한다.
  * 근거는 `<skill> SKILL.md`, `<reference>.md`, `ADR NNNN` 형태만 인정한다.
  */
-export function prohibitedAbstractionSourceFailures(eslintConfig, exists = (path) => existsSync(resolve(path))) {
+export function prohibitedAbstractionSourceFailures(
+  eslintConfig,
+  exists = (path) => existsSync(resolve(path)),
+  readContent = (path) => readFileSync(resolve(path), 'utf8'),
+) {
   const block = /PROHIBITED_ABSTRACTION_BINDINGS\s*=\s*new Map\(\[([\s\S]*?)\]\)/.exec(eslintConfig)
   if (block === null) return ['eslint.config.js: PROHIBITED_ABSTRACTION_BINDINGS 를 찾을 수 없다']
   const failures = []
   for (const [, name, source] of block[1].matchAll(/\['([^']+)',\s*'([^']+)'\]/g)) {
     for (const token of source.split(',').map((part) => part.trim()).filter(Boolean)) {
-      const skill = /^([a-z-]+) SKILL\.md$/.exec(token)
       const adr = /^ADR (\d{4})$/.exec(token)
       const reference = /^([a-z0-9-]+\.md)$/.exec(token)
-      const found = skill
-        ? exists(`.agents/skills/${skill[1]}/SKILL.md`)
-        : adr
-          ? readdirSync(resolve('docs/decisions')).some((file) => file.startsWith(`${adr[1]}-`))
-          : reference
-            ? ['api-contract', 'feature-contract', 'shared-ui-contract']
-              .some((skillName) => exists(`.agents/skills/${skillName}/references/${reference[1]}`))
-            : false
-      if (!found) failures.push(`eslint.config.js: '${name}' 근거 '${token}' 가 실존 규범 파일이 아니다`)
+      if (adr) {
+        if (!readdirSync(resolve('docs/decisions')).some((file) => file.startsWith(`${adr[1]}-`))) {
+          failures.push(`eslint.config.js: '${name}' 근거 '${token}' 가 실존 규범 파일이 아니다`)
+        }
+        continue
+      }
+      if (!reference) {
+        failures.push(`eslint.config.js: '${name}' 근거 '${token}' 가 실존 규범 파일이 아니다`)
+        continue
+      }
+      // 파일이 있는지가 아니라 **그 파일이 이 금지를 실제로 말하는지**를 본다.
+      // 존재만 보면 근거를 옮기다 내용을 빠뜨려도 통과한다 — 실제로 한 번 그렇게 빠졌다.
+      // 근거는 skill 이름(`source-structure.md` → 그 skill 의 SKILL.md)이거나 그 skill 의
+      // reference, 또는 판독 정책이다. 이름 하나로 세 자리를 다 본다.
+      const stem = reference[1].replace(/\.md$/, '')
+      const candidates = [
+        `.agents/skills/${stem}/SKILL.md`,
+        ...skillDirectories().map((dir) => `.agents/skills/${dir}/references/${reference[1]}`),
+        `product/policies/${reference[1]}`,
+      ]
+      const hosting = candidates.filter((path) => exists(path))
+      if (hosting.length === 0) {
+        failures.push(`eslint.config.js: '${name}' 근거 '${token}' 가 실존 규범 파일이 아니다`)
+      } else if (!hosting.some((path) => readContent(path).includes(name))) {
+        failures.push(`eslint.config.js: '${name}' 근거 '${token}' 에 그 이름이 없다 — 근거 문서가 이 금지를 말하지 않는다`)
+      }
     }
   }
   return failures

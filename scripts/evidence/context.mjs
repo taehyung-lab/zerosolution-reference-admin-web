@@ -2,7 +2,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { dirname, relative, resolve } from 'node:path'
 import { readReference, referenceOf, selectedDocuments } from './documents.mjs'
 import { pointerState, rowsForSurface, summarize } from './screen-rows.mjs'
-import { PRODUCT_POINTER, productPaths } from '../contracts/product-paths.mjs'
+import { LEGACY_LEDGER } from '../contracts/product-paths.mjs'
 
 const text = (value) => typeof value === 'string' && value.trim().length > 0
 const list = (value) => Array.isArray(value)
@@ -39,10 +39,11 @@ function withShapeHeadings(root, references) {
   return extra.length ? [...references, ...extra] : references
 }
 
-export function readSurfaceIndex(root) {
-  const file = productPaths(root).index
+export function readSurfaceIndex(root, ledger = LEGACY_LEDGER) {
+  const file = ledger.index
   if (!existsSync(resolve(root, file))) {
-    if (existsSync(resolve(root, PRODUCT_POINTER))) throw new Error(`Product pointer index does not exist: ${file}`)
+    // 원장 폴더는 있는데 색인만 없다 = 색인이 사라진 것이다. 폴더째 없으면 이 제품은 이미 fact 로 옮겼다.
+    if (existsSync(resolve(root, ledger.inventory))) throw new Error(`Ledger index does not exist: ${file}`)
     return { judgment: [], surfaces: [] }
   }
   const index = JSON.parse(readFileSync(resolve(root, file), 'utf8'))
@@ -50,11 +51,12 @@ export function readSurfaceIndex(root) {
   return index
 }
 
-export function surfaceIndexFailures(root) {
+/** 옛 원장 색인(`context.json`)의 정합성. fact 로 옮긴 색인은 생성물이라 `factIndexFailures` 가 본다. */
+export function surfaceIndexFailures(root, ledger = LEGACY_LEDGER) {
   const failures = []
   try {
-    const paths = productPaths(root)
-    const index = readSurfaceIndex(root)
+    const paths = ledger
+    const index = readSurfaceIndex(root, ledger)
     const ids = new Set()
     for (const surface of index.surfaces) {
       if (!text(surface.id) || ids.has(surface.id)) throw new Error(`Duplicate or empty surface id: ${surface.id}`)
@@ -73,7 +75,7 @@ export function surfaceIndexFailures(root) {
       for (const id of surface.related) if (!ids.has(id) || id === surface.id) throw new Error(`Dangling related surface: ${surface.id} → ${id}`)
     }
     for (const ref of index.judgment) {
-      if (referenceOf(ref).file !== paths.judgment) throw new Error(`Judgment location must match ${PRODUCT_POINTER}: ${referenceOf(ref).file}`)
+      if (referenceOf(ref).file !== paths.judgment) throw new Error(`Judgment location must match ${paths.judgment}: ${referenceOf(ref).file}`)
       readReference(root, ref)
     }
     const directory = resolve(root, paths.inventory)
@@ -137,7 +139,7 @@ export function contextReport(root, { summary = false } = {}) {
       pending.push(target)
     }
   }
-  const notion=resolve(root,productPaths(root).inventory,'notion')
+  const notion=resolve(root,LEGACY_LEDGER.inventory,'notion')
   const supporting=existsSync(notion)?readdirSync(notion,{recursive:true,withFileTypes:true}).filter(entry=>entry.isFile()&&entry.name.endsWith('.md')).map(entry=>{
     const file=relative(root,resolve(entry.parentPath,entry.name)).replaceAll('\\','/')
     return {file,route:direct.has(file)?'direct':reachable.has(file)?'linked':'unlinked',bytes:Buffer.byteLength(readFileSync(resolve(root,file)))}

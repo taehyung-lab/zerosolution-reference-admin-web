@@ -18,7 +18,7 @@
         "src/app/shell/"
       ],
       "references": [
-        ".agents/skills/feature-contract/references/screen-composition.md",
+        ".agents/skills/screen-composition/SKILL.md",
         {
           "file": "docs/reference/zero-sol-figma-analysis.md",
           "heading": "질문 7"
@@ -86,7 +86,7 @@
       ],
       "paths": [],
       "references": [
-        ".agents/skills/feature-contract/references/specialized-screens.md",
+        ".agents/skills/specialized-screens/SKILL.md",
         {
           "file": "docs/reference/zero-sol-figma-analysis.md",
           "heading": "질문 14"
@@ -235,8 +235,8 @@
         "src/features/messaging/"
       ],
       "references": [
-        ".agents/skills/feature-contract/references/form.md",
-        ".agents/skills/api-contract/references/mutations.md",
+        ".agents/skills/form-contract/SKILL.md",
+        ".agents/skills/server-state/SKILL.md",
         {
           "file": "docs/reference/zero-sol-figma-analysis.md",
           "heading": "8. 상세·폼·팝업 판정 (2026-09-02 ①′~②′, Claude·Codex 독립 초안 + 교차 리뷰)"
@@ -301,31 +301,31 @@
           "heading": "공연 > 공연목록"
         },
         {
-          "file": ".agents/skills/feature-contract/references/list.md",
+          "file": ".agents/skills/list-contract/SKILL.md",
           "heading": "Ownership"
         },
         {
-          "file": ".agents/skills/feature-contract/references/list.md",
+          "file": ".agents/skills/list-contract/SKILL.md",
           "heading": "Result"
         },
         {
-          "file": ".agents/skills/feature-contract/references/list.md",
+          "file": ".agents/skills/list-contract/SKILL.md",
           "heading": "URL"
         },
         {
-          "file": ".agents/skills/feature-contract/references/list.md",
+          "file": ".agents/skills/list-contract/SKILL.md",
           "heading": "Query"
         },
         {
-          "file": ".agents/skills/feature-contract/references/list.md",
+          "file": ".agents/skills/list-contract/SKILL.md",
           "heading": "Verification"
         },
         {
-          "file": ".agents/skills/feature-contract/references/list.md",
+          "file": ".agents/skills/list-contract/SKILL.md",
           "heading": "형태"
         },
         {
-          "file": ".agents/skills/feature-contract/references/list.md",
+          "file": ".agents/skills/list-contract/SKILL.md",
           "heading": "Collections elsewhere"
         },
         {
@@ -368,7 +368,7 @@
           "heading": "공연 > 공연목록"
         },
         {
-          "file": ".agents/skills/shared-ui-contract/references/catalog.md",
+          "file": ".agents/skills/shared-ui/references/catalog.md",
           "heading": "Primitives"
         },
         {
@@ -399,14 +399,14 @@
           "file": "docs/reference/zero-sol/notion/05-performances.md",
           "heading": "공연 > 공연목록"
         },
-        ".agents/skills/feature-contract/references/detail.md",
-        ".agents/skills/feature-contract/references/form.md",
+        ".agents/skills/detail-contract/SKILL.md",
+        ".agents/skills/form-contract/SKILL.md",
         {
-          "file": ".agents/skills/feature-contract/references/list.md",
+          "file": ".agents/skills/list-contract/SKILL.md",
           "heading": "Collections elsewhere"
         },
-        ".agents/skills/feature-contract/references/file-workflow.md",
-        ".agents/skills/api-contract/references/mutations.md",
+        ".agents/skills/file-workflow/SKILL.md",
+        ".agents/skills/server-state/SKILL.md",
         {
           "file": "docs/reference/zero-sol-figma-analysis.md",
           "heading": "8. 상세·폼·팝업 판정 (2026-09-02 ①′~②′, Claude·Codex 독립 초안 + 교차 리뷰)"
@@ -420,7 +420,7 @@
           "heading": "검색·선택 판독"
         },
         {
-          "file": ".agents/skills/feature-contract/references/list.md",
+          "file": ".agents/skills/list-contract/SKILL.md",
           "heading": "형태"
         }
       ],
@@ -441,7 +441,7 @@
         "src/features/performances/screens/performance-detail/ui/PerformanceBasicSection.tsx"
       ],
       "references": [
-        ".agents/skills/feature-contract/references/form.md",
+        ".agents/skills/form-contract/SKILL.md",
         {
           "file": "docs/reference/zero-sol/notion/05-performances.md",
           "heading": "공연 > 공연목록"
@@ -470,31 +470,31 @@
           "heading": "공연 > 콘텐츠"
         },
         {
-          "file": ".agents/skills/feature-contract/references/list.md",
+          "file": ".agents/skills/list-contract/SKILL.md",
           "heading": "Ownership"
         },
         {
-          "file": ".agents/skills/feature-contract/references/list.md",
+          "file": ".agents/skills/list-contract/SKILL.md",
           "heading": "Result"
         },
         {
-          "file": ".agents/skills/feature-contract/references/list.md",
+          "file": ".agents/skills/list-contract/SKILL.md",
           "heading": "URL"
         },
         {
-          "file": ".agents/skills/feature-contract/references/list.md",
+          "file": ".agents/skills/list-contract/SKILL.md",
           "heading": "Query"
         },
         {
-          "file": ".agents/skills/feature-contract/references/list.md",
+          "file": ".agents/skills/list-contract/SKILL.md",
           "heading": "Verification"
         },
         {
-          "file": ".agents/skills/feature-contract/references/list.md",
+          "file": ".agents/skills/list-contract/SKILL.md",
           "heading": "형태"
         },
         {
-          "file": ".agents/skills/feature-contract/references/list.md",
+          "file": ".agents/skills/list-contract/SKILL.md",
           "heading": "Collections elsewhere"
         },
         {
@@ -549,7 +549,7 @@
         "src/features/performances/screens/performance-content-list/ui/ContentPreviewDialog.tsx"
       ],
       "references": [
-        ".agents/skills/feature-contract/references/detail.md",
+        ".agents/skills/detail-contract/SKILL.md",
         {
           "file": "docs/reference/zero-sol-figma-analysis.md",
           "heading": "8. 상세·폼·팝업 판정 (2026-09-02 ①′~②′, Claude·Codex 독립 초안 + 교차 리뷰)"
@@ -576,31 +576,31 @@
       ],
       "references": [
         {
-          "file": ".agents/skills/feature-contract/references/list.md",
+          "file": ".agents/skills/list-contract/SKILL.md",
           "heading": "Ownership"
         },
         {
-          "file": ".agents/skills/feature-contract/references/list.md",
+          "file": ".agents/skills/list-contract/SKILL.md",
           "heading": "Result"
         },
         {
-          "file": ".agents/skills/feature-contract/references/list.md",
+          "file": ".agents/skills/list-contract/SKILL.md",
           "heading": "URL"
         },
         {
-          "file": ".agents/skills/feature-contract/references/list.md",
+          "file": ".agents/skills/list-contract/SKILL.md",
           "heading": "Query"
         },
         {
-          "file": ".agents/skills/feature-contract/references/list.md",
+          "file": ".agents/skills/list-contract/SKILL.md",
           "heading": "Verification"
         },
         {
-          "file": ".agents/skills/feature-contract/references/list.md",
+          "file": ".agents/skills/list-contract/SKILL.md",
           "heading": "형태"
         },
         {
-          "file": ".agents/skills/feature-contract/references/list.md",
+          "file": ".agents/skills/list-contract/SKILL.md",
           "heading": "Collections elsewhere"
         },
         {
@@ -803,7 +803,7 @@
       ],
       "references": [
         {
-          "file": ".agents/skills/feature-contract/references/list.md",
+          "file": ".agents/skills/list-contract/SKILL.md",
           "heading": "Collections elsewhere"
         },
         {
@@ -871,7 +871,7 @@
           "heading": "커뮤니티 > 게시물"
         },
         {
-          "file": ".agents/skills/feature-contract/references/list.md",
+          "file": ".agents/skills/list-contract/SKILL.md",
           "heading": "형태"
         }
       ],
@@ -887,9 +887,9 @@
       ],
       "paths": [],
       "references": [
-        ".agents/skills/feature-contract/references/specialized-screens.md",
+        ".agents/skills/specialized-screens/SKILL.md",
         {
-          "file": ".agents/skills/feature-contract/references/list.md",
+          "file": ".agents/skills/list-contract/SKILL.md",
           "heading": "Collections elsewhere"
         },
         {
@@ -937,7 +937,7 @@
           "heading": "통계 > APP > 콘텐츠"
         },
         {
-          "file": ".agents/skills/feature-contract/references/list.md",
+          "file": ".agents/skills/list-contract/SKILL.md",
           "heading": "형태"
         }
       ],
@@ -1335,19 +1335,19 @@
           "heading": "공연 > 콘텐츠"
         },
         {
-          "file": ".agents/skills/feature-contract/references/list.md",
+          "file": ".agents/skills/list-contract/SKILL.md",
           "heading": "Selection and actions"
         },
         {
-          "file": ".agents/skills/feature-contract/references/detail.md",
+          "file": ".agents/skills/detail-contract/SKILL.md",
           "heading": "Actions"
         },
         {
-          "file": ".agents/skills/api-contract/references/mutations.md",
+          "file": ".agents/skills/server-state/SKILL.md",
           "heading": "시나리오 상태와 관찰 범위"
         },
         {
-          "file": ".agents/skills/api-contract/references/mutations.md",
+          "file": ".agents/skills/server-state/SKILL.md",
           "heading": "시나리오 요청"
         },
         {
@@ -1363,11 +1363,11 @@
           "heading": "검색·선택 판독"
         },
         {
-          "file": ".agents/skills/feature-contract/references/list.md",
+          "file": ".agents/skills/list-contract/SKILL.md",
           "heading": "형태"
         },
         {
-          "file": ".agents/skills/feature-contract/references/detail.md",
+          "file": ".agents/skills/detail-contract/SKILL.md",
           "heading": "형태"
         }
       ]
@@ -1391,34 +1391,34 @@
           "heading": "공연 > 콘텐츠"
         },
         {
-          "file": ".agents/skills/feature-contract/references/detail.md",
+          "file": ".agents/skills/detail-contract/SKILL.md",
           "heading": "Ownership"
         },
         {
-          "file": ".agents/skills/feature-contract/references/detail.md",
+          "file": ".agents/skills/detail-contract/SKILL.md",
           "heading": "State"
         },
         {
-          "file": ".agents/skills/feature-contract/references/detail.md",
+          "file": ".agents/skills/detail-contract/SKILL.md",
           "heading": "Actions"
         },
         {
-          "file": ".agents/skills/feature-contract/references/detail.md",
+          "file": ".agents/skills/detail-contract/SKILL.md",
           "heading": "형태"
         },
-        ".agents/skills/feature-contract/references/form.md",
-        ".agents/skills/feature-contract/references/file-workflow.md",
+        ".agents/skills/form-contract/SKILL.md",
+        ".agents/skills/file-workflow/SKILL.md",
         {
-          "file": ".agents/skills/feature-contract/references/list.md",
+          "file": ".agents/skills/list-contract/SKILL.md",
           "heading": "Collections elsewhere"
         },
-        ".agents/skills/api-contract/references/mutations.md",
+        ".agents/skills/server-state/SKILL.md",
         {
           "file": "docs/reference/zero-sol-figma-analysis.md",
           "heading": "8. 상세·폼·팝업 판정 (2026-09-02 ①′~②′, Claude·Codex 독립 초안 + 교차 리뷰)"
         },
         {
-          "file": ".agents/skills/feature-contract/references/list.md",
+          "file": ".agents/skills/list-contract/SKILL.md",
           "heading": "형태"
         }
       ]

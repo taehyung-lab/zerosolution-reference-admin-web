@@ -38,6 +38,23 @@
     "sessionSeats": "Session {{number}}: sold {{sold}}, unsold {{unsold}}",
     "grades": "Grades"
   },
+  "edit": {
+    "title": "Edit performance",
+    "selectFile": "Choose file",
+    "removeFile": "Remove the chosen file",
+    "select": "Select",
+    "gateFor": "Gate {{order}}",
+    "areaFor": "Zone {{order}}",
+    "gradeFor": "Grade {{order}}",
+    "removeGrade": "Remove {{value}}",
+    "add": "Add",
+    "remove": "Delete",
+    "removeRow": "Delete gate {{order}}",
+    "guideHint": {
+      "zone": "* Enter the zone to guide visitors to for each gate. Enter the zone separately even for the same gate.",
+      "grade": "* Select the grade to guide visitors to for each gate."
+    }
+  },
   "title": "Performances",
   "filters": {
     "title": "Search filters",

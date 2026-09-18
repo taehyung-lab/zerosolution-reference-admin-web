@@ -1,6 +1,6 @@
 /**
  * 의미 기반 오류 분류. HTTP 상태 코드를 UI에 그대로 노출하지 않는다.
- * 상세 규칙의 단일 출처는 .agents/skills/api-contract/references/transport.md 다.
+ * 상세 규칙의 단일 출처는 .agents/skills/api-wire/SKILL.md 다.
  */
 export type ApiErrorKind =
   | 'network'

@@ -1,3 +1,9 @@
+/**
+ * 아직 fact 로 옮기지 않은 화면들의 **옛 원장**(`docs/reference/zero-sol/context.json`)을 지키는 검사다.
+ * 새로 쓰는 색인은 fact frontmatter 에서 생성되므로 `scripts/product/build-index.mjs` 가 소유하고,
+ * 여기는 그 이관이 끝날 때까지만 산다. 마지막 화면이 fact 가 되면 이 파일과 `scripts/evidence/` 를
+ * `LEGACY_LEDGER` 와 함께 지운다.
+ */
 import { afterEach, expect, it } from 'vitest'
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { selectedDocuments, sectionText } from './documents.mjs'
@@ -15,10 +21,8 @@ function fixture() {
   const inventory = 'docs/reference/zero-sol/05-performances.md'
   const scenario = 'docs/reference/scenarios/performance.md'
   write('scripts/contracts/check.mjs', 'console.log("fixture contract passed")\n')
-  write('docs/reference/product.json', JSON.stringify({ inventory: 'docs/reference/zero-sol', judgment: 'docs/reference/zero-sol-figma-analysis.md', scenarios: 'docs/reference/scenarios', index: 'docs/reference/zero-sol/context.json' }))
   write('AGENTS.md', '# Root\nGlobal constraints.\n')
-  write('.agents/skills/feature-contract/SKILL.md', '# Feature\nOwnership.\n')
-  write('.agents/skills/screen-loop/SKILL.md', '# Loop\nEntry and return points.\n')
+  write('.agents/skills/list-contract/SKILL.md', '# Loop\nEntry and return points.\n')
   write(inventory, '# Performance\nCommon policy.\n## List\nNo selection column.\n## Edit\nSection-owned save.\n')
   write(scenario, '# Scenario\nEntry loads; reset clears.\n')
   write('docs/reference/zero-sol/context.json', JSON.stringify({ judgment: [], surfaces: [
@@ -38,12 +42,48 @@ it('delivers only the selected surface section, not a sibling section of the sam
   expect(body).not.toContain('Section-owned save.')
 })
 
-it('routes another product through its canonical pointer without reading the old product index', () => {
+it('원장 폴더는 있는데 색인만 사라지면 빈 원장으로 읽지 않고 실패한다', () => {
   const { root, write } = fixture()
-  write('docs/reference/product.json', JSON.stringify({ inventory: 'docs/product', judgment: 'docs/product/decisions.md', scenarios: 'docs/events', index: 'docs/product/index.json' }))
-  write('docs/product/index.json', JSON.stringify({ judgment: [], surfaces: [] }))
-  expect(readSurfaceIndex(root).surfaces).toEqual([])
+  expect(readSurfaceIndex(root).surfaces).toHaveLength(3)
+  rmSync(join(root, 'docs/reference/zero-sol/context.json'))
+  expect(surfaceIndexFailures(root).join()).toMatch(/Ledger index does not exist/)
+  // 대조군: 원장 자체가 없는 제품(이관이 끝난 대상)은 실패가 아니라 빈 원장이다.
+  const empty = mkdtempSync(join(tmpdir(), 'surface-context-'))
+  roots.push(empty)
+  void write
+  expect(surfaceIndexFailures(empty)).toEqual([])
+})
+
+it('rejects index drift with normal and negative controls', () => {
+  const { root, write } = fixture()
   expect(surfaceIndexFailures(root)).toEqual([])
+  const indexPath = 'docs/reference/zero-sol/context.json'
+  const index = JSON.parse(readFileSync(join(root, indexPath), 'utf8'))
+  index.surfaces[0].related.push('unknown-dialog')
+  write(indexPath, JSON.stringify(index))
+  expect(surfaceIndexFailures(root).join()).toMatch(/Dangling/)
+  index.surfaces[0].related.pop()
+  index.surfaces.push(index.surfaces[0])
+  write(indexPath, JSON.stringify(index))
+  expect(surfaceIndexFailures(root).join()).toMatch(/Duplicate/)
+  index.surfaces.pop()
+  write(indexPath, JSON.stringify(index))
+  write('docs/reference/zero-sol/13-profile.md', '# Profile')
+  expect(surfaceIndexFailures(root).join()).toMatch(/without context entry/)
+})
+
+it('계약을 인용하면서 그 계약의 `형태` 절을 빼면 실패한다', () => {
+  const { root, write } = fixture()
+  const contract = '.agents/skills/list-contract/SKILL.md'
+  write(contract, '# List\n\n## Confirm\nA.\n\n## 형태\nFiles.\n')
+  const indexPath = 'docs/reference/zero-sol/context.json'
+  const index = JSON.parse(readFileSync(join(root, indexPath), 'utf8'))
+  index.surfaces[0].references = [{ file: contract, heading: 'Confirm' }]
+  write(indexPath, JSON.stringify(index))
+  expect(surfaceIndexFailures(root).join('\n')).toMatch(/performance-list cites .*list-contract.*without heading 형태/)
+  index.surfaces[0].references = [contract]
+  write(indexPath, JSON.stringify(index))
+  expect(surfaceIndexFailures(root).filter((item) => item.includes('형태'))).toEqual([])
 })
 
 it('keeps introductions, ancestor constraints, child sections and fenced examples intact', () => {
@@ -76,24 +116,6 @@ it('delivers overlapping sections and their ancestor introductions only once', (
   expect(() => selectedDocuments(root, [...refs, {file: inventory, heading:'Child', marker:'missing'}])).toThrow(/marker/)
 })
 
-it('rejects index drift with normal and negative controls', () => {
-  const { root, write } = fixture()
-  expect(surfaceIndexFailures(root)).toEqual([])
-  const indexPath = 'docs/reference/zero-sol/context.json'
-  const index = JSON.parse(readFileSync(join(root, indexPath), 'utf8'))
-  index.surfaces[0].related.push('unknown-dialog')
-  write(indexPath, JSON.stringify(index))
-  expect(surfaceIndexFailures(root).join()).toMatch(/Dangling/)
-  index.surfaces[0].related.pop()
-  index.surfaces.push(index.surfaces[0])
-  write(indexPath, JSON.stringify(index))
-  expect(surfaceIndexFailures(root).join()).toMatch(/Duplicate/)
-  index.surfaces.pop()
-  write(indexPath, JSON.stringify(index))
-  write('docs/reference/zero-sol/13-profile.md', '# Profile')
-  expect(surfaceIndexFailures(root).join()).toMatch(/without context entry/)
-})
-
 it('discovers valid seed bundle IDs and their four roots without reading the declaration source', () => {
   const listing = spawnSync(process.execPath, ['scripts/evidence/cli.mjs', 'bundle'], { encoding: 'utf8' })
   expect(listing.status).toBe(0)
@@ -109,16 +131,3 @@ it('discovers valid seed bundle IDs and their four roots without reading the dec
   expect(invalid.status).toBe(1)
 })
 
-it('fails a surface that cites a skill file without its 형태 heading', () => {
-  const { root, write } = fixture()
-  const skill = '.agents/skills/feature-contract/references/list.md'
-  write(skill, '# List\n\n## Confirm\nA.\n\n## 형태\nFiles.\n')
-  const indexPath = join(root, 'docs/reference/zero-sol/context.json')
-  const index = JSON.parse(readFileSync(indexPath, 'utf8'))
-  index.surfaces[0].references = [{ file: skill, heading: 'Confirm' }]
-  write('docs/reference/zero-sol/context.json', JSON.stringify(index))
-  expect(surfaceIndexFailures(root).join('\n')).toMatch(/performance-list cites .*list.md without heading 형태/)
-  index.surfaces[0].references = [skill]
-  write('docs/reference/zero-sol/context.json', JSON.stringify(index))
-  expect(surfaceIndexFailures(root).filter((item) => item.includes('형태'))).toEqual([])
-})

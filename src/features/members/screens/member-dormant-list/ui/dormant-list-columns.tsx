@@ -34,7 +34,7 @@ export function dormantListColumns({
     selectionColumn({
       selection,
       pageLabel: t('result.selectPage'),
-      rowLabel: (row) => t('result.selectRow', { name: row.email }),
+      rowLabel: (row) => t('result.selectRow', { name: row.name }),
     }),
     sortable('signupMethod', (row) => t(`signup.${row.signupMethod}`)),
     sortable('email', (row) => maskEmail(row.email)),

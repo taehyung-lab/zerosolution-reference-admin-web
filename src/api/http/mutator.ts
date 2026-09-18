@@ -51,7 +51,7 @@ function decodeResponse(response: AxiosResponse<unknown>): unknown {
  *
  * - 생성 시그니처에 Authorization 을 노출하지 않는다 (scripts/openapi/prepare-generation.mjs 가
  *   스펙의 중복 parameter 를 제거하고, 실제 헤더는 client interceptor 가 붙인다).
- * - 응답 봉투 판정을 여기 한 곳에서 통과시킨다 (`api-contract` transport 경계).
+ * - 응답 봉투 판정을 여기 한 곳에서 통과시킨다 (`api-wire.md` transport 경계).
  */
 export const customInstance = async <T>(
   config: AxiosRequestConfig,

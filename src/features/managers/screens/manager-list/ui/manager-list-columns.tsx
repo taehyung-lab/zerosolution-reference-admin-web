@@ -1,6 +1,7 @@
 import type { TFunction } from 'i18next';
 import type { ManagerRow, ManagerSortKey } from '@/features/managers/model/manager';
 import { formatDate } from '@/shared/lib/datetime';
+import { maskEmail, maskPhone } from '@/shared/lib/mask-contact';
 import { headerSortDirection } from '@/shared/lib/list-sort';
 import type { PageRowSelection } from '@/shared/model/use-page-row-selection';
 import type { DataTableProps } from '@/shared/ui/list/DataTable';
@@ -40,6 +41,9 @@ export function managerListColumns({
   const cell = (row: ManagerRow, field: ManagerSortKey): string => {
     if (field === 'accountStatus') return t(`accountStatus.${row.accountStatus}`);
     if (field === 'joinedAt' || field === 'lastAccessAt') return formatDate(row[field]);
+    // 연락처는 마스킹해 보인다. 해제는 조회의 재인증 액션뿐이다(CONTACT-MASKING).
+    if (field === 'phone') return maskPhone(row.phone);
+    if (field === 'email') return maskEmail(row.email);
     return row[field];
   };
 

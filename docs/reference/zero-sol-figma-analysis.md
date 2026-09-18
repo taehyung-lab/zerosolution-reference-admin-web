@@ -66,8 +66,8 @@
 ## 구조 판정 — 회원 (2026-09-06)
 
 관찰 원장이 아니라 여기가 소유한다. 새 프로젝트는 이 판정의 **근거**를 가져가고 파일 이름은 자기 제품 어휘로 다시 정한다.
-판정 기준은 [screen-composition](../../.agents/skills/feature-contract/references/screen-composition.md)과
-[list-result](../../.agents/skills/shared-ui-contract/references/catalog.md#list)다.
+판정 기준은 screen-composition과
+list-result다.
 
 - **업무 단위가 폴더를 가른다.** 활성 목록·상세·등록/수정·휴면·탈퇴·상담·소명·접속이 각각 소유자를 갖는다. 한 업무의 화면은 `Screen`이 `Filters`·`Result`·`Actions`와 집중된 훅을 조립하고, `Screen`은 조립만 한다.
 - **여러 회원 목록이 함께 쓰는 검색·조회 대용·다운로드 입력은 회원 feature 안의 한 곳이 소유한다**(현재 `members/records/`). code consumer 5개(휴면·탈퇴·상담·소명·접속)로 근거가 있으나 **`shared`로 올리지 않았다** — 회원 도메인 어휘를 담기 때문이다. 다른 도메인 목록이 같은 mechanic을 요구하면 그때 도메인 없는 부분만 승격을 판정한다.
@@ -93,7 +93,7 @@
 
 ### 질문 3
 
-3. 정렬 방향을 바꾸는 UI가 있는가(헤더 아이콘 클릭?). 임시 답(2026-09-02): 활성 헤더 클릭이 유일한 방향 전환 UI이고 Select에서 다른 값을 고르면 방향은 유지된다. **확정(2026-09-11 사용자, 목록 공통): 기본 방향은 `desc`(최신 먼저)이고 활성 컬럼은 첫 렌더부터 방향을 표시한다.** URL 계약이 `sortDirection.defaultValue` 로 선언하고 `headerSortDirection`(`shared/lib/list-sort.ts`)이 aria 어휘로 옮긴다([list-workflow Sorting](../../.agents/skills/feature-contract/references/list.md#sorting)). 남은 질문: 비활성 sortable 헤더에도 아이콘을 보이는지, Figma 아이콘이 방향을 뜻하는지(실측 대기).
+3. 정렬 방향을 바꾸는 UI가 있는가(헤더 아이콘 클릭?). 임시 답(2026-09-02): 활성 헤더 클릭이 유일한 방향 전환 UI이고 Select에서 다른 값을 고르면 방향은 유지된다. **확정(2026-09-11 사용자, 목록 공통): 기본 방향은 `desc`(최신 먼저)이고 활성 컬럼은 첫 렌더부터 방향을 표시한다.** URL 계약이 `sortDirection.defaultValue` 로 선언하고 `headerSortDirection`(`shared/lib/list-sort.ts`)이 aria 어휘로 옮긴다(list-workflow Sorting). 남은 질문: 비활성 sortable 헤더에도 아이콘을 보이는지, Figma 아이콘이 방향을 뜻하는지(실측 대기).
 
 ### 게시판 조회·등록·수정 재설계 (2026-09-11)
 
@@ -347,7 +347,7 @@ DOM 관련 3건은 2026-09-05 현재 코드를 직접 재대조해 아래 변경
 메시징 요청 함수는 feature가 소유하고 각 route가 필수 onConfirm으로 명시적으로 연결한다. 활성·탈퇴 회원의 활동 삭제는 `{ memberId, input }`
 계약을 재사용한다. 상태가 없는 로그 연결에 훅·공용 dispatcher를 추가하지 않는다. 업무마다 대상과
 검증·후속 처리가 다르고 공용화할 상태 mechanic도 없으므로 feature 소유를 유지한다.
-실행 규칙은 [mutations.md](../../.agents/skills/api-contract/references/mutations.md#시나리오-요청)가 소유한다.
+실행 규칙은 mutations.md가 소유한다.
 
 2026-09-06 중복 제거: `useMessageComposer`·`MessageFormDialog`는 messaging이 소유한다. 채널/대상 의도만
 보관하고 수신자는 caller의 현재 데이터에서 계산하며 각 route의 필수 onConfirm 연결을 유지한다.
@@ -370,7 +370,7 @@ DOM 관련 3건은 2026-09-05 현재 코드를 직접 재대조해 아래 변경
 | 편집 테이블·반복 행·파일 업로드 | kind D·`FormFileField` 현행 | 다국어·공연 수정 | — |
 | 권한 matrix | `CheckboxTree`(1D) 로 불충분 → feature-first Table+Checkbox. **`CheckboxTree` 자체는 다중선택 필터 그룹(30여 화면)의 shared 표면으로 이관 대상** — 9/1 "matrix 전용" 제외 사유 철회 | 접근권한 등록 2D / 목록 필터 1D | catalog.md 문장, ADR 0014 결정 |
 | `FormSaveDialogs` | opt-in 으로 축소(9/2) → **9/3 ②: `useSaveForm.dialogs` 안에서만 렌더**. 확인 쌍이 없는 인라인 저장은 `useSaveForm` 자체를 쓰지 않는다 | 호출 직전 reference처럼 확인만 있고 실제 저장·성공이 없으면 `ConfirmDialog` 직접 조립. #24의 confirmation-only `FormSaveDialogs` 제안은 현행 계약과 다르므로 이식하지 않는다 | 주석·ADR 0014, `form.md` |
-| 취소 alert | **2026-09-14: 폐기 가능한 dirty 초안이 있는 모든 등록·수정·입력 form에 적용.** page·상세 인라인·action dialog를 같은 기준으로 보호하고 검색·필터·로그인·입력 없는 삭제 확인은 제외한다. 2026-09-07의 화면 형태별 제한을 대체하며 적용 범위 정본은 [form-workflow](../../.agents/skills/feature-contract/references/form.md#cancel-and-dirty-leave)다 | 취소·×·Escape·바깥 클릭은 취소 문구, 일반 route 이동은 화면 이동 문구를 쓴다. 저장 중 이탈은 조용히 거부하고, 저장 성공은 feature가 응답에서 투영한 canonical form 값 또는 제출 snapshot을 새 default로 삼는다. 두 문구의 원본 근거와 단일 route blocker 실측은 ADR 0014에 보존 | 현재 등록·수정·입력 consumer를 감사해 local 우회를 제거. 최신 동작·검증은 [회원 시나리오](scenarios/member-list-and-detail.md)·[설정 시나리오](scenarios/settings-and-permissions.md)와 각 focused test가 소유 |
+| 취소 alert | **2026-09-14: 폐기 가능한 dirty 초안이 있는 모든 등록·수정·입력 form에 적용.** page·상세 인라인·action dialog를 같은 기준으로 보호하고 검색·필터·로그인·입력 없는 삭제 확인은 제외한다. 2026-09-07의 화면 형태별 제한을 대체하며 적용 범위 정본은 [form-workflow](../../.agents/skills/form-contract/SKILL.md#취소와-이탈)다 | 취소·×·Escape·바깥 클릭은 취소 문구, 일반 route 이동은 화면 이동 문구를 쓴다. 저장 중 이탈은 조용히 거부하고, 저장 성공은 feature가 응답에서 투영한 canonical form 값 또는 제출 snapshot을 새 default로 삼는다. 두 문구의 원본 근거와 단일 route blocker 실측은 ADR 0014에 보존 | 현재 등록·수정·입력 consumer를 감사해 local 우회를 제거. 최신 동작·검증은 [회원 시나리오](scenarios/member-list-and-detail.md)·[설정 시나리오](scenarios/settings-and-permissions.md)와 각 focused test가 소유 |
 | Query 오류 → facts | `api/error-outcome.ts` helper | list·detail·edit 3곳 반복 | Managers 적용 |
 | `ManagerDetailScreen` | `목록으로` 제거, 이력 raw table → `Table` primitive | Figma 11.1 조회에 없음 | Managers 적용 |
 | 상세·수정 상태 판정 (2026-09-03, Claude·Codex 독립안 → 교차 리뷰 2라운드) | **`src/api/required-query.ts`**: 순수 `resolveRequiredQueryOutcome` + 얇은 `useDetailQuery`. API-only 훅(`api/useManagerDetail`·`api/useManagerEditDetail`)이 ID·locale를 연결 | 삼항식이 상세·수정에 글자 그대로 복제. 초기 401/403 = generic error + incident 중복, cached+500 = 내용 소실, cached+404 = stale 표시 결함 3종 실측 | ADR 0014 이유, `detail.md`, API/workflow 의존 lint(전체 훅 금지에서 API-only 실행 허용으로 수정) |

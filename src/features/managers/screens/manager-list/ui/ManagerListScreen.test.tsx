@@ -70,6 +70,16 @@ describe('ManagerListScreen (11.1 운영자 목록)', () => {
     expect(screen.getAllByRole('row')).toHaveLength(101);
   });
 
+  it('연락처는 마스킹해 보인다', async () => {
+    renderScreen();
+    search();
+
+    // 해제 경로는 조회의 재인증 액션뿐이다 (CONTACT-MASKING).
+    expect((await screen.findAllByText('010-****-0000')).length).toBeGreaterThan(0);
+    expect(screen.queryByText('010-0000-0000')).toBeNull();
+    expect(screen.queryByText('operator1@example.com')).toBeNull();
+  });
+
   it('권한은 다른 유형의 권한도 고를 수 있고 전체로 되돌리면 조건이 사라진다', async () => {
     const onCommit = vi.fn();
     renderScreen({ onCommit });
@@ -83,7 +93,7 @@ describe('ManagerListScreen (11.1 운영자 목록)', () => {
     await chooseOptionIn('권한', '전체');
     search();
     expect(onCommit).toHaveBeenLastCalledWith({ searched: true });
-    expect(await screen.findByText('operator1@example.com')).toBeInTheDocument();
+    expect(await screen.findByText('검색결과 : 105')).toBeInTheDocument();
   });
 
   it('이메일 검색어·권한·상태를 커밋하고 뒤의 보기·정렬 변경은 조건을 유지한다', async () => {

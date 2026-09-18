@@ -7,7 +7,7 @@
   `docs/research/2026-09-14-*.md` 1건을 대체한다
 
 이 ADR은 **왜 이 형태를 골랐고 무엇이 반증이면 되돌리는가**만 소유한다. 실행 절차는
-[screen-loop](../../.agents/skills/screen-loop/SKILL.md), 전역 경계는 [AGENTS.md](../../AGENTS.md),
+screen-loop, 전역 경계는 [AGENTS.md](../../AGENTS.md),
 검사 소유는 [검사 안내](../../scripts/contracts/README.md)가 소유한다.
 
 ## 결정

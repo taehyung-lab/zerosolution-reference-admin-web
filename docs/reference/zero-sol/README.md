@@ -5,7 +5,7 @@ Figma `ZEROsol (For Kakao)`(`Ogb6WpSpwCVhKggQ1NLRlQ`) 78 page와 Notion `DB: Wor
 런타임 상태 전이·실패·복구는 화면을 봐서 알 수 없으므로 [시나리오 원장](../scenarios/README.md)이 따로 소유한다.
 판정(공용 / feature / 미확인)은 여기에 쓰지 않는다. 판정과 그 근거는
 [zero-sol-figma-analysis.md](../zero-sol-figma-analysis.md), 승격 절차는
-`.agents/skills/shared-ui-contract/references/promotion.md`, 단계는 `docs/decisions/0014-single-screen-shape.md`가 소유한다.
+`.agents/skills/source-structure/SKILL.md` 의 공용 단위의 승격, 단계는 `docs/decisions/0014-single-screen-shape.md`가 소유한다.
 
 ## 프로젝트 사실
 
@@ -15,7 +15,7 @@ Figma `ZEROsol (For Kakao)`(`Ogb6WpSpwCVhKggQ1NLRlQ`) 78 page와 Notion `DB: Wor
 - 배포 환경: 미확인. API base URL, CORS·cookie domain·SameSite 정책이 확정되기 전에는 bootstrap 완료로 보지 않는다.
 - Admin OpenAPI URL: 미확인. 신규 백엔드가 아직 없다.
 - 계약 snapshot: `openapi/admin.snapshot.json`. 현재 값은 신규 제품 계약이 아니라 격리된 리허설 계약이다. 출처와 폐기 조건은 `openapi/README.md`와 `docs/decisions/0001-rehearsal-api-contract.md`가 소유한다. 리허설의 endpoint·DTO·enum·status·permission을 `shared`, `app/config`, 번역의 제품 진실로 삼지 않는다.
-- 기술 스택·버전·검증 명령: `README.md`와 `package.json`이 소유한다. 생성 범위 정책은 `api-contract`가 소유한다.
+- 기술 스택·버전·검증 명령: `README.md`와 `package.json`이 소유한다. 생성 범위 정책은 `.agents/skills/api-wire/SKILL.md`가 소유한다.
 - 다국어: UI 카피는 `ko`, `en`, `ja` parity. 서버 응답 로케일 지원 범위는 계약 snapshot이 선언한 값을 따른다.
 - 날짜·시간: instant request는 `UTC`, 화면 표시와 달력의 하루 경계는 브라우저 IANA zone을 쓴다. locale에서 zone을 추정하거나 상태를 복제하지 않는다. 변환·API 파라미터·재검토 조건은 [날짜 계약](../../decisions/0003-datetime-utc.md)이 소유한다.
 - 권한 기준선: 권한 코드와 역할 체계는 미확인이다. 화면은 "권한이 있으면 이렇게 동작한다"를 기준으로 설계하고 권한 유무 분기를 화면 설계 축으로 삼지 않는다. 접근권한은 `화면 × 기능` 조합이며 화면마다 가능한 기능 집합이 다르다. 거부는 app-level 단일 surface로 수렴하고 실제 식별자는 신규 프로젝트 이관 시 sentinel로 추적한다.
@@ -38,12 +38,12 @@ Figma `ZEROsol (For Kakao)`(`Ogb6WpSpwCVhKggQ1NLRlQ`) 78 page와 Notion `DB: Wor
 [context.json](context.json)은 이 인벤토리의 **연결 정보**만 소유한다. 제품 정책은 아래 원장과
 시나리오에 그대로 둔다. `node scripts/evidence/cli.mjs context`로 대상 목록을, 뒤에 ID를 붙여 해당
 인벤토리·시나리오·관련 내부 surface·기존 코드 경로를 찾는다. 구현 절차는
-[screen-loop](../../../.agents/skills/screen-loop/SKILL.md)가, 검사 계약은
+[`AGENTS.md`](../../../AGENTS.md)가, 검사 계약은
 [검사 안내](../../../scripts/contracts/README.md)가 소유한다.
 
 현재 15개 인벤토리군을 연결하고 공연과 메시지의 일부 내부 surface를 별도로 이름 붙였다.
 `group`은 업무군 진입점이며 하위 화면 전체를 기계적으로 열거한 상태가 아니다. `surface`도
-관찰·[시나리오 구현 완료](../../../.agents/skills/screen-loop/SKILL.md#도달-상태)를 뜻하지 않는다. 내정보·알림 등 시나리오 미확인과 대표 카드만 연결된
+관찰·[시나리오 구현 완료](../../../AGENTS.md#도달-상태)를 뜻하지 않는다. 내정보·알림 등 시나리오 미확인과 대표 카드만 연결된
 부분은 `gap`에 적었다. KEYSCREEN의 별도 판독 범위는 아래 표에 유지하며 이 색인에 포함됐다고
 주장하지 않는다. 이관 때는 새 제품의 원장·경로로 연결을 다시 구성한다.
 
@@ -77,7 +77,7 @@ Figma와 Notion은 이 제품 사실의 1순위 입력이다. 둘이 **같은 �
 - 작업의 지속 근거는 첫 판독부터 해당 원장 셀에 갱신하고 경로가 바뀌면 기존 색인을 정정한다. 워커가 판독한 요구·원문 위치·시점·방법·한계는 코드와 분리해 기존 정본에 수용한다.
   `.ai-work/` 기록을 근거 원장 대신 만들지 않는다. 구현 branch를 수용하지 않아도 근거 변경은 버리지 않으며, 수용자는 실제 근거 diff와 출처를 대조한다.
   구현한 surface의 지속 가능한 근거와 색인은 `settled` 전에 갖춘다. 근거가 없을 때의 진입은
-  [screen-loop](../../../.agents/skills/screen-loop/SKILL.md)의 실패 복귀 표가 소유한다.
+  [`AGENTS.md`](../../../AGENTS.md)의 전역 완료 기준이 소유한다.
 - 읽기 비용은 동일 작업에서 실제로 읽은 절의 양으로 비교한다. 필요한 근거·상위 제약·예외·확정 답·미확인이
   보존됐는지 먼저 대조한 뒤 전체 파일 선택을 좁힌다. 파일 수나 링크 도달만으로 절감·정확도를 판정하지 않는다.
 

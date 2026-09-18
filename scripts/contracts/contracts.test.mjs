@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process'
+import { checkNegativeControlFailures } from './meta.mjs'
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { basename, join, relative, resolve } from 'node:path'
@@ -20,10 +21,13 @@ import {
   parseVerifyChain,
   pnpmCommandFailures,
   readLocalLinkFailures,
+  citedContractPathFailures,
   prohibitedAbstractionSourceFailures,
   retiredDocumentNameFailures,
   transplantSentinelFailures,
   transplantSentinelOccurrences,
+  rootBudgetFailures,
+  skillAdapterFailures,
 } from './contracts.mjs'
 import {
   collectImportClosure,
@@ -442,6 +446,9 @@ describe('contracts check CLI wiring', () => {
     fixtureRoot = resolve(fixtureParent, 'repo')
     cpSync(projectRoot, fixtureRoot, {
       recursive: true,
+      // `cpSync` 는 기본값에서 심링크를 절대경로로 바꿔 복사한다. 그러면 사본의 `.claude/skills` 가
+      // **원본 체크아웃**을 가리키고, 사본을 고쳐도 원본이 읽힌다. 링크는 링크 그대로 옮긴다.
+      verbatimSymlinks: true,
       filter: (source) => !excludedDirectories.has(basename(source)),
     })
   })
@@ -708,11 +715,24 @@ describe('seed contract bundles', () => {
 
 describe('transplant manifest and seed negative controls', () => {
   it('carries the folder placement contract with the root instructions into a new project', () => {
-    expect(listTransplantManifestFiles()).toContain('.agents/skills/folder-structure-contract/SKILL.md')
-    // The loop that turns "implement this screen" into a procedure travels too; without it the target
-    // project has the contracts but not the entry that finds them.
-    expect(listTransplantManifestFiles()).toContain('.agents/skills/screen-loop/SKILL.md')
+    expect(listTransplantManifestFiles()).toContain('.agents/skills/source-structure/SKILL.md')
+    // 근거의 종류와 수명을 정하는 정책도 함께 나간다; 없으면 대상 프로젝트는 계약만 갖고
+    // 그 계약이 무엇을 근거로 삼는지를 잃는다.
+    expect(listTransplantManifestFiles()).toContain('product/policies/evidence.md')
   })
+  it('대조군 — 시험지와 점수는 이관되지 않는다. 도메인 낱말을 담고 있어 남의 제품에 가면 안 된다', () => {
+    expect(findForbiddenSeedFiles([
+      'scripts/skills/fixtures.mjs',
+      'scripts/loop/score.mjs',
+      'scripts/loop/scores.jsonl',
+      'scripts/contracts/seed.mjs',
+    ])).toEqual([
+      'scripts/loop/score.mjs',
+      'scripts/loop/scores.jsonl',
+      'scripts/skills/fixtures.mjs',
+    ])
+  })
+
   it('flags feature code, rehearsal output, and domain translations inside the seed', () => {
     expect(findForbiddenSeedFiles([
       'src/shared/ui/list/ListResult.tsx',
@@ -747,7 +767,7 @@ describe('transplant manifest and seed negative controls', () => {
       ])
     expect(validateTransplantManifest()).toEqual([])
     expect(listTransplantManifestFiles()).toEqual(expect.arrayContaining([
-      '.agents/skills/feature-contract/SKILL.md',
+      '.agents/skills/form-contract/SKILL.md',
       'eslint.config.js',
       'src/test/setup.ts',
       'tsconfig.base.json',
@@ -801,16 +821,28 @@ describe('sentinel occurrences and citation drift', () => {
   it('requires every prohibited-abstraction source to be a real skill, reference, or ADR', () => {
     const config = `
 const PROHIBITED_ABSTRACTION_BINDINGS = new Map([
-  ['ResourcePage', 'feature-contract SKILL.md, list.md'],
-  ['useListTable', 'list-detail.md, primitives-and-tokens.md'],
+  ['ResourcePage', 'source-structure.md, form.md'],
+  ['useListTable', 'list-detail.md, evidence.md'],
   ['UniversalList', 'ADR 0014'],
 ])
 `
-    const exists = (path) => !path.endsWith('list-detail.md')
+    // `list-detail` 은 skill 로도 reference 로도 없다 — 어느 후보 경로에도 존재하지 않는다.
+    const exists = (path) => !path.includes('list-detail')
+    // 파일은 있는데 그 금지를 말하지 않는 경우(대조군): evidence.md 에는 useListTable 이 없다.
+    const read = (path) => (path.endsWith('source-structure.md') ? 'ResourcePage 를 만들지 않는다' : '무관한 내용')
 
-    expect(prohibitedAbstractionSourceFailures(config, exists)).toEqual([
+    expect(prohibitedAbstractionSourceFailures(config, exists, read)).toEqual([
+      // 파일은 있으나 그 금지를 말하지 않는다 — 존재 검사로는 통과하던 자리다
+      "eslint.config.js: 'ResourcePage' 근거 'form.md' 에 그 이름이 없다 — 근거 문서가 이 금지를 말하지 않는다",
       "eslint.config.js: 'useListTable' 근거 'list-detail.md' 가 실존 규범 파일이 아니다",
+      "eslint.config.js: 'useListTable' 근거 'evidence.md' 에 그 이름이 없다 — 근거 문서가 이 금지를 말하지 않는다",
     ])
+    // 근거 문서가 실제로 그 이름을 말하면 통과한다.
+    expect(prohibitedAbstractionSourceFailures(
+      "const PROHIBITED_ABSTRACTION_BINDINGS = new Map([\n  ['ResourcePage', 'source-structure.md'],\n])",
+      () => true,
+      read,
+    )).toEqual([])
   })
 })
 
@@ -913,5 +945,82 @@ describe('scenario ledger index', () => {
 
   it('holds for the real ledger', () => {
     expect(ledgerIndexFailures()).toEqual([])
+  })
+})
+
+describe('백틱으로 가리킨 계약·제품 문서', () => {
+  const files = [{ file: 'AGENTS.md', content: '읽을 계약은 `.agents/skills/list-contract/SKILL.md` 와 `contracts/contract/gone.md` 다.' }]
+
+  it('가리킨 문서가 없으면 실패한다', () => {
+    // 대조군: 링크가 아니라 백틱 표기라 markdown link 검사는 이 자리를 보지 못한다.
+    expect(citedContractPathFailures(files, (path) => path !== 'contracts/contract/gone.md')).toEqual([
+      'AGENTS.md: 백틱으로 가리킨 계약·제품 문서가 없다 → contracts/contract/gone.md',
+    ])
+  })
+
+  it('전부 실존하면 통과한다', () => {
+    expect(citedContractPathFailures(files, () => true)).toEqual([])
+  })
+})
+
+describe('검사가 자기를 검사한다', () => {
+  const source = { file: 'scripts/x.mjs', content: 'export function fooFailures(input) { return [] }' }
+
+  it('대조군이 없는 검사 함수를 실패로 낸다', () => {
+    const tests = [{ file: 'scripts/x.test.mjs', content: "it('통과한다', () => {\n  expect(fooFailures('ok')).toEqual([])\n})" }]
+    expect(checkNegativeControlFailures([source, ...tests])).toEqual([
+      'scripts/x.mjs: fooFailures 에 대조군이 없다 — 일부러 어긴 입력에서 실패를 내는 테스트가 있어야 등록된다',
+    ])
+  })
+
+  it('빈 배열이 아닌 결과를 기대하는 테스트가 있으면 통과한다', () => {
+    const tests = [{ file: 'scripts/x.test.mjs', content: "it('어기면 실패한다', () => {\n  expect(fooFailures('bad')).toEqual(['boom'])\n})" }]
+    expect(checkNegativeControlFailures([source, ...tests])).toEqual([])
+  })
+})
+
+describe('루트 예산', () => {
+  it('상한 이하면 통과한다', () => {
+    expect(rootBudgetFailures('a\nb\nc\n', 3)).toEqual([])
+  })
+
+  it('상한을 넘으면 실패하고 몇 줄인지 말한다', () => {
+    const failures = rootBudgetFailures('a\nb\nc\nd\n', 3)
+    expect(failures).toHaveLength(1)
+    expect(failures[0]).toContain('4줄')
+  })
+
+  it('대조군 — 실제 AGENTS.md 에 한 줄을 더하면 잡힌다', () => {
+    const real = readFileSync(resolve('AGENTS.md'), 'utf8')
+    expect(rootBudgetFailures(real)).toEqual([])
+    expect(rootBudgetFailures(`${real}\n한 줄 더`)).toHaveLength(1)
+  })
+})
+
+describe('skill 어댑터', () => {
+  const linked = (target) => () => target
+
+  it('정본을 가리키는 링크면 통과한다', () => {
+    expect(skillAdapterFailures('.claude/skills', '.agents/skills', linked('../.agents/skills'), () => true)).toEqual([])
+  })
+
+  it('대조군 — 링크가 아니라 디렉터리면 실패한다. 이관이 실제로 22파일을 복제했던 자리다', () => {
+    const failures = skillAdapterFailures('.claude/skills', '.agents/skills', linked(null), () => true)
+    expect(failures).toHaveLength(1)
+    expect(failures[0]).toContain('복사본은 정본과 어긋난다')
+  })
+
+  it('대조군 — 엉뚱한 곳을 가리키면 어디를 가리키는지 말한다', () => {
+    const failures = skillAdapterFailures('.claude/skills', '.agents/skills', linked('../docs/skills'), () => true)
+    expect(failures).toEqual(['.claude/skills 가 docs/skills 를 가리킨다. .agents/skills 이어야 한다'])
+  })
+
+  it('대조군 — 정본이 사라지면 그것부터 말한다', () => {
+    expect(skillAdapterFailures('.claude/skills', '.agents/skills', linked('../.agents/skills'), () => false))
+      .toEqual(['.agents/skills 이 없다 — 계약의 정본이 사라졌다'])
+  })
+
+  it('이 저장소의 실제 배치가 통과한다', () => {
+    expect(skillAdapterFailures()).toEqual([])
   })
 })

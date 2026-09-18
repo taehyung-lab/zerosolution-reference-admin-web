@@ -14,7 +14,7 @@
 - 공용은 의미·상태 전이·실패가 **여러 실제 소비자에서** 같을 때만이다. 도메인·Router·Query·endpoint·permission·workflow 를 아는 순간 공용이 아니다.
 - 형제 화면은 형태의 예시이지 값의 출처가 아니다. 필드·문구·옵션·권한·이동·오류 정책은 그 화면의 원장에서만 온다.
 
-실행 규칙의 소유자: 파일 배치는 [folder-structure-contract](../../.agents/skills/folder-structure-contract/SKILL.md), 역할별 책임과 상태 흐름은 [list](../../.agents/skills/feature-contract/references/list.md)·[detail](../../.agents/skills/feature-contract/references/detail.md)·[form](../../.agents/skills/feature-contract/references/form.md)·[router](../../.agents/skills/feature-contract/references/router.md), 공용 단위의 입력·소유·비소유는 [catalog](../../.agents/skills/shared-ui-contract/references/catalog.md), 승격·좁힘·삭제 절차는 [promotion](../../.agents/skills/shared-ui-contract/references/promotion.md), 서버 계약이 없는 쓰기는 [mutations](../../.agents/skills/api-contract/references/mutations.md)이다.
+실행 규칙의 소유자: 파일 배치는 folder-structure-contract, 역할별 책임과 상태 흐름은 list·detail·form·router, 공용 단위의 입력·소유·비소유는 catalog, 승격·좁힘·삭제 절차는 promotion, 서버 계약이 없는 쓰기는 mutations이다.
 
 ## 이유
 
@@ -31,7 +31,7 @@
 - **한 도메인을 표준으로 삼는다** — 그 도메인의 제품 값이 규범으로 읽힌다. 여러 도메인을 비교해 공통 형태만 남기고 값은 각자 원장에서 가져왔다.
 - **범용 CRUD·resource framework**(`ResourcePage`·`useCrud`·descriptor renderer) — Router·Query·권한·workflow 를 한 추상화에 숨겨 shared 가 두 번째 애플리케이션이 된다. 이름은 lint 가 막는다.
 - **역할별 파일 집합을 의무 개수로 강제** — 현재 제품의 화면 구성이 규칙이 되어, 책임이 적은 화면이 빈 어댑터를 만들게 된다.
-- **미연결 쓰기를 실패로 둔다** — 화면이 실서버와 다른 lifecycle 을 갖고 연결 시 화면·테스트가 함께 바뀐다. 대신 이름 붙은 요청 함수가 성공으로 끝나 같은 경로를 지금 검증하고, 연결은 그 함수 본문 하나로 좁혔다. 대가는 화면이 저장된 것처럼 보이지만 저장은 일어나지 않는다는 점이며, 도달 상한은 [도달 상태](../../.agents/skills/screen-loop/SKILL.md#도달-상태)가 말한다.
+- **미연결 쓰기를 실패로 둔다** — 화면이 실서버와 다른 lifecycle 을 갖고 연결 시 화면·테스트가 함께 바뀐다. 대신 이름 붙은 요청 함수가 성공으로 끝나 같은 경로를 지금 검증하고, 연결은 그 함수 본문 하나로 좁혔다. 대가는 화면이 저장된 것처럼 보이지만 저장은 일어나지 않는다는 점이며, 도달 상한은 도달 상태가 말한다.
 - **문서에 소비자 목록·단계표를 유지** — 소비자가 바뀔 때마다 문서가 낡고 도메인 이름이 규범으로 읽힌다. 소비자 사실은 코드·테스트가 소유한다.
 
 ## 재검토 조건

@@ -14,7 +14,7 @@ export type CheckboxTreeNode =
  * is selected; a parent is checked when any descendant is selected.
  * Rejects: URL serialization, enum meaning, API meaning of all.
  * API: nodes, values, onValueChange.
- * Boundary: domain-free selection mechanics per shared-ui-contract §promotion.
+ * Boundary: domain-free selection mechanics per `source-structure.md` §공용 단위의 승격.
  */
 export function CheckboxTree({
   nodes,

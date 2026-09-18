@@ -13,7 +13,7 @@ const resolverProject = process.env.ESLINT_PROJECT_TSCONFIG
 
 /**
  * 레이어 import 경계를 실제 import graph 위에서 검사한다.
- * 키워드나 파일 이름 검사가 아니다 (`folder-structure-contract`의 의존 방향 계약).
+ * 키워드나 파일 이름 검사가 아니다 (`source-structure.md`의 의존 방향 계약).
  *
  *   app / routes  ->  features  ->  shared, api  ->  generated
  */
@@ -106,12 +106,12 @@ const RESTRICTED = {
  * 이름을 추가할 때는 skill/ADR이 그 exact 문자열로 금지한 근거가 있어야 한다.
  */
 const PROHIBITED_ABSTRACTION_BINDINGS = new Map([
-  ['ResourcePage', 'feature-contract SKILL.md, list.md, screen-composition.md'],
+  ['ResourcePage', 'source-structure.md'],
   ['UniversalList', 'ADR 0014'],
-  ['useCrud', 'feature-contract SKILL.md'],
+  ['useCrud', 'source-structure.md'],
   ['useListPageController', 'ADR 0014'],
-  ['useListTable', 'list.md, primitives-and-tokens.md'],
-  ['usePagedTable', 'list.md'],
+  ['useListTable', 'source-structure.md'],
+  ['usePagedTable', 'source-structure.md'],
   ['useResourceQuery', 'ADR 0014'],
 ])
 

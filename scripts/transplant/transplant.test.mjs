@@ -2,10 +2,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, 
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
-import { ledgerIndexFailures } from '../contracts/contracts.mjs'
-import { productPaths } from '../contracts/product-paths.mjs'
 import { listTransplantManifestFiles, productLedgerManifest, TRANSPLANT_MANIFEST } from '../contracts/seed.mjs'
-import { surfaceIndexFailures } from '../evidence/context.mjs'
 import {
   applyTransplant,
   delinkUntravelled,
@@ -192,7 +189,7 @@ describe('delinkUntravelled', () => {
   })
 
   it('does not disguise a missing normative skill dependency as source provenance', () => {
-    expect(() => delinkUntravelled('[계약](../../.agents/skills/api-contract/SKILL.md)', { ...context, collect: [] }))
+    expect(() => delinkUntravelled('[계약](../../.agents/skills/nowhere/SKILL.md)', { ...context, collect: [] }))
       .toThrow(/normative/)
   })
 })
@@ -274,11 +271,12 @@ describe('transplant manifest', () => {
     expect(listTransplantManifestFiles()).not.toContain('tests/reference/manager-evidence.test.mjs')
   })
 
-  it('derives the opt-in ledger manifest from the product pointer', () => {
+  it('제품 사실 manifest 는 fact·정책·생성 색인 셋이다', () => {
+    // 옛 체계는 포인터 파일이 네 경로를 가리켰다. 지금은 경로가 상수라 포인터가 없고,
+    // scenarios 가 fact 로 합쳐져 중복이 제거된다.
     const root = temporaryDirectory('ledger-root-')
-    write(root, 'docs/reference/product.json', JSON.stringify(CUSTOM_POINTER))
     expect(productLedgerManifest(root)).toEqual({
-      ledger: ['docs/reference/product.json', 'docs/product', 'docs/product/judgment.md', 'docs/events', 'docs/product/index.json'],
+      ledger: ['product/generated-index.md', 'product/facts'],
     })
   })
 })
@@ -305,52 +303,50 @@ describe('plan / stage / apply against a target directory', () => {
     // Product workflow tests live in the harness directory but import feature screens; they are excluded, not copied.
     expect(byFile.get('src/test/workflows/closed-search.test.ts').action).toBe('exclude')
     expect(byFile.get('src/test/setup.ts').action).toBe('copy')
-    expect(plan.some((item) => item.file.startsWith('.agents/skills/api-contract/references/'))).toBe(true)
+    expect(plan.some((item) => item.file.startsWith('.agents/skills/'))).toBe(true)
     // The active source-product ledger stays home; the target gets neutral ledger shells at its pointer paths.
     expect(plan.some((item) => item.file.startsWith('docs/reference/zero-sol'))).toBe(false)
     expect(plan.some((item) => item.file.startsWith('docs/reference/scenarios/') && item.file !== 'docs/reference/scenarios/README.md')).toBe(false)
-    expect(byFile.get('docs/reference/product.json').action).toBe('generate')
-    expect(byFile.get('docs/reference/product/README.md').action).toBe('generate')
-    expect(byFile.get('docs/reference/product/context.json').action).toBe('generate')
-    expect(byFile.get('docs/reference/product/judgment.md').action).toBe('generate')
-    expect(byFile.get('docs/reference/scenarios/README.md').action).toBe('generate')
+    // 새 구조의 제품 사실 뼈대는 둘뿐이다 — fact 쓰는 법과 빈 생성 색인.
+    // 판독 규칙(product/policies)은 절차라 manifest 가 그대로 옮기고 뼈대로 만들지 않는다.
+    expect(byFile.get('product/facts/README.md').action).toBe('generate')
+    expect(byFile.get('product/generated-index.md').action).toBe('generate')
+    expect(byFile.has('docs/reference/product.json')).toBe(false)
 
     const staged = stageTransplant(target, out)
     expect(existsSync(join(out, 'MANIFEST.json'))).toBe(true)
     expect(existsSync(join(out, 'docs/decisions/0005-single-screen-shape.md'))).toBe(true)
     expect(existsSync(join(out, 'docs/decisions/0014-single-screen-shape.md'))).toBe(false)
     const agents = readFileSync(join(out, 'AGENTS.md'), 'utf8')
-    expect(agents).toContain('docs/reference/product.json')
+    expect(agents).toContain('product/generated-index.md')
     expect(agents).not.toMatch(/ZERO|BOOSTER|zero-sol/)
-    expect(agents).toContain('docs/reference/product.json')
+    expect(agents).toContain('product/generated-index.md')
     expect(readFileSync(join(out, 'CLAUDE.md'), 'utf8').split('\n')[0]).toBe('@AGENTS.md')
     expect(readFileSync(join(out, 'docs/decisions/0006-typescript-version-pin.md'), 'utf8')).toContain('TRANSPLANT_PENDING_ADR_PIN')
-    const skill = readFileSync(join(out, '.agents/skills/screen-loop/SKILL.md'), 'utf8')
-    expect(skill).toContain('docs/reference/product.json')
+    const skill = readFileSync(join(out, '.agents/skills/list-contract/SKILL.md'), 'utf8')
+    // 계약은 도메인 이름을 담지 않으므로 이관해도 제품 이름이 남지 않는다.
     expect(skill).not.toContain('zero-sol')
-    const inventoryReadme = readFileSync(join(out, 'docs/reference/product/README.md'), 'utf8')
-    expect(inventoryReadme).toContain('TRANSPLANT_PENDING_INVENTORY')
+    const inventoryReadme = readFileSync(join(out, 'product/facts/README.md'), 'utf8')
+    // 뼈대는 fact 쓰는 법과 빈 색인 둘뿐이고, 레퍼런스 제품의 관찰은 하나도 가지 않는다.
     expect(inventoryReadme).toContain('TRANSPLANT_PENDING_FACTS')
-    expect(inventoryReadme).not.toMatch(/BOOSTER|loginId|ko.*,.*en.*,.*ja/)
-    expect(inventoryReadme).toContain('## 근거의 수명과 읽기 범위')
-    expect(inventoryReadme).toContain('## 표 형식')
-    expect(inventoryReadme).toContain('## 판독 규칙')
-    expect(inventoryReadme).not.toMatch(/ZERO|Ogb6WpSpwCVhKggQ1NLRlQ/)
-    const scenariosReadme = readFileSync(join(out, 'docs/reference/scenarios/README.md'), 'utf8')
-    expect(scenariosReadme).toContain('## 카드 한 장의 절 구조')
-    expect(scenariosReadme).toContain('## 현재 카드')
+    expect(inventoryReadme).toContain('## frontmatter')
+    expect(inventoryReadme).toContain('## 본문의 절')
+    expect(inventoryReadme).not.toMatch(/BOOSTER|loginId|ZERO|Ogb6WpSpwCVhKggQ1NLRlQ/)
+    const scenariosReadme = readFileSync(join(out, 'product/generated-index.md'), 'utf8')
+    // 색인은 생성물이라 뼈대가 비어 있고, 채우려면 fact 를 만든 뒤 다시 생성해야 한다.
+    expect(scenariosReadme).toContain('TRANSPLANT_PENDING_INDEX')
+    expect(scenariosReadme).toContain('총 0개.')
     expect(scenariosReadme).not.toMatch(/ZERO|dt-admin-web/)
-    expect(readFileSync(join(out, 'docs/reference/product/judgment.md'), 'utf8')).toContain('## 5. 미확인 — 답이 구현을 바꾸는 질문')
-    expect(JSON.parse(readFileSync(join(out, 'docs/reference/product/context.json'), 'utf8'))).toEqual({ judgment: [], surfaces: [] })
-    expect(JSON.parse(readFileSync(join(out, 'docs/reference/product.json'), 'utf8'))).toEqual(NEUTRAL_POINTER)
-    expect(staged.pending.map((item) => item.id)).toEqual(expect.arrayContaining(['ENVELOPE', 'API_BASE', 'FACTS', 'ADR_PIN', 'INVENTORY']))
+    // 판독 규칙은 절차라 뼈대가 아니라 그대로 이관된다.
+    expect(readFileSync(join(out, 'product/policies/evidence.md'), 'utf8')).toContain('근거의 종류를 구별한다')
+    expect(staged.pending.map((item) => item.id)).toEqual(expect.arrayContaining(['ENVELOPE', 'API_BASE', 'FACTS', 'ADR_PIN', 'INDEX']))
     expect(readFileSync(join(out, 'PENDING.md'), 'utf8')).toContain('## 조건부')
-    // ADR evidence lines link to ledger section files that stay home; the shell README they can reach is rewritten.
+    // ADR 이 가리키는 옛 원장은 집에 남으므로 링크를 끊고 레퍼런스 경로로 표시한다. 옛 체계는 이것을
+    // 대상 포인터 경로로 다시 썼지만, 지금은 제품 사실 경로가 상수라 다시 쓸 것이 없다.
     const shared = readFileSync(join(out, 'docs/decisions/0005-single-screen-shape.md'), 'utf8')
-    expect(shared).toContain('](../reference/product/README.md)')
+    expect(shared).toContain('레퍼런스 저장소 docs/reference/zero-sol/README.md')
     expect(shared).toContain('레퍼런스 저장소 docs/reference/zero-sol-figma-analysis.md')
-    expect(staged.sourceReferences.some((item) => item.link === 'docs/reference/product/README.md')).toBe(false)
-    // The judgment record and feature code stay home: their citations keep the reference path instead of inventing a target one.
+    expect(shared).not.toMatch(/\]\([^)]*zero-sol/)
     expect(staged.sourceReferences.some((item) => item.file.startsWith('docs/decisions/') && item.link === 'docs/reference/zero-sol-figma-analysis.md')).toBe(true)
     expect(staged.danglingLinks).toEqual([])
     expect(readFileSync(join(out, 'PENDING.md'), 'utf8')).toContain('## 레퍼런스 저장소에만 있는 근거')
@@ -364,54 +360,44 @@ describe('plan / stage / apply against a target directory', () => {
     expect(existsSync(join(target, '.claude/settings.json'))).toBe(false)
     // The common root points at product-owned facts, whose unresolved status survives apply.
     const targetAgents = readFileSync(join(target, 'AGENTS.md'), 'utf8')
-    expect(targetAgents).toContain('docs/reference/product.json')
+    expect(targetAgents).toContain('product/generated-index.md')
     expect(targetAgents).toContain('이 저장소는 제품 저장소다.')
     expect(targetAgents).not.toContain('이 저장소는 다른 제품으로 옮길 레퍼런스다.')
-    expect(readFileSync(join(target, 'docs/reference/product/README.md'), 'utf8')).toContain('TRANSPLANT_PENDING_FACTS')
+    expect(readFileSync(join(target, 'product/facts/README.md'), 'utf8')).toContain('TRANSPLANT_PENDING_FACTS')
     expect(readFileSync(join(target, 'README.md'), 'utf8')).toContain('TRANSPLANT_PENDING_README')
-    expect(applied.copied).toEqual(expect.arrayContaining(['src/shared/ui/detail/DetailField.tsx', 'CLAUDE.md', 'docs/reference/product.json', 'docs/reference/scenarios/README.md']))
+    expect(applied.copied).toEqual(expect.arrayContaining(['src/shared/ui/detail/DetailField.tsx', 'CLAUDE.md', 'product/facts/README.md', 'product/generated-index.md']))
     expect(applied.skipped.map((item) => item.targetPath)).toEqual(expect.arrayContaining(['src/shared/ui/layout/PageHeader.tsx', 'package.json']))
     expect(existsSync(join(target, 'src/features'))).toBe(false)
     expect(existsSync(join(target, 'openapi/admin.snapshot.json'))).toBe(false)
     expect(existsSync(join(target, 'docs/reference/zero-sol'))).toBe(false)
     expect(existsSync(join(target, 'docs/reference/zero-sol-figma-analysis.md'))).toBe(false)
-    // The transplanted gates read a valid, empty ledger in the target.
-    expect(productPaths(target)).toEqual(NEUTRAL_POINTER)
-    expect(ledgerIndexFailures(join(target, 'docs/reference/scenarios'))).toEqual([])
-    expect(surfaceIndexFailures(target)).toEqual([])
+    // 대상에 놓인 것은 **빈 뼈대**다. fact 는 하나도 가지 않았고 색인은 0개에서 시작한다.
+    expect(readdirSync(join(target, 'product/facts'))).toEqual(['README.md'])
+    expect(readFileSync(join(target, 'product/generated-index.md'), 'utf8')).toContain('총 0개.')
+    expect(readFileSync(join(target, 'product/policies/evidence.md'), 'utf8')).toContain('근거의 종류를 구별한다')
   })
 
-  it('honours an existing target pointer: rewrites ledger paths to it, relocates relative links, and never replaces its files', () => {
+  it('대상에 이미 제품 사실이 있으면 뼈대를 만들지 않고 그 파일을 그대로 둔다', () => {
     const target = temporaryDirectory('transplant-target-')
     const out = temporaryDirectory('transplant-stage-')
-    write(target, 'docs/reference/product.json', JSON.stringify(CUSTOM_POINTER))
-    write(target, 'docs/product/README.md', '# 대상 원장\n')
+    write(target, 'product/facts/README.md', '# 대상 제품 사실\n')
+    write(target, 'product/facts/ORDER-LIST.md', '---\nid: ORDER-LIST\n---\n')
+    write(target, 'product/generated-index.md', '# 대상 색인\n')
 
     const plan = planTransplant(target)
     const byFile = new Map(plan.map((item) => [item.file, item]))
-    expect(byFile.get('docs/reference/product.json').action).toBe('merge')
-    expect(byFile.get('docs/product/README.md').action).toBe('merge')
-    expect(byFile.get('docs/product/index.json').action).toBe('generate')
-    expect(byFile.get('docs/events/README.md').action).toBe('generate')
-    expect(byFile.has('docs/reference/product/README.md')).toBe(false)
+    expect(byFile.get('product/facts/README.md').action).toBe('merge')
+    expect(byFile.get('product/generated-index.md').action).toBe('merge')
 
     stageTransplant(target, out)
-    const skill = readFileSync(join(out, '.agents/skills/screen-loop/SKILL.md'), 'utf8')
-    expect(skill).toContain('docs/reference/product.json')
-    expect(skill).not.toContain('zero-sol')
-    expect(readFileSync(join(out, 'AGENTS.md'), 'utf8')).toContain('docs/reference/product.json')
-    expect(JSON.parse(readFileSync(join(out, 'docs/reference/product.json'), 'utf8')).inventory).toBe('docs/product')
-    // The inventory README shell sits two directories deep here, so the copied rule links climb two, not three.
-    const inventoryReadme = readFileSync(join(out, 'docs/product/README.md'), 'utf8')
-    expect(inventoryReadme).not.toContain('scripts/agents')
-
-    applyTransplant(target, out)
-    expect(readFileSync(join(target, 'docs/product/README.md'), 'utf8')).toBe('# 대상 원장\n')
-    expect(readFileSync(join(target, 'docs/reference/product.json'), 'utf8')).toBe(JSON.stringify(CUSTOM_POINTER))
-    expect(existsSync(join(target, 'docs/product/index.json'))).toBe(true)
-    expect(existsSync(join(target, 'docs/events/README.md'))).toBe(true)
-    expect(ledgerIndexFailures(join(target, 'docs/events'))).toEqual([])
-    expect(surfaceIndexFailures(target)).toEqual([])
+    const applied = applyTransplant(target, out)
+    // 대상의 관찰은 레퍼런스가 손대지 않는다. 뼈대는 대상이 아직 아무것도 안 썼을 때만 의미가 있다.
+    expect(readFileSync(join(target, 'product/facts/README.md'), 'utf8')).toBe('# 대상 제품 사실\n')
+    expect(readFileSync(join(target, 'product/facts/ORDER-LIST.md'), 'utf8')).toBe('---\nid: ORDER-LIST\n---\n')
+    expect(readFileSync(join(target, 'product/generated-index.md'), 'utf8')).toBe('# 대상 색인\n')
+    expect(applied.skipped.map((item) => item.targetPath)).toEqual(
+      expect.arrayContaining(['product/facts/README.md', 'product/generated-index.md']),
+    )
   })
 
   it('carries the active ledger only on explicit request, unchanged in place', () => {
@@ -420,15 +406,14 @@ describe('plan / stage / apply against a target directory', () => {
 
     const plan = planTransplant(target, { withLedger: true })
     const byFile = new Map(plan.map((item) => [item.file, item]))
-    expect(byFile.get('docs/reference/zero-sol/05-performances.md').action).toBe('copy')
-    expect(byFile.get('docs/reference/zero-sol-figma-analysis.md').action).toBe('copy')
-    expect(byFile.get('docs/reference/product.json').action).toBe('copy')
+    expect(byFile.get('product/facts/PRINTER-LIST.md').action).toBe('copy')
+    expect(byFile.get('product/generated-index.md').action).toBe('copy')
     expect(plan.some((item) => item.action === 'generate')).toBe(false)
 
     stageTransplant(target, out, undefined, { withLedger: true })
-    expect(readFileSync(join(out, '.agents/skills/screen-loop/SKILL.md'), 'utf8')).toContain('docs/reference/product.json')
-    expect(readFileSync(join(out, 'docs/reference/zero-sol/README.md'), 'utf8')).toContain('ZERO PLUS+ 공연·전시 티켓 운영 어드민')
-    expect(existsSync(join(out, 'docs/reference/zero-sol/context.json'))).toBe(true)
+    expect(readFileSync(join(out, '.agents/skills/list-contract/SKILL.md'), 'utf8')).not.toContain('zero-sol')
+    expect(readFileSync(join(out, 'product/facts/PRINTER-LIST.md'), 'utf8')).toContain('스마트프린터 목록')
+    expect(existsSync(join(out, 'product/generated-index.md'))).toBe(true)
   })
 
   it('limits the seed code to the selected bundles while keeping every ADR the travelling skills and gates name', async () => {
@@ -440,7 +425,7 @@ describe('plan / stage / apply against a target directory', () => {
     expect(files.has('src/shared/lib/ascii-triplet.ts')).toBe(true)
     expect(files.has('src/shared/lib/ascii-triplet.test.ts')).toBe(true)
     expect(files.has('src/shared/ui/list/ListResult.tsx')).toBe(false)
-    expect(files.has('.agents/skills/feature-contract/SKILL.md')).toBe(true)
+    expect(files.has('.agents/skills/list-contract/SKILL.md')).toBe(true)
     // The skills and eslint.config.js travel whole and name these decisions, so the decisions travel with them.
     for (const adr of [
       'docs/decisions/0006-auth-token-storage.md',

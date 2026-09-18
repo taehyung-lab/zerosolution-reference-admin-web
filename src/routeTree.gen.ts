@@ -34,6 +34,7 @@ import { Route as AppMembersAppealsAppealIdRouteImport } from './routes/_app/mem
 import { Route as AppMembersWithdrawnIndexRouteImport } from './routes/_app/members/withdrawn/index'
 import { Route as AppMembersWithdrawnMemberIdRouteImport } from './routes/_app/members/withdrawn/$memberId'
 import { Route as AppPerformancesPerformanceIdIndexRouteImport } from './routes/_app/performances/$performanceId/index'
+import { Route as AppPerformancesPerformanceIdEditRouteImport } from './routes/_app/performances/$performanceId/edit'
 import { Route as AppTicketingPrintersIndexRouteImport } from './routes/_app/ticketing/printers/index'
 import { Route as AppTicketingPrintersNewRouteImport } from './routes/_app/ticketing/printers/new'
 import { Route as AppCommunityBoardsBoardIdIndexRouteImport } from './routes/_app/community/boards/$boardId/index'
@@ -171,6 +172,12 @@ const AppPerformancesPerformanceIdIndexRoute =
     path: '/performances/$performanceId/',
     getParentRoute: () => AppRoute,
   } as any)
+const AppPerformancesPerformanceIdEditRoute =
+  AppPerformancesPerformanceIdEditRouteImport.update({
+    id: '/performances/$performanceId/edit',
+    path: '/performances/$performanceId/edit',
+    getParentRoute: () => AppRoute,
+  } as any)
 const AppTicketingPrintersIndexRoute =
   AppTicketingPrintersIndexRouteImport.update({
     id: '/ticketing/printers/',
@@ -226,6 +233,7 @@ export interface FileRoutesByFullPath {
   '/members/active/general': typeof AppMembersActiveGeneralRoute
   '/members/appeals/$appealId': typeof AppMembersAppealsAppealIdRoute
   '/members/withdrawn/$memberId': typeof AppMembersWithdrawnMemberIdRoute
+  '/performances/$performanceId/edit': typeof AppPerformancesPerformanceIdEditRoute
   '/ticketing/printers/new': typeof AppTicketingPrintersNewRoute
   '/community/boards/': typeof AppCommunityBoardsIndexRoute
   '/managers/$managerId/': typeof AppManagersManagerIdIndexRoute
@@ -258,6 +266,7 @@ export interface FileRoutesByTo {
   '/members/active/general': typeof AppMembersActiveGeneralRoute
   '/members/appeals/$appealId': typeof AppMembersAppealsAppealIdRoute
   '/members/withdrawn/$memberId': typeof AppMembersWithdrawnMemberIdRoute
+  '/performances/$performanceId/edit': typeof AppPerformancesPerformanceIdEditRoute
   '/ticketing/printers/new': typeof AppTicketingPrintersNewRoute
   '/community/boards': typeof AppCommunityBoardsIndexRoute
   '/managers/$managerId': typeof AppManagersManagerIdIndexRoute
@@ -292,6 +301,7 @@ export interface FileRoutesById {
   '/_app/members/active/general': typeof AppMembersActiveGeneralRoute
   '/_app/members/appeals/$appealId': typeof AppMembersAppealsAppealIdRoute
   '/_app/members/withdrawn/$memberId': typeof AppMembersWithdrawnMemberIdRoute
+  '/_app/performances/$performanceId/edit': typeof AppPerformancesPerformanceIdEditRoute
   '/_app/ticketing/printers/new': typeof AppTicketingPrintersNewRoute
   '/_app/community/boards/': typeof AppCommunityBoardsIndexRoute
   '/_app/managers/$managerId/': typeof AppManagersManagerIdIndexRoute
@@ -326,6 +336,7 @@ export interface FileRouteTypes {
     | '/members/active/general'
     | '/members/appeals/$appealId'
     | '/members/withdrawn/$memberId'
+    | '/performances/$performanceId/edit'
     | '/ticketing/printers/new'
     | '/community/boards/'
     | '/managers/$managerId/'
@@ -358,6 +369,7 @@ export interface FileRouteTypes {
     | '/members/active/general'
     | '/members/appeals/$appealId'
     | '/members/withdrawn/$memberId'
+    | '/performances/$performanceId/edit'
     | '/ticketing/printers/new'
     | '/community/boards'
     | '/managers/$managerId'
@@ -391,6 +403,7 @@ export interface FileRouteTypes {
     | '/_app/members/active/general'
     | '/_app/members/appeals/$appealId'
     | '/_app/members/withdrawn/$memberId'
+    | '/_app/performances/$performanceId/edit'
     | '/_app/ticketing/printers/new'
     | '/_app/community/boards/'
     | '/_app/managers/$managerId/'
@@ -588,6 +601,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPerformancesPerformanceIdIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/performances/$performanceId/edit': {
+      id: '/_app/performances/$performanceId/edit'
+      path: '/performances/$performanceId/edit'
+      fullPath: '/performances/$performanceId/edit'
+      preLoaderRoute: typeof AppPerformancesPerformanceIdEditRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/ticketing/printers/': {
       id: '/_app/ticketing/printers/'
       path: '/ticketing/printers'
@@ -650,6 +670,7 @@ interface AppRouteChildren {
   AppMembersActiveGeneralRoute: typeof AppMembersActiveGeneralRoute
   AppMembersAppealsAppealIdRoute: typeof AppMembersAppealsAppealIdRoute
   AppMembersWithdrawnMemberIdRoute: typeof AppMembersWithdrawnMemberIdRoute
+  AppPerformancesPerformanceIdEditRoute: typeof AppPerformancesPerformanceIdEditRoute
   AppTicketingPrintersNewRoute: typeof AppTicketingPrintersNewRoute
   AppCommunityBoardsIndexRoute: typeof AppCommunityBoardsIndexRoute
   AppManagersManagerIdIndexRoute: typeof AppManagersManagerIdIndexRoute
@@ -681,6 +702,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppMembersActiveGeneralRoute: AppMembersActiveGeneralRoute,
   AppMembersAppealsAppealIdRoute: AppMembersAppealsAppealIdRoute,
   AppMembersWithdrawnMemberIdRoute: AppMembersWithdrawnMemberIdRoute,
+  AppPerformancesPerformanceIdEditRoute: AppPerformancesPerformanceIdEditRoute,
   AppTicketingPrintersNewRoute: AppTicketingPrintersNewRoute,
   AppCommunityBoardsIndexRoute: AppCommunityBoardsIndexRoute,
   AppManagersManagerIdIndexRoute: AppManagersManagerIdIndexRoute,
