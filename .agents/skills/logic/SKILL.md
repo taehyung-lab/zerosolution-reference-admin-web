@@ -1,8 +1,7 @@
 ---
 name: logic
 description: >
-  Use when the result is judged without a browser — 훅, 순수 함수, 파서, 매퍼, 검증 규칙, 날짜·숫자·문자열 계산, 도메인 mechanic. pure function, utility, custom hook, parser, mapper, formatter, calculation, type error.
-  Do not use for 렌더·포커스·문구·이동을 봐야 닫히는 변경 (list-contract·detail-contract·form-contract), 공용으로 올릴지 여부 (shared-ui), 파일 위치와 import 경계 (source-structure).
+  browser 없이 결과를 판정하는 훅·순수 함수·파서·매퍼·검증 규칙·날짜·숫자·문자열 계산을 바꿀 때 사용한다. 렌더·focus·이동은 해당 화면 계약, 파일 위치는 source-structure로 보낸다.
 ---
 
 # 계약 — 시각 표면 없는 결과

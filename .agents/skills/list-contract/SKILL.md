@@ -1,8 +1,7 @@
 ---
 name: list-contract
 description: >
-  Use when the request changes a list screen entered by its own URL — 목록 화면의 검색·필터·정렬·페이지·행 선택·일괄 동작·툴바 버튼을 더하거나 고칠 때, 그 값들이 URL 에 남고 새로고침으로 복원돼야 할 때. list, search, filter, sort, pagination, row selection, bulk action, toolbar.
-  Do not use for 레코드 하나를 여는 화면 (detail-contract), 등록·수정 폼 (form-contract), 자기 route 없이 화면 안에 놓인 표·반복 행 (collection-contract), route 검증·guard·loader (route-composition), 조회 키·무효화 (server-state), 어떤 필터·컬럼·문구가 있는가 (product-evidence).
+  독립 URL로 진입하는 목록의 검색·필터·정렬·페이지·행 선택·일괄 동작·툴바와 URL 복원을 바꿀 때 사용한다. 레코드 하나는 detail-contract, 내장 표는 collection-contract, 제품 값은 product-evidence로 보낸다.
 ---
 
 # 역할 계약 — 목록

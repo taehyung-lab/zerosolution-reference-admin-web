@@ -1,8 +1,7 @@
 ---
 name: route-composition
 description: >
-  Use when the request touches routing itself — route 파일·URL segment·params/search 검증·진입 guard·loader·preload·not-found, 여러 feature 를 한 route 에 조립, 화면이 앱에서 도달 가능한가. route, URL, guard, loader, preload, navigation entry, not found.
-  Do not use for 화면 안의 상태와 동작 (list-contract·detail-contract·form-contract), 폴더·파일 이름과 import 경계 (source-structure), 토큰 저장과 재발급 자체 (auth-session).
+  route 파일·URL segment·params/search 검증·진입 guard·loader·preload·not-found·navigation 진입점을 바꿀 때 사용한다. 화면 내부 동작은 해당 역할 계약, 파일 배치는 source-structure로 보낸다.
 ---
 
 # 역할 계약 — route 조립

@@ -1,8 +1,7 @@
 ---
 name: collection-contract
 description: >
-  Use when the table or list has no route of its own and lives inside another screen — 상세 섹션의 표, 폼의 반복 행, 다이얼로그의 검색 결과·선택기. hosted table, embedded list, repeating rows, sub table, dialog picker.
-  Do not use for 자기 URL 로 들어가는 목록 (list-contract), 그 표를 담은 화면의 저장 흐름 (form-contract) 이나 섹션 구성 (detail-contract), 표에 무엇이 들어가는가 (product-evidence).
+  자기 route 없이 다른 화면에 들어간 표·목록·반복 행·다이얼로그 선택기를 바꿀 때 사용한다. 독립 URL 목록은 list-contract, 제품 값은 product-evidence로 보낸다.
 ---
 
 # 역할 계약 — 화면 안의 행 집합

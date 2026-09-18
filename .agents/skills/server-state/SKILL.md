@@ -1,8 +1,7 @@
 ---
 name: server-state
 description: >
-  Use when reads and writes are organised — 조회 키, queryOptions, enabled 게이트, 성공 뒤 무효화 범위, 낙관적 갱신, 서버 계약이 아직 없는 쓰기. TanStack Query, query key, cache, invalidate, stale, mutation, fixture, mock.
-  Do not use for 요청·응답이 실제로 어떤 모양인가와 실패 어휘 (api-wire), 폼의 저장 UI 흐름과 확인·완료 (form-contract), 파일 transport (file-workflow).
+  TanStack Query 조회 키·queryOptions·enabled·cache 무효화·낙관적 갱신·mutation·fixture/mock 쓰기를 바꿀 때 사용한다. wire 형태는 api-wire, 폼 UI 흐름은 form-contract로 보낸다.
 ---
 
 # 계약 — 서버 상태 (조회와 쓰기)

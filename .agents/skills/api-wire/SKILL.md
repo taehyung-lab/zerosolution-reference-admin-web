@@ -1,8 +1,7 @@
 ---
 name: api-wire
 description: >
-  Use when the actual shape on the wire is in question — transport, 요청 헤더, 응답 봉투, business error 분류, OpenAPI snapshot, 생성 클라이언트, 서버와 스키마가 어긋남. axios, request, response envelope, error code, OpenAPI, orval, generated client, contract validation.
-  Do not use for 무엇을 언제 조회·저장하고 성공 뒤 무엇이 낡는가 (server-state), 토큰 저장·재발급·만료 (auth-session), 오류 문구를 화면 어디에 놓는가 (form-contract·detail-contract).
+  요청 헤더·응답 봉투·business error·OpenAPI snapshot·생성 클라이언트처럼 wire 형태를 바꾸거나 서버와 스키마가 어긋날 때 사용한다. 조회·저장 시점과 cache는 server-state, 자격증명 생명주기는 auth-session으로 보낸다.
 ---
 
 # 계약 — API wire

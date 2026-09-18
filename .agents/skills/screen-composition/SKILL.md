@@ -1,8 +1,7 @@
 ---
 name: screen-composition
 description: >
-  Use when a new screen skeleton is being stood up — route 와 feature 가 무엇을 나눠 갖는지, Screen 이 무엇을 조립하는지, 어떤 책임이 실제로 있는지. new screen, scaffold, skeleton, compose screen.
-  Do not use for 이미 있는 화면의 동작을 바꾸는 요청 (list-contract·detail-contract·form-contract), 파일이 어디 놓이고 어떻게 불리는가 (source-structure), route 검증·guard (route-composition).
+  새 화면 뼈대를 세우며 route·feature·Screen의 책임과 조립을 나눌 때 사용한다. 기존 화면 동작은 해당 역할 계약, 파일 배치는 source-structure, route guard는 route-composition으로 보낸다.
 ---
 
 # 역할 계약 — 화면 조립

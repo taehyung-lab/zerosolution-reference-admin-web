@@ -1,8 +1,7 @@
 ---
 name: shared-ui
 description: >
-  Use when a unit under `src/shared` is added, changed, promoted, narrowed or deleted — primitive, DataTable, 폼 필드 패턴, 다이얼로그, 공용 훅·순수 유틸, i18n UI 계약, 접근성·키보드·focus, 렌더 성능. shared component, design system, primitive, promote to shared, accessibility.
-  Do not use for 화면이 그 단위를 언제 어떻게 조립하는가 (list-contract·detail-contract·form-contract), 파일 배치와 승격 심사 절차 (source-structure), 도메인 로직과 순수 계산 (logic).
+  `src/shared`의 primitive·DataTable·폼 필드·다이얼로그·공용 훅·i18n UI·접근성·focus·렌더 성능을 추가·변경·승격·축소·삭제할 때 사용한다. 화면 조립은 해당 역할 계약, 배치는 source-structure로 보낸다.
 ---
 
 # 역할 계약 — 공용 UI

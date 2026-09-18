@@ -1,8 +1,7 @@
 ---
 name: auth-session
 description: >
-  Use when credentials or the session lifecycle are in question — 자격증명을 어디에 두는가, 재발급, 만료, 401·403 처리, 로그인·로그아웃 전이, 동시 요청의 재발급 경합. auth, token, refresh, session, login, logout, 401, 403, unauthorized.
-  Do not use for 실패를 화면 어디에 어떤 문구로 보여주는가 (api-wire 와 해당 역할 계약), 권한에 따라 route 를 막는 조립 (route-composition).
+  자격증명 저장, token 재발급·만료, 401·403, 로그인·로그아웃 전이, 동시 재발급 경합을 바꿀 때 사용한다. 응답 형태는 api-wire, route 진입 차단은 route-composition으로 보낸다.
 ---
 
 # 계약 — 인증과 세션

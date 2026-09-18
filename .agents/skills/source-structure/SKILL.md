@@ -1,8 +1,7 @@
 ---
 name: source-structure
 description: >
-  Use when a file is created, moved or renamed, or an import boundary is drawn or crossed — 어느 segment 에 놓는가, 무엇이 무엇을 import 할 수 있는가, 이름을 어떻게 짓는가, feature 에서 공용으로 승격할 것인가. file placement, move file, rename, folder, import boundary, FSD, promote to shared, mechanics.
-  Do not use for 이미 자리를 잡은 소유자 안에서 동작만 바꾸는 요청 (해당 역할 계약), URL segment 이름 (route-composition), 공용 단위가 무엇을 소유하고 거절하는가 (shared-ui).
+  파일을 만들·이동·개명하거나 segment·폴더·import 경계·이름·feature에서 shared로의 승격을 정할 때 사용한다. URL segment는 route-composition, shared 단위의 책임은 shared-ui로 보낸다.
 ---
 
 # 계약 — 소스 배치와 의존 방향

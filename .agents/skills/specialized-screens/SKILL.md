@@ -1,8 +1,7 @@
 ---
 name: specialized-screens
 description: >
-  Use when the screen does not close with the list/detail/form skeleton — 집계·통계 보드, 권한 matrix, 알림·발송 구성처럼 축과 셀이 화면의 본체인 화면. aggregation, statistics, dashboard board, permission matrix, notification settings.
-  Do not use for 일반 목록 (list-contract), 상세 (detail-contract), 등록·수정 (form-contract), 그 화면의 축·권한 식별자 값 (product-evidence).
+  list·detail·form 뼈대로 닫히지 않고 집계·통계 보드·권한 matrix·알림·발송 구성처럼 축과 셀이 본체인 화면을 바꿀 때 사용한다. 축·권한 식별자 값은 product-evidence로 보낸다.
 ---
 
 # 역할 계약 — 특수 화면 (집계 · 권한 matrix · 알림)

@@ -254,22 +254,65 @@ export function transplantSentinelFailures(files) {
  * 삭제된 규범 문서의 이름은 어디에도 남으면 안 된다. link 검사는 Markdown link만 보므로
  * 주석·표·근거 문자열 속 이름은 이 목록으로 잡는다. 이름을 지울 때 여기서도 지운다.
  */
-/**
- * 루트는 **항상 로드된다.** 커지면 모든 세션이 그 비용을 낸다.
- *
- * 이 저장소의 루트는 162 → 50 → 172 → 209 로 두 번 자랐고, 두 번 다 아무것도 잡지 않았다. 문서
- * 예산을 `notice` 로 두면 자라는 것이 정상으로 읽히기 때문이다. 그래서 루트만 `fail` 이다.
- *
- * 이 숫자는 **내려가기만 한다.** 오늘의 값은 오늘의 크기이고, 무언가를 내릴 때마다 함께 내린다.
- * 넘으면 늘리지 말고 내린다 — 조건부로만 필요한 것은 그것을 소유한 계약으로, 절차는 스크립트로.
- * 계약 문서는 판단이라 숫자를 맞추려고 자르면 안 되므로 이 게이트의 대상이 아니다.
- */
-export const ROOT_LINE_BUDGET = 153
+/** AGENTS.md 와 skill description은 모든 작업이 시작할 때 함께 내는 고정 비용이다. */
+export const ALWAYS_LOADED_CHARACTER_BUDGET = 5_400
 
-export function rootBudgetFailures(document, budget = ROOT_LINE_BUDGET) {
-  const lines = document.split('\n').filter((line, index, all) => index < all.length - 1 || line !== '').length
-  if (lines <= budget) return []
-  return [`AGENTS.md 가 ${lines}줄이다(상한 ${budget}). 늘리지 말고 내린다 — 조건부로만 필요한 것은 그것을 소유한 계약으로, 절차는 스크립트로.`]
+export function skillDescription(document) {
+  const frontmatter = /^---\s*\n([\s\S]*?)\n---/m.exec(document)?.[1] ?? ''
+  const lines = frontmatter.split('\n')
+  const index = lines.findIndex((line) => /^description\s*:/.test(line))
+  if (index === -1) return null
+
+  const first = lines[index].replace(/^description\s*:\s*/, '')
+  const blockHeader = /^[>|](?:(?:[+-][1-9]?)|(?:[1-9][+-]?))?\s*(?:#.*)?$/
+  if (!blockHeader.test(first)) return first.trim() || null
+
+  const block = []
+  for (const line of lines.slice(index + 1)) {
+    if (line.length > 0 && !/^\s/.test(line)) break
+    block.push(line.trim())
+  }
+  return block.filter(Boolean).join(' ') || null
+}
+
+export function alwaysLoadedBudgetFailures(rootDocument, skillDocuments, budget = ALWAYS_LOADED_CHARACTER_BUDGET) {
+  const rootCharacters = rootDocument.length
+  const descriptions = skillDocuments.map(skillDescription)
+  const missing = descriptions.filter((description) => description === null).length
+  if (missing > 0) return [`skill description ${missing}개를 읽지 못했다 — 0자로 계산하지 않고 frontmatter를 고친다.`]
+  const descriptionCharacters = descriptions.reduce((total, description) => total + description.length, 0)
+  const total = rootCharacters + descriptionCharacters
+  if (total <= budget) return []
+  return [`항상 로드되는 지시가 ${total}자다(루트 ${rootCharacters}자 + description ${descriptionCharacters}자, 상한 ${budget}자). 상한을 늘리지 말고 조건부 정보를 소유자로 옮긴다.`]
+}
+
+export function baselineEntryFailures(rootDocument, skillDocuments, baselineDocument, budget = ALWAYS_LOADED_CHARACTER_BUDGET) {
+  const descriptions = skillDocuments.map(skillDescription)
+  if (descriptions.some((description) => description === null)) return ['현재 baseline을 계산할 skill description을 읽지 못했다.']
+  let baseline
+  try { baseline = JSON.parse(baselineDocument) } catch { return ['scripts/loop/baseline.json 이 유효한 JSON이 아니다.'] }
+  const lineageFailures = []
+  if (typeof baseline.supersedes?.revision !== 'string' || baseline.supersedes.revision.trim() === '') {
+    lineageFailures.push('baseline supersedes.revision이 없다.')
+  }
+  if (baseline.supersedes?.comparable !== false) {
+    lineageFailures.push('baseline supersedes.comparable은 false여야 한다.')
+  }
+  if (typeof baseline.supersedes?.reason !== 'string' || baseline.supersedes.reason.trim() === '') {
+    lineageFailures.push('직접 비교할 수 없는 이유가 없다.')
+  }
+  if (typeof baseline.supersedes?.note !== 'string' || baseline.supersedes.note.trim() === '') {
+    lineageFailures.push('이전 원시 값 보존 위치가 없다.')
+  }
+  const current = {
+    rootCharacters: rootDocument.length,
+    descriptionCharacters: descriptions.reduce((total, description) => total + description.length, 0),
+    budgetCharacters: budget,
+  }
+  current.alwaysLoadedCharacters = current.rootCharacters + current.descriptionCharacters
+  const drift = Object.entries(current).filter(([key, value]) => baseline.entry?.[key] !== value)
+  if (drift.length === 0) return lineageFailures
+  return [...lineageFailures, `현재 문서와 baseline이 다르다: ${drift.map(([key, value]) => `${key}=${value}(기록 ${baseline.entry?.[key] ?? '없음'})`).join(', ')}`]
 }
 
 /**

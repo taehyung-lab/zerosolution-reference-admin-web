@@ -1,8 +1,7 @@
 ---
 name: form-contract
 description: >
-  Use when the request changes a create or edit form — 저장 lifecycle, 확인·완료 쌍, 검증 실패와 focus, 서버 필드 오류 배치, dirty 이탈 질문, 취소. form, create, edit, save, submit, validation, dirty guard, cancel, confirm.
-  Do not use for 어떤 필드가 있고 무엇이 필수이며 문구가 무엇인가 (product-evidence), 폼 안의 반복 행 표 (collection-contract), 파일 업로드·다운로드 transport (file-workflow), mutation 키와 성공 뒤 무효화 (server-state).
+  등록·수정 폼의 저장, 확인·완료, 검증 실패와 focus, 서버 필드 오류, dirty 이탈, 취소를 바꿀 때 사용한다. 필드·필수값·문구는 product-evidence, 반복 행은 collection-contract로 보낸다.
 ---
 
 # 역할 계약 — 폼 (등록·수정)

@@ -1,8 +1,7 @@
 ---
 name: detail-contract
 description: >
-  Use when the request changes a screen that opens one record — 상세 화면의 진입·없음·삭제됨 상태 경계, 섹션 구성, 상세 액션, 변경 이력. detail, record view, sections, empty state, not found, deleted, detail actions, history.
-  Do not use for 여러 레코드를 나열하는 화면 (list-contract), 그 레코드를 편집하는 폼 (form-contract), 상세 안에 놓인 표 (collection-contract), 서버가 없음을 어떤 코드로 말하는가 (api-wire), 어떤 섹션·항목이 있는가 (product-evidence).
+  레코드 하나를 여는 화면의 진입·없음·삭제됨 경계, 섹션, 액션, 이력을 바꿀 때 사용한다. 여러 레코드는 list-contract, 편집은 form-contract, 내장 표는 collection-contract로 보낸다.
 ---
 
 # 역할 계약 — 상세

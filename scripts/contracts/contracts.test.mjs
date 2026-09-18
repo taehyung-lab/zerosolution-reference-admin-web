@@ -26,7 +26,8 @@ import {
   retiredDocumentNameFailures,
   transplantSentinelFailures,
   transplantSentinelOccurrences,
-  rootBudgetFailures,
+  alwaysLoadedBudgetFailures,
+  baselineEntryFailures,
   skillAdapterFailures,
 } from './contracts.mjs'
 import {
@@ -465,8 +466,8 @@ describe('contracts check CLI wiring', () => {
     rmSync(fixtureParent, { recursive: true, force: true })
   })
 
-  function runCheck() {
-    return spawnSync(process.execPath, ['scripts/contracts/check.mjs'], {
+  function runCheck(args = []) {
+    return spawnSync(process.execPath, ['scripts/contracts/check.mjs', ...args], {
       cwd: fixtureRoot,
       encoding: 'utf8',
     })
@@ -492,6 +493,16 @@ describe('contracts check CLI wiring', () => {
         expect(result.stderr).not.toContain('ENOENT')
       } finally { writeFileSync(path, original) }
     }
+  })
+
+  it('target 모드는 source baseline 없이도 ENOENT로 죽지 않는다', () => {
+    const baseline = resolve(fixtureRoot, 'scripts/loop/baseline.json')
+    const original = readFileSync(baseline)
+    try {
+      rmSync(baseline)
+      const result = runCheck(['--mode', 'target'])
+      expect(result.stderr).not.toContain('ENOENT')
+    } finally { writeFileSync(baseline, original) }
   })
 
   it('fails through the real CLI when the Claude import is invalid', () => {
@@ -724,11 +735,11 @@ describe('transplant manifest and seed negative controls', () => {
     expect(findForbiddenSeedFiles([
       'scripts/skills/fixtures.mjs',
       'scripts/loop/score.mjs',
-      'scripts/loop/scores.jsonl',
+      'scripts/loop/baseline.json',
       'scripts/contracts/seed.mjs',
     ])).toEqual([
+      'scripts/loop/baseline.json',
       'scripts/loop/score.mjs',
-      'scripts/loop/scores.jsonl',
       'scripts/skills/fixtures.mjs',
     ])
   })
@@ -979,21 +990,75 @@ describe('검사가 자기를 검사한다', () => {
   })
 })
 
-describe('루트 예산', () => {
-  it('상한 이하면 통과한다', () => {
-    expect(rootBudgetFailures('a\nb\nc\n', 3)).toEqual([])
+describe('항상 로드되는 지시 예산', () => {
+  const skill = (description) => `---\nname: fixture\ndescription: ${description}\n---\n\n# body\n`
+
+  it('루트와 skill description의 합계가 상한 이하면 통과한다', () => {
+    expect(alwaysLoadedBudgetFailures('root', [skill('short')], 9)).toEqual([])
   })
 
-  it('상한을 넘으면 실패하고 몇 줄인지 말한다', () => {
-    const failures = rootBudgetFailures('a\nb\nc\nd\n', 3)
+  it('description이 커져 합계 상한을 넘으면 실패한다', () => {
+    const failures = alwaysLoadedBudgetFailures('root', [skill('too long')], 9)
     expect(failures).toHaveLength(1)
-    expect(failures[0]).toContain('4줄')
+    expect(failures[0]).toContain('12자')
   })
 
-  it('대조군 — 실제 AGENTS.md 에 한 줄을 더하면 잡힌다', () => {
-    const real = readFileSync(resolve('AGENTS.md'), 'utf8')
-    expect(rootBudgetFailures(real)).toEqual([])
-    expect(rootBudgetFailures(`${real}\n한 줄 더`)).toHaveLength(1)
+  it('YAML block chomping 표기가 있어도 description 전체를 센다', () => {
+    const document = '---\nname: fixture\ndescription: >-\n  long description\n---\n'
+    expect(alwaysLoadedBudgetFailures('', [document], 5)).toHaveLength(1)
+  })
+
+  it.each(['>- # 설명', '>2-', '>-2', '|+ # 설명'])('YAML block header %s 도 본문을 센다', (header) => {
+    const document = `---\nname: fixture\ndescription: ${header}\n  long description\n---\n`
+    expect(alwaysLoadedBudgetFailures('', [document], 5)).toHaveLength(1)
+  })
+
+  it('대조군 — 빈 block description은 0자로 통과시키지 않는다', () => {
+    expect(alwaysLoadedBudgetFailures('', ['---\nname: fixture\ndescription: >-\n---\n'], 5)).toHaveLength(1)
+  })
+
+  it('대조군 — description을 읽지 못하면 0자로 통과시키지 않는다', () => {
+    expect(alwaysLoadedBudgetFailures('', ['---\nname: fixture\n---\n'], 5)).toHaveLength(1)
+  })
+
+  it('대조군 — 루트를 줄인 만큼 description을 늘려도 총량이 넘으면 잡힌다', () => {
+    expect(alwaysLoadedBudgetFailures('root-root', [skill('x')], 10)).toEqual([])
+    expect(alwaysLoadedBudgetFailures('root', [skill('xxxxxxx')], 10)).toHaveLength(1)
+  })
+})
+
+describe('현재 문서 baseline', () => {
+  const lineage = {
+    supersedes: {
+      revision: 'previous@abc1234',
+      comparable: false,
+      reason: '측정 기준이 바뀌어 직접 비교할 수 없음',
+      note: '이전 값은 Git history가 소유함',
+    },
+  }
+
+  it('같은 계산으로 잰 현재 값이면 통과한다', () => {
+    const baseline = JSON.stringify({ ...lineage, entry: { rootCharacters: 4, descriptionCharacters: 5, alwaysLoadedCharacters: 9, budgetCharacters: 10 } })
+    expect(baselineEntryFailures('root', ['---\nname: x\ndescription: short\n---\n'], baseline, 10)).toEqual([])
+  })
+
+  it('대조군 — 문서가 바뀌어 baseline이 낡으면 실패한다', () => {
+    const baseline = JSON.stringify({ ...lineage, entry: { rootCharacters: 3, descriptionCharacters: 5, alwaysLoadedCharacters: 8, budgetCharacters: 10 } })
+    expect(baselineEntryFailures('root', ['---\nname: x\ndescription: short\n---\n'], baseline, 10)).toHaveLength(1)
+  })
+
+  it('대조군 — 이전 기준선 계보를 지우면 현재 숫자가 맞아도 실패한다', () => {
+    const baseline = JSON.stringify({ entry: { rootCharacters: 4, descriptionCharacters: 5, alwaysLoadedCharacters: 9, budgetCharacters: 10 } })
+    expect(baselineEntryFailures('root', ['---\nname: x\ndescription: short\n---\n'], baseline, 10)).toContain('baseline supersedes.revision이 없다.')
+  })
+
+  it('대조군 — 비교 불가인데 이유를 지우면 실패한다', () => {
+    const baseline = JSON.stringify({
+      ...lineage,
+      supersedes: { ...lineage.supersedes, reason: '' },
+      entry: { rootCharacters: 4, descriptionCharacters: 5, alwaysLoadedCharacters: 9, budgetCharacters: 10 },
+    })
+    expect(baselineEntryFailures('root', ['---\nname: x\ndescription: short\n---\n'], baseline, 10)).toContain('직접 비교할 수 없는 이유가 없다.')
   })
 })
 

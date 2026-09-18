@@ -1,8 +1,7 @@
 ---
 name: product-evidence
 description: >
-  Use when the value being changed is one the product decides — 문구·라벨·옵션·선택지·권한·기본값·컬럼 집합·필수 여부·전이 목적지. 제품 근거를 어디서 찾고 어떻게 읽는지, 무엇을 `미확인` 으로 남기는지. product value, copy, wording, options, default, columns, permission, where does this value come from.
-  Do not use for 구조·상태 소유·접근성만 바뀌고 제품 값은 그대로인 변경, 그 값을 화면이 어떻게 다루는가 (해당 역할 계약).
+  문구·라벨·옵션·권한·기본값·컬럼·필수 여부·전이 목적지처럼 제품이 정하는 값을 바꿀 때 사용한다. 근거를 찾아 fact와 `미확인`을 갱신하며, 구조·상태만 바꾸면 해당 역할 계약으로 보낸다.
 ---
 
 # 제품 근거 — 어디서 찾고 어떻게 읽는가

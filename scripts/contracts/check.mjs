@@ -34,7 +34,7 @@ import {
   citedContractPathFailures,
   retiredDocumentNameFailures,
   transplantSentinelFailures,
-  transplantSentinelOccurrences, rootBudgetFailures, skillAdapterFailures,
+  transplantSentinelOccurrences, alwaysLoadedBudgetFailures, baselineEntryFailures, skillAdapterFailures,
 } from './contracts.mjs'
 import {
   findContractPathMismatches,
@@ -153,7 +153,17 @@ const citingFiles = [
 ].filter((file) => existsSync(resolve(file)))
 failures.push(...retiredDocumentNameFailures(citingFiles))
 failures.push(...checkNegativeControlFailures())
-failures.push(...rootBudgetFailures(readFileSync(resolve('AGENTS.md'), 'utf8')))
+const skillDocuments = readdirSync(resolve('.agents/skills'), { withFileTypes: true })
+  .filter((entry) => entry.isDirectory() && existsSync(resolve('.agents/skills', entry.name, 'SKILL.md')))
+  .map((entry) => readFileSync(resolve('.agents/skills', entry.name, 'SKILL.md'), 'utf8'))
+failures.push(...alwaysLoadedBudgetFailures(readFileSync(resolve('AGENTS.md'), 'utf8'), skillDocuments))
+if (mode === 'source') {
+  failures.push(...baselineEntryFailures(
+    readFileSync(resolve('AGENTS.md'), 'utf8'),
+    skillDocuments,
+    readFileSync(resolve('scripts/loop/baseline.json'), 'utf8'),
+  ))
+}
 failures.push(...skillAdapterFailures())
 failures.push(...prohibitedAbstractionSourceFailures(readFileSync(resolve('eslint.config.js'), 'utf8')))
 // 제품 사실 색인의 정합성은 `pnpm product:check` 가 fact frontmatter 에서 본다. 여기서는 **관찰이

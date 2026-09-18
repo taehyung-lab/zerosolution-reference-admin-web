@@ -1,8 +1,7 @@
 ---
 name: file-workflow
 description: >
-  Use when files move — 업로드·다운로드·파일 필드·진행 표시·파싱·미리보기·재시도. upload, download, file field, attachment, import, export, progress, preview.
-  Do not use for 허용 확장자·용량 같은 제품 값 (product-evidence), 요청 payload 와 캐시 (server-state), 응답 봉투와 실패 어휘 (api-wire), 폼 전체의 저장 흐름 (form-contract).
+  파일 업로드·다운로드·첨부·파싱·진행률·미리보기·재시도 흐름을 바꿀 때 사용한다. 허용 확장자·용량은 product-evidence, cache는 server-state로 보낸다.
 ---
 
 # 역할 계약 — 파일 workflow

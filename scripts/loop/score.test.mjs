@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { compare, costFrom, parseRouting, parseVerify, shapeScore, verdict } from './score.mjs'
+import * as score from './score.mjs'
+
+const { compare, costFrom, parseRouting, parseVerify, shapeScore } = score
 
 describe('verify 출력 판독', () => {
   it('통과한 출력에서 숫자를 뽑는다', () => {
@@ -18,14 +20,18 @@ describe('verify 출력 판독', () => {
 })
 
 describe('라우팅 평가 판독', () => {
-  it('비발동 실패를 따로 센다 — 그것만이 채택을 막는다', () => {
+  it('구조화된 관측에서 확인·미확인·기대 차이를 센다', () => {
     const out = [
-      '  ✗ list/비발동 — 열리면 안 되는데 열림: list-contract',
-      '  ✗ form/재표현 — 안 열림: form-contract',
-      '',
-      '  43/45 통과',
+      JSON.stringify({ id: 'list/재표현', execution: 'observed', missingRequired: [], forbiddenRequired: [] }),
+      JSON.stringify({ id: 'form/재표현', execution: 'observed', missingRequired: ['form-contract'], forbiddenRequired: [] }),
+      JSON.stringify({ id: 'logic/재표현', execution: 'unconfirmed', missingRequired: ['logic'], forbiddenRequired: [] }),
+      JSON.stringify({ summary: { observed: 2, unconfirmed: 1, total: 3 } }),
     ].join('\n')
-    expect(parseRouting(out)).toEqual({ pass: 43, total: 45, rejectFailures: 1 })
+    expect(parseRouting(out)).toEqual({ observed: 2, unconfirmed: 1, total: 3, missingRequired: 1, forbiddenRequired: 0 })
+  })
+
+  it('대조군 — 구조화된 summary가 없으면 0/0 통과가 아니라 미확인이다', () => {
+    expect(parseRouting('runtime crashed')).toEqual({ observed: null, unconfirmed: null, total: null, missingRequired: null, forbiddenRequired: null })
   })
 })
 
@@ -50,14 +56,14 @@ describe('도달 비용', () => {
   })
 })
 
-describe('판정 — 하나라도 나빠지면 버린다', () => {
-  const base = { verify: { pass: true }, routing: { pass: 45, rejectFailures: 0 }, shape: { matched: 13 }, cost: { toolCalls: 90 } }
+describe('비교 — 판정하지 않고 관측을 보여준다', () => {
+  const base = { verify: { pass: true }, routing: { observed: 45, unconfirmed: 0, missingRequired: 0, forbiddenRequired: 0 }, shape: { matched: 13 }, cost: { toolCalls: 90 } }
 
-  it('전부 같거나 오르면 채택이다', () => {
+  it('좋아진 축과 나빠진 축을 함께 보여준다', () => {
     const next = { ...base, cost: { toolCalls: 70 } }
     const c = compare(base, next)
     expect(c.worse).toEqual([])
-    expect(verdict(c)).toBe('adopt')
+    expect(c.better).toEqual(['cost.toolCalls'])
   })
 
   it('대조군 — 한 군데 오르고 한 군데 내리면 버린다', () => {
@@ -65,23 +71,27 @@ describe('판정 — 하나라도 나빠지면 버린다', () => {
     const c = compare(base, next)
     expect(c.better).toContain('cost.toolCalls')
     expect(c.worse).toContain('shape.matched')
-    expect(verdict(c)).toBe('reject')
+    expect(c.same).toBe(false)
   })
 
-  it('대조군 — 비발동 실패가 늘면 버린다', () => {
-    const next = { ...base, routing: { pass: 45, rejectFailures: 1 } }
-    expect(verdict(compare(base, next))).toBe('reject')
+  it('대조군 — 금지 계약 선택이 늘면 나빠진 축으로 보여준다', () => {
+    const next = { ...base, routing: { ...base.routing, forbiddenRequired: 1 } }
+    expect(compare(base, next).worse).toContain('routing.forbiddenRequired')
   })
 
-  it('대조군 — verify 가 깨지면 버린다', () => {
-    expect(verdict(compare(base, { ...base, verify: { pass: false } }))).toBe('reject')
+  it('대조군 — verify 가 깨지면 나빠진 축으로 보여준다', () => {
+    expect(compare(base, { ...base, verify: { pass: false } }).worse).toContain('verify.pass')
   })
 
   it('한쪽에 없는 축은 비교하지 않는다 — 없는 것을 하락으로 읽지 않는다', () => {
     expect(compare(base, { verify: { pass: true } }).worse).toEqual([])
   })
 
-  it('아무것도 안 변하면 no-change 다', () => {
-    expect(verdict(compare(base, { ...base }))).toBe('no-change')
+  it('대조군 — 현재 verify 관측 자체가 없으면 실패로 만들지 않는다', () => {
+    expect(compare(base, {}).worse).not.toContain('verify.pass')
+  })
+
+  it('대조군 — 비교 모듈은 자동 채택·거절 API를 내보내지 않는다', () => {
+    expect(score.verdict).toBeUndefined()
   })
 })
