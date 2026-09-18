@@ -873,6 +873,10 @@ export const FORBIDDEN_SEED_PATTERNS = [
   /^src\/api\/generated\//,
   // 업무군 workflow 테스트는 feature 화면을 import 하는 제품 테스트다. harness(`src/test`) 디렉터리에 살지만 seed 가 아니다.
   /^src\/test\/workflows\//,
+  // 시험지와 점수는 **이 제품의 측정 장치**다. 요청 문장을 흉내내야 하므로 도메인 낱말을 담고,
+  // 그래서 이관되면 대상 제품이 남의 도메인으로 자기 문서를 재게 된다. 대상은 자기 시험지를 쓴다.
+  /^scripts\/skills\//,
+  /^scripts\/loop\//,
   /\/locales\/[a-z]{2}\/(?!shared\.json$|auth\.json$|app\.json$)[^/]+\.json$/,
 ]
 

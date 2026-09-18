@@ -720,6 +720,19 @@ describe('transplant manifest and seed negative controls', () => {
     // 그 계약이 무엇을 근거로 삼는지를 잃는다.
     expect(listTransplantManifestFiles()).toContain('product/policies/evidence.md')
   })
+  it('대조군 — 시험지와 점수는 이관되지 않는다. 도메인 낱말을 담고 있어 남의 제품에 가면 안 된다', () => {
+    expect(findForbiddenSeedFiles([
+      'scripts/skills/fixtures.mjs',
+      'scripts/loop/score.mjs',
+      'scripts/loop/scores.jsonl',
+      'scripts/contracts/seed.mjs',
+    ])).toEqual([
+      'scripts/loop/score.mjs',
+      'scripts/loop/scores.jsonl',
+      'scripts/skills/fixtures.mjs',
+    ])
+  })
+
   it('flags feature code, rehearsal output, and domain translations inside the seed', () => {
     expect(findForbiddenSeedFiles([
       'src/shared/ui/list/ListResult.tsx',

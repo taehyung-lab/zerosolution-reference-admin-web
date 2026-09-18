@@ -20,8 +20,11 @@
 import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 
-/** 판마다 한 줄. 저장소 산출물이 아니라 측정 기록이라 `.ai-work` 에 둔다. */
-export const SCORE_LOG = '.ai-work/loop/scores.jsonl'
+/**
+ * 판마다 한 줄. **git 이 추적한다** — 이 기록이 루프의 기억이고, 세션과 기계를 넘어야
+ * "지난 판보다 나아졌나"를 물을 수 있다. 무시되는 자리에 두면 매번 기준선이 사라진다.
+ */
+export const SCORE_LOG = 'scripts/loop/scores.jsonl'
 
 /** `Test Files  151 passed (151)` · `Tests  939 passed (939)` · `120 passed (1.1m)` */
 export function parseVerify(output) {
