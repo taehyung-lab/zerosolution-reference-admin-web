@@ -783,6 +783,7 @@ export const TRANSPLANT_MANIFEST = {
     '.claude/skills',
     'product/policies',
     'scripts/product/build-index.mjs',
+    'scripts/product/build-index.test.mjs',
   ],
   // 여기 있는 skill 전체와 `gates` 의 `eslint.config.js` 가 이름으로 가리키는 결정. 선택한 bundle 과 무관하게
   // 함께 나가야 그 문장들이 대상에서 끊기지 않는다.
@@ -829,12 +830,6 @@ export const TRANSPLANT_MANIFEST = {
     'src/shared/i18n/locales/ko/shared.json',
     'src/shared/i18n/locales/en/shared.json',
     'src/shared/i18n/locales/ja/shared.json',
-  ],
-  app: [
-    'src/app/i18n/resources.ts',
-    'src/app/i18n/locales/ko/app.json',
-    'src/app/i18n/locales/en/app.json',
-    'src/app/i18n/locales/ja/app.json',
   ],
   templates: ['package.json'],
 }

@@ -53,7 +53,7 @@ function behaviorFailures(entry, files) {
   const failures = []
   if (has(files, 'ui', /Filters\.tsx$/) || has(files, 'ui', /^use\w+Result\.tsx?$/)) {
     // URL asc/desc → aria 어휘는 shared/lib/list-sort 가 한 곳에서 옮긴다. 손으로 쓴 매핑은 기본 방향을
-    // 빠뜨려 활성 컬럼이 표시 없이 렌더됐다(2026-09-11 게시판·공연). 주석은 벗기고 코드만 본다.
+    // 빠뜨려 활성 컬럼이 표시 없이 렌더됐다(2026-09-11 두 목록 화면). 주석은 벗기고 코드만 본다.
     for (const file of files.filter((file) => file.startsWith('ui/') && /-columns\.tsx?$/.test(basename(file)))) {
       const path = `${entry.path}/${file}`
       const code = withoutComments(readFileSync(join(entry.dir, file), 'utf8'))

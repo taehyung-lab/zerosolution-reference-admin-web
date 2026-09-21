@@ -23,7 +23,12 @@ import { createHash } from 'node:crypto'
 import { cpSync, existsSync, mkdirSync, readFileSync, statSync, writeFileSync, lstatSync, readlinkSync, symlinkSync} from 'node:fs'
 import { dirname, join, posix, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { productTermsInLine, TRANSPLANT_SENTINEL } from '../contracts/contracts.mjs'
+import {
+  productTermDisposition,
+  productTermsInLine,
+  TRANSPLANT_SENTINEL,
+  unclassifiedProductTermFailures,
+} from '../contracts/contracts.mjs'
 import { productPaths } from '../contracts/product-paths.mjs'
 import {
   FOUNDATION_BUNDLE_IDS,
@@ -36,6 +41,8 @@ import {
 } from '../contracts/seed.mjs'
 
 const SOURCE_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
+
+export { productTermDisposition }
 
 /**
  * Q3(2026-09-03): 대상은 ADR 을 0001 부터 다시 번호 붙인다. 이관 ADR 은 seed bundle 과 skill 이 이름으로
@@ -371,7 +378,7 @@ export function rewriteAgentsForTarget(agents, { source, target, finish } = {}) 
   const targetPointer = target ?? productPaths(join(SOURCE_ROOT, '.ai-work', 'transplant-no-target'))
   const close = finish ?? ((text) => rewriteProductPaths(rewriteText(text), sourcePointer, targetPointer))
   const sourceMode = '이 저장소는 다른 제품으로 옮길 레퍼런스다.'
-  const productMode = '이 저장소는 제품 저장소다. 이관된 문서·skill·공용 코드는 설계 입력이며, 제품 사실은 이 저장소의 요구사항·원문·서버 계약·정책이 소유한다. 레퍼런스 제품의 도메인 값·예시 화면·판정을 이 제품의 사실로 복사하지 않는다. 공용 계약은 실제 소비자에서 같은 의미·상태 전이·실패가 확인될 때만 채택한다.'
+  const productMode = '이 저장소는 제품 저장소다. 제품 사실은 이 저장소의 원문·서버 계약·정책이 소유하며 레퍼런스 제품 값을 복사하지 않는다.'
   const matchingLines = agents.split('\n').filter((line) => line.startsWith(sourceMode))
   if (matchingLines.length !== 1) throw new Error(`AGENTS.md 레퍼런스 운영 모드 문장은 정확히 하나여야 한다: ${matchingLines.length}`)
   return close(agents.split('\n').map((line) => line.startsWith(sourceMode) ? productMode : line).join('\n'))
@@ -477,12 +484,26 @@ function summarize(items) {
   return counts
 }
 
-/** 대상 루트 지시문에 남은 이 제품의 어휘. 실패가 아니라 검토 목록이다(일반어와 겹치는 오탐은 리뷰 몫). */
-function productTermReview(targetPath, text) {
+const PRODUCT_TERM_ALLOWANCES = new Map([
+  ['scripts/contracts/contracts.mjs', '제품 어휘 탐지 규칙 자체가 검사 어휘를 소유한다.'],
+  ['scripts/contracts/README.md', '제품 어휘 검사 fixture와 disposition 사용법을 설명한다.'],
+])
+
+/** staged 텍스트에 남은 제품 어휘와 그 처리 소유자를 기록한다. */
+function productTermReview(item, text) {
   const hits = []
   text.split('\n').forEach((line, index) => {
+    if (line.includes('TRANSPLANT_PENDING_')) return
     const found = productTermsInLine(line)
-    if (found.length) hits.push({ file: targetPath, line: index + 1, terms: found })
+    if (!found.length) return
+    const hit = {
+      file: item.targetPath,
+      line: index + 1,
+      terms: found,
+      allowedReason: PRODUCT_TERM_ALLOWANCES.get(item.targetPath),
+    }
+    hit.disposition = productTermDisposition(hit, item)
+    hits.push(hit)
   })
   return hits
 }
@@ -490,6 +511,9 @@ function productTermReview(targetPath, text) {
 export function stageTransplant(targetRoot, outRoot, sourceRoot = SOURCE_ROOT, options = {}) {
   const items = planTransplant(targetRoot, { ...options, sourceRoot })
   const { source, target, retired, withLedger, selected } = items.inputs
+  const optionalSeedPaths = new Set(selected
+    .filter((bundle) => !FOUNDATION_BUNDLE_IDS.includes(bundle.id))
+    .flatMap((bundle) => listSeedFiles([bundle])))
   const templates = withLedger ? new Map() : ledgerTemplates(sourceRoot, source, target)
   const stagedPaths = new Set(items.filter((item) => item.action !== 'exclude').map((item) => item.targetPath))
   const sourceReferences = []
@@ -535,7 +559,12 @@ export function stageTransplant(targetRoot, outRoot, sourceRoot = SOURCE_ROOT, o
     if (!isTest) for (const [, id] of text.matchAll(TRANSPLANT_SENTINEL)) pending.push({ file: item.targetPath, id })
     const original = item.group !== LEDGER_GROUP && isTextFile(item.file) && item.action !== 'template' ? readFileSync(sourcePath, 'utf8') : ''
     for (const hit of findRetiredAdrCitations(original, retired)) review.push({ file: item.targetPath, ...hit })
-    if (['root', 'entrypoints', 'adrs', 'conditional'].includes(item.group)) productTerms.push(...productTermReview(item.targetPath, text))
+    if (text !== '' && !isTest && item.group !== 'workflow') {
+      const dispositionItem = optionalSeedPaths.has(item.file)
+        ? { ...item, group: 'selected-adapter' }
+        : item
+      productTerms.push(...productTermReview(dispositionItem, text))
+    }
     if (item.targetPath.endsWith('.md')) dangling.push(...danglingLinks(text, item.targetPath, stagedPaths, targetRoot))
     manifest.push({ ...item, sha256: createHash('sha256').update(staged).digest('hex') })
   }
@@ -554,6 +583,8 @@ export function stageTransplant(targetRoot, outRoot, sourceRoot = SOURCE_ROOT, o
   }, null, 2)}\n`)
   const uniquePending = [...new Map(pending.map((item) => [`${item.file}:${item.id}`, item])).values()]
   const uniqueSourceReferences = [...new Map(sourceReferences.map((item) => [`${item.file}:${item.link}`, item])).values()]
+  const classifiedProductTerms = productTerms.filter((item) => item.disposition !== 'unclassified')
+  const unclassifiedProductTerms = productTerms.filter((item) => item.disposition === 'unclassified')
   writeFileSync(join(outRoot, 'PENDING.md'), [
     '# 이관 결정 대기 (사람이 닫는다)',
     '',
@@ -563,8 +594,11 @@ export function stageTransplant(targetRoot, outRoot, sourceRoot = SOURCE_ROOT, o
     `## 이관하지 않은 ADR 인용 (본문 검토·재작성) — 레퍼런스 ${retired.join(', ')}`,
     ...review.map((item) => `- ${item.file}:${item.line} (ADR ${item.number}) ${item.text}`),
     '',
-    '## 지시문·ADR에 남은 레퍼런스 제품 어휘 (일반어 오탐은 리뷰가 가른다)',
-    ...productTerms.map((item) => `- ${item.file}:${item.line} ${item.terms.join('·')}`),
+    `## 분류된 제품 어휘 (${classifiedProductTerms.length})`,
+    ...classifiedProductTerms.map((item) => `- ${item.file}:${item.line} [${item.disposition}] ${item.terms.join('·')}${item.allowedReason ? ` — ${item.allowedReason}` : ''}`),
+    '',
+    `## 미분류 제품 어휘 (${unclassifiedProductTerms.length})`,
+    ...unclassifiedProductTerms.map((item) => `- ${item.file}:${item.line} ${item.terms.join('·')}`),
     '',
     '## 레퍼런스 저장소에만 있는 근거 (링크를 풀고 출처 경로를 남겼다 — 이 제품의 근거로 다시 쓴다)',
     ...uniqueSourceReferences.map((item) => `- ${item.file} → 레퍼런스 저장소 ${item.link}`),
@@ -581,12 +615,18 @@ export function stageTransplant(targetRoot, outRoot, sourceRoot = SOURCE_ROOT, o
     '- 알려진 a11y known-defect: `MultiSelect` 빈 값 `—` 하드코딩, `Pagination` out-of-range `aria-current`. AT 실측 후 수정.',
     '',
   ].join('\n'))
+  const productTermFailures = unclassifiedProductTermFailures(productTerms)
+  if (productTermFailures.length) {
+    throw new Error(`이관 제품 어휘를 분류해야 한다:\n${productTermFailures.join('\n')}`)
+  }
   return {
     items,
     manifest,
     pending: uniquePending,
     review,
     productTerms,
+    classifiedProductTerms,
+    unclassifiedProductTerms,
     sourceReferences: uniqueSourceReferences,
     danglingLinks: dangling,
     retired,

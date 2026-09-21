@@ -54,7 +54,7 @@ for (const root of resourceRoots) {
 }
 
 /**
- * A namespace belongs to the owner it is stored under, so `members` may not reappear under
+ * A namespace belongs to the owner it is stored under, so a feature namespace may not reappear under
  * `src/shared`. Checking the stored resource rather than a declaration keeps the shared boundary
  * true instead of merely documented.
  */

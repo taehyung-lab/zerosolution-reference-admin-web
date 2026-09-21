@@ -559,7 +559,7 @@ export function productTermsInLine(line, terms = PRODUCT_DOMAIN_TERMS, featureDi
 /**
  * 스킬 Markdown 어디에든 남은 제품 이름을 notice 로 낸다. 예시와 fence도 이관 시 복사되는 지시이므로 함께 본다.
  * 실패가 아닌 이유: 어휘가 부분 문자열·일반어(`운영자`, `전시`)와 겹쳐 오탐이 있고, 그 판단은 리뷰 몫이다.
- * 0 이 목표이고, 남은 것은 이유가 있어야 한다.
+ * 원시 개수 0은 목표가 아니다. 각 항목이 누가 처리할지 분류되고, 미분류가 0이어야 한다.
  */
 export function productNameNotices(files, { terms = PRODUCT_DOMAIN_TERMS, featureDirs = readFeatureDirectories(), read = (file) => readFileSync(resolve(file), 'utf8') } = {}) {
   const notices = []
@@ -572,6 +572,22 @@ export function productNameNotices(files, { terms = PRODUCT_DOMAIN_TERMS, featur
     if (hits.length) notices.push(`이관 대상에 제품 이름 ${hits.length}줄: ${file} — ${hits.join(' / ')}. 제품 사실은 product reference·ADR 근거·consumer 코드와 테스트로 옮긴다.`)
   }
   return notices
+}
+
+/** 이관본에 남은 제품 어휘가 어느 경계에서 닫히는지 분류한다. */
+export function productTermDisposition(hit, { group, action }) {
+  if (action === 'exclude' || group === 'source-evidence' || group === 'ledger') return 'source-only'
+  if (action === 'rewrite') return 'generic-rewrite'
+  if (action === 'template' || action === 'conditional' || group === 'app' || group === 'selected-adapter') return 'target-decision'
+  if (hit.allowedReason) return 'allowed-generic'
+  return 'unclassified'
+}
+
+/** 원시 어휘 수가 아니라 소유자가 정해지지 않은 항목만 게이트로 막는다. */
+export function unclassifiedProductTermFailures(hits) {
+  return hits
+    .filter((hit) => hit.disposition === 'unclassified')
+    .map((hit) => `${hit.file}:${hit.line}: 제품 어휘 소유자 미분류 → ${hit.terms.join('·')}`)
 }
 
 export function claudeAgentsImportFailure(claude) {

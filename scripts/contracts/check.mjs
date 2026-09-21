@@ -112,7 +112,7 @@ notes.push(...productNameNotices(documents.filter((file) => file.startsWith('.ag
  */
 export function portableProductNameScope(seedFiles, manifestFiles, read = (file) => readFileSync(resolve(file), 'utf8')) {
   return [...new Set([...seedFiles, ...manifestFiles])]
-    .filter((file) => /\.(md|ts|tsx)$/.test(file))
+    .filter((file) => /\.(md|ts|tsx|mjs|js|json|yml|yaml)$/.test(file))
     .filter((file) => !file.startsWith('src/app/'))
     .filter((file) => !file.startsWith('src/test/workflows/'))
     .filter((file) => !file.startsWith('.agents/skills/'))
@@ -206,7 +206,7 @@ if (mode === 'source') {
     failures.push(`seed focused-test 이탈: 선언되지 않은 test가 closure에 포함됨: ${file}`)
   }
   for (const file of findForbiddenSeedFiles(seedFiles)) {
-    failures.push(`seed 오염: feature·리허설·도메인 번역이 closure에 포함됨: ${file}`)
+    failures.push(`seed 오염: feature·격리 실행물·도메인 번역이 closure에 포함됨: ${file}`)
   }
   for (const file of findUndeclaredContractExports()) {
     failures.push(`seed 부수 반출: test closure로만 따라온 계약 파일 (bundle code root로 선언하거나 의존을 끊어야 한다): ${file}`)

@@ -14,6 +14,7 @@ import {
   documentBudgetNotices,
   headingAnchors,
   productNameNotices,
+  productTermDisposition,
   productTermsInLine,
   ledgerIndexFailures,
   DOCUMENT_LINE_BUDGET,
@@ -29,6 +30,7 @@ import {
   alwaysLoadedBudgetFailures,
   baselineEntryFailures,
   skillAdapterFailures,
+  unclassifiedProductTermFailures,
 } from './contracts.mjs'
 import {
   collectImportClosure,
@@ -332,6 +334,23 @@ describe('local markdown links', () => {
 })
 
 describe('product names inside skill rule text', () => {
+  it('fails only vocabulary whose target owner is unclassified', () => {
+    const classified = {
+      file: 'README.md', line: 1, terms: ['회원'], disposition: 'target-decision',
+    }
+    const unclassified = {
+      file: 'docs/portable.md', line: 2, terms: ['manager'], disposition: 'unclassified',
+    }
+
+    expect(unclassifiedProductTermFailures([classified, unclassified])).toEqual([
+      'docs/portable.md:2: 제품 어휘 소유자 미분류 → manager',
+    ])
+    expect(productTermDisposition(
+      { file: 'docs/generic.md', terms: ['manager'], allowedReason: 'package manager 문맥' },
+      { group: 'adrs', action: 'copy' },
+    )).toBe('allowed-generic')
+  })
+
   it('notices domain nouns, identifiers and feature directories anywhere in a portable skill', () => {
     // `auth` is filtered out by readFeatureDirectories in production; here the caller passes the list.
     const dirs = ['members', 'managers']

@@ -18,7 +18,7 @@ const OBSERVATION_PENDING = '(미판독)'
 /**
  * An observation cell that only says the frame exists enumerates nothing, so the screen's composition is
  * unobserved (the product inventory's reading rule says only its designated source enumerates composition). The 2026-09-11
- * board redesign started from such a cell passing as confirmed.
+ * a screen redesign started from such a cell passing as confirmed.
  */
 const OBSERVATION_UNENUMERATED = /frame 존재(?!하지)/
 const POLICY_PENDING = '(대기)'

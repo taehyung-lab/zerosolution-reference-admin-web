@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, 
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
+import { alwaysLoadedBudgetFailures } from '../contracts/contracts.mjs'
 import {
   FOUNDATION_BUNDLE_IDS,
   listTransplantManifestFiles,
@@ -15,6 +16,7 @@ import {
   findRetiredAdrCitations,
   limitSeedCatalog,
   planTransplant,
+  productTermDisposition,
   rewriteAgentsForTarget,
   rewriteMarkdownLinks,
   restoreSourcePaths,
@@ -388,6 +390,43 @@ describe('plan / stage / apply against a target directory', () => {
     expect(returnGuide).not.toMatch(/미이관|옛 원장|두 표|원장 행/)
     expect(policy).toContain('추론을 확인으로 승격하지 않는다')
     expect(skill).toContain('product/generated-index.md')
+  })
+
+  it('closes Foundation target structure before product adapters are supplied', () => {
+    const target = temporaryDirectory('foundation-structure-target-')
+    const out = temporaryDirectory('foundation-structure-stage-')
+    const staged = stageTransplant(target, out)
+    const agents = readFileSync(join(out, 'AGENTS.md'), 'utf8')
+    const skillDocs = readdirSync(join(out, '.agents/skills'), { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => readFileSync(join(out, '.agents/skills', entry.name, 'SKILL.md'), 'utf8'))
+
+    expect(alwaysLoadedBudgetFailures(agents, skillDocs)).toEqual([])
+    expect(existsSync(join(out, 'scripts/product/build-index.test.mjs'))).toBe(true)
+    expect(existsSync(join(out, 'src/api/http/credential.ts'))).toBe(false)
+    expect(existsSync(join(out, 'src/api/http/locale.ts'))).toBe(false)
+    expect(staged.danglingLinks).toEqual([])
+  })
+
+  it('classifies vocabulary by ownership instead of requiring a zero count', () => {
+    expect(productTermDisposition({ file: 'README.md', terms: ['회원'] }, { group: 'root', action: 'template' }))
+      .toBe('target-decision')
+    expect(productTermDisposition(
+      { file: 'docs/decisions/source.md', terms: ['manager'] },
+      { group: 'excluded', action: 'exclude' },
+    )).toBe('source-only')
+    expect(productTermDisposition(
+      { file: 'docs/decisions/portable.md', terms: ['manager'] },
+      { group: 'adrs', action: 'rewrite' },
+    )).toBe('generic-rewrite')
+    expect(productTermDisposition(
+      { file: 'docs/decisions/generic.md', terms: ['manager'], allowedReason: 'generic package manager term' },
+      { group: 'adrs', action: 'copy' },
+    )).toBe('allowed-generic')
+    expect(productTermDisposition(
+      { file: 'docs/decisions/portable.md', terms: ['manager'] },
+      { group: 'adrs', action: 'copy' },
+    )).toBe('unclassified')
   })
 
   it('classifies files, stages a renumbered product-neutral copy with a pending list, and never overwrites the target', () => {
