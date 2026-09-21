@@ -26,6 +26,32 @@ const writeFact = (root, file, verify) => {
 }
 
 describe('fact verifier 허용 경계', () => {
+  it('첫 frontmatter의 checks 항목 verify만 순서대로 읽는다', () => {
+    const text = [
+      '---',
+      'id: X',
+      'metadata:',
+      '  verify: scripts/verify/metadata.mjs',
+      'checks:',
+      '  - verify: scripts/verify/first.mjs',
+      '  - id: second',
+      '    verify: scripts/verify/second.mjs',
+      '---',
+      '본문 설명:',
+      '  verify: scripts/verify/body.mjs',
+      '```yaml',
+      'checks:',
+      '  - verify: scripts/verify/fenced.mjs',
+      '```',
+      '',
+    ].join('\n')
+
+    expect(declaredVerifierPaths([{ file: 'X.md', text }])).toEqual([
+      { file: 'X.md', path: 'scripts/verify/first.mjs' },
+      { file: 'X.md', path: 'scripts/verify/second.mjs' },
+    ])
+  })
+
   it('모든 fact의 선언 순서를 보존하고 중복은 한 번만 실행한다', () => {
     const root = rootWithVerifyDir()
     writeFileSync(join(root, 'scripts/verify/a.mjs'), '')
@@ -79,11 +105,11 @@ describe('fact verifier 허용 경계', () => {
     expect(resolveVerifierPaths([fact('X.md', 'scripts/verify/escape.mjs')], root).errors).not.toEqual([])
   })
 
-  it('Node 직접 실행 중 하나라도 non-zero여도 나머지를 모두 실행한다', () => {
+  it('Node 직접 실행 중 첫 verifier가 non-zero여도 다음 verifier를 실행한다', () => {
     const calls = []
     const spawn = (command, args, options) => {
       calls.push({ command, args, options })
-      return { status: args[0].endsWith('b.mjs') ? 1 : 0, error: undefined }
+      return { status: args[0].endsWith('a.mjs') ? 1 : 0, error: undefined }
     }
 
     const errors = runVerifierPaths([
@@ -92,13 +118,14 @@ describe('fact verifier 허용 경계', () => {
     ], { root: '/repo', spawn })
 
     expect(calls).toHaveLength(2)
+    expect(calls[1].args).toEqual(['/repo/scripts/verify/b.mjs'])
     expect(calls.every((call) => (
       call.command === process.execPath
       && call.args.length === 1
       && call.options.cwd === '/repo'
       && call.options.shell === false
     ))).toBe(true)
-    expect(errors).toEqual(['scripts/verify/b.mjs: verifier exit 1'])
+    expect(errors).toEqual(['scripts/verify/a.mjs: verifier exit 1'])
   })
 
   it('spawn error를 verifier 오류로 반환한다', () => {

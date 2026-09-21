@@ -5,9 +5,37 @@ import { isAbsolute, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 export function declaredVerifierPaths(entries) {
-  return entries.flatMap(({ file, text }) => (
-    [...text.matchAll(/^\s+verify:\s*([^\n]*?)\s*$/gm)].map(([, path]) => ({ file, path }))
-  ))
+  return entries.flatMap(({ file, text }) => verifierPathsFromChecks(text).map((path) => ({ file, path })))
+}
+
+function verifierPathsFromChecks(text) {
+  if (!text.startsWith('---\n')) return []
+  const end = text.indexOf('\n---\n', 4)
+  if (end === -1) return []
+
+  const paths = []
+  let inChecks = false
+  let itemIndent = null
+  for (const line of text.slice(4, end).split('\n')) {
+    if (!inChecks) {
+      if (/^checks:\s*$/.test(line)) inChecks = true
+      continue
+    }
+    if (/^\S/.test(line)) break
+
+    const item = /^(\s*)-\s+([A-Za-z][A-Za-z0-9_-]*):\s*(.*?)\s*$/.exec(line)
+    if (item && (itemIndent === null || item[1].length === itemIndent)) {
+      itemIndent = item[1].length
+      if (item[2] === 'verify') paths.push(item[3])
+      continue
+    }
+
+    const property = /^(\s+)([A-Za-z][A-Za-z0-9_-]*):\s*(.*?)\s*$/.exec(line)
+    if (property && itemIndent !== null && property[1].length === itemIndent + 2 && property[2] === 'verify') {
+      paths.push(property[3])
+    }
+  }
+  return paths
 }
 
 export function resolveVerifierPaths(entries, root = process.cwd()) {
