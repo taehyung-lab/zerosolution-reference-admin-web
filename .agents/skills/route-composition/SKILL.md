@@ -30,7 +30,8 @@ For cross-feature dialogs, the source feature owns the action intent, selected t
 
 ## Route file layout
 
-Route files mirror the URL. A single leaf stays a flat file (`<domain>/new.tsx`). A param or static segment with more than one leaf becomes a directory: `<domain>/$<id>/index.tsx` (detail) and `<domain>/$<id>/edit.tsx` (edit). A directory alone creates no route, so these leaves are siblings under `<domain>`; add `$<id>/route.tsx` only when the screens actually share chrome (header, tabs) and must render through an `<Outlet />`. Do not use the flat non-nesting escape (`$<id>_.edit.tsx`): it needs a comment to explain and hides the layout decision. Co-located tests match `routeFileIgnorePattern` and are not routes.
+Route files preserve the product URL hierarchy and make shared layout explicit. Exact file naming, nesting syntax,
+layout component, and test-ignore convention belong to the installed Router and [source-structure](../source-structure/SKILL.md).
 
 Segment names are the product's external URL contract and need not match the screen folder name ([folder structure](../source-structure/SKILL.md)). A resource collection defaults to the plural noun. A state, workflow, or fixed view takes the name the product's IA gives it, which is often not a plural. A URL the product has already fixed wins over both defaults.
 
@@ -45,7 +46,8 @@ Committed filter, sort, page, page size, and shareable tab state live in route s
 
 ## Loader and preload
 
-A list route's loader is optional (option warming only). A detail or edit route's loader is required: it awaits the record (below). Other legitimate uses are redirect, data-dependent entry permission, and named first-paint readiness. The route and screen call the same exported query options.
+A loader waits only for data or permission that must exist before entry. Lists, details, edits, redirects and named
+first-paint requirements choose that boundary from their confirmed role/fact; route and screen reuse one server-state declaration.
 
 Trigger and waiting are separate decisions. Await only data that must be ready before entry and start independent
 auxiliary warming without turning it into an entry failure. Use the installed QueryClient's supported API; types and lint
@@ -73,4 +75,6 @@ Route는 검증된 params/search, 진입 guard, 필요한 loader, 화면 mount�
 
 ## Guards
 
-`beforeLoad` handles session or permission facts already present in router context and applies redirect policy. When entry permission must be fetched, the loader awaits the shared permission query options; `beforeLoad` does not start a second query path. If a reusable guard option is spread into a route, a route-local `beforeLoad` must compose it explicitly instead of overwriting it. Product permission codes and redirect policy are never inferred.
+The entry guard consumes session or permission facts already available at the boundary. A permission that must be fetched
+uses the shared server-state declaration rather than a second query path. Exact guard/loader APIs belong to the installed
+Router. Product permission codes and redirect policy are never inferred.

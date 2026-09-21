@@ -73,18 +73,17 @@ them. Their naming convention, scan limits, and removal condition belong to the 
 
 ## Boundaries
 
-- Only `features/*/api/**` and `src/api/**` import `src/api/generated/**`; `eslint.config.js` enforces this.
-- Routes, screens, and components never import Axios or generated operations.
-- `src/api/http/**` owns the Axios instance, authentication, locale header, cancellation, and transport-error normalization.
-- Feature API modules own query/mutation options, keys and API-only execution hooks. A mutation declares its cache consequence in `meta.invalidates`; screens run it with `useMutation` and own navigation and acknowledgement (ADR 0014).
+- Routes and UI do not import the transport library or generated wire operations directly.
+- One transport boundary owns credentials, locale/header projection, cancellation, tracing, and error normalization.
+- Feature API boundaries own server-state declarations and cache consequences; screens own navigation and acknowledgement.
 - File creation, relocation and API input type placement follow [`source-structure.md`](../source-structure/SKILL.md).
-- Generated files are never edited or committed.
+- Generated output is never hand-edited; whether it is committed is target tooling policy.
 
 If runtime behavior contradicts the snapshot, stop and report the endpoint, request/response evidence, and blocked work. Do not hide divergence with casts, optional fields, fallback values, or silent response reshaping. A temporary adapter requires explicit approval, an ADR, tests, and a removal condition.
 
 ## Common mistakes
 
-- Generating React Query hooks and treating them as the project API
+- Treating generated cache/UI hooks as the project API without an explicit target decision
 - Fetching the remote specification during install or build
 - Rewriting every generated response type as a Zod schema
 - Invalidating broad cache roots when an exact consequence is known
