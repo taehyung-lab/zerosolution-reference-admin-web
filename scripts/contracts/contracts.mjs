@@ -304,6 +304,32 @@ export function baselineEntryFailures(rootDocument, skillDocuments, baselineDocu
   if (typeof baseline.supersedes?.note !== 'string' || baseline.supersedes.note.trim() === '') {
     lineageFailures.push('이전 원시 값 보존 위치가 없다.')
   }
+  if (baseline.transplant !== undefined) {
+    const transplant = baseline.transplant
+    if (typeof transplant.observedAt !== 'string' || transplant.observedAt.trim() === '') {
+      lineageFailures.push('transplant.observedAt이 없다.')
+    }
+    if (typeof transplant.sourceRevision !== 'string' || transplant.sourceRevision.trim() === '') {
+      lineageFailures.push('transplant.sourceRevision이 없다.')
+    }
+    if (!Array.isArray(transplant.defaultBundleIds)
+      || transplant.defaultBundleIds.length === 0
+      || transplant.defaultBundleIds.some((id) => typeof id !== 'string' || id.trim() === '')) {
+      lineageFailures.push('transplant.defaultBundleIds는 비어 있지 않은 문자열 배열이어야 한다.')
+    }
+    if (typeof transplant.verificationCeiling !== 'string' || transplant.verificationCeiling.trim() === '') {
+      lineageFailures.push('transplant.verificationCeiling이 없다.')
+    }
+    if (typeof transplant.targetRuntime !== 'string' || transplant.targetRuntime.trim() === '') {
+      lineageFailures.push('transplant.targetRuntime이 없다.')
+    }
+    if (typeof transplant.reason !== 'string' || transplant.reason.trim() === '') {
+      lineageFailures.push('transplant.reason이 없다.')
+    }
+    if (transplant.targetRuntime === 'passed' && transplant.targetEvidence === undefined) {
+      lineageFailures.push('transplant.targetRuntime passed에는 targetEvidence가 필요하다.')
+    }
+  }
   const current = {
     rootCharacters: rootDocument.length,
     descriptionCharacters: descriptions.reduce((total, description) => total + description.length, 0),

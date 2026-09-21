@@ -1061,6 +1061,20 @@ describe('현재 문서 baseline', () => {
       note: '이전 값은 Git history가 소유함',
     },
   }
+  const transplant = {
+    observedAt: '2026-09-21',
+    sourceRevision: '7bb3271',
+    defaultBundleIds: ['draft-commit', 'search-partition', 'list-query', 'list-view'],
+    verificationCeiling: '경계까지 확인됨',
+    targetRuntime: 'unconfirmed',
+    reason: '실 API·실 auth·대상 UI 수용은 첫 대상 프로젝트에서 확인한다',
+  }
+  const currentEntry = {
+    rootCharacters: 4,
+    descriptionCharacters: 5,
+    alwaysLoadedCharacters: 9,
+    budgetCharacters: 10,
+  }
 
   it('같은 계산으로 잰 현재 값이면 통과한다', () => {
     const baseline = JSON.stringify({ ...lineage, entry: { rootCharacters: 4, descriptionCharacters: 5, alwaysLoadedCharacters: 9, budgetCharacters: 10 } })
@@ -1084,6 +1098,39 @@ describe('현재 문서 baseline', () => {
       entry: { rootCharacters: 4, descriptionCharacters: 5, alwaysLoadedCharacters: 9, budgetCharacters: 10 },
     })
     expect(baselineEntryFailures('root', ['---\nname: x\ndescription: short\n---\n'], baseline, 10)).toContain('직접 비교할 수 없는 이유가 없다.')
+  })
+
+  it('이관 관측은 Foundation 집합과 경계 검증 상한을 기록한다', () => {
+    const baseline = JSON.stringify({ ...lineage, entry: currentEntry, transplant })
+    expect(baselineEntryFailures('root', ['---\nname: x\ndescription: short\n---\n'], baseline, 10)).toEqual([])
+  })
+
+  it('대조군 — 이관 검증 상한이 없으면 실패한다', () => {
+    const { verificationCeiling, ...missingCeiling } = transplant
+    void verificationCeiling
+    const baseline = JSON.stringify({ ...lineage, entry: currentEntry, transplant: missingCeiling })
+    expect(baselineEntryFailures('root', ['---\nname: x\ndescription: short\n---\n'], baseline, 10))
+      .toContain('transplant.verificationCeiling이 없다.')
+  })
+
+  it('대조군 — Foundation bundle ID가 배열이 아니면 실패한다', () => {
+    const baseline = JSON.stringify({
+      ...lineage,
+      entry: currentEntry,
+      transplant: { ...transplant, defaultBundleIds: 'draft-commit' },
+    })
+    expect(baselineEntryFailures('root', ['---\nname: x\ndescription: short\n---\n'], baseline, 10))
+      .toContain('transplant.defaultBundleIds는 비어 있지 않은 문자열 배열이어야 한다.')
+  })
+
+  it('대조군 — 실제 대상 근거 없이 target runtime을 passed로 쓰면 실패한다', () => {
+    const baseline = JSON.stringify({
+      ...lineage,
+      entry: currentEntry,
+      transplant: { ...transplant, targetRuntime: 'passed' },
+    })
+    expect(baselineEntryFailures('root', ['---\nname: x\ndescription: short\n---\n'], baseline, 10))
+      .toContain('transplant.targetRuntime passed에는 targetEvidence가 필요하다.')
   })
 })
 
