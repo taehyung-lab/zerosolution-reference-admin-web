@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Select } from "../primitives/Select";
 import { FilterField } from "./FilterField";
 import type { FilterSelectSlot } from "./FilterSelectSlot";
@@ -14,6 +15,7 @@ export function KeywordFilterField<TField extends string | undefined>({
   readonly label: string;
   readonly field?: FilterSelectSlot<Exclude<TField, undefined>>;
 }) {
+  const { t } = useTranslation("shared");
   return (
     <FilterField label={label} group>
       {() => (
@@ -21,7 +23,7 @@ export function KeywordFilterField<TField extends string | undefined>({
           {field ? (
             <Select
               className="w-48"
-              aria-label={field.label}
+              aria-label={t("filter.keyword.field")}
               value={field.value}
               options={field.options}
               onValueChange={(value) =>

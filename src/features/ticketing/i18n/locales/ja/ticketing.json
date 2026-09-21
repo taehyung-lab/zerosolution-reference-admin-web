@@ -10,28 +10,14 @@
       "edit": "修正"
     },
     "filter": {
-      "title": "検索",
-      "collapse": "検索を閉じる",
-      "expand": "検索を開く",
-      "submit": "検索",
-      "reset": "初期化",
-      "all": "全体",
       "status": "状態",
       "purpose": "用途",
       "usage": "使用状態",
       "period": {
-        "label": "期間",
-        "criterion": "期間基準",
-        "presetGroup": "期間選択",
-        "from": "開始日",
-        "to": "終了日",
-        "calendar": "カレンダー"
+        "label": "期間"
       },
       "keyword": {
         "label": "検索語",
-        "field": "検索対象",
-        "add": "追加",
-        "remove": "{{value}} を削除",
         "chip": "{{field}} : {{value}}"
       }
     },
@@ -63,8 +49,6 @@
       "usage": "使用状態"
     },
     "result": {
-      "pageSize": "表示",
-      "sort": "並び替え",
       "empty": "一致する検索結果がありません。",
       "selectAll": "このページのスマートプリンターをすべて選択",
       "selectRow": "{{name}} を選択",
@@ -76,12 +60,7 @@
       },
       "bulkChange": "変更",
       "copy": "選択コピー",
-      "create": "登録",
-      "pagination": {
-        "label": "ページ移動",
-        "previous": "前へ",
-        "next": "次へ"
-      }
+      "create": "登録"
     },
     "detail": {
       "title": "スマートプリンター照会",

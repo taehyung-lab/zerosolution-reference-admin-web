@@ -86,27 +86,12 @@
       }
     },
     "filter": {
-      "title": "検索条件",
-      "collapse": "検索条件を折りたたむ",
-      "expand": "検索条件を展開する",
-      "submit": "検索",
-      "reset": "初期化",
-      "all": "すべて",
       "period": {
-        "label": "期間",
-        "criterion": "期間の基準",
-        "presetGroup": "期間選択",
-        "from": "開始日",
-        "to": "終了日",
-        "calendar": "カレンダー"
+        "label": "期間"
       },
       "keyword": {
         "label": "検索語",
-        "field": "検索対象",
         "name": "掲示板名",
-        "input": "検索語",
-        "add": "追加",
-        "remove": "{{value}}を削除",
         "chip": "{{field}} : {{value}}"
       },
       "type": {
@@ -126,15 +111,8 @@
       }
     },
     "result": {
-      "pageSize": "表示",
-      "sort": "並び替え",
       "create": "登録",
-      "empty": "一致する検索結果がありません。",
-      "pagination": {
-        "label": "掲示板一覧のページ",
-        "previous": "前へ",
-        "next": "次へ"
-      }
+      "empty": "一致する検索結果がありません。"
     },
     "sort": {
       "registeredAt": "登録日",

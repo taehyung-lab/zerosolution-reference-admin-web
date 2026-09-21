@@ -86,27 +86,12 @@
       }
     },
     "filter": {
-      "title": "Search conditions",
-      "collapse": "Collapse search conditions",
-      "expand": "Expand search conditions",
-      "submit": "Search",
-      "reset": "Reset",
-      "all": "All",
       "period": {
-        "label": "Period",
-        "criterion": "Period basis",
-        "presetGroup": "Date range",
-        "from": "Start date",
-        "to": "End date",
-        "calendar": "Calendar"
+        "label": "Period"
       },
       "keyword": {
         "label": "Keyword",
-        "field": "Search target",
         "name": "Board name",
-        "input": "Keyword",
-        "add": "Add",
-        "remove": "Remove {{value}}",
         "chip": "{{field}} : {{value}}"
       },
       "type": {
@@ -126,15 +111,8 @@
       }
     },
     "result": {
-      "pageSize": "View",
-      "sort": "Sort",
       "create": "Register",
-      "empty": "No matching results.",
-      "pagination": {
-        "label": "Board pages",
-        "previous": "Previous",
-        "next": "Next"
-      }
+      "empty": "No matching results."
     },
     "sort": {
       "registeredAt": "Registered date",

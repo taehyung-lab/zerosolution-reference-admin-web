@@ -100,7 +100,7 @@ describe('ManagerListScreen (11.1 운영자 목록)', () => {
     const onCommit = vi.fn();
     renderScreen({ onCommit });
 
-    await chooseOptionIn('검색어 구분', '이메일');
+    await chooseOptionIn('검색 대상', '이메일');
     fireEvent.change(screen.getByRole('textbox', { name: '검색어' }), { target: { value: 'test@example.com' } });
     await waitFor(() => expect(screen.getByRole('combobox', { name: '권한' })).toBeEnabled());
     await chooseOptionIn('권한', 'Example permission');

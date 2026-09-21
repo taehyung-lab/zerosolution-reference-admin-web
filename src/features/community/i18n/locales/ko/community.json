@@ -86,27 +86,12 @@
       }
     },
     "filter": {
-      "title": "검색 조건",
-      "collapse": "검색 조건 접기",
-      "expand": "검색 조건 펼치기",
-      "submit": "검색",
-      "reset": "초기화",
-      "all": "전체",
       "period": {
-        "label": "기간",
-        "criterion": "기간 기준",
-        "presetGroup": "기간 선택",
-        "from": "시작일",
-        "to": "종료일",
-        "calendar": "달력"
+        "label": "기간"
       },
       "keyword": {
         "label": "검색어",
-        "field": "검색 대상",
         "name": "게시판명",
-        "input": "검색어",
-        "add": "추가",
-        "remove": "{{value}} 삭제",
         "chip": "{{field}} : {{value}}"
       },
       "type": {
@@ -126,15 +111,8 @@
       }
     },
     "result": {
-      "pageSize": "보기",
-      "sort": "정렬",
       "create": "등록",
-      "empty": "일치하는 검색결과가 없습니다.",
-      "pagination": {
-        "label": "게시판 목록 페이지",
-        "previous": "이전",
-        "next": "다음"
-      }
+      "empty": "일치하는 검색결과가 없습니다."
     },
     "sort": {
       "registeredAt": "등록일",

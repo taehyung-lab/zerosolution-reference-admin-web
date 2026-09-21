@@ -47,7 +47,6 @@ export function MemberBulkChangeControl({
             {({ labelId }) => (
               <CheckboxTree
                 ariaLabelledby={labelId}
-                selectAllLabel={t('filters.all')}
                 nodes={restrictions.map((value) => ({ value, label: t(`restriction.${value}`) }))}
                 values={change.restrictions}
                 onValueChange={(values) =>

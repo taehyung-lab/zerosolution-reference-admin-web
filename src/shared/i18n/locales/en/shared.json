@@ -58,7 +58,14 @@
       "TODAY": "Today",
       "CUSTOM": "Custom"
     },
-    "total": "Results: {{formatted}}"
+    "total": "Results: {{formatted}}",
+    "pageSize": "Page size",
+    "sort": "Sort",
+    "pagination": {
+      "label": "Pagination",
+      "previous": "Previous",
+      "next": "Next"
+    }
   },
   "calendar": {
     "navigation": "Calendar navigation",
@@ -119,5 +126,28 @@
   },
   "deleteConfirm": {
     "description": "Delete this item?"
+  },
+  "filter": {
+    "title": "Search",
+    "submit": "Search",
+    "reset": "Reset",
+    "collapse": "Collapse search",
+    "expand": "Expand search",
+    "period": {
+      "criterion": "Period criterion",
+      "from": "Start date",
+      "to": "End date",
+      "calendar": "Open calendar",
+      "presets": "Quick period"
+    },
+    "keyword": {
+      "field": "Search target",
+      "input": "Keyword",
+      "add": "Add",
+      "remove": "Remove {{value}}"
+    }
+  },
+  "checkboxTree": {
+    "selectAll": "All"
   }
 }

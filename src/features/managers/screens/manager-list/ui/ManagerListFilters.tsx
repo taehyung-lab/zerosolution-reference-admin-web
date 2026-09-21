@@ -41,18 +41,12 @@ export function ManagerListFilters({
 
   return (
     <FilterPanel
-      title={t('search')}
-      submitLabel={t('search')}
-      resetLabel={t('reset')}
-      collapseLabel={t('filters.collapse')}
-      expandLabel={t('filters.expand')}
       onReset={filter.reset}
       onSubmit={filter.submit}
     >
       <PeriodFilterField
         label={t('filters.period')}
         criterion={{
-          label: t('filters.periodType'),
           value: draft.periodType ?? 'joinedAt',
           options: managerPeriodTypes.map((value) => ({ value, label: t(`fields.${value}`) })),
           onValueChange: (value: ManagerPeriodType) => patchDraft({ periodType: value }),
@@ -60,18 +54,13 @@ export function ManagerListFilters({
         preset={period.preset}
         presets={presets}
         customLabel={customLabel}
-        presetGroupLabel={t('filters.periodPreset')}
         range={period.range}
         onPresetChange={period.setPreset}
         onRangeChange={period.setRange}
-        fromLabel={t('filters.startDate')}
-        toLabel={t('filters.endDate')}
-        calendarLabel={t('filters.calendar')}
       />
       <KeywordFilterField
         label={t('filters.keyword')}
         field={{
-          label: t('filters.keywordType'),
           value: keyword.pending.field,
           options: managerKeywordFields.map((value) => ({ value, label: t(`fields.${value}`) })),
           onValueChange: keyword.setPendingField,
@@ -81,9 +70,6 @@ export function ManagerListFilters({
         onPendingValueChange={keyword.setPendingValue}
         onAdd={keyword.addPending}
         onRemoveAt={keyword.removeAt}
-        addLabel={t('filters.add')}
-        removeLabel={(item) => t('filters.remove', { value: item.value })}
-        inputLabel={t('filters.keyword')}
         formatItem={(item) => `${t(`fields.${item.field}`)} : ${item.value}`}
       />
       <FilterField label={t('fields.permission')}>
@@ -108,7 +94,6 @@ export function ManagerListFilters({
               ariaLabelledby={labelId}
               emptyMeansAll
               nodes={types.items}
-              selectAllLabel={t('filters.all')}
               values={draft.types ?? []}
               onValueChange={(values) => patchDraft({ types: values })}
             />
@@ -121,7 +106,6 @@ export function ManagerListFilters({
             ariaLabelledby={labelId}
             emptyMeansAll
             nodes={managerRegistrationRoutes.map((value) => ({ value, label: value }))}
-            selectAllLabel={t('filters.all')}
             values={draft.registrationRoutes ?? []}
             onValueChange={(values) =>
               patchDraft({ registrationRoutes: values as ManagerRegistrationRoute[] })
@@ -135,7 +119,6 @@ export function ManagerListFilters({
             ariaLabelledby={labelId}
             emptyMeansAll
             nodes={managerAccountStatuses.map((value) => ({ value, label: t(`accountStatus.${value}`) }))}
-            selectAllLabel={t('filters.all')}
             values={draft.statuses ?? []}
             onValueChange={(values) => patchDraft({ statuses: values as ManagerAccountStatus[] })}
           />

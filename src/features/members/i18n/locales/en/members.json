@@ -20,26 +20,14 @@
     "appeals": "Flagged member appeals",
     "appealDetail": "Appeal details"
   },
-  "search": "Search",
-  "reset": "Reset",
   "filters": {
     "period": "Period",
-    "periodType": "Period criterion",
-    "periodPreset": "Quick period",
     "keyword": "Keyword",
-    "keywordType": "Search target",
     "signupMethod": "Signup method",
     "accountStatus": "Account status",
     "restrictions": "Restrictions",
     "progress": "Progress",
-    "all": "All",
-    "add": "Add",
-    "remove": "Remove {{value}}",
-    "collapse": "Collapse search",
-    "expand": "Expand search",
-    "startDate": "Start date",
-    "endDate": "End date",
-    "calendar": "Open calendar"
+    "all": "All"
   },
   "signup": {
     "direct": "Direct",
@@ -95,11 +83,6 @@
     "result": "Appeal result"
   },
   "result": {
-    "pageSize": "View",
-    "sort": "Sort",
-    "paginationLabel": "Pagination",
-    "previous": "Previous",
-    "next": "Next",
     "notSearched": "Please search.",
     "empty": "No matching results.",
     "selectPage": "Select current page",

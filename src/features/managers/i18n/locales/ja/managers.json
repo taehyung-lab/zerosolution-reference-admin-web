@@ -33,25 +33,13 @@
     "historyUpdated": "更新",
     "historyDeleted": "削除"
   },
-  "search": "検索",
-  "reset": "リセット",
   "filters": {
     "period": "期間",
-    "periodType": "期間基準",
-    "periodPreset": "期間のクイック選択",
     "keyword": "検索語",
-    "keywordType": "検索語の区分",
     "type": "種別",
     "registrationRoute": "登録経路",
     "status": "アカウント状態",
-    "all": "すべて",
-    "add": "追加",
-    "remove": "{{value}} を削除",
-    "collapse": "検索を閉じる",
-    "expand": "検索を開く",
-    "startDate": "開始日",
-    "endDate": "終了日",
-    "calendar": "カレンダーを開く"
+    "all": "すべて"
   },
   "bulk": {
     "field": "変更項目",
@@ -63,11 +51,6 @@
     "confirm": "［承認待ち、拒否、ロック］の状態は変更できません。\n選択項目を変更しますか？"
   },
   "result": {
-    "pageSize": "表示",
-    "sort": "並び替え",
-    "paginationLabel": "ページ移動",
-    "previous": "前へ",
-    "next": "次へ",
     "notSearched": "検索条件を入力してから検索してください。",
     "empty": "一致する検索結果がありません。",
     "selectAll": "現在のページを全選択",

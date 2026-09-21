@@ -8,16 +8,18 @@ export type ListResultState = 'notSearched' | 'loading' | 'error' | 'empty' | 'r
 
 /**
  * The five states are a renderable set, not a visit order every list walks, so a list
- * only labels the states it can actually reach.
+ * only labels the states it can actually reach. `searched` carries that reach in its type:
+ * a list that queries on entry passes literal `true` and never labels `notSearched`; a gated
+ * list passes the URL's boolean and must label it. The tuple form keeps `boolean` from
+ * distributing into "either shape", which would let a gated list omit the sentence.
  */
-export interface ListResultCopy {
-  readonly notSearched: string;
-  readonly empty: string;
-}
+export type ListResultCopy<TSearched extends boolean = boolean> = [TSearched] extends [true]
+  ? { readonly empty: string; readonly notSearched?: undefined }
+  : { readonly empty: string; readonly notSearched: string };
 
-export interface ListResultData<TRow> {
+export interface ListResultData<TRow, TSearched extends boolean = boolean> {
   readonly rows: readonly TRow[];
-  readonly searched: boolean;
+  readonly searched: TSearched;
   readonly isPending: boolean;
   readonly isFetching: boolean;
   readonly isError: boolean;
@@ -25,7 +27,7 @@ export interface ListResultData<TRow> {
   readonly retry: () => Promise<unknown>;
 }
 
-function resultState<TRow>(data: ListResultData<TRow>): ListResultState {
+function resultState<TRow>(data: ListResultData<TRow, boolean>): ListResultState {
   if (!data.searched) return 'notSearched';
   if (data.isPending) return 'loading';
   if (data.isError) return 'error';
@@ -34,20 +36,23 @@ function resultState<TRow>(data: ListResultData<TRow>): ListResultState {
 }
 
 /** Owns common list-result fact-to-state rendering; the feature decides the plain facts and footer. */
-export function ListResult<TRow>({
+export function ListResult<TRow, TSearched extends boolean>({
   data,
   copy,
   children,
   footer,
 }: {
-  readonly data: ListResultData<TRow>;
-  readonly copy: ListResultCopy;
+  readonly data: ListResultData<TRow, TSearched>;
+  readonly copy: ListResultCopy<TSearched>;
   readonly children: ReactNode;
   readonly footer?: ReactNode;
 }) {
   const { t } = useTranslation('shared');
   const state = resultState(data);
-  if (state === 'notSearched') return <EmptyState>{copy.notSearched}</EmptyState>;
+  // The type already ties `notSearched` to a reachable `searched: false`; inside the generic
+  // body the conditional stays deferred, so read the sentence through the widest shape.
+  const sentences: { readonly empty: string; readonly notSearched?: string | undefined } = copy;
+  if (state === 'notSearched') return <EmptyState>{sentences.notSearched}</EmptyState>;
   if (state === 'loading') return <EmptyState><span aria-live="polite">{t('progress.loading')}</span></EmptyState>;
   if (state === 'error') {
     return (
@@ -61,7 +66,7 @@ export function ListResult<TRow>({
     );
   }
   if (state === 'empty') {
-    return <><EmptyState>{copy.empty}</EmptyState>{footer}</>;
+    return <><EmptyState>{sentences.empty}</EmptyState>{footer}</>;
   }
 
   return (

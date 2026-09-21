@@ -10,7 +10,7 @@ test('@smoke performance list follows Notion periods and reset without a fake AP
   await page.getByRole('option', { name: '등록일', exact: true }).click();
   await page.getByRole('textbox', { name: '검색어', exact: true }).fill('공연');
   await expect(page).toHaveURL(/\/performances$/);
-  await page.getByRole('form', { name: '검색 조건', exact: true }).getByRole('button', { name: '검색', exact: true }).click();
+  await page.getByRole('form', { name: '검색', exact: true }).getByRole('button', { name: '검색', exact: true }).click();
   await expect(page).toHaveURL(/periodType=registeredAt/);
   await expect(page).toHaveURL(/keywords=/);
   // 이 목록의 진입 계약은 즉시 조회다. 초기화는 그 진입 화면을 다시 적용하므로 결과가 남는다.

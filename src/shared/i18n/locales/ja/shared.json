@@ -58,7 +58,14 @@
       "TODAY": "今日",
       "CUSTOM": "直接入力"
     },
-    "total": "検索結果 : {{formatted}}"
+    "total": "検索結果 : {{formatted}}",
+    "pageSize": "表示",
+    "sort": "並び替え",
+    "pagination": {
+      "label": "ページ移動",
+      "previous": "前へ",
+      "next": "次へ"
+    }
   },
   "calendar": {
     "navigation": "カレンダー操作",
@@ -119,5 +126,28 @@
   },
   "deleteConfirm": {
     "description": "削除しますか？"
+  },
+  "filter": {
+    "title": "検索",
+    "submit": "検索",
+    "reset": "初期化",
+    "collapse": "検索を閉じる",
+    "expand": "検索を開く",
+    "period": {
+      "criterion": "期間基準",
+      "from": "開始日",
+      "to": "終了日",
+      "calendar": "カレンダーを開く",
+      "presets": "期間クイック選択"
+    },
+    "keyword": {
+      "field": "検索対象",
+      "input": "検索語",
+      "add": "追加",
+      "remove": "{{value}}を削除"
+    }
+  },
+  "checkboxTree": {
+    "selectAll": "すべて"
   }
 }

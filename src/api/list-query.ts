@@ -11,10 +11,11 @@ import { isFeatureError } from './error-outcome';
 import { blockingProgress, contentProgress } from './query-meta';
 
 /** The facts a paged list exposes; nothing else decides its result state. */
-export interface ListQueryResult<TRow> {
+export interface ListQueryResult<TRow, TSearched extends boolean = boolean> {
   readonly rows: readonly TRow[];
   readonly total: number;
-  readonly searched: boolean;
+  /** Literal `true` for a list that queries on entry; a gated list carries the URL's boolean. */
+  readonly searched: TSearched;
   readonly isPending: boolean;
   readonly isFetching: boolean;
   readonly isError: boolean;
@@ -37,6 +38,7 @@ export interface ListQueryResult<TRow> {
 export function useListQuery<
   TResponse,
   TRow,
+  TSearched extends boolean,
   TKey extends QueryKey = QueryKey,
 >({
   options,
@@ -44,12 +46,12 @@ export function useListQuery<
   select,
 }: {
   readonly options: UseQueryOptions<TResponse, Error, TResponse, TKey>;
-  readonly searched: boolean;
+  readonly searched: TSearched;
   readonly select: (data: TResponse) => {
     readonly rows: readonly TRow[];
     readonly total: number;
   };
-}): ListQueryResult<TRow> {
+}): ListQueryResult<TRow, TSearched> {
   const [entryQueryHash] = useState(() =>
     searched ? hashKey(options.queryKey) : undefined
   );

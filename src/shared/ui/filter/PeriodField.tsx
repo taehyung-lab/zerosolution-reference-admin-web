@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Calendar } from "../primitives/Calendar";
 import { Popover } from "../primitives/Popover";
 import { RadioGroup, RadioGroupItem } from "../primitives/RadioGroup";
@@ -13,10 +14,6 @@ export interface PeriodFieldProps {
   readonly onPresetChange: (preset: PeriodValue) => void;
   readonly range: DateRange;
   readonly onRangeChange: (range: DateRange) => void;
-  readonly fromLabel: string;
-  readonly toLabel: string;
-  readonly calendarLabel: string;
-  readonly presetGroupLabel?: string;
 }
 
 export function PeriodField({
@@ -26,11 +23,15 @@ export function PeriodField({
   onPresetChange,
   range,
   onRangeChange,
-  fromLabel,
-  toLabel,
-  calendarLabel,
-  presetGroupLabel,
 }: PeriodFieldProps) {
+  // The two date inputs, the calendar trigger and the preset group are this field's own
+  // controls, so their accessible names are the product's shared words; the preset labels
+  // arrive from the caller because which presets exist is product config.
+  const { t } = useTranslation("shared");
+  const fromLabel = t("filter.period.from");
+  const toLabel = t("filter.period.to");
+  const calendarLabel = t("filter.period.calendar");
+  const presetGroupLabel = t("filter.period.presets");
 
   return (
     <div className="flex flex-wrap items-start gap-2">

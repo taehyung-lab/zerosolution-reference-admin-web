@@ -1,15 +1,18 @@
 import { createEvent, fireEvent, render, screen } from '@testing-library/react';
+import { I18nextProvider } from 'react-i18next';
+import { i18n } from '@/shared/i18n/i18n';
 import { describe, expect, it, vi } from 'vitest';
 import { KeywordChipField } from './KeywordChipField';
 
+function renderWithI18n(node: React.ReactElement) {
+  return render(<I18nextProvider i18n={i18n}>{node}</I18nextProvider>);
+}
+
 function renderField(onAdd: () => void) {
-  return render(
+  return renderWithI18n(
     <form>
       <KeywordChipField
         items={[]}
-        addLabel="추가"
-        removeLabel={(item) => `${item.value} 삭제`}
-        inputLabel="검색어"
         formatItem={(item) => item.value}
         pendingValue="ada"
         onPendingValueChange={vi.fn()}

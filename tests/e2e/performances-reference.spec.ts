@@ -15,7 +15,7 @@ test('@reference performance venue remains a single draft until search', async (
   await page.getByRole('button', { name: '공연장 선택 해제' }).click();
   await lookup.fill('Reference');
   await page.getByRole('button', { name: 'Reference Hall B', exact: true }).click();
-  await page.getByRole('form', { name: '검색 조건', exact: true }).getByRole('button', { name: '검색', exact: true }).click();
+  await page.getByRole('form', { name: '검색', exact: true }).getByRole('button', { name: '검색', exact: true }).click();
   await expect(page).toHaveURL(/venueId=reference-venue-b/);
   await expect(table.getByRole('row')).toHaveCount(2);
   await expect(table.getByRole('cell', { name: 'Reference Performance 2', exact: true })).toBeVisible();

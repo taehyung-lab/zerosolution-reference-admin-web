@@ -36,18 +36,12 @@ export function PrinterListFilters({
 
   return (
     <FilterPanel
-      title={t('printer.filter.title')}
-      collapseLabel={t('printer.filter.collapse')}
-      expandLabel={t('printer.filter.expand')}
-      submitLabel={t('printer.filter.submit')}
-      resetLabel={t('printer.filter.reset')}
       onSubmit={filter.submit}
       onReset={filter.reset}
     >
       <PeriodFilterField
         label={t('printer.filter.period.label')}
         criterion={{
-          label: t('printer.filter.period.criterion'),
           value: draft.periodType ?? 'registeredAt',
           options: printerPeriodTypes.map((value) => ({
             value,
@@ -61,15 +55,10 @@ export function PrinterListFilters({
         onPresetChange={period.setPreset}
         range={period.range}
         onRangeChange={period.setRange}
-        fromLabel={t('printer.filter.period.from')}
-        toLabel={t('printer.filter.period.to')}
-        calendarLabel={t('printer.filter.period.calendar')}
-        presetGroupLabel={t('printer.filter.period.presetGroup')}
       />
       <KeywordFilterField
         label={t('printer.filter.keyword.label')}
         field={{
-          label: t('printer.filter.keyword.field'),
           value: keyword.pending.field,
           options: printerKeywordFields.map((value) => ({
             value,
@@ -82,9 +71,6 @@ export function PrinterListFilters({
         onPendingValueChange={keyword.setPendingValue}
         onAdd={keyword.addPending}
         onRemoveAt={keyword.removeAt}
-        addLabel={t('printer.filter.keyword.add')}
-        removeLabel={(item) => t('printer.filter.keyword.remove', { value: item.value })}
-        inputLabel={t('printer.filter.keyword.label')}
         formatItem={(item) =>
           t('printer.filter.keyword.chip', {
             field: t(`printer.values.keywordField.${item.field}`),
@@ -101,7 +87,6 @@ export function PrinterListFilters({
               value,
               label: t(`printer.values.status.${value}`),
             }))}
-            selectAllLabel={t('printer.filter.all')}
             values={draft.statuses ?? []}
             onValueChange={(values) => patchDraft({ statuses: values as PrinterStatus[] })}
           />
@@ -116,7 +101,6 @@ export function PrinterListFilters({
               value,
               label: t(`printer.values.purpose.${value}`),
             }))}
-            selectAllLabel={t('printer.filter.all')}
             values={draft.purposes ?? []}
             onValueChange={(values) => patchDraft({ purposes: values as PrinterPurpose[] })}
           />
@@ -131,7 +115,6 @@ export function PrinterListFilters({
               value,
               label: t(`printer.values.usage.${value}`),
             }))}
-            selectAllLabel={t('printer.filter.all')}
             values={draft.usages ?? []}
             onValueChange={(values) => patchDraft({ usages: values as PrinterUsage[] })}
           />

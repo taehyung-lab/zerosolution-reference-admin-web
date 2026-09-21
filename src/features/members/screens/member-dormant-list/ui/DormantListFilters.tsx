@@ -20,18 +20,12 @@ export function DormantListFilters({ filter }: { readonly filter: ReturnType<typ
 
   return (
     <FilterPanel
-      title={t('search')}
-      submitLabel={t('search')}
-      resetLabel={t('reset')}
-      collapseLabel={t('filters.collapse')}
-      expandLabel={t('filters.expand')}
       onReset={filter.reset}
       onSubmit={filter.submit}
     >
       <PeriodFilterField
         label={t('filters.period')}
         criterion={{
-          label: t('filters.periodType'),
           value: draft.periodType ?? 'joinedAt',
           options: dormantPeriodTypes.map((value) => ({ value, label: t(`fields.${value}`) })),
           onValueChange: (value: DormantPeriodType) => patchDraft({ periodType: value }),
@@ -39,18 +33,13 @@ export function DormantListFilters({ filter }: { readonly filter: ReturnType<typ
         preset={period.preset}
         presets={presets}
         customLabel={customLabel}
-        presetGroupLabel={t('filters.periodPreset')}
         range={period.range}
         onPresetChange={period.setPreset}
         onRangeChange={period.setRange}
-        fromLabel={t('filters.startDate')}
-        toLabel={t('filters.endDate')}
-        calendarLabel={t('filters.calendar')}
       />
       <KeywordFilterField
         label={t('filters.keyword')}
         field={{
-          label: t('filters.keywordType'),
           value: keyword.pending.field,
           options: memberKeywordFields.map((value) => ({ value, label: t(`fields.${value}`) })),
           onValueChange: keyword.setPendingField,
@@ -60,9 +49,6 @@ export function DormantListFilters({ filter }: { readonly filter: ReturnType<typ
         onPendingValueChange={keyword.setPendingValue}
         onAdd={keyword.addPending}
         onRemoveAt={keyword.removeAt}
-        addLabel={t('filters.add')}
-        removeLabel={(item) => t('filters.remove', { value: item.value })}
-        inputLabel={t('filters.keyword')}
         formatItem={(item) => `${t(`fields.${item.field}`)} : ${item.value}`}
       />
       <MemberSignupMethodFilter values={draft.signupMethods ?? []} onChange={(signupMethods) => patchDraft({ signupMethods })} />

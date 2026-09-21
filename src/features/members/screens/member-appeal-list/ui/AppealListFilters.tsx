@@ -27,18 +27,12 @@ export function AppealListFilters({ filter }: { readonly filter: ReturnType<type
 
   return (
     <FilterPanel
-      title={t('search')}
-      submitLabel={t('search')}
-      resetLabel={t('reset')}
-      collapseLabel={t('filters.collapse')}
-      expandLabel={t('filters.expand')}
       onReset={filter.reset}
       onSubmit={filter.submit}
     >
       <PeriodFilterField
         label={t('filters.period')}
         criterion={{
-          label: t('filters.periodType'),
           value: draft.periodType ?? 'appliedAt',
           options: appealPeriodTypes.map((value) => ({ value, label: t(`fields.${value}`) })),
           onValueChange: (value: AppealPeriodType) => patchDraft({ periodType: value }),
@@ -46,18 +40,13 @@ export function AppealListFilters({ filter }: { readonly filter: ReturnType<type
         preset={period.preset}
         presets={presets}
         customLabel={customLabel}
-        presetGroupLabel={t('filters.periodPreset')}
         range={period.range}
         onPresetChange={period.setPreset}
         onRangeChange={period.setRange}
-        fromLabel={t('filters.startDate')}
-        toLabel={t('filters.endDate')}
-        calendarLabel={t('filters.calendar')}
       />
       <KeywordFilterField
         label={t('filters.keyword')}
         field={{
-          label: t('filters.keywordType'),
           value: keyword.pending.field,
           options: memberKeywordFields.map((value) => ({ value, label: t(`fields.${value}`) })),
           onValueChange: keyword.setPendingField,
@@ -67,9 +56,6 @@ export function AppealListFilters({ filter }: { readonly filter: ReturnType<type
         onPendingValueChange={keyword.setPendingValue}
         onAdd={keyword.addPending}
         onRemoveAt={keyword.removeAt}
-        addLabel={t('filters.add')}
-        removeLabel={(item) => t('filters.remove', { value: item.value })}
-        inputLabel={t('filters.keyword')}
         formatItem={(item) => `${t(`fields.${item.field}`)} : ${item.value}`}
       />
       <MemberRestrictionFilter
@@ -82,7 +68,6 @@ export function AppealListFilters({ filter }: { readonly filter: ReturnType<type
           <CheckboxTree
             ariaLabelledby={labelId}
             emptyMeansAll
-            selectAllLabel={t('filters.all')}
             nodes={appealStatuses.map((value) => ({ value, label: t(`states.${value}`) }))}
             values={draft.statuses ?? []}
             onValueChange={(values) => patchDraft({ statuses: values as AppealStatus[] })}
@@ -94,7 +79,6 @@ export function AppealListFilters({ filter }: { readonly filter: ReturnType<type
           <CheckboxTree
             ariaLabelledby={labelId}
             emptyMeansAll
-            selectAllLabel={t('filters.all')}
             nodes={appealResults.map((value) => ({ value, label: t(`states.${value}`) }))}
             values={draft.results ?? []}
             onValueChange={(values) => patchDraft({ results: values as AppealResult[] })}

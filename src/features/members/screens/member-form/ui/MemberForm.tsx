@@ -114,7 +114,6 @@ export function MemberEditOnlyFields({
           name="restrictions"
           required
           nodes={memberRestrictions.map((value) => ({ value, label: t(`restriction.${value}`) }))}
-          selectAllLabel={t('filters.all')}
         />
       </Activity>
       <FormTextField readOnly label={t('form.email')} value={email} />

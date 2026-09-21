@@ -40,18 +40,12 @@ export function ContentListFilters({
 
   return (
     <FilterPanel
-      title={t('content.filters.title')}
-      collapseLabel={t('content.filters.collapse')}
-      expandLabel={t('content.filters.expand')}
-      submitLabel={t('content.filters.search')}
-      resetLabel={t('content.filters.reset')}
       onSubmit={filter.submit}
       onReset={filter.reset}
     >
       <PeriodFilterField
         label={t('content.filters.period')}
         criterion={{
-          label: t('content.filters.periodType'),
           value: draft.periodType ?? 'performedAt',
           options: contentPeriodTypes.map((value) => ({ value, label: t(`content.fields.${value}`) })),
           onValueChange: (value: ContentPeriodType) => patchDraft({ periodType: value }),
@@ -59,18 +53,13 @@ export function ContentListFilters({
         preset={period.preset}
         presets={presets}
         customLabel={customLabel}
-        presetGroupLabel={t('content.filters.preset')}
         range={period.range}
         onPresetChange={period.setPreset}
         onRangeChange={period.setRange}
-        fromLabel={t('content.filters.from')}
-        toLabel={t('content.filters.to')}
-        calendarLabel={t('content.filters.calendar')}
       />
       <KeywordFilterField
         label={t('content.filters.keyword')}
         field={{
-          label: t('content.filters.keywordType'),
           value: keyword.pending.field,
           options: contentKeywordFields.map((value) => ({ value, label: t(`content.fields.${value}`) })),
           onValueChange: keyword.setPendingField,
@@ -80,9 +69,6 @@ export function ContentListFilters({
         onPendingValueChange={keyword.setPendingValue}
         onAdd={keyword.addPending}
         onRemoveAt={keyword.removeAt}
-        addLabel={t('content.filters.add')}
-        inputLabel={t('content.filters.keyword')}
-        removeLabel={(item) => t('content.filters.remove', { value: item.value })}
         formatItem={(item) => `${t(`content.fields.${item.field}`)}: ${item.value}`}
       />
       <FilterField label={t('content.fields.ticketKind')}>
@@ -92,7 +78,6 @@ export function ContentListFilters({
             emptyMeansAll
             nodes={options(performanceTicketKinds, 'options')}
             values={draft.ticketKinds ?? []}
-            selectAllLabel={t('content.filters.all')}
             onValueChange={(ticketKinds) => patchDraft({ ticketKinds })}
           />
         )}
@@ -104,7 +89,6 @@ export function ContentListFilters({
             emptyMeansAll
             nodes={options(performanceTypes, 'options')}
             values={draft.performanceTypes ?? []}
-            selectAllLabel={t('content.filters.all')}
             onValueChange={(performanceTypes) => patchDraft({ performanceTypes })}
           />
         )}
@@ -136,7 +120,6 @@ export function ContentListFilters({
             emptyMeansAll
             nodes={options(contentUsageStatuses, 'content.options')}
             values={draft.usageStatuses ?? []}
-            selectAllLabel={t('content.filters.all')}
             onValueChange={(values) => patchDraft({ usageStatuses: values as ContentUsageStatus[] })}
           />
         )}

@@ -27,7 +27,6 @@ export function MemberSignupMethodFilter({
         <CheckboxTree
           ariaLabelledby={labelId}
           emptyMeansAll
-          selectAllLabel={t('filters.all')}
           nodes={memberSignupMethods.map((value) => ({ value, label: t(`signup.${value}`) }))}
           values={values}
           onValueChange={(next) => onChange(next as MemberSignupMethod[])}
@@ -51,7 +50,6 @@ export function MemberAccountStatusFilter({
         <CheckboxTree
           ariaLabelledby={labelId}
           emptyMeansAll
-          selectAllLabel={t('filters.all')}
           nodes={memberAccountStatuses.map((value) => ({ value, label: t(`accountStatus.${value}`) }))}
           values={values}
           onValueChange={(next) => onChange(next as MemberAccountStatus[])}
@@ -77,7 +75,6 @@ export function MemberRestrictionFilter({
         <CheckboxTree
           ariaLabelledby={labelId}
           emptyMeansAll
-          selectAllLabel={t('filters.all')}
           nodes={restrictions.map((value) => ({ value, label: t(`restriction.${value}`) }))}
           values={values}
           onValueChange={(next) => onChange(next as MemberRestriction[])}

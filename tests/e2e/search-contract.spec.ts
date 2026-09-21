@@ -1,13 +1,7 @@
 import { expect, test } from "@playwright/test";
 
-/** 필터 form 의 접근 이름이 `검색 조건` 인 화면. 나머지는 `검색` 이다. */
-const searchConditionForms = [
-  "/performances",
-  "/performances/contents",
-  "/community/boards",
-];
-const filterFormName = (path: string) =>
-  searchConditionForms.includes(path) ? "검색 조건" : "검색";
+/** 필터 form 의 접근 이름은 모든 목록에서 `검색` 하나다(shared:filter.title). */
+const FILTER_FORM_NAME = "검색";
 
 for (const path of [
   "/managers",
@@ -39,7 +33,7 @@ for (const path of [
     ].includes(path);
     await expect(page.getByRole("table")).toHaveCount(immediate ? 1 : 0);
     await page
-      .getByRole("form", { name: filterFormName(path), exact: true })
+      .getByRole("form", { name: FILTER_FORM_NAME, exact: true })
       .getByRole("button", { name: "검색", exact: true })
       .click();
     await expect(page.getByRole("table")).toBeVisible();
@@ -53,7 +47,7 @@ for (const path of [
       page.getByRole("combobox", { name: "정렬", exact: true }),
     ).toContainText(changedSort);
     await page
-      .getByRole("form", { name: filterFormName(path), exact: true })
+      .getByRole("form", { name: FILTER_FORM_NAME, exact: true })
       .getByRole("button", { name: "검색", exact: true })
       .click();
     await expect(
@@ -149,7 +143,7 @@ for (const path of [
       await expect(page.getByRole("table")).toHaveCount(1);
     }
     await page
-      .getByRole("form", { name: filterFormName(path), exact: true })
+      .getByRole("form", { name: FILTER_FORM_NAME, exact: true })
       .getByRole("button", { name: "검색", exact: true })
       .click();
     await expect(page).toHaveURL(new RegExp(path + "$"));
@@ -177,7 +171,7 @@ for (const path of [
       page.getByRole("combobox", { name: "보기", exact: true }),
     ).toContainText("200");
     const form = page.getByRole("form", {
-      name: filterFormName(path),
+      name: FILTER_FORM_NAME,
       exact: true,
     });
     const start = page.getByLabel("시작일", { exact: true });

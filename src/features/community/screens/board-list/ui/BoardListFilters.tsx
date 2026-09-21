@@ -39,18 +39,12 @@ export function BoardListFilters({
 
   return (
     <FilterPanel
-      title={t('board.filter.title')}
-      collapseLabel={t('board.filter.collapse')}
-      expandLabel={t('board.filter.expand')}
-      submitLabel={t('board.filter.submit')}
-      resetLabel={t('board.filter.reset')}
       onSubmit={filter.submit}
       onReset={filter.reset}
     >
       <PeriodFilterField
         label={t('board.filter.period.label')}
         criterion={{
-          label: t('board.filter.period.criterion'),
           value: draft.periodType ?? 'registeredAt',
           options: boardPeriodTypes.map((value) => ({
             value,
@@ -64,15 +58,10 @@ export function BoardListFilters({
         onPresetChange={period.setPreset}
         range={period.range}
         onRangeChange={period.setRange}
-        fromLabel={t('board.filter.period.from')}
-        toLabel={t('board.filter.period.to')}
-        calendarLabel={t('board.filter.period.calendar')}
-        presetGroupLabel={t('board.filter.period.presetGroup')}
       />
       <KeywordFilterField
         label={t('board.filter.keyword.label')}
         field={{
-          label: t('board.filter.keyword.field'),
           value: keyword.pending.field,
           options: [{ value: 'name' as const, label: t('board.filter.keyword.name') }],
           onValueChange: keyword.setPendingField,
@@ -82,9 +71,6 @@ export function BoardListFilters({
         onPendingValueChange={keyword.setPendingValue}
         onAdd={keyword.addPending}
         onRemoveAt={keyword.removeAt}
-        addLabel={t('board.filter.keyword.add')}
-        removeLabel={(item) => t('board.filter.keyword.remove', { value: item.value })}
-        inputLabel={t('board.filter.keyword.input')}
         formatItem={(item) => t('board.filter.keyword.chip', {
           field: t('board.filter.keyword.name'),
           value: item.value,
@@ -99,7 +85,6 @@ export function BoardListFilters({
               value,
               label: t(`board.values.type.${value}`),
             }))}
-            selectAllLabel={t('board.filter.all')}
             values={draft.types ?? []}
             onValueChange={(values) => patchDraft({ types: values as typeof boardTypes[number][] })}
           />
@@ -114,7 +99,6 @@ export function BoardListFilters({
               value,
               label: t(`board.values.category.${value}`),
             }))}
-            selectAllLabel={t('board.filter.all')}
             values={draft.categories ?? []}
             onValueChange={(values) =>
               patchDraft({ categories: values as typeof boardCategories[number][] })}
@@ -130,7 +114,6 @@ export function BoardListFilters({
               value,
               label: t(`board.values.usage.${value}`),
             }))}
-            selectAllLabel={t('board.filter.all')}
             values={draft.usages ?? []}
             onValueChange={(values) => patchDraft({ usages: values as typeof boardUsages[number][] })}
           />

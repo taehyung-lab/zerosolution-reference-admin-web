@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 export type CheckboxTreeNode =
   | {
       readonly value: string;
@@ -20,7 +21,6 @@ export function CheckboxTree({
   nodes,
   values,
   onValueChange,
-  selectAllLabel,
   emptyMeansAll = false,
   ariaLabelledby,
   id,
@@ -31,7 +31,6 @@ export function CheckboxTree({
   nodes: readonly CheckboxTreeNode[];
   values: readonly string[];
   onValueChange: (values: string[]) => void;
-  selectAllLabel: string;
   emptyMeansAll?: boolean;
   ariaLabelledby?: string;
   id?: string;
@@ -39,6 +38,8 @@ export function CheckboxTree({
   ariaInvalid?: boolean;
   onBlur?: () => void;
 }) {
+  const { t } = useTranslation("shared");
+  const selectAllLabel = t("checkboxTree.selectAll");
   const leaves = (items: readonly CheckboxTreeNode[]): string[] =>
     items.flatMap((item) =>
       item.children ? leaves(item.children) : [item.value]

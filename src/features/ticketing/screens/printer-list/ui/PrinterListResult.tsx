@@ -3,16 +3,10 @@ import { useTranslation } from 'react-i18next';
 import {
   printerSortKeys,
   type PrinterRow,
-  type PrinterSortKey,
 } from '@/features/ticketing/model/printer';
 import { standardPageSizeOptions } from '@/shared/model/list-options';
-import { DataTable } from '@/shared/ui/list/DataTable';
-import { ListResult, type ListResultData } from '@/shared/ui/list/ListResult';
-import { Pagination } from '@/shared/ui/list/Pagination';
-import { PageSizeControl } from '@/shared/ui/list/PageSizeControl';
-import { ResultToolbar } from '@/shared/ui/list/ResultToolbar';
-import { ResultTotal } from '@/shared/ui/list/ResultTotal';
-import { SortControl } from '@/shared/ui/list/SortControl';
+import type { ListResultData } from '@/shared/ui/list/ListResult';
+import { PagedListResult } from '@/shared/ui/list/PagedListResult';
 import type { usePrinterListResult } from './usePrinterListResult';
 
 /**
@@ -26,55 +20,26 @@ export function PrinterListResult({
   actions,
   onActivate,
 }: {
-  readonly data: ListResultData<PrinterRow>;
+  readonly data: ListResultData<PrinterRow, true>;
   readonly total: number;
   readonly result: ReturnType<typeof usePrinterListResult>;
   readonly actions: ReactNode;
   readonly onActivate: (printerId: string) => void;
 }) {
   const { t } = useTranslation('ticketing');
-  const { view } = result;
 
   return (
-    <>
-      <ResultTotal searched={data.searched} total={total} />
-      <ResultToolbar
-        left={
-          <>
-            <PageSizeControl
-              label={t('printer.result.pageSize')}
-              options={standardPageSizeOptions}
-              {...view.pageSize}
-            />
-            <SortControl<PrinterSortKey>
-              label={t('printer.result.sort')}
-              value={view.sort.value}
-              options={printerSortKeys.map((value) => ({ value, label: t(`printer.sort.${value}`) }))}
-              onValueChange={view.sort.onValueChange}
-            />
-          </>
-        }
-        right={actions}
-      />
-      <ListResult
-        data={data}
-        copy={{ notSearched: t('printer.result.empty'), empty: t('printer.result.empty') }}
-        footer={
-          <Pagination
-            {...view.pagination}
-            ariaLabel={t('printer.result.pagination.label')}
-            previousLabel={t('printer.result.pagination.previous')}
-            nextLabel={t('printer.result.pagination.next')}
-          />
-        }
-      >
-        <DataTable
-          rows={data.rows}
-          columns={result.columns}
-          getRowId={(row) => row.id}
-          onRowActivate={(row) => onActivate(row.id)}
-        />
-      </ListResult>
-    </>
+    <PagedListResult
+      data={data}
+      total={total}
+      view={result.view}
+      columns={result.columns}
+      getRowId={(row) => row.id}
+      onRowActivate={(row) => onActivate(row.id)}
+      actions={actions}
+      copy={{ empty: t('printer.result.empty') }}
+      pageSizeOptions={standardPageSizeOptions}
+      sortOptions={printerSortKeys.map((value) => ({ value, label: t(`printer.sort.${value}`) }))}
+    />
   );
 }

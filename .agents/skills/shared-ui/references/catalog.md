@@ -15,7 +15,7 @@
 | `Combobox` | `value: string \| null`, `onValueChange`, `options`, `searchValue`, `onSearchValueChange`, `placeholder`, `searchLabel`, `emptyLabel`, aria props | 열림 상태 하나, 로컬 라벨 필터, `Popover` 배선 | 원격 조회·pending·미해소 선택 라벨(첫 소비자가 정의) |
 | `InlineSearchSelect` | `searchValue`, `value: string \| undefined`, `options`, `selectedLabel`, 라벨 | 로컬 매칭, 선택 후 입력 잠금·제거 | 팝업, 원격 조회, 도메인 mode |
 | `MultiSelect` | `values: string[]`, `onValueChange`, `options`, `getRemoveLabel(option)`, aria props | 첫 라벨 + `+N` 트리거, 제거 가능한 토큰 | `options` 에 없는 값의 표시(유지되지만 안 보인다), 단일 선택 겸용 |
-| `CheckboxTree` | `nodes`(leaf `{ value, label }` / branch `{ label, children }`), `values`(leaf 만), `onValueChange`, `selectAllLabel`, `ariaLabelledby`, `emptyMeansAll?` | 전체·부모 토글 대수, 부분 선택은 checked 로 표시 | enum 의미·선택지 출처·기본값. `FilterField group` 으로 감싸지 않는다(이름이 두 번 읽힌다) |
+| `CheckboxTree` | `nodes`(leaf `{ value, label }` / branch `{ label, children }`), `values`(leaf 만), `onValueChange`, `ariaLabelledby`, `emptyMeansAll?` | 전체·부모 토글 대수, 부분 선택은 checked 로 표시, 전체 항목의 이름(`shared:checkboxTree.selectAll`) | enum 의미·선택지 출처·기본값. `FilterField group` 으로 감싸지 않는다(이름이 두 번 읽힌다) |
 | `RadioGroup`/`RadioGroupItem` | `value`, `onValueChange`, `label` **또는** `ariaLabelledby`, item `value`+children | `fieldset`, 내부 `name`, 화살표 이동 | `''` 는 아무것도 checked 아님(폼이 `required` 로 검증) |
 | `Calendar` | `value?: 'YYYY-MM-DD'`, `min?`, `max?`, `onValueChange(value \| undefined)`, `ariaLabelledby`, aria props | `role="group"` 컨테이너, 표시 locale·탐색 라벨(`shared` namespace 예외) | `label` prop, `Date` 객체 |
 | `FileInput` | native props + `onFileChange(File \| undefined)` | 선택 하나 | `multiple`, controlled `value` |
@@ -43,7 +43,7 @@
 | `FormRadioGroupField` | + `options` | `RadioGroup`, `labelId` 로 이름 | — |
 | `FormDateField` / `FormDateRangeField` | + `min?`, `max?` (range: `fromLabel`, `toLabel`) | `Calendar` 를 `labelTarget="group"` 으로, range 는 `{ from, to }` 문자열 둘과 반대쪽 bound | 기간 의미·검증 문구 |
 | `FormFileField` | + `selectLabel`, `removeLabel`, `accept?` | 값 `{ kind: 'empty' \| 'existing' \| 'selected' \| 'removed' }`, `FileInput` + 제거 버튼 | 업로드 transport |
-| `FormPermissionTreeField` | + `nodes`, `selectAllLabel`, `emptyMeansAll?` | `CheckboxTree` 를 group 으로 | 행 × 기능 matrix(feature 가 `Table` + `Checkbox` 로 조립) |
+| `FormPermissionTreeField` | + `nodes`, `emptyMeansAll?` | `CheckboxTree` 를 group 으로 | 행 × 기능 matrix(feature 가 `Table` + `Checkbox` 로 조립) |
 | `FormArrayField` | `form`, `name`, `minItems?`, render child | 배열 path 등록, `items`·`append`·`remove`·`move`·`canRemove` | row factory·stable id·row schema |
 | `SortableList` | `items: stableIds`, `onMove(from, to)`, `getItemLabel`, children | dnd 센서·handle·접근성 안내 | 순서의 소유(Form 배열) |
 | `FormSubmitButton` / `FormCancelButton` | `pending` / `onClick`, `disabled?`, children? | `shared:formAction.save/cancel` 기본 문구, cancel 은 `type="button"` | — |
@@ -57,13 +57,13 @@
 
 | 단위 | caller 가 넘기는 것 | 소유 | 소유하지 않음 |
 | --- | --- | --- | --- |
-| `FilterPanel` | `title`, `collapseLabel`, `expandLabel`, `submitLabel`, `resetLabel`, `onSubmit(event)`, `onReset`, children | `form` 이름, 접기 disclosure, 필드·액션 배치 | 커밋 목적지(caller 의 submit/reset) |
+| `FilterPanel` | `onSubmit(event)`, `onReset`, children | `form` 이름·접기/펼치기 이름·검색/초기화 버튼 문구(`shared:filter.*`), 접기 disclosure, 필드·액션 배치 | 커밋 목적지(caller 의 submit/reset), 안에 놓이는 필드 |
 | `FilterField` | `label`, `group?`, `children: ({ labelId, controlId }) => node` | `controlId` 를 읽으면 `<label htmlFor>`, 안 읽으면 `<span id>`; `group` 은 `role="group"` | 컨트롤 상태 |
-| `PeriodFilterField` | `label`, `criterion?: FilterSelectSlot`, + `PeriodField` props | 기준 select + 기간 필드 한 group | 기준 enum·기본값·preset 정책 |
-| `KeywordFilterField` | `label`, `field?: FilterSelectSlot`, + `KeywordChipField` props | 대상 select + chip 필드 한 group | 대상 enum·검증 |
-| `FilterSelectSlot<TValue>` | `label`, `value`, `options`, `onValueChange` | controlled 문자열 표면(`aria-label` 로 자기 이름) | enum 해석·기본값 |
-| `PeriodField` | `preset`, `presets`, `customLabel`, `onPresetChange`, `range: { from?, to? }`, `onRangeChange`, `fromLabel`, `toLabel`, `calendarLabel`, `presetGroupLabel?` | preset 라디오 + 달력 둘. 반대쪽 bound 를 `min/max` 로 | `CUSTOM` 전이(`usePeriodDraft`), 검증 문구(없다 — 역전은 canonical 이 지운다) |
-| `KeywordChipField` | `items`, `pendingValue`, `onPendingValueChange`, `onAdd`, `onRemoveAt`, `addLabel`, `removeLabel(item)`, `inputLabel`, `formatItem(item)` | chip 렌더 | `"대상 : 값"` 포맷(caller 의 `formatItem`) |
+| `PeriodFilterField` | `label`(행 이름 — 화면마다 다를 수 있다), `criterion?: FilterSelectSlot`, + `PeriodField` props | 기준 select + 기간 필드 한 group, 기준 select 의 접근 이름(`shared:filter.period.criterion`) | 기준 enum·옵션 라벨·기본값·preset 정책 |
+| `KeywordFilterField` | `label`, `field?: FilterSelectSlot`, + `KeywordChipField` props | 대상 select + chip 필드 한 group, 대상 select 의 접근 이름(`shared:filter.keyword.field`) | 대상 enum·옵션 라벨·검증 |
+| `FilterSelectSlot<TValue>` | `value`, `options`, `onValueChange` | controlled 문자열 표면 | enum 해석·기본값·자기 접근 이름(감싸는 composite 가 준다) |
+| `PeriodField` | `preset`, `presets`, `customLabel`, `onPresetChange`, `range: { from?, to? }`, `onRangeChange` | preset 라디오 + 달력 둘. 반대쪽 bound 를 `min/max` 로. 시작일·종료일·달력 열기·preset 그룹의 접근 이름(`shared:filter.period.*`) | `CUSTOM` 전이(`usePeriodDraft`), 검증 문구(없다 — 역전은 canonical 이 지운다) |
+| `KeywordChipField` | `items`, `pendingValue`, `onPendingValueChange`, `onAdd`, `onRemoveAt`, `formatItem(item)` | chip 렌더, 입력·추가·`{{value}} 삭제` 의 접근 이름(`shared:filter.keyword.*`) | `"대상 : 값"` 포맷(caller 의 `formatItem`) |
 
 ## List
 
@@ -73,7 +73,8 @@
 | --- | --- | --- | --- |
 | `DataTable` | `rows`, `columns: ColumnDef[]`(`meta.sort?: { direction?, onSort }`), `getRowId`, `onRowActivate?` | native table, `meta.sort` 헤더 버튼·`aria-sort`·glyph(활성 컬럼 하나만), 행 활성화(pointer·Enter·Space, interactive child 제외) | 선택·편집·확장·페이지·정렬 정책·문구·Table 인스턴스 노출 |
 | `selectionColumn({ selection, pageLabel, rowLabel, isSelectable? })` | `PageRowSelection`, 라벨 | 헤더·행 체크박스 렌더 | 선택 상태(`usePageRowSelection`) |
-| `ListResult` | `data: ListResultData<TRow>`(rows·searched·isPending·isFetching·isError·trace·retry), `copy: { notSearched, empty }`, `footer?`, children | `notSearched → loading → error → empty → ready` 판정, 공용 로딩·오류·재시도·`ErrorTrace`, `aria-busy` | Query 읽기, total, 페이지 계산 |
+| `ListResult` | `data: ListResultData<TRow, TSearched>`(rows·searched·isPending·isFetching·isError·trace·retry), `copy: ListResultCopy<TSearched>` — `searched` 가 리터럴 `true` 인 즉시 조회 목록은 `{ empty }` 만, gated 목록(`boolean`)은 `{ notSearched, empty }` 필수, `footer?`, children | `notSearched → loading → error → empty → ready` 판정, 공용 로딩·오류·재시도·`ErrorTrace`, `aria-busy`. 도달 불가 상태의 문구를 caller 에게 요구하지 않는다(타입이 잡는다) | Query 읽기, total, 페이지 계산 |
+| `PagedListResult` | `data`, `total`, `view: ListViewControls<TView>`, `columns`, `getRowId`, `onRowActivate?`, `actions?: ReactNode`, `copy: ListResultCopy<TSearched>`, `pageSizeOptions`, `sortOptions: { value: TView['sortType'], label }[]` | 결과 영역의 순서 하나: `ResultTotal → ResultToolbar(왼쪽 PageSizeControl·SortControl 은 `data.searched` 일 때만, 오른쪽 actions) → ListResult(footer Pagination) → DataTable`. 자기 컨트롤의 제품 공통 라벨(`shared:list.pageSize`·`list.sort`·`list.pagination.*`) | 조회·URL 전이·선택 상태·컬럼·정렬 옵션 라벨·notSearched/empty 문장·actions 내용·행 활성화 목적지·PageHeader·Filters. 순서·노출 mode 를 받지 않는다 — 다른 배치가 필요한 화면은 아래 단위를 직접 조립한다 |
 | `ResultToolbar` | `left?`, `right?` | 두 slot | 무엇이 들어가고 언제 보이는가 |
 | `ResultTotal` | `searched`, `total` | `shared:list.total`, 숫자 포맷, 검색 전 부재 / 0 표시 | 위치 |
 | `ResultSummary` | `groups: { key, items: { key, text }[] }[]` | 완성 문장의 리스트 | 문장 |
@@ -152,7 +153,7 @@
 | `maskEmail`, `maskPhone` (`mask-contact.ts`) | 문자열 → 마스킹 문자열 | 상세 표시(권한·해제는 caller) |
 | `hasRepeatedOrSequentialAsciiTriplet` (`ascii-triplet.ts`) | 문자열 → boolean | 비밀번호 schema 의 한 조건 |
 | `errorMessageKey(kind)`, `errorTraceOf(error)` (`error-copy.ts`) | kind → `shared` 키 / unknown → `ErrorTraceValue` | 공용 오류 문구 |
-| `toSelectOption({ id, name })`, `cn(...)` | `{ value, label }` / class 병합 | 선택지 매핑, primitive |
+| `cn(...)` | class 병합 | primitive |
 
 ## API
 

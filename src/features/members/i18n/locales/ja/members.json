@@ -20,26 +20,14 @@
     "appeals": "不良会員の釈明申請",
     "appealDetail": "釈明申請照会"
   },
-  "search": "検索",
-  "reset": "初期化",
   "filters": {
     "period": "期間",
-    "periodType": "期間基準",
-    "periodPreset": "期間クイック選択",
     "keyword": "検索語",
-    "keywordType": "検索対象",
     "signupMethod": "登録方法",
     "accountStatus": "アカウント状態",
     "restrictions": "活動制限",
     "progress": "進行状況",
-    "all": "全体",
-    "add": "追加",
-    "remove": "{{value}}を削除",
-    "collapse": "検索を閉じる",
-    "expand": "検索を開く",
-    "startDate": "開始日",
-    "endDate": "終了日",
-    "calendar": "カレンダーを開く"
+    "all": "全体"
   },
   "signup": {
     "direct": "直接登録",
@@ -95,11 +83,6 @@
     "result": "釈明結果"
   },
   "result": {
-    "pageSize": "表示",
-    "sort": "並び順",
-    "paginationLabel": "ページ移動",
-    "previous": "前",
-    "next": "次",
     "notSearched": "検索してください。",
     "empty": "一致する検索結果がありません。",
     "selectPage": "現在のページを全選択",

@@ -39,18 +39,12 @@ export function PerformanceListFilters({
 
   return (
     <FilterPanel
-      title={t('filters.title')}
-      collapseLabel={t('filters.collapse')}
-      expandLabel={t('filters.expand')}
-      submitLabel={t('filters.search')}
-      resetLabel={t('filters.reset')}
       onSubmit={filter.submit}
       onReset={filter.reset}
     >
       <PeriodFilterField
         label={t('filters.period')}
         criterion={{
-          label: t('filters.periodType'),
           value: draft.periodType ?? 'performedAt',
           options: performancePeriodTypes.map((value) => ({ value, label: t(`fields.${value}`) })),
           onValueChange: (value: PerformancePeriodType) => patchDraft({ periodType: value }),
@@ -58,18 +52,13 @@ export function PerformanceListFilters({
         preset={period.preset}
         presets={presets}
         customLabel={customLabel}
-        presetGroupLabel={t('filters.preset')}
         range={period.range}
         onPresetChange={period.setPreset}
         onRangeChange={period.setRange}
-        fromLabel={t('filters.from')}
-        toLabel={t('filters.to')}
-        calendarLabel={t('filters.calendar')}
       />
       <KeywordFilterField
         label={t('filters.keyword')}
         field={{
-          label: t('filters.keywordType'),
           value: keyword.pending.field,
           options: performanceKeywordFields.map((value) => ({ value, label: t(`fields.${value}`) })),
           onValueChange: keyword.setPendingField,
@@ -79,9 +68,6 @@ export function PerformanceListFilters({
         onPendingValueChange={keyword.setPendingValue}
         onAdd={keyword.addPending}
         onRemoveAt={keyword.removeAt}
-        addLabel={t('filters.add')}
-        inputLabel={t('filters.keyword')}
-        removeLabel={(item) => t('filters.remove', { value: item.value })}
         formatItem={(item) => `${t(`fields.${item.field}`)}: ${item.value}`}
       />
       <FilterField label={t('fields.ticketKind')}>
@@ -91,7 +77,6 @@ export function PerformanceListFilters({
             emptyMeansAll
             nodes={options(performanceTicketKinds)}
             values={draft.ticketKinds ?? []}
-            selectAllLabel={t('filters.all')}
             onValueChange={(ticketKinds) => patchDraft({ ticketKinds })}
           />
         )}
@@ -103,7 +88,6 @@ export function PerformanceListFilters({
             emptyMeansAll
             nodes={options(performanceTypes)}
             values={draft.performanceTypes ?? []}
-            selectAllLabel={t('filters.all')}
             onValueChange={(performanceTypes) => patchDraft({ performanceTypes })}
           />
         )}
@@ -133,7 +117,6 @@ export function PerformanceListFilters({
             emptyMeansAll
             nodes={options(performanceSellers)}
             values={draft.sellers ?? []}
-            selectAllLabel={t('filters.all')}
             onValueChange={(sellers) => patchDraft({ sellers })}
           />
         )}

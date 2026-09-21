@@ -10,28 +10,14 @@
       "edit": "수정"
     },
     "filter": {
-      "title": "검색",
-      "collapse": "검색 접기",
-      "expand": "검색 펼치기",
-      "submit": "검색",
-      "reset": "초기화",
-      "all": "전체",
       "status": "상태",
       "purpose": "용도",
       "usage": "사용상태",
       "period": {
-        "label": "기간",
-        "criterion": "기간 기준",
-        "presetGroup": "기간 선택",
-        "from": "시작일",
-        "to": "종료일",
-        "calendar": "달력"
+        "label": "기간"
       },
       "keyword": {
         "label": "검색어",
-        "field": "검색 대상",
-        "add": "추가",
-        "remove": "{{value}} 삭제",
         "chip": "{{field}} : {{value}}"
       }
     },
@@ -63,8 +49,6 @@
       "usage": "사용상태"
     },
     "result": {
-      "pageSize": "보기",
-      "sort": "정렬",
       "empty": "일치하는 검색결과가 없습니다.",
       "selectAll": "이 페이지의 스마트프린터 전체 선택",
       "selectRow": "{{name}} 선택",
@@ -76,12 +60,7 @@
       },
       "bulkChange": "변경",
       "copy": "선택복사",
-      "create": "등록",
-      "pagination": {
-        "label": "페이지 이동",
-        "previous": "이전",
-        "next": "다음"
-      }
+      "create": "등록"
     },
     "detail": {
       "title": "스마트프린터 조회",

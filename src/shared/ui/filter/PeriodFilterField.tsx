@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Select } from "../primitives/Select";
 import { FilterField } from "./FilterField";
 import type { FilterSelectSlot } from "./FilterSelectSlot";
@@ -11,6 +12,7 @@ export function PeriodFilterField<TCriterion extends string>({
   readonly label: string;
   readonly criterion?: FilterSelectSlot<TCriterion>;
 }) {
+  const { t } = useTranslation("shared");
   return (
     <FilterField label={label} group>
       {() => (
@@ -18,7 +20,7 @@ export function PeriodFilterField<TCriterion extends string>({
           {criterion ? (
             <Select
               className="w-48"
-              aria-label={criterion.label}
+              aria-label={t("filter.period.criterion")}
               value={criterion.value}
               options={criterion.options}
               onValueChange={(value) =>

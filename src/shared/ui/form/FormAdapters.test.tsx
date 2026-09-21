@@ -27,7 +27,7 @@ function Harness() {
     <FormCheckboxField form={form} name="enabled" label="Enabled" description="Enabled help" />
     <FormRadioGroupField form={form} name="radio" label="Radio" description="Radio help" options={[{ value: 'a', label: 'A' }]} />
     <FormDateField form={form} name="date" label="Date" description="Date help" />
-    <FormPermissionTreeField form={form} name="permissions" label="Permissions" description="Permission help" nodes={[{ value: 'read', label: 'Read' }]} selectAllLabel="All" />
+    <FormPermissionTreeField form={form} name="permissions" label="Permissions" description="Permission help" nodes={[{ value: 'read', label: 'Read' }]} />
   </>
 }
 

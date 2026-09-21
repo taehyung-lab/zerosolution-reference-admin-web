@@ -1,5 +1,7 @@
 import { chooseOptionIn } from "@/test/select";
 import { fireEvent, render, screen } from "@testing-library/react";
+import { I18nextProvider } from "react-i18next";
+import { i18n } from "@/shared/i18n/i18n";
 import { describe, expect, it, vi } from "vitest";
 import { PeriodField } from "./PeriodField";
 import { PeriodFilterField } from "./PeriodFilterField";
@@ -7,15 +9,14 @@ import { KeywordFilterField } from "./KeywordFilterField";
 import { FilterPanel } from "./FilterPanel";
 import { FilterField } from "./FilterField";
 
+function renderWithI18n(node: React.ReactElement) {
+  return render(<I18nextProvider i18n={i18n}>{node}</I18nextProvider>);
+}
+
 describe("filter patterns", () => {
   it("exposes the filter disclosure state and controlled region", () => {
-    render(
+    renderWithI18n(
       <FilterPanel
-        title="Filters"
-        collapseLabel="Collapse filters"
-        expandLabel="Expand filters"
-        submitLabel="Search"
-        resetLabel="Reset"
         onSubmit={vi.fn()}
         onReset={vi.fn()}
       >
@@ -23,10 +24,10 @@ describe("filter patterns", () => {
       </FilterPanel>,
     );
 
-    expect(screen.getByRole("form", { name: "Filters" })).toHaveAttribute(
+    expect(screen.getByRole("form", { name: "검색" })).toHaveAttribute(
       "novalidate",
     );
-    const collapse = screen.getByRole("button", { name: "Collapse filters" });
+    const collapse = screen.getByRole("button", { name: "검색 접기" });
     const controlsId = collapse.getAttribute("aria-controls");
     expect(collapse).toHaveAttribute("aria-expanded", "true");
     expect(controlsId).toBeTruthy();
@@ -36,13 +37,13 @@ describe("filter patterns", () => {
 
     fireEvent.click(collapse);
 
-    const expand = screen.getByRole("button", { name: "Expand filters" });
+    const expand = screen.getByRole("button", { name: "검색 펼치기" });
     expect(expand).toHaveAttribute("aria-expanded", "false");
     expect(document.getElementById(controlsId ?? "")).toHaveAttribute("hidden");
   });
 
   it("period field opens the calendar for a custom range", () => {
-    render(
+    renderWithI18n(
       <PeriodField
         preset="CUSTOM"
         presets={[
@@ -52,22 +53,19 @@ describe("filter patterns", () => {
         customLabel="Custom"
         onPresetChange={vi.fn()}
         range={{}}
-        fromLabel="From"
-        toLabel="To"
-        calendarLabel="Calendar"
         onRangeChange={vi.fn()}
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Calendar" }));
+    fireEvent.click(screen.getByRole("button", { name: "달력 열기" }));
     expect(screen.getByRole("dialog")).toBeInTheDocument();
-    expect(screen.getByRole("group", { name: "From" })).toBeInTheDocument();
-    expect(screen.getByRole("group", { name: "To" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "시작일" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "종료일" })).toBeInTheDocument();
   });
 
   it("uses a single-select radio group for period presets", () => {
     const onPresetChange = vi.fn();
-    render(
+    renderWithI18n(
       <PeriodField
         preset="ALL"
         presets={[
@@ -77,9 +75,6 @@ describe("filter patterns", () => {
         customLabel="Custom"
         onPresetChange={onPresetChange}
         range={{}}
-        fromLabel="From"
-        toLabel="To"
-        calendarLabel="Calendar"
         onRangeChange={vi.fn()}
       />,
     );
@@ -93,27 +88,24 @@ describe("filter patterns", () => {
 
   // Notion states date limits as 선택 불가, never as an error message, so each bound bounds the other.
   it("bounds each date input by the other instead of reporting a reversed range", () => {
-    render(
+    renderWithI18n(
       <PeriodField
         preset="CUSTOM"
         presets={[{ value: "ALL", label: "All" }]}
         customLabel="Custom"
         onPresetChange={vi.fn()}
         range={{ from: "2026-08-31", to: "2026-09-01" }}
-        fromLabel="From"
-        toLabel="To"
-        calendarLabel="Calendar"
         onRangeChange={vi.fn()}
       />,
     );
 
-    expect(screen.getByLabelText("From")).toHaveAttribute("max", "2026-09-01");
-    expect(screen.getByLabelText("To")).toHaveAttribute("min", "2026-08-31");
+    expect(screen.getByLabelText("시작일")).toHaveAttribute("max", "2026-09-01");
+    expect(screen.getByLabelText("종료일")).toHaveAttribute("min", "2026-08-31");
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 
   it("associates one filter label with a grouped control without wrapping it in label", () => {
-    render(
+    renderWithI18n(
       <FilterField label="Account status">
         {({ labelId }) => (
           <div role="group" aria-labelledby={labelId}>
@@ -129,7 +121,7 @@ describe("filter patterns", () => {
   });
 
   it("owns the group wrapper for sibling controls that share one row label", () => {
-    render(
+    renderWithI18n(
       <FilterField label="Period" group>
         {() => (
           <>
@@ -159,15 +151,11 @@ describe("filter patterns", () => {
       onPresetChange: vi.fn(),
       range: {},
       onRangeChange: vi.fn(),
-      fromLabel: "From",
-      toLabel: "To",
-      calendarLabel: "Calendar",
     };
-    const { rerender } = render(
+    const { rerender } = renderWithI18n(
       <PeriodFilterField
         label="Period"
         criterion={{
-          label: "Criterion",
           value: "CREATED_AT",
           options: [
             { value: "CREATED_AT", label: "Created at" },
@@ -180,26 +168,25 @@ describe("filter patterns", () => {
     );
     const group = screen.getByRole("group", { name: "Period" });
     expect(group).toContainElement(
-      screen.getByRole("combobox", { name: "Criterion" }),
+      screen.getByRole("combobox", { name: "기간 기준" }),
     );
-    expect(group).toContainElement(screen.getByLabelText("From"));
-    await chooseOptionIn("Criterion", "Updated at");
+    expect(group).toContainElement(screen.getByLabelText("시작일"));
+    await chooseOptionIn("기간 기준", "Updated at");
     expect(onCriterion).toHaveBeenCalledWith("UPDATED_AT");
 
     rerender(<PeriodFilterField label="Period" {...periodProps} />);
     expect(
-      screen.queryByRole("combobox", { name: "Criterion" }),
+      screen.queryByRole("combobox", { name: "기간 기준" }),
     ).not.toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Period" })).toBeInTheDocument();
   });
 
   it("composes the keyword filter row with an optional target select under one name", async () => {
     const onField = vi.fn();
-    render(
+    renderWithI18n(
       <KeywordFilterField
         label="Keyword"
         field={{
-          label: "Target",
           value: "NAME",
           options: [
             { value: "NAME", label: "Name" },
@@ -212,25 +199,22 @@ describe("filter patterns", () => {
         onPendingValueChange={vi.fn()}
         onAdd={vi.fn()}
         onRemoveAt={vi.fn()}
-        addLabel="Add"
-        removeLabel={() => "Remove"}
-        inputLabel="Keyword input"
         formatItem={(item) => item.value}
       />,
     );
     const group = screen.getByRole("group", { name: "Keyword" });
     expect(group).toContainElement(
-      screen.getByRole("combobox", { name: "Target" }),
+      screen.getByRole("combobox", { name: "검색 대상" }),
     );
     expect(group).toContainElement(
-      screen.getByRole("textbox", { name: "Keyword input" }),
+      screen.getByRole("textbox", { name: "검색어" }),
     );
-    await chooseOptionIn("Target", "ID");
+    await chooseOptionIn("검색 대상", "ID");
     expect(onField).toHaveBeenCalledWith("ID");
   });
 
   it("keeps the grouped path on a non-label element so no control is falsely associated", () => {
-    render(
+    renderWithI18n(
       <FilterField label="Account status">
         {({ labelId }) => (
           <div role="group" aria-labelledby={labelId}>
@@ -245,7 +229,7 @@ describe("filter patterns", () => {
   });
 
   it("names a single native control through label htmlFor", () => {
-    render(
+    renderWithI18n(
       <FilterField label="Permission">
         {({ controlId }) => (
           <select id={controlId}>
@@ -261,7 +245,7 @@ describe("filter patterns", () => {
   });
 
   it("turns the label element into label htmlFor when the caller takes the single control path", () => {
-    render(
+    renderWithI18n(
       <FilterField label="Show date">
         {({ controlId }) => <input id={controlId} type="date" />}
       </FilterField>,
@@ -273,7 +257,7 @@ describe("filter patterns", () => {
   });
 
   it("stacks the filter label above its control at the same start edge", () => {
-    render(
+    renderWithI18n(
       <FilterField label="Board">
         {({ controlId }) => <input id={controlId} />}
       </FilterField>,

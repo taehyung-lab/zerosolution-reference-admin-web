@@ -1,14 +1,9 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { managerSortKeys, type ManagerRow, type ManagerSortKey } from '@/features/managers/model/manager';
+import { managerSortKeys, type ManagerRow } from '@/features/managers/model/manager';
 import { standardPageSizeOptions } from '@/shared/model/list-options';
-import { DataTable } from '@/shared/ui/list/DataTable';
-import { ListResult, type ListResultData } from '@/shared/ui/list/ListResult';
-import { Pagination } from '@/shared/ui/list/Pagination';
-import { PageSizeControl } from '@/shared/ui/list/PageSizeControl';
-import { ResultToolbar } from '@/shared/ui/list/ResultToolbar';
-import { ResultTotal } from '@/shared/ui/list/ResultTotal';
-import { SortControl } from '@/shared/ui/list/SortControl';
+import type { ListResultData } from '@/shared/ui/list/ListResult';
+import { PagedListResult } from '@/shared/ui/list/PagedListResult';
 import type { useManagerListResult } from './useManagerListResult';
 
 /**
@@ -29,50 +24,19 @@ export function ManagerListResult({
   readonly onActivate: (managerId: string) => void;
 }) {
   const { t } = useTranslation('managers');
-  const { view } = result;
 
   return (
-    <>
-      <ResultTotal searched={data.searched} total={total} />
-      <ResultToolbar
-        left={
-          data.searched ? (
-            <>
-              <PageSizeControl
-                label={t('result.pageSize')}
-                options={standardPageSizeOptions}
-                {...view.pageSize}
-              />
-              <SortControl<ManagerSortKey>
-                label={t('result.sort')}
-                value={view.sort.value}
-                options={managerSortKeys.map((value) => ({ value, label: t(`fields.${value}`) }))}
-                onValueChange={view.sort.onValueChange}
-              />
-            </>
-          ) : null
-        }
-        right={actions}
-      />
-      <ListResult
-        data={data}
-        copy={{ notSearched: t('result.notSearched'), empty: t('result.empty') }}
-        footer={
-          <Pagination
-            {...view.pagination}
-            ariaLabel={t('result.paginationLabel')}
-            previousLabel={t('result.previous')}
-            nextLabel={t('result.next')}
-          />
-        }
-      >
-        <DataTable
-          rows={data.rows}
-          columns={result.columns}
-          getRowId={(row) => row.id}
-          onRowActivate={(row) => onActivate(row.id)}
-        />
-      </ListResult>
-    </>
+    <PagedListResult
+      data={data}
+      total={total}
+      view={result.view}
+      columns={result.columns}
+      getRowId={(row) => row.id}
+      onRowActivate={(row) => onActivate(row.id)}
+      actions={actions}
+      copy={{ notSearched: t('result.notSearched'), empty: t('result.empty') }}
+      pageSizeOptions={standardPageSizeOptions}
+      sortOptions={managerSortKeys.map((value) => ({ value, label: t(`fields.${value}`) }))}
+    />
   );
 }

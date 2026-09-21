@@ -1,13 +1,8 @@
 import { useTranslation } from 'react-i18next';
-import { boardSortKeys, type BoardRow, type BoardSortKey } from '@/features/community/model/board';
+import { boardSortKeys, type BoardRow } from '@/features/community/model/board';
 import { standardPageSizeOptions } from '@/shared/model/list-options';
-import { DataTable } from '@/shared/ui/list/DataTable';
-import { ListResult, type ListResultData } from '@/shared/ui/list/ListResult';
-import { Pagination } from '@/shared/ui/list/Pagination';
-import { PageSizeControl } from '@/shared/ui/list/PageSizeControl';
-import { ResultToolbar } from '@/shared/ui/list/ResultToolbar';
-import { ResultTotal } from '@/shared/ui/list/ResultTotal';
-import { SortControl } from '@/shared/ui/list/SortControl';
+import type { ListResultData } from '@/shared/ui/list/ListResult';
+import { PagedListResult } from '@/shared/ui/list/PagedListResult';
 import { Button } from '@/shared/ui/primitives/Button';
 import type { useBoardListResult } from './useBoardListResult';
 
@@ -22,55 +17,26 @@ export function BoardListResult({
   onActivate,
   onCreate,
 }: {
-  readonly data: ListResultData<BoardRow>;
+  readonly data: ListResultData<BoardRow, true>;
   readonly total: number;
   readonly result: ReturnType<typeof useBoardListResult>;
   readonly onActivate: (boardId: string) => void;
   readonly onCreate: () => void;
 }) {
   const { t } = useTranslation('community');
-  const { view } = result;
 
   return (
-    <>
-      <ResultTotal searched={data.searched} total={total} />
-      <ResultToolbar
-        left={
-          <>
-            <PageSizeControl
-              label={t('board.result.pageSize')}
-              options={standardPageSizeOptions}
-              {...view.pageSize}
-            />
-            <SortControl<BoardSortKey>
-              label={t('board.result.sort')}
-              value={view.sort.value}
-              options={boardSortKeys.map((value) => ({ value, label: t(`board.sort.${value}`) }))}
-              onValueChange={view.sort.onValueChange}
-            />
-          </>
-        }
-        right={<Button onClick={onCreate}>{t('board.result.create')}</Button>}
-      />
-      <ListResult
-        data={data}
-        copy={{ notSearched: t('board.result.empty'), empty: t('board.result.empty') }}
-        footer={
-          <Pagination
-            {...view.pagination}
-            ariaLabel={t('board.result.pagination.label')}
-            previousLabel={t('board.result.pagination.previous')}
-            nextLabel={t('board.result.pagination.next')}
-          />
-        }
-      >
-        <DataTable
-          rows={data.rows}
-          columns={result.columns}
-          getRowId={(row) => row.id}
-          onRowActivate={(row) => onActivate(row.id)}
-        />
-      </ListResult>
-    </>
+    <PagedListResult
+      data={data}
+      total={total}
+      view={result.view}
+      columns={result.columns}
+      getRowId={(row) => row.id}
+      onRowActivate={(row) => onActivate(row.id)}
+      actions={<Button onClick={onCreate}>{t('board.result.create')}</Button>}
+      copy={{ empty: t('board.result.empty') }}
+      pageSizeOptions={standardPageSizeOptions}
+      sortOptions={boardSortKeys.map((value) => ({ value, label: t(`board.sort.${value}`) }))}
+    />
   );
 }

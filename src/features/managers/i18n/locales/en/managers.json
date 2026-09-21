@@ -33,25 +33,13 @@
     "historyUpdated": "Updated",
     "historyDeleted": "Deleted"
   },
-  "search": "Search",
-  "reset": "Reset",
   "filters": {
     "period": "Period",
-    "periodType": "Period basis",
-    "periodPreset": "Period quick selection",
     "keyword": "Keyword",
-    "keywordType": "Keyword field",
     "type": "Type",
     "registrationRoute": "Registration route",
     "status": "Account status",
-    "all": "All",
-    "add": "Add",
-    "remove": "Remove {{value}}",
-    "collapse": "Collapse search",
-    "expand": "Expand search",
-    "startDate": "Start date",
-    "endDate": "End date",
-    "calendar": "Open calendar"
+    "all": "All"
   },
   "bulk": {
     "field": "Change field",
@@ -63,11 +51,6 @@
     "confirm": "Accounts with awaiting, rejected or locked status cannot be changed.\nChange the selected items?"
   },
   "result": {
-    "pageSize": "Rows",
-    "sort": "Sort",
-    "paginationLabel": "Pagination",
-    "previous": "Previous",
-    "next": "Next",
     "notSearched": "Enter search criteria, then select Search.",
     "empty": "No matching results.",
     "selectAll": "Select the current page",

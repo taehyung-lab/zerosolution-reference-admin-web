@@ -58,7 +58,14 @@
       "TODAY": "오늘",
       "CUSTOM": "직접입력"
     },
-    "total": "검색결과 : {{formatted}}"
+    "total": "검색결과 : {{formatted}}",
+    "pageSize": "보기",
+    "sort": "정렬",
+    "pagination": {
+      "label": "페이지 이동",
+      "previous": "이전",
+      "next": "다음"
+    }
   },
   "calendar": {
     "navigation": "달력 탐색",
@@ -119,5 +126,28 @@
   },
   "deleteConfirm": {
     "description": "삭제하시겠습니까?"
+  },
+  "filter": {
+    "title": "검색",
+    "submit": "검색",
+    "reset": "초기화",
+    "collapse": "검색 접기",
+    "expand": "검색 펼치기",
+    "period": {
+      "criterion": "기간 기준",
+      "from": "시작일",
+      "to": "종료일",
+      "calendar": "달력 열기",
+      "presets": "기간 빠른 선택"
+    },
+    "keyword": {
+      "field": "검색 대상",
+      "input": "검색어",
+      "add": "추가",
+      "remove": "{{value}} 삭제"
+    }
+  },
+  "checkboxTree": {
+    "selectAll": "전체"
   }
 }

@@ -33,25 +33,13 @@
     "historyUpdated": "수정",
     "historyDeleted": "삭제"
   },
-  "search": "검색",
-  "reset": "초기화",
   "filters": {
     "period": "기간",
-    "periodType": "기간 기준",
-    "periodPreset": "기간 빠른 선택",
     "keyword": "검색어",
-    "keywordType": "검색어 구분",
     "type": "유형",
     "registrationRoute": "가입경로",
     "status": "계정 상태",
-    "all": "전체",
-    "add": "추가",
-    "remove": "{{value}} 삭제",
-    "collapse": "검색 접기",
-    "expand": "검색 펼치기",
-    "startDate": "시작일",
-    "endDate": "종료일",
-    "calendar": "달력 열기"
+    "all": "전체"
   },
   "bulk": {
     "field": "변경 항목",
@@ -63,11 +51,6 @@
     "confirm": "[대기, 거절, 잠금]은 상태를 변경할 수 없습니다.\n선택 항목을 변경하시겠습니까?"
   },
   "result": {
-    "pageSize": "보기",
-    "sort": "정렬",
-    "paginationLabel": "페이지 이동",
-    "previous": "이전",
-    "next": "다음",
     "notSearched": "검색 조건을 입력한 뒤 검색해 주세요.",
     "empty": "일치하는 검색결과가 없습니다.",
     "selectAll": "현재 페이지 전체 선택",

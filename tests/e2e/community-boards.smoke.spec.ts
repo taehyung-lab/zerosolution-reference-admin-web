@@ -27,7 +27,7 @@ test('@smoke 게시판 목록은 진입 즉시 조회하고 초기화 뒤에도 
 
   await page.getByRole('textbox', { name: '검색어', exact: true }).fill('Board 5');
   await page
-    .getByRole('form', { name: '검색 조건', exact: true })
+    .getByRole('form', { name: '검색', exact: true })
     .getByRole('button', { name: '검색', exact: true })
     .click();
   await expect(page).toHaveURL(/keywords/);
@@ -195,7 +195,7 @@ test('@smoke 일치하는 결과가 없으면 원문 안내 문구를 보여 준
 
   await page.getByRole('textbox', { name: '검색어', exact: true }).fill('No Such Board');
   await page
-    .getByRole('form', { name: '검색 조건', exact: true })
+    .getByRole('form', { name: '검색', exact: true })
     .getByRole('button', { name: '검색', exact: true })
     .click();
 

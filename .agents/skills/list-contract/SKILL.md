@@ -65,14 +65,15 @@ shared 가 소유하는 것: 위 표의 mechanic 과 렌더 계약([catalog](../
 - `submit`: `preventDefault` → `prepareSubmit()` → `commit({ ...search, ...filters, ...range, keywords, page: 1 })`. gated 목록은 `searched: true` 를 더한다. 보기·정렬은 유지한다.
 - `reset`: `resetDrafts()` → 즉시 조회 목록은 `commit({ ...defaults })`, gated 목록은 `commit({ ...defaults, searched: false })`(검색 전 복귀).
 - `scope` 는 초안의 정체성에 들어간다. gated 목록은 `search.searched` 를 넘겨 검색 전·뒤 초안이 섞이지 않게 한다.
-- 라벨·선택지·"전체" 항목·`AsyncFieldBoundary` 배치는 `ui/{Entity}ListFilters.tsx` 가 소유한다. 훅은 문구를 모른다. 필드 렌더 계약은 [catalog Filter](../shared-ui/references/catalog.md#filter).
+- 도메인 라벨(행 이름·기준/대상 옵션·enum 라벨)·선택지·`AsyncFieldBoundary` 배치는 `ui/{Entity}ListFilters.tsx` 가 소유한다. 패널 제목·검색/초기화·접기/펼치기·시작일/종료일·달력·검색어 입력/추가/삭제·"전체" 같은 제품 공통 문구는 공용 단위가 `shared` namespace 에서 읽으므로 화면은 넘기지 않는다. 훅은 문구를 모른다. 필드 렌더 계약은 [catalog Filter](../shared-ui/references/catalog.md#filter).
 - 기간·검색어의 수명이 다른 화면(즉시 검색 하나, 텍스트 하나)은 `usePeriodDraft`·`useKeywordDraft` 를 직접 조립한다. 없는 입력에 빈 상태를 만들지 않는다.
 
 ## Result
 
-`ui/use{Entity}ListResult({ search, rows, totalPages, commit })` 가 `selection`(`usePageRowSelection`, `resetKey: JSON.stringify(search)`)·`view`(`listViewControls`)·`columns` 를 돌려주고, `ui/{Entity}ListResult.tsx` 가 이 순서로 그린다: `ResultTotal` → `ResultToolbar`(왼쪽 `PageSizeControl`·`SortControl` 은 검색 뒤에만, 오른쪽 `actions` slot) → `ListResult`(`data`, `copy: { notSearched, empty }`, `footer: <Pagination {...view.pagination} />`) → 안에 `DataTable`(`rows`, `columns`, `getRowId`, `onRowActivate`).
+`ui/use{Entity}ListResult({ search, rows, totalPages, commit })` 가 `selection`(`usePageRowSelection`, `resetKey: JSON.stringify(search)`)·`view`(`listViewControls`)·`columns` 를 돌려주고, `ui/{Entity}ListResult.tsx` 는 `PagedListResult`([catalog List](../shared-ui/references/catalog.md#list)) 하나에 `data`·`total`·`view`·`columns`·`getRowId`·`onRowActivate`·`actions`·`copy`·`pageSizeOptions`·`sortOptions` 를 넘긴다. 순서(`ResultTotal` → `ResultToolbar`(왼쪽 보기·정렬은 검색 뒤에만, 오른쪽 `actions`) → `ListResult`(footer `Pagination`) → `DataTable`)와 보기·정렬·페이지 컨트롤의 공통 라벨은 그 단위가 소유하고, 화면은 도메인만 준다: 정렬 옵션 라벨, 문장, 액션, 행 활성화 목적지.
 
-- `ListResult` 가 `notSearched → loading → error → empty → ready` 를 판정하고 공용 로딩·오류·재시도·trace 를 그린다. 화면은 두 문구만 준다.
+- `ListResult` 가 `notSearched → loading → error → empty → ready` 를 판정하고 공용 로딩·오류·재시도·trace 를 그린다. 즉시 조회 목록은 `copy: { empty }` 만, gated 목록은 `{ notSearched, empty }` 를 준다 — `use{Entity}ListData` 가 넘긴 `searched` 리터럴이 어느 쪽인지 타입으로 정한다.
+- 결과 영역의 배치가 원장에서 이 순서와 다르다고 확인된 화면만 `PagedListResult` 대신 아래 단위를 직접 조립한다. 순서·노출을 고르는 prop 을 그 단위에 더하지 않는다.
 - 행 클릭 목적지(`onActivate`)와 등록 목적지(`onCreate`)는 Screen 의 props 이고 route 가 navigate 를 넣는다.
 - 컬럼(`ui/{entity}-list-columns.tsx`)은 `selectionColumn(...)` + 정렬 키 배열을 순서대로 map 한다. 셀 포맷은 컬럼 파일 안의 한 함수다.
 

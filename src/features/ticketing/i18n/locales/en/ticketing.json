@@ -10,28 +10,14 @@
       "edit": "Edit"
     },
     "filter": {
-      "title": "Search",
-      "collapse": "Collapse search",
-      "expand": "Expand search",
-      "submit": "Search",
-      "reset": "Reset",
-      "all": "All",
       "status": "Status",
       "purpose": "Purpose",
       "usage": "Use state",
       "period": {
-        "label": "Period",
-        "criterion": "Period basis",
-        "presetGroup": "Period preset",
-        "from": "Start date",
-        "to": "End date",
-        "calendar": "Calendar"
+        "label": "Period"
       },
       "keyword": {
         "label": "Keyword",
-        "field": "Search target",
-        "add": "Add",
-        "remove": "Remove {{value}}",
         "chip": "{{field}} : {{value}}"
       }
     },
@@ -63,8 +49,6 @@
       "usage": "Use state"
     },
     "result": {
-      "pageSize": "Per page",
-      "sort": "Sort",
       "empty": "No results match the search conditions.",
       "selectAll": "Select every smart printer on this page",
       "selectRow": "Select {{name}}",
@@ -76,12 +60,7 @@
       },
       "bulkChange": "Change",
       "copy": "Copy selected",
-      "create": "Register",
-      "pagination": {
-        "label": "Pagination",
-        "previous": "Previous",
-        "next": "Next"
-      }
+      "create": "Register"
     },
     "detail": {
       "title": "Smart printer details",
