@@ -49,15 +49,7 @@ React 19 + Vite SPA · TypeScript 5.9.3 ([ADR 0002](docs/decisions/0002-typescri
 
 ## 디렉터리
 
-```text
-src/app/          provider, router, shell, app-level boundary
-src/routes/       입력 검증, entry guard, loader, 화면 조립
-src/features/     도메인 API 조합, model, 화면, workflow
-src/api/          transport, 오류 정규화, OpenAPI 생성물
-src/shared/       도메인·서버 계약을 모르는 UI와 순수 공용 코드
-```
-
-의존 방향과 예외는 `.agents/skills/source-structure/SKILL.md`와 `eslint.config.js`가 소유한다. 별도 `pages` 레이어는 만들지 않는다.
+폴더 지도는 [`src/README.md`](src/README.md) 가 한 장으로 갖는다(실제 디렉터리와의 대조는 `pnpm contracts:check`). 의존 방향과 예외는 `.agents/skills/source-structure/SKILL.md`와 `eslint.config.js`가 소유한다. 별도 `pages` 레이어는 만들지 않는다.
 
 ## 문서 지도
 

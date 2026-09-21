@@ -30,6 +30,7 @@ import {
   pnpmCommandFailures,
   productNameNotices,
   prohibitedAbstractionSourceFailures,
+  sourceMapFailures,
   readLocalLinkFailures,
   citedContractPathFailures,
   retiredDocumentNameFailures,
@@ -167,6 +168,18 @@ if (mode === 'source') {
 }
 failures.push(...skillAdapterFailures())
 failures.push(...prohibitedAbstractionSourceFailures(readFileSync(resolve('eslint.config.js'), 'utf8')))
+// `src/README.md` 는 지도다. 폴더가 생기거나 사라지면 지도도 바뀌어야 하므로 실제 디렉터리와 대조한다.
+{
+  const dirsOf = (path) => existsSync(resolve(path))
+    ? readdirSync(resolve(path), { withFileTypes: true }).filter((entry) => entry.isDirectory() && !entry.name.startsWith('.')).map((entry) => entry.name).sort()
+    : []
+  const featureChildren = [...new Set(dirsOf('src/features').flatMap((domain) => dirsOf(`src/features/${domain}`)))].sort()
+  failures.push(...sourceMapFailures(readFileSync(resolve('src/README.md'), 'utf8'), {
+    src: dirsOf('src'),
+    'src/features/{domain}': featureChildren,
+    'src/shared': dirsOf('src/shared'),
+  }))
+}
 // 제품 사실 색인의 정합성은 `pnpm product:check` 가 fact frontmatter 에서 본다. 여기서는 **관찰이
 // 사라지지 않았는지**를 본다 — fact 는 늘, 아직 옮기지 않은 옛 원장은 그것이 남아 있는 동안.
 failures.push(...evidencePreservationFailures(process.cwd(), PRODUCT_PATHS.facts))

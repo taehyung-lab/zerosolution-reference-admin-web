@@ -24,6 +24,7 @@ import {
   readLocalLinkFailures,
   citedContractPathFailures,
   prohibitedAbstractionSourceFailures,
+  sourceMapFailures,
   retiredDocumentNameFailures,
   transplantSentinelFailures,
   transplantSentinelOccurrences,
@@ -1159,5 +1160,35 @@ describe('skill 어댑터', () => {
 
   it('이 저장소의 실제 배치가 통과한다', () => {
     expect(skillAdapterFailures()).toEqual([])
+  })
+})
+
+describe('src map', () => {
+  const readme = [
+    '# 지도', '', '```text', 'src/', '  app/  앱', '  features/  도메인', '    {domain}/', '      api/  endpoint', '      screens/  화면',
+    '  shared/  공용', '    ui/  렌더', '```',
+  ].join('\n')
+
+  it('passes when every real directory is drawn and every drawn directory exists', () => {
+    expect(sourceMapFailures(readme, {
+      src: ['app', 'features', 'shared'],
+      'src/features/{domain}': ['api', 'screens'],
+      'src/shared': ['ui'],
+    })).toEqual([])
+  })
+
+  it('names a directory the map forgot and a directory the map invented', () => {
+    expect(sourceMapFailures(readme, {
+      src: ['app', 'features', 'shared', 'test'],
+      'src/features/{domain}': ['api'],
+      'src/shared': ['ui'],
+    })).toEqual([
+      'src/README.md: src/test 가 실제로 있는데 지도에 없다',
+      'src/README.md: src/features/{domain}/screens 가 지도에 있는데 실제로 없다',
+    ])
+  })
+
+  it('reports a README without a tree block', () => {
+    expect(sourceMapFailures('# 지도만', { src: ['app'] })).toEqual(['src/README.md: ```text 트리 블록이 없다'])
   })
 })

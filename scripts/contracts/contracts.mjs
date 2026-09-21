@@ -663,3 +663,38 @@ export function ledgerIndexFailures(
   }
   return failures
 }
+
+
+/**
+ * `src/README.md` 의 트리 블록이 실제 디렉터리와 맞는가. 지도는 규칙이 아니라 "무엇이 어디 있나" 이므로
+ * 낡으면 기계가 잡는다. `{domain}` 처럼 중괄호로 쓴 자리는 그 아래 자식들을 모든 feature 의 합집합과 대조한다.
+ *
+ * @param {string} readme `src/README.md` 원문
+ * @param {Record<string, readonly string[]>} actual 경로 → 실제 하위 디렉터리 이름. 키는 `src`, `src/features/{domain}`,
+ *   `src/shared` 처럼 트리의 경로 그대로.
+ */
+export function sourceMapFailures(readme, actual) {
+  const block = readme.match(/```text\n([\s\S]*?)```/)
+  if (!block) return ['src/README.md: ```text 트리 블록이 없다']
+  const declared = new Map()
+  const stack = []
+  for (const raw of block[1].split('\n')) {
+    const match = raw.match(/^( *)([^\s]+\/)/)
+    if (!match) continue
+    const depth = match[1].length / 2
+    const name = match[2].slice(0, -1)
+    stack.length = depth
+    const parent = stack.join('/')
+    stack.push(name)
+    if (depth === 0) continue
+    if (!declared.has(parent)) declared.set(parent, new Set())
+    declared.get(parent).add(name)
+  }
+  const failures = []
+  for (const [path, dirs] of Object.entries(actual)) {
+    const names = declared.get(path) ?? new Set()
+    for (const dir of dirs) if (!names.has(dir)) failures.push(`src/README.md: ${path}/${dir} 가 실제로 있는데 지도에 없다`)
+    for (const name of names) if (!dirs.includes(name)) failures.push(`src/README.md: ${path}/${name} 가 지도에 있는데 실제로 없다`)
+  }
+  return failures
+}
