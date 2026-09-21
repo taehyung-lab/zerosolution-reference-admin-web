@@ -10,7 +10,7 @@ import {
 import { useCounselDetail } from '@/features/members/api/useCounselDetail';
 import { useCounselReissueInput } from '@/features/members/api/useCounselOptions';
 import { formatMemberInstant } from '@/features/members/lib/format-member-instant';
-import { MemberCounselRecords } from '@/features/members/mechanics/counsel/ui/MemberCounselRecords';
+import { MemberCounselRecords } from '@/features/members/shared/counsel/ui/MemberCounselRecords';
 import { useLocale } from '@/shared/i18n/locale-context';
 import { maskEmail, maskPhone } from '@/shared/lib/mask-contact';
 import { DetailField } from '@/shared/ui/detail/DetailField';

@@ -7,7 +7,7 @@ import { AccessListActions } from './AccessListActions';
 import { AccessListFilters } from './AccessListFilters';
 import { useAccessListResult } from './useAccessListResult';
 import { PagedListResult } from '@/shared/ui/list/PagedListResult';
-import { standardPageSizeOptions } from '@/shared/model/list-options';
+import { standardPageSizeOptions } from '@/shared/lib/list-options';
 import { accessSortKeys } from '@/features/members/model/member-records';
 
 /** 4.5 회원접속 목록. 검색 전에는 조회하지 않고, 검색 뒤 선택한 행 또는 조건 전체를 다운로드 요청에 넘긴다. */

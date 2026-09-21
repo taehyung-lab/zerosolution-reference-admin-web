@@ -41,7 +41,7 @@ description: >
 
 ## 자리
 
-중첩 집합은 기본적으로 **그것을 품은 화면**의 `ui/` 에 산다. 상태가 있으면 같은 화면의 `model/` 에 그 훅을 둔다. 같은 도메인의 여러 화면이 같은 의미·전이·실패로 쓸 때만 `mechanics/{capability}` 로 올리고, 도메인·Router·Query·permission 을 모르는 렌더만 남을 때 `shared/ui` 로 올린다([promotion](../source-structure/references/promotion.md)).
+중첩 집합은 기본적으로 **그것을 품은 화면**의 `ui/` 에 산다. 상태가 있으면 같은 화면의 `model/` 에 그 훅을 둔다. 같은 도메인의 여러 화면이 같은 의미·전이·실패로 쓸 때만 도메인 `shared/{capability}` 로 올리고, 도메인·Router·Query·permission 을 모르는 렌더만 남을 때 `shared/ui` 로 올린다([promotion](../source-structure/references/promotion.md)).
 
 **표가 있다는 이유로 목록 화면 폴더를 만들지 않는다.** 독립 route 로 진입하지 않으면 그것은 host 화면의 일부다.
 

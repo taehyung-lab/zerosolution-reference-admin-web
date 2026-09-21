@@ -3,7 +3,7 @@ import {
   MemberAccountStatusFilter,
   MemberRestrictionFilter,
   MemberSignupMethodFilter,
-} from '@/features/members/mechanics/filters/ui/MemberFilterFields';
+} from '@/features/members/shared/filters/ui/MemberFilterFields';
 import {
   memberKeywordFields,
   memberPeriodTypes,
@@ -11,7 +11,7 @@ import {
   type MemberPeriodType,
 } from '@/features/members/model/member';
 import { usePeriodPresets } from '@/shared/i18n/use-period-presets';
-import { standardPeriodPresetValues } from '@/shared/model/list-options';
+import { standardPeriodPresetValues } from '@/shared/lib/list-options';
 import { FilterPanel } from '@/shared/ui/filter/FilterPanel';
 import { KeywordFilterField } from '@/shared/ui/filter/KeywordFilterField';
 import { PeriodFilterField } from '@/shared/ui/filter/PeriodFilterField';

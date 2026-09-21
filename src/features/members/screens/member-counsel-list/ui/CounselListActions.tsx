@@ -1,4 +1,4 @@
-import { MemberDownloadControl } from '@/features/members/mechanics/download/ui/MemberDownloadControl';
+import { MemberDownloadControl } from '@/features/members/shared/download/ui/MemberDownloadControl';
 import { SelectionAlert } from '@/shared/ui/dialog/SelectionAlert';
 import type { CounselListView } from '../model/counsel-list-search';
 import { useCounselListActions } from '../model/useCounselListActions';

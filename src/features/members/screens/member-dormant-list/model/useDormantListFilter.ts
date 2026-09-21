@@ -1,6 +1,6 @@
 import type { SubmitEvent } from 'react';
 import { memberKeywordFields } from '@/features/members/model/member';
-import { useListFilterDraft } from '@/shared/model/use-list-filter-draft';
+import { useListFilterDraft } from '@/shared/hooks/use-list-filter-draft';
 import { dormantListSearch, type DormantListView } from './dormant-list-search';
 
 /** 검색 영역의 입력 초안과 두 커밋(검색·초기화). 검색은 첫 페이지로 조회를 열고 초기화는 검색 전 URL 로 돌아간다. */

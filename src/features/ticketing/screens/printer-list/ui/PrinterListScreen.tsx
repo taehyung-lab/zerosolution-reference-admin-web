@@ -11,7 +11,7 @@ import { PrinterListActions } from './PrinterListActions';
 import { PrinterListFilters } from './PrinterListFilters';
 import { usePrinterListResult } from './usePrinterListResult';
 import { PagedListResult } from '@/shared/ui/list/PagedListResult';
-import { standardPageSizeOptions } from '@/shared/model/list-options';
+import { standardPageSizeOptions } from '@/shared/lib/list-options';
 import { printerSortKeys } from '@/features/ticketing/model/printer';
 
 /**

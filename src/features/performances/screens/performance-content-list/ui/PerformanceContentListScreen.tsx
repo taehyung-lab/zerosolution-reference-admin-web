@@ -13,7 +13,7 @@ import { ContentListFilters } from './ContentListFilters';
 import { ContentPreviewDialog } from './ContentPreviewDialog';
 import { useContentListResult } from './useContentListResult';
 import { PagedListResult } from '@/shared/ui/list/PagedListResult';
-import { standardPageSizeOptions } from '@/shared/model/list-options';
+import { standardPageSizeOptions } from '@/shared/lib/list-options';
 import { contentSortKeys } from '@/features/performances/model/content';
 
 /**

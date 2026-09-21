@@ -20,7 +20,7 @@ export const CASES = [
   { fixture: 'folders/api-imports-screen.ts', target: 'src/features/gate-a/api/screen-negative.ts', expectedRule: 'import-x/no-restricted-paths' },
   { fixture: 'folders/model-imports-ui.ts', target: 'src/features/gate-a/screens/list/model/ui-negative.ts', expectedRule: 'import-x/no-restricted-paths' },
   { fixture: 'folders/sibling-screen.ts', target: 'src/features/gate-a/screens/detail/model/sibling-negative.ts', expectedRule: 'import-x/no-restricted-paths' },
-  { fixture: 'folders/mechanic-imports-screen.ts', target: 'src/features/gate-a/mechanics/selection/model/screen-negative.ts', expectedRule: 'import-x/no-restricted-paths' },
+  { fixture: 'folders/mechanic-imports-screen.ts', target: 'src/features/gate-a/shared/selection/model/screen-negative.ts', expectedRule: 'import-x/no-restricted-paths' },
   { fixture: 'folders/fixture-imports-screen.ts', target: 'src/features/gate-a/fixtures/screen-negative.ts', expectedRule: 'import-x/no-restricted-paths' },
   { fixture: 'folders/domain-model-react.ts', target: 'src/features/gate-a/model/react-negative.ts', expectedRule: 'no-restricted-imports' },
   { fixture: 'imports/valid.ts', target: 'src/features/gate-a/api/valid.ts', expectedRule: null },

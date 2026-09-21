@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import type { ManagerRow } from '@/features/managers/model/manager';
 import { listViewControls } from '@/shared/lib/list-view';
-import { usePageRowSelection } from '@/shared/model/use-page-row-selection';
+import { usePageRowSelection } from '@/shared/hooks/use-page-row-selection';
 import type { ManagerListView } from '../model/manager-list-search';
 import { managerListColumns } from './manager-list-columns';
 

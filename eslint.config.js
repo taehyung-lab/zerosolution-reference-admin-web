@@ -52,19 +52,19 @@ function featureInternalZones() {
     : []
   return directories('./src/features').flatMap((domain) => {
     const root = `./src/features/${domain}`
-    const zones = ['api', 'model', 'lib', 'config', 'fixtures', 'mechanics'].map((owner) => ({
+    const zones = ['api', 'model', 'lib', 'config', 'fixtures', 'shared'].map((owner) => ({
       target: `${root}/${owner}`, from: `${root}/screens`,
-      message: '하위 소유자는 screens를 역참조하지 않는다. 공통 값 또는 mechanic의 소유권을 확인한다.',
+      message: '하위 소유자는 screens를 역참조하지 않는다. 공통 값 또는 도메인 shared 의 소유권을 확인한다.',
     }))
     for (const owner of ['api', 'model', 'lib', 'config', 'fixtures']) zones.push({
-      target: `${root}/${owner}`, from: `${root}/mechanics`,
-      message: '도메인 계약과 fixture는 mechanic 실행·UI를 역참조하지 않는다.',
+      target: `${root}/${owner}`, from: `${root}/shared`,
+      message: '도메인 계약과 fixture는 도메인 shared 의 실행·UI를 역참조하지 않는다.',
     })
     for (const screen of directories(`${root}/screens`)) zones.push({
       target: `${root}/screens/${screen}`, from: `${root}/screens`, except: [`./${screen}`],
-      message: '화면끼리 내부를 import하지 않는다. 실제 공유 기능은 mechanics가 소유한다.',
+      message: '화면끼리 내부를 import하지 않는다. 같은 도메인의 화면들이 나눠 쓰는 것은 features/{domain}/shared 가 소유한다.',
     })
-    const owners = ['screens', 'mechanics'].flatMap((kind) => directories(`${root}/${kind}`).map((name) => `${root}/${kind}/${name}`))
+    const owners = ['screens', 'shared'].flatMap((kind) => directories(`${root}/${kind}`).map((name) => `${root}/${kind}/${name}`))
     for (const owner of [root, ...owners]) {
       for (const segment of ['model', 'lib', 'config']) for (const presentation of owners) zones.push({
         target: `${owner}/${segment}`, from: `${presentation}/ui`,
@@ -344,7 +344,7 @@ export default tseslint.config(
   {
     // `shared/lib` 은 결정적 계산만 소유한다. React 를 들이면 상태 수명을 소유하는 훅이 다시
     // 들어앉고, 그 순간 `lib` 이 무엇을 담는 곳인지가 흐려진다(use-page-row-selection 이 그렇게 들어왔다).
-    // 상태를 소유하는 재사용 단위는 `shared/model` 이다.
+    // 상태를 소유하는 재사용 단위는 `shared/hooks` 이다.
     files: ['src/shared/lib/**/*.{ts,tsx}'],
     ignores: ['**/*.test.{ts,tsx}'],
     rules: {
@@ -352,24 +352,24 @@ export default tseslint.config(
         paths: RESTRICTED.paths,
         patterns: [
           ...RESTRICTED.patterns,
-          { group: ['react', 'react-dom', 'react-i18next', '@tanstack/react-*'], message: 'shared/lib 은 순수 계산만 소유한다. 상태 수명을 소유하면 shared/model 이다.' },
+          { group: ['react', 'react-dom', 'react-i18next', '@tanstack/react-*'], message: 'shared/lib 은 순수 계산만 소유한다. 상태 수명을 소유하면 shared/hooks 이다.' },
         ],
       }],
       'no-restricted-syntax': ['error', {
         selector: 'ExportNamedDeclaration > FunctionDeclaration > Identifier[name=/^use[A-Z]/]',
-        message: 'shared/lib 은 hook 을 export 하지 않는다. 상태 수명을 소유하면 shared/model 이다.',
+        message: 'shared/lib 은 hook 을 export 하지 않는다. 상태 수명을 소유하면 shared/hooks 이다.',
       }],
     },
   },
   {
-    // `shared/model` 은 렌더를 소유하지 않는다. JSX 를 반환하기 시작하면 그것은 UI 계약이므로
+    // `shared/hooks` 은 렌더를 소유하지 않는다. JSX 를 반환하기 시작하면 그것은 UI 계약이므로
     // `shared/ui` 의 해당 family 로 간다(useSaveForm 이 UI 에 남는 이유다).
-    files: ['src/shared/model/**/*.{ts,tsx}'],
+    files: ['src/shared/hooks/**/*.{ts,tsx}'],
     ignores: ['**/*.test.{ts,tsx}'],
     rules: {
       'no-restricted-syntax': ['error',
-        { selector: 'JSXElement', message: 'shared/model 은 렌더하지 않는다. JSX 를 반환하면 shared/ui 다.' },
-        { selector: 'JSXFragment', message: 'shared/model 은 렌더하지 않는다. JSX 를 반환하면 shared/ui 다.' },
+        { selector: 'JSXElement', message: 'shared/hooks 은 렌더하지 않는다. JSX 를 반환하면 shared/ui 다.' },
+        { selector: 'JSXFragment', message: 'shared/hooks 은 렌더하지 않는다. JSX 를 반환하면 shared/ui 다.' },
       ],
     },
   },

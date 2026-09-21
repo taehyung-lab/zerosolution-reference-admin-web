@@ -17,8 +17,8 @@ import {
 import { useMemberCounselRecords } from '@/features/members/api/useMemberCounselRecords';
 import { useMemberDetail } from '@/features/members/api/useMemberDetail';
 import { formatMemberInstant } from '@/features/members/lib/format-member-instant';
-import { MemberActivitySection } from '@/features/members/mechanics/activity/ui/MemberActivitySection';
-import { MemberCounselRecords } from '@/features/members/mechanics/counsel/ui/MemberCounselRecords';
+import { MemberActivitySection } from '@/features/members/shared/activity/ui/MemberActivitySection';
+import { MemberCounselRecords } from '@/features/members/shared/counsel/ui/MemberCounselRecords';
 import type { MemberMessageChannel, MemberProfile } from '@/features/members/model/member';
 import { useLocale } from '@/shared/i18n/locale-context';
 import { maskEmail, maskPhone } from '@/shared/lib/mask-contact';

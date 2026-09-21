@@ -3,7 +3,7 @@ import type { ManagerRow, ManagerSortKey } from '@/features/managers/model/manag
 import { formatDate } from '@/shared/lib/datetime';
 import { maskEmail, maskPhone } from '@/shared/lib/mask-contact';
 import { headerSortDirection } from '@/shared/lib/list-sort';
-import type { PageRowSelection } from '@/shared/model/use-page-row-selection';
+import type { PageRowSelection } from '@/shared/hooks/use-page-row-selection';
 import type { DataTableProps } from '@/shared/ui/list/DataTable';
 import { selectionColumn } from '@/shared/ui/list/selection-column';
 import type { ManagerListView } from '../model/manager-list-search';

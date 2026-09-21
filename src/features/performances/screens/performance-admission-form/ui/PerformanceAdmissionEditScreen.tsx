@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { classifyFormError } from '@/api/form-error';
 import { updatePerformanceAdmissionMutation } from '@/features/performances/api/mutations';
 import { usePerformanceDetail } from '@/features/performances/api/usePerformanceDetail';
-import { PerformanceBasicSection } from '@/features/performances/mechanics/basic-info/ui/PerformanceBasicSection';
+import { PerformanceBasicSection } from '@/features/performances/shared/basic-info/ui/PerformanceBasicSection';
 import type { PerformanceDetail } from '@/features/performances/model/performance-detail';
 import { useLocale } from '@/shared/i18n/locale-context';
 import { DetailStateBoundary } from '@/shared/ui/detail/DetailStateBoundary';

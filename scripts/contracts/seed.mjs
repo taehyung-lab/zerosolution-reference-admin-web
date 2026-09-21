@@ -21,7 +21,7 @@ export const SEED_BUNDLES = [
   },
   {
     id: 'confirmation',
-    code: ['src/shared/ui/dialog/useConfirmation.tsx', 'src/shared/model/use-selection-gate.ts', 'src/shared/ui/dialog/SelectionAlert.tsx'],
+    code: ['src/shared/ui/dialog/useConfirmation.tsx', 'src/shared/hooks/use-selection-gate.ts', 'src/shared/ui/dialog/SelectionAlert.tsx'],
     skills: [location('.agents/skills/shared-ui/references/catalog.md', 'Dialog', '`useConfirmation<TValues>(')],
     adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/shared/ui/dialog/useConfirmation.test.tsx', 'src/shared/ui/dialog/SelectionAlert.test.tsx'],
@@ -38,11 +38,12 @@ export const SEED_BUNDLES = [
   {
     id: 'list-result',
     examples: [{
-      files: ['src/features/managers/screens/manager-list/ui/ManagerListResult.tsx'],
+      files: ['src/features/managers/screens/manager-list/ui/ManagerListScreen.tsx'],
       useWhen: 'Compare a feature composing result facts, empty/not-searched copy, view controls, the actions slot, pagination and the table.',
       doNotCopy: 'That domain\'s columns, sort keys, translated messages, actions or navigation. This is a composition example, not evidence of real-server recovery.',
     }],
     code: [
+      'src/shared/ui/list/PagedListResult.tsx',
       'src/shared/ui/list/ListResult.tsx',
       'src/shared/ui/list/ResultToolbar.tsx',
       'src/shared/ui/list/ResultSummary.tsx',
@@ -52,6 +53,7 @@ export const SEED_BUNDLES = [
     adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: [
       'src/shared/ui/list/list-patterns.test.tsx',
+      'src/shared/ui/list/PagedListResult.test.tsx',
       'src/shared/ui/list/ListResult.test-d.ts',
       'src/shared/ui/list/ResultTotal.test.tsx',
     ],
@@ -115,7 +117,7 @@ export const SEED_BUNDLES = [
       doNotCopy: 'That domain\'s fields, defaults, dependent options, request types, route destinations or option queries. Recheck the target product save policy.',
     }],
     code: [
-      'src/shared/model/use-form-sections.ts',
+      'src/shared/hooks/use-form-sections.ts',
       'src/shared/ui/form/FormField.tsx',
       'src/shared/ui/form/FormTextField.tsx',
       'src/shared/ui/form/FormSelectField.tsx',
@@ -140,7 +142,7 @@ export const SEED_BUNDLES = [
     ],
     adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: [
-      'src/shared/model/use-form-sections.test.tsx',
+      'src/shared/hooks/use-form-sections.test.tsx',
       'src/shared/ui/form/useSaveForm.test.tsx',
       'src/shared/ui/form/FormField.test.tsx',
       'src/shared/ui/form/FormAdapters.test.tsx',
@@ -171,13 +173,13 @@ export const SEED_BUNDLES = [
       useWhen: 'Compare a gated (search-then-load) and an immediate-load filter hook: both wrap useListFilterDraft with submit and reset and know no labels.',
       doNotCopy: 'Either domain\'s search policy, keyword fields, defaults or reset destination. Use individual primitives when input lifecycles differ.',
     }],
-    code: ['src/shared/model/use-draft-commit.ts', 'src/shared/model/use-list-filter-draft.ts'],
+    code: ['src/shared/hooks/use-draft-commit.ts', 'src/shared/hooks/use-list-filter-draft.ts'],
     skills: [
       location('.agents/skills/source-structure/references/promotion.md', 'Shared logic', 'draft preservation while a caller identity is equal'),
-      location('.agents/skills/shared-ui/references/catalog.md', 'Model', '`useListFilterDraft('),
+      location('.agents/skills/shared-ui/references/catalog.md', 'Hooks', '`useListFilterDraft('),
     ],
     adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
-    tests: ['src/shared/model/use-draft-commit.test.tsx', 'src/shared/model/use-list-filter-draft.test.tsx'],
+    tests: ['src/shared/hooks/use-draft-commit.test.tsx', 'src/shared/hooks/use-list-filter-draft.test.tsx'],
     ownership: {
       shared: 'Owns preserve, rebuild, reset, and patch mechanics; composes declared filter identity, period and keyword drafts and input collection.',
       feature: 'Owns identity policy, field declarations, defaults, validation, keyword mapping, submit/reset destinations, navigation, and page policy.',
@@ -185,13 +187,13 @@ export const SEED_BUNDLES = [
   },
   {
     id: 'period-draft',
-    code: ['src/shared/model/use-period-draft.ts'],
+    code: ['src/shared/hooks/use-period-draft.ts'],
     skills: [location('.agents/skills/source-structure/references/promotion.md', 'Shared logic', 'period preset/custom transitions')],
     adrs: [
-      location('docs/decisions/0003-datetime-utc.md', '소유권', '`src/shared/model/use-period-draft.ts`'),
+      location('docs/decisions/0003-datetime-utc.md', '소유권', '`src/shared/hooks/use-period-draft.ts`'),
       location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가'),
     ],
-    tests: ['src/shared/model/use-period-draft.test.tsx'],
+    tests: ['src/shared/hooks/use-period-draft.test.tsx'],
     ownership: {
       shared: 'Owns preset/custom draft transitions and conversion from explicit timezone inputs.',
       feature: 'Owns period meaning, adopted presets, validation copy, provider use, and request boundaries.',
@@ -232,13 +234,13 @@ export const SEED_BUNDLES = [
     // The standard-preset assembly hook is an i18n entrypoint a renderer never imports, so the
     // import closure cannot reach it from `filter-surface`. Declaring it here keeps it exportable.
     code: [
-      'src/shared/model/list-options.ts',
+      'src/shared/lib/list-options.ts',
       'src/shared/i18n/use-period-presets.ts',
     ],
-    skills: [location('.agents/skills/shared-ui/references/catalog.md', 'Model', 'standardPageSizeOptions')],
+    skills: [location('.agents/skills/shared-ui/references/catalog.md', 'Hooks', 'standardPageSizeOptions')],
     adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: [
-      'src/shared/model/list-options.test.ts',
+      'src/shared/lib/list-options.test.ts',
       'src/shared/i18n/use-period-presets.test.tsx',
     ],
     ownership: {
@@ -248,10 +250,10 @@ export const SEED_BUNDLES = [
   },
   {
     id: 'keyword-draft',
-    code: ['src/shared/model/use-keyword-draft.ts'],
+    code: ['src/shared/hooks/use-keyword-draft.ts'],
     skills: [location('.agents/skills/source-structure/references/promotion.md', 'Shared logic', 'pending keyword add/remove/trim')],
     adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
-    tests: ['src/shared/model/use-keyword-draft.test.tsx'],
+    tests: ['src/shared/hooks/use-keyword-draft.test.tsx'],
     ownership: {
       shared: 'Owns pending keyword add, remove, and trim mechanics.',
       feature: 'Owns keyword enum and field meaning, limits, URL state, and request mapping.',
@@ -328,7 +330,7 @@ export const SEED_BUNDLES = [
     id: 'data-table',
     examples: [{
       files: [
-        'src/features/managers/screens/manager-list/ui/ManagerListResult.tsx',
+        'src/features/managers/screens/manager-list/ui/ManagerListScreen.tsx',
         'src/features/managers/screens/manager-list/ui/manager-list-columns.tsx',
         'src/features/managers/screens/manager-list/ui/useManagerListResult.ts',
       ],
@@ -446,7 +448,7 @@ export const SEED_BUNDLE_EXPORTS = {
   'ascii-triplet': ['hasRepeatedOrSequentialAsciiTriplet'],
   confirmation: ['SelectionAlert', 'useConfirmation', 'useSelectionGate'],
   'contact-masking': ['maskEmail', 'maskPhone'],
-  'list-result': ['ListResult', 'ListResultCopy', 'ListResultData', 'ListResultState', 'ResultSummary', 'ResultSummaryGroup', 'ResultSummaryItem', 'ResultToolbar', 'ResultTotal'],
+  'list-result': ['PagedListResult', 'ListResult', 'ListResultCopy', 'ListResultData', 'ListResultState', 'ResultSummary', 'ResultSummaryGroup', 'ResultSummaryItem', 'ResultToolbar', 'ResultTotal'],
   'detail-state-boundary': ['DetailQueryFacts', 'DetailStateBoundary'],
   'detail-query': ['DetailQueryResult', 'DetailState', 'RequiredQueryFacts', 'RequiredQueryOutcome', 'resolveRequiredQueryOutcome', 'toDetailState', 'useDetailQuery'],
   'update-history': ['UpdateHistory', 'UpdateHistoryEntry'],

@@ -70,7 +70,7 @@ shared 가 소유하는 것: 위 표의 mechanic 과 렌더 계약([catalog](../
 
 ## Result
 
-`ui/use{Entity}ListResult({ search, rows, totalPages, commit })` 가 `selection`(`usePageRowSelection`, `resetKey: JSON.stringify(search)`)·`view`(`listViewControls`)·`columns` 를 돌려주고, `ui/{Entity}ListResult.tsx` 는 `PagedListResult`([catalog List](../shared-ui/references/catalog.md#list)) 하나에 `data`·`total`·`view`·`columns`·`getRowId`·`onRowActivate`·`actions`·`copy`·`pageSizeOptions`·`sortOptions` 를 넘긴다. 순서(`ResultTotal` → `ResultToolbar`(왼쪽 보기·정렬은 검색 뒤에만, 오른쪽 `actions`) → `ListResult`(footer `Pagination`) → `DataTable`)와 보기·정렬·페이지 컨트롤의 공통 라벨은 그 단위가 소유하고, 화면은 도메인만 준다: 정렬 옵션 라벨, 문장, 액션, 행 활성화 목적지.
+`ui/use{Entity}ListResult({ search, rows, totalPages, commit })` 가 `selection`(`usePageRowSelection`, `resetKey: JSON.stringify(search)`)·`view`(`listViewControls`)·`columns` 를 돌려주고, Screen 이 `PagedListResult`([catalog List](../shared-ui/references/catalog.md#list)) 하나에 `data`·`total`·`view`·`columns`·`getRowId`·`onRowActivate`·`actions`·`copy`·`pageSizeOptions`·`sortOptions` 를 넘긴다. 순서(`ResultTotal` → `ResultToolbar`(왼쪽 보기·정렬은 검색 뒤에만, 오른쪽 `actions`) → `ListResult`(footer `Pagination`) → `DataTable`)와 보기·정렬·페이지 컨트롤의 공통 라벨은 그 단위가 소유하고, 화면은 도메인만 준다: 정렬 옵션 라벨, 문장, 액션, 행 활성화 목적지.
 
 - `ListResult` 가 `notSearched → loading → error → empty → ready` 를 판정하고 공용 로딩·오류·재시도·trace 를 그린다. 즉시 조회 목록은 `copy: { empty }` 만, gated 목록은 `{ notSearched, empty }` 를 준다 — `use{Entity}ListData` 가 넘긴 `searched` 리터럴이 어느 쪽인지 타입으로 정한다.
 - 결과 영역의 배치가 원장에서 이 순서와 다르다고 확인된 화면만 `PagedListResult` 대신 아래 단위를 직접 조립한다. 순서·노출을 고르는 prop 을 그 단위에 더하지 않는다.
@@ -111,14 +111,14 @@ shared 가 소유하는 것: 위 표의 mechanic 과 렌더 계약([catalog](../
 | 컬럼과 정렬 매핑([Sorting](#sorting)) | `ui/{entity}-list-columns.tsx` |
 | 선택·보기 컨트롤·컬럼 조립 | `ui/use{Entity}ListResult.ts` |
 | 필터 패널 렌더와 라벨 | `ui/{Entity}ListFilters.tsx` |
-| 건수·툴바·표·페이지 렌더 | `ui/{Entity}ListResult.tsx` |
+| 건수·툴바·표·페이지 렌더 | Screen 안의 `PagedListResult` 호출. 결과 영역이 자기 상태(행 확장·인라인 편집)를 갖는 화면만 `ui/{Entity}ListResult.tsx` 를 둔다 |
 | 선택 요구 액션([Selection and actions](#selection-and-actions)) | `model/use{Entity}ListActions.ts` · `ui/{Entity}ListActions.tsx` |
 | URL 변형의 고정 조건 | `model/{entity}-list-definition.ts` |
 | 위의 것들을 배선하고 URL·이동 callback 을 받는 진입 | `ui/{Entity}ListScreen.tsx` |
 
 - **작은 목록은 나누지 않아도 된다.** 필터가 텍스트 하나면 그 상태를 Screen 이 직접 들 수 있고, 결과가 표 하나면 Result 컴포넌트를 따로 만들지 않아도 된다. 나누는 기준은 파일 수가 아니라 **한 파일이 두 가지 상태를 소유하기 시작할 때**다. 한 번 나누면 위 이름을 쓴다.
 - 반대로 빈 어댑터는 만들지 않는다. 책임이 없는데 파일만 있으면 읽는 사람이 없는 상태를 찾게 된다.
-- 두 화면이 같은 의미·상태 전이·실패로 쓰는 조각만 `mechanics/{capability}/{ui,model}` 로 올린다. 화면이 형제 화면을 import 하는 것은 lint 가 막는다.
+- 두 화면이 같은 의미·상태 전이·실패로 쓰는 조각만 도메인 `shared/{capability}/{ui,model}` 로 올린다. 화면이 형제 화면을 import 하는 것은 lint 가 막는다.
 - 서버 연결 전 예시 행은 예시임이 드러나는 값을 쓴다.
 - route 는 [router 형태](../route-composition/SKILL.md#형태)를 따른다. 목록 route 를 저장소의 검색 계약 e2e 경로 배열에 등록하는 규칙이 있으면 `contracts:check` 가 본다.
 - 테스트는 파일 수가 아니라 **닫아야 할 동작**으로 고른다: URL 계약(키 집합·기본값·canonical·불량 값 복구·요청 mapper)과 화면 동작(진입 상태·검색·초기화·정렬·페이지·선택·액션의 거절/취소/확정). 소유자 옆에 두고, 화면 테스트는 route 처럼 커밋된 검색을 되돌려 주는 harness 로 렌더한다.

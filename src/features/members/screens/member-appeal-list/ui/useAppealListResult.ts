@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import type { AppealRow } from '@/features/members/model/member-records';
 import { listViewControls } from '@/shared/lib/list-view';
-import { usePageRowSelection } from '@/shared/model/use-page-row-selection';
+import { usePageRowSelection } from '@/shared/hooks/use-page-row-selection';
 import type { AppealListView } from '../model/appeal-list-search';
 import { appealListColumns } from './appeal-list-columns';
 

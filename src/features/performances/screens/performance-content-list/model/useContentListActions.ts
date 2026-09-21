@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { bulkChangeContentsMutation } from '@/features/performances/api/mutations';
 import type { ContentBulkChangeRequest, ContentUsageStatus } from '@/features/performances/model/content';
 import { useLocale } from '@/shared/i18n/locale-context';
-import { useSelectionGate } from '@/shared/model/use-selection-gate';
+import { useSelectionGate } from '@/shared/hooks/use-selection-gate';
 
 /**
  * 결과 toolbar 우측의 유일한 액션: `선택 ▾`(cascade `사용 상태 > 사용 / 사용안함`) + `변경`.

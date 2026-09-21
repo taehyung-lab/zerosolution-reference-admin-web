@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { MemberBulkChangeControl } from '@/features/members/mechanics/bulk-change/ui/MemberBulkChangeControl';
+import { MemberBulkChangeControl } from '@/features/members/shared/bulk-change/ui/MemberBulkChangeControl';
 import { memberRestrictions, type MemberMessageChannel } from '@/features/members/model/member';
 import { SelectionAlert } from '@/shared/ui/dialog/SelectionAlert';
 import { useConfirmation } from '@/shared/ui/dialog/useConfirmation';

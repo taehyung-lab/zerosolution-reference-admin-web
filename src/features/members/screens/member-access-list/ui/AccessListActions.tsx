@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { MemberDownloadControl } from '@/features/members/mechanics/download/ui/MemberDownloadControl';
+import { MemberDownloadControl } from '@/features/members/shared/download/ui/MemberDownloadControl';
 import { SelectionAlert } from '@/shared/ui/dialog/SelectionAlert';
 import { Button } from '@/shared/ui/primitives/Button';
 import type { AccessListView } from '../model/access-list-search';

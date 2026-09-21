@@ -1,5 +1,5 @@
 import type { SubmitEvent } from 'react';
-import { useListFilterDraft } from '@/shared/model/use-list-filter-draft';
+import { useListFilterDraft } from '@/shared/hooks/use-list-filter-draft';
 import { managerKeywordFields } from '@/features/managers/model/manager';
 import { managerListSearch, type ManagerListView } from './manager-list-search';
 

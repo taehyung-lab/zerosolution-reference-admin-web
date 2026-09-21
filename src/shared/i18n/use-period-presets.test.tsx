@@ -2,7 +2,7 @@ import { renderHook } from '@testing-library/react';
 import { I18nextProvider } from 'react-i18next';
 import type { ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
-import { standardPeriodPresetValues } from '@/shared/model/list-options';
+import { standardPeriodPresetValues } from '@/shared/lib/list-options';
 import { i18n } from './i18n';
 import { usePeriodPresetLabels, usePeriodPresets } from './use-period-presets';
 

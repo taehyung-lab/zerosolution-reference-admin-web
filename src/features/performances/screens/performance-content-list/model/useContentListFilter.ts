@@ -1,6 +1,6 @@
 import type { SubmitEvent } from 'react';
 import { contentKeywordFields } from '@/features/performances/model/content';
-import { useListFilterDraft } from '@/shared/model/use-list-filter-draft';
+import { useListFilterDraft } from '@/shared/hooks/use-list-filter-draft';
 import { contentListSearch, type ContentListView } from './content-list-search';
 
 /**

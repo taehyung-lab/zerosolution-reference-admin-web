@@ -28,13 +28,13 @@ Every list, detail, and form in every domain classifies its responsibilities the
 - A Screen is the composition entry. It receives the URL (or ID) and navigation callbacks as props, calls the role hooks in order, and wires their results into the role components. It holds no state of its own.
 - State lives with its owner: `model/` hooks own URL transitions, drafts, query facts, and action policy; `ui/` hooks own only what the renderer consumes (columns, view controls, selection). Pure render-local formatting stays with its renderer.
 - Variants of one screen (URL tabs, fixed filters) are one Screen plus a typed `definition` in `model/`. If state transitions, selection, actions, or query gates differ, it is another screen.
-- A piece two screens of one domain share with identical meaning, transitions, and failure lifecycle moves to `mechanics/{capability}/{ui,model}` ([folder-structure](../source-structure/SKILL.md)). Screens never import sibling screens; ESLint enforces it.
+- A piece two screens of one domain share with identical meaning, transitions, and failure lifecycle moves to the domain's `shared/{capability}/{ui,model}` ([folder-structure](../source-structure/SKILL.md)). Screens never import sibling screens; ESLint enforces it.
 - Dialog owners (confirmation, selection alert, action form) render inside the component that triggers them and never inside a `searched`/`ready` branch, so a refetch cannot unmount an open dialog.
 - Cross-feature wiring (another domain's dialog on this screen) happens in the route ([router](../route-composition/SKILL.md#thin-route)).
 
 ## Placement and naming
 
-파일 생성·이동과 배치 판단은 [`source-structure.md`](../source-structure/SKILL.md)가 소유한다. 화면은 `screens/{entity}-list|detail|form`, 도메인 내부 재사용 기능은 `mechanics/{capability}` 아래 필요한 목적별 segment 를 둔다. 표시 조립 훅은 ui, 실행·상태·업무 정책은 model 에 둔다. 타입만 공유하더라도 화면이나 UI 를 역참조하지 않고 실제 공통 값의 소유 위치(`model/`)를 바로잡는다.
+파일 생성·이동과 배치 판단은 [`source-structure.md`](../source-structure/SKILL.md)가 소유한다. 화면은 `screens/{entity}-list|detail|form`, 도메인 내부 재사용 기능은 그 도메인의 `shared/{capability}` 아래 필요한 목적별 segment 를 둔다. 표시 조립 훅은 ui, 실행·상태·업무 정책은 model 에 둔다. 타입만 공유하더라도 화면이나 UI 를 역참조하지 않고 실제 공통 값의 소유 위치(`model/`)를 바로잡는다.
 
 ## Extending an existing screen
 

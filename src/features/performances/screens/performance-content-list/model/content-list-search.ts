@@ -14,7 +14,7 @@ import {
   recoverArrayItems,
 } from '@/shared/lib/search-codecs';
 import { defineSearchFields } from '@/shared/lib/search-fields';
-import { standardPageSizeOptions } from '@/shared/model/list-options';
+import { standardPageSizeOptions } from '@/shared/lib/list-options';
 
 type PageSize = (typeof standardPageSizeOptions)[number];
 

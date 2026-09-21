@@ -23,7 +23,7 @@ primitive 만 Radix 를 import 한다. 문구는 props 로 받고, `shared` name
 
 | Request | Read |
 | --- | --- |
-| What a shared unit takes, owns, and refuses — any `shared/ui`, `shared/model`, `shared/lib`, or `src/api` unit by name | the unit's row in [references/catalog.md](references/catalog.md) (`Primitives`, `Form`, `Filter`, `List`, `Detail`, `Dialog`, `Feedback`, `Model`, `Lib`, `API`) |
+| What a shared unit takes, owns, and refuses — any `shared/ui`, `shared/hooks`, `shared/lib`, or `src/api` unit by name | the unit's row in [references/catalog.md](references/catalog.md) (`Primitives`, `Form`, `Filter`, `List`, `Detail`, `Dialog`, `Feedback`, `Hooks`, `Lib`, `API`) |
 | Promoting, confirming, narrowing, demoting, or deleting a shared unit; a caller that needs a new prop | `source-structure` 의 [승격 심사](../source-structure/references/promotion.md) |
 | Radix/Tailwind primitive internals, focus, keyboard, tokens, which selection control, React Compiler, TanStack Table v9 | [references/primitives-and-tokens.md](references/primitives-and-tokens.md) |
 | Translation namespaces, adding a key, product-generic copy, locale parity | [references/i18n.md](references/i18n.md) |
@@ -37,7 +37,7 @@ File creation, relocation and feature-local reuse placement follow `source-struc
 1. `shared/ui/primitives`: source-owned Radix primitive plus Tailwind tokens and accessibility behavior.
 2. `shared/ui/{dialog,feedback,filter,list,detail,layout}`: domain-neutral composition proven by real screens, grouped by the render contract it owns.
 3. `shared/ui/form`: thin TanStack Form adapters around primitives and `FormField`, plus the save lifecycle (`useSaveForm`).
-4. `shared/model` (state lifetime and policy values), `shared/lib` (pure calculation), `src/api` (query/mutation projection above transport).
+4. `shared/hooks` (state lifetime), `shared/lib` (pure calculation and policy values), `src/api` (query/mutation projection above transport).
 5. `features/*/**`: columns, status UI, forms, permissions, workflow dialogs, and all domain-aware components.
 
 Only `shared/ui/primitives` imports Radix directly. Shared UI must not accept a resource name, server DTO, query result, permission code, or mode switch that selects domain behavior. A pattern may read the `shared` translation namespace only when confirmed product-generic copy is part of its own interaction contract; domain nouns, feature labels, and workflow-specific wording remain caller-owned.

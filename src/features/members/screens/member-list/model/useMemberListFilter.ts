@@ -1,6 +1,6 @@
 import type { SubmitEvent } from 'react';
 import { memberKeywordFields } from '@/features/members/model/member';
-import { useListFilterDraft } from '@/shared/model/use-list-filter-draft';
+import { useListFilterDraft } from '@/shared/hooks/use-list-filter-draft';
 import { memberListSearch, type MemberListView } from './member-list-search';
 
 /**

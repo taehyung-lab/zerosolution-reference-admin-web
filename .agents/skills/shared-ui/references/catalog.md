@@ -120,9 +120,9 @@
 | `IncidentBoundary`(`src/app`) | — | `forbidden` 의 유일한 표면(`AccessDeniedPage` modal cover). `origin: 'route-loader'` 로 재발행된 incident, 관찰 중인 query 의 거절, 모든 mutation 거절에서만 덮는다. 확인 → 뒤로 / 홈 | 세션 타이머(미구현, 제품이 정한다) |
 | `resolveErrorOutcome(context, kind)`(`src/api/error-outcome.ts`) | 요청 자리와 kind | `'none' \| 'feature' \| 'incident' \| 'root'`. `pre-auth` 는 feature, `route-loader` 의 401/403 은 incident, `prefetch`+`forbidden` 은 none. `isFeatureError(error)` 가 inline 표시의 guard | 표시 자체 |
 
-## Model
+## Hooks
 
-`shared/model`. 렌더하지 않고 상태 수명·전이·허용 값을 소유한다.
+`shared/hooks`. 렌더하지 않고 상태 수명·전이를 소유한다. 정책 값(`standardPageSizeOptions`·`standardPeriodPresetValues`)은 `shared/lib/list-options` 에 있고 아래 표에 함께 적는다.
 
 | 단위 | caller 가 넘기는 것 | 소유 | 소유하지 않음 |
 | --- | --- | --- | --- |

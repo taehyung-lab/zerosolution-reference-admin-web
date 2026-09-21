@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { bulkChangeManagersMutation } from '@/features/managers/api/mutations';
 import type { ManagerBulkChangeRequest, ManagerRow } from '@/features/managers/model/manager';
 import { useLocale } from '@/shared/i18n/locale-context';
-import { useSelectionGate } from '@/shared/model/use-selection-gate';
+import { useSelectionGate } from '@/shared/hooks/use-selection-gate';
 
 /**
  * 결과 toolbar 의 `변경 항목 ▾ + 변경` 일괄변경의 **선택 전제와 실행**을 소유한다. 확인창의 상태와 렌더는

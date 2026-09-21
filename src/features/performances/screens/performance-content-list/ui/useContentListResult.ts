@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import type { ContentRow } from '@/features/performances/model/content';
 import { listViewControls } from '@/shared/lib/list-view';
-import { usePageRowSelection } from '@/shared/model/use-page-row-selection';
+import { usePageRowSelection } from '@/shared/hooks/use-page-row-selection';
 import type { ContentListView } from '../model/content-list-search';
 import { contentListColumns } from './content-list-columns';
 

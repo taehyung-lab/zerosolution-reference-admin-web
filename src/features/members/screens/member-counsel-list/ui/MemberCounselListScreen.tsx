@@ -10,7 +10,7 @@ import { CounselListActions } from './CounselListActions';
 import { CounselListFilters } from './CounselListFilters';
 import { useCounselListResult } from './useCounselListResult';
 import { PagedListResult } from '@/shared/ui/list/PagedListResult';
-import { standardPageSizeOptions } from '@/shared/model/list-options';
+import { standardPageSizeOptions } from '@/shared/lib/list-options';
 import { counselSortKeys } from '@/features/members/model/member-records';
 
 /**

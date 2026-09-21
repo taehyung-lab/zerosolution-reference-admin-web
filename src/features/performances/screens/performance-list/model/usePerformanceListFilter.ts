@@ -1,5 +1,5 @@
 import type { SubmitEvent } from 'react';
-import { useListFilterDraft } from '@/shared/model/use-list-filter-draft';
+import { useListFilterDraft } from '@/shared/hooks/use-list-filter-draft';
 import { performanceKeywordFields } from '@/features/performances/model/performance';
 import { performanceListSearch, type PerformanceListView } from './performance-list-search';
 

@@ -1,6 +1,6 @@
 import type { SubmitEvent } from 'react';
 import { counselKeywordFields } from '@/features/members/model/member-records';
-import { useListFilterDraft } from '@/shared/model/use-list-filter-draft';
+import { useListFilterDraft } from '@/shared/hooks/use-list-filter-draft';
 import { counselListSearch, type CounselListView } from './counsel-list-search';
 
 /** 검색 영역의 입력 초안과 두 커밋. 진입 즉시 조회하는 목록이라 초기화는 기본값 URL 로 돌아간다. */

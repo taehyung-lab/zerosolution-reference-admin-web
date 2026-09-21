@@ -3,7 +3,7 @@ import { formatMemberInstant } from '@/features/members/lib/format-member-instan
 import type { WithdrawnMemberRow, WithdrawnSortKey } from '@/features/members/model/member-records';
 import { headerSortDirection } from '@/shared/lib/list-sort';
 import { maskEmail } from '@/shared/lib/mask-contact';
-import type { PageRowSelection } from '@/shared/model/use-page-row-selection';
+import type { PageRowSelection } from '@/shared/hooks/use-page-row-selection';
 import type { DataTableProps } from '@/shared/ui/list/DataTable';
 import { selectionColumn } from '@/shared/ui/list/selection-column';
 import type { WithdrawnListView } from '../model/withdrawn-list-search';

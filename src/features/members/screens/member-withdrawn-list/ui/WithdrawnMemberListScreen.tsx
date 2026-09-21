@@ -7,7 +7,7 @@ import { withdrawnListSearch, type WithdrawnListSearch, type WithdrawnListView }
 import { useWithdrawnListResult } from './useWithdrawnListResult';
 import { WithdrawnListFilters } from './WithdrawnListFilters';
 import { PagedListResult } from '@/shared/ui/list/PagedListResult';
-import { standardPageSizeOptions } from '@/shared/model/list-options';
+import { standardPageSizeOptions } from '@/shared/lib/list-options';
 import { withdrawnSortKeys } from '@/features/members/model/member-records';
 
 /**

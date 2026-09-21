@@ -8,7 +8,7 @@ import { DormantListActions } from './DormantListActions';
 import { DormantListFilters } from './DormantListFilters';
 import { useDormantListResult } from './useDormantListResult';
 import { PagedListResult } from '@/shared/ui/list/PagedListResult';
-import { standardPageSizeOptions } from '@/shared/model/list-options';
+import { standardPageSizeOptions } from '@/shared/lib/list-options';
 import { dormantSortKeys } from '@/features/members/model/member-records';
 
 /**

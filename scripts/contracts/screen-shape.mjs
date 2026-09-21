@@ -34,7 +34,7 @@ function screenDirs(root) {
   if (!existsSync(features)) return []
   const dirs = []
   for (const domain of readdirSync(features)) {
-    for (const kind of ['screens', 'mechanics']) {
+    for (const kind of ['screens', 'shared']) {
       const parent = join(features, domain, kind)
       if (!existsSync(parent)) continue
       for (const name of readdirSync(parent)) {

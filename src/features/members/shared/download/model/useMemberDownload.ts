@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { MemberDownloadRequest } from '@/features/members/model/member';
 import { errorMessageKey, errorTraceOf } from '@/shared/lib/error-copy';
-import type { useSelectionGate } from '@/shared/model/use-selection-gate';
+import type { useSelectionGate } from '@/shared/hooks/use-selection-gate';
 
 export type MemberDownloadScope = MemberDownloadRequest<unknown>['scope'];
 

@@ -8,8 +8,8 @@ import {
   type MemberActivitySearch,
   type MemberActivityTab,
 } from '@/features/members/model/member-activity';
-import { usePageRowSelection } from '@/shared/model/use-page-row-selection';
-import { useSelectionGate } from '@/shared/model/use-selection-gate';
+import { usePageRowSelection } from '@/shared/hooks/use-page-row-selection';
+import { useSelectionGate } from '@/shared/hooks/use-selection-gate';
 import { SelectionAlert } from '@/shared/ui/dialog/SelectionAlert';
 import { useConfirmation } from '@/shared/ui/dialog/useConfirmation';
 import { ListResult } from '@/shared/ui/list/ListResult';

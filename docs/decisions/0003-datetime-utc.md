@@ -56,7 +56,7 @@ endDateTime request:     2026-08-28T14:59:59.999Z
 | 대상 | 소유자 |
 | --- | --- |
 | request UTC 상수, 브라우저 zone 확인, 안전한 표시, day-boundary 변환 | `src/shared/lib/datetime.ts` |
-| 기간 preset/custom draft와 UTC range 조립 | `src/shared/model/use-period-draft.ts` |
+| 기간 preset/custom draft와 UTC range 조립 | `src/shared/hooks/use-period-draft.ts` |
 | 확정 closed instant pair 정규화 | `src/shared/lib/search.ts`의 `normalizeClosedInstantRange` |
 | 표시 셀과 기간 필터 조립 | 각 feature |
 | API `timezone` 파라미터 전달 | 신규 서버 계약이 확인된 feature |

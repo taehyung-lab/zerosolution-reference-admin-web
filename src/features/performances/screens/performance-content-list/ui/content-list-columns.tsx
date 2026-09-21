@@ -2,7 +2,7 @@ import type { TFunction } from 'i18next';
 import type { ContentRow, ContentSortKey } from '@/features/performances/model/content';
 import { displayTimeZone, formatDate, formatTimeInTimeZone } from '@/shared/lib/datetime';
 import { headerSortDirection } from '@/shared/lib/list-sort';
-import type { PageRowSelection } from '@/shared/model/use-page-row-selection';
+import type { PageRowSelection } from '@/shared/hooks/use-page-row-selection';
 import type { DataTableProps } from '@/shared/ui/list/DataTable';
 import { selectionColumn } from '@/shared/ui/list/selection-column';
 import type { ContentListView } from '../model/content-list-search';

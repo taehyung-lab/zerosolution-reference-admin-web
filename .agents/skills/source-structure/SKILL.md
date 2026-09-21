@@ -23,11 +23,11 @@ src/
       model/                   # 도메인 공통 값·타입·순수 규칙
       fixtures/                # 서버 연결 전 예시 데이터 (예시임이 드러나는 값)
       i18n/locales/{locale}/   # 이 도메인의 번역 namespace
-      mechanics/{capability}/  # 같은 도메인의 두 화면이 같은 의미·전이·실패로 쓰는 조각
+      shared/{capability}/     # 이 도메인의 두 화면 이상이 같은 의미·전이·실패로 나눠 쓰는 조각(도메인을 안다)
       screens/{entity}-{role}/ # 화면 하나. ui/ 와 model/ 만 만든다
   shared/                      # 도메인·서버 계약을 모르는 공용 코드
     ui/{family}/               # 렌더 계약
-    model/                     # 렌더하지 않고 상태 수명·전이·정책 값을 소유
+    hooks/                     # 렌더하지 않고 상태 수명·전이를 소유하는 공용 훅
     lib/                       # 상태도 렌더도 없는 결정적 계산
   api/                         # 공용 transport, 공용 query 투영, 교체 가능한 generated
   test/                        # 테스트 setup, 여러 화면을 조립하는 workflow 테스트
@@ -60,20 +60,23 @@ leaf 는 평면 파일, leaf 가 둘 이상인 segment 는 디렉터리 + `index
 | 서버 호출·Query 키·options, mutation options, ID·locale 만 묶는 조회 훅, 선택지 투영 훅 | `domain/api` |
 | 도메인 공통 값·데이터 타입·업무 규칙 | `domain/model` |
 | 상태·업무 전이를 소유하지 않는 순수 도우미 | 가장 가까운 소유자의 `lib` |
-| 도메인을 모르고 렌더하지 않으며 상태 수명·전이를 소유하는 재사용 단위 | `shared/model` |
+| 도메인을 모르고 렌더하지 않으며 상태 수명·전이를 소유하는 재사용 훅 | `shared/hooks` |
+| 도메인을 모르는 정책 값·상수(보기 옵션·기간 preset 값) | `shared/lib` |
 | URL 선언·검색 초안·조회 사실·액션 정책·폼 schema·기본값·요청 mapper | `screens/{entity}-{role}/model` |
 | Screen·Filters·Result·Actions·컬럼·렌더와 결합된 훅 | `screens/{entity}-{role}/ui` |
-| 같은 도메인의 **두 화면**이 같은 의미·상태·실패 계약으로 쓰는 기능 | `mechanics/{capability}/{ui,model}` |
+| 같은 도메인의 **두 화면**이 같은 의미·상태·실패 계약으로 쓰는 기능 | `shared/{capability}/{ui,model}` (도메인 shared) |
 
-확장자로 분류하지 않는다. `use` 접두사도 판정 근거가 아니다 — 렌더 계약을 소유하면 `ui`,
-상태 수명·전이나 허용 값을 소유하면 `model`, 둘 다 아니면 `lib` 이다.
+`ui` 와 `model` 은 이렇게 가른다. **화면에 그려지는 것, 또는 그리는 데 붙어 있는 훅**(Screen·Filters·Actions·
+컬럼·`use{Entity}ListResult` 처럼 선택·보기 컨트롤·컬럼을 묶는 훅)은 `ui`. **URL·조회·폼 schema·기본값·요청
+mapper·액션 정책**(`{entity}-list-search`·`use{Entity}ListData`·`use{Entity}ListFilter`·`{entity}-form-schema`)은
+`model`. 확장자와 `use` 접두사는 근거가 아니다 — `.ts` 훅이 `ui` 에 있을 수 있다. 어느 쪽도 아니면 `lib`.
 
-**두 화면이 같은 조립을 그린다면 읽기 전용이어도 `mechanics` 다.** 화면이 형제 화면을 import 하는
+**두 화면이 같은 조립을 그린다면 읽기 전용이어도 도메인 `shared` 다.** 화면이 형제 화면을 import 하는
 것은 lint 가 막으므로, 공유가 실제로 필요하면 소유자를 옮기는 것이 유일한 경로다. 다만 소비자가
 둘이라는 숫자만으로 올리지 않는다 — 의미·상태·실패가 같은지 먼저 확인하고, 달라지거나 단일
 소비자로 좁아지면 되돌린다.
 
-`mechanics` 는 소유자가 애매한 파일을 넣는 곳이 아니다. 도메인에 종속된 재사용 기능은 `shared` 로
+도메인 `shared` 는 소유자가 애매한 파일을 넣는 곳이 아니다. 도메인에 종속된 재사용 기능은 전역 `src/shared` 로
 올리지 않는다.
 
 ## 의존 방향
@@ -81,7 +84,7 @@ leaf 는 평면 파일, leaf 가 둘 이상인 segment 는 디렉터리 + `index
 - `routes/` 는 여러 feature 를 조립할 수 있다. feature 는 다른 feature 의 UI·model·훅을 import 하지
   않는다.
 - 화면은 형제 화면을 import 하지 않는다.
-- `shared/lib` 은 React 를 import 하지 않고 훅을 export 하지 않는다. `shared/model` 은 JSX 를 갖지
+- `shared/lib` 은 React 를 import 하지 않고 훅을 export 하지 않는다. `shared/hooks` 은 JSX 를 갖지
   않는다.
 - component 는 generated operation 을 직접 부르지 않고 query key 를 다시 만들지 않는다.
 - 훅 하나는 상태·동작 소유자 하나를 갖는다. query·mutation·form·dialog·toast·navigation·permission 을
@@ -97,7 +100,7 @@ leaf 는 평면 파일, leaf 가 둘 이상인 segment 는 디렉터리 + `index
 
 ## Boundaries
 
-- `features/{domain}` owns domain workflows. `api/` owns query/mutation options, keys and API-only hooks; `model/` owns domain values, types and pure rules; `screens/{entity}-{role}/` owns one screen; `mechanics/` owns pieces two screens of the domain share.
+- `features/{domain}` owns domain workflows. `api/` owns query/mutation options, keys and API-only hooks; `model/` owns domain values, types and pure rules; `screens/{entity}-{role}/` owns one screen; `shared/` (domain-local) owns pieces two screens of the domain share; it knows the domain, unlike `src/shared`.
 - There is no `pages` layer. Features do not import another feature's UI, model, or hooks; a route composes multiple screens. Cross-feature API leaf exceptions are limited to the cases defined by [`server-state.md`](../server-state/SKILL.md).
 - 제품 enum 의 집합·의미·필수·기본값은 원장, 내부 철자는 feature `model/` 의 한 선언이 소유한다. 화면은 재선언하지 않는다. 서버가 미확정이어도 내부 선언은 확정할 수 있다. raw shape·fixture 공유는 [query-cache](../server-state/SKILL.md#서버-연결-전후의-책임), 실제 wire 대응은 확인된 서버 계약이 소유한다.
 - Components do not call generated operations or reconstruct query keys.

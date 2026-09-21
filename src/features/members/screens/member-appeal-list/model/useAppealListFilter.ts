@@ -1,6 +1,6 @@
 import type { SubmitEvent } from 'react';
 import { memberKeywordFields } from '@/features/members/model/member';
-import { useListFilterDraft } from '@/shared/model/use-list-filter-draft';
+import { useListFilterDraft } from '@/shared/hooks/use-list-filter-draft';
 import { appealListSearch, type AppealListView } from './appeal-list-search';
 
 /** 검색 영역의 입력 초안과 두 커밋. 진입 즉시 조회하는 목록이라 초기화는 기본값 URL 로 돌아간다. */

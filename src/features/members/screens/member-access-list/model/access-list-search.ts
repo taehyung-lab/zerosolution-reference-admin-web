@@ -4,7 +4,7 @@ import { accessPaths, accessSortKeys, type AccessListRequest } from '@/features/
 import { nonEmptyArray } from '@/shared/lib/search';
 import { optionalInstant, optionalPositiveInteger, recoverArrayItems } from '@/shared/lib/search-codecs';
 import { defineGatedSearchFields } from '@/shared/lib/search-fields';
-import { standardPageSizeOptions } from '@/shared/model/list-options';
+import { standardPageSizeOptions } from '@/shared/lib/list-options';
 
 type PageSize = (typeof standardPageSizeOptions)[number];
 

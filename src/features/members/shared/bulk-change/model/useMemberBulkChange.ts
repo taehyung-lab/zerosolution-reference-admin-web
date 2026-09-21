@@ -5,7 +5,7 @@ import {
   type MemberBulkChange,
   type MemberBulkChangeRequest,
 } from '@/features/members/model/member';
-import type { useSelectionGate } from '@/shared/model/use-selection-gate';
+import type { useSelectionGate } from '@/shared/hooks/use-selection-gate';
 
 /**
  * `변경 항목 ▾(일반회원 | 불량회원 ▸ 활동제한) + 변경` 일괄변경의 종속 값과 선택 전제. 두 목록 화면이 같은

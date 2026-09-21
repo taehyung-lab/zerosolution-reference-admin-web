@@ -9,7 +9,7 @@ import { DetailStateBoundary } from '@/shared/ui/detail/DetailStateBoundary';
 import { UpdateHistory } from '@/shared/ui/detail/UpdateHistory';
 import { PageHeader } from '@/shared/ui/layout/PageHeader';
 import { SectionCard } from '@/shared/ui/layout/SectionCard';
-import { PerformanceBasicSection } from '@/features/performances/mechanics/basic-info/ui/PerformanceBasicSection';
+import { PerformanceBasicSection } from '@/features/performances/shared/basic-info/ui/PerformanceBasicSection';
 import { toPerformanceHistoryEntries } from '../model/performance-history';
 import { PerformanceAdmissionSection } from './PerformanceAdmissionSection';
 

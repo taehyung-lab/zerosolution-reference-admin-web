@@ -8,7 +8,7 @@ import { AppealListActions } from './AppealListActions';
 import { AppealListFilters } from './AppealListFilters';
 import { useAppealListResult } from './useAppealListResult';
 import { PagedListResult } from '@/shared/ui/list/PagedListResult';
-import { standardPageSizeOptions } from '@/shared/model/list-options';
+import { standardPageSizeOptions } from '@/shared/lib/list-options';
 import { appealSortKeys } from '@/features/members/model/member-records';
 
 /** 4.7 불량회원 소명신청 목록. 진입 즉시 조회한다. 행 클릭은 소명신청 조회로, SMS·이메일은 route 가 조립한다. */

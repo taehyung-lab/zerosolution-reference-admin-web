@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { MemberRestrictionFilter } from '@/features/members/mechanics/filters/ui/MemberFilterFields';
+import { MemberRestrictionFilter } from '@/features/members/shared/filters/ui/MemberFilterFields';
 import { memberKeywordFields } from '@/features/members/model/member';
 import {
   appealPeriodTypes,
@@ -11,7 +11,7 @@ import {
   type AppealStatus,
 } from '@/features/members/model/member-records';
 import { usePeriodPresets } from '@/shared/i18n/use-period-presets';
-import { standardPeriodPresetValues } from '@/shared/model/list-options';
+import { standardPeriodPresetValues } from '@/shared/lib/list-options';
 import { FilterField } from '@/shared/ui/filter/FilterField';
 import { FilterPanel } from '@/shared/ui/filter/FilterPanel';
 import { KeywordFilterField } from '@/shared/ui/filter/KeywordFilterField';

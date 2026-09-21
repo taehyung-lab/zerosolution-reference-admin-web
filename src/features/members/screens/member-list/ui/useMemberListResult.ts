@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import type { MemberProfile } from '@/features/members/model/member';
 import { listViewControls } from '@/shared/lib/list-view';
-import { usePageRowSelection } from '@/shared/model/use-page-row-selection';
+import { usePageRowSelection } from '@/shared/hooks/use-page-row-selection';
 import type { MemberListDefinition } from '../model/member-list-definition';
 import type { MemberListView } from '../model/member-list-search';
 import { memberListColumns } from './member-list-columns';

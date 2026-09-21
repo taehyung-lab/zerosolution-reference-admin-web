@@ -13,7 +13,7 @@ import {
 } from '@/features/ticketing/model/printer';
 import { useLocale } from '@/shared/i18n/locale-context';
 import { errorMessageKey, errorTraceOf } from '@/shared/lib/error-copy';
-import { useSelectionGate } from '@/shared/model/use-selection-gate';
+import { useSelectionGate } from '@/shared/hooks/use-selection-gate';
 
 
 /**

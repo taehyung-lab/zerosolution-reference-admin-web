@@ -8,16 +8,16 @@
 
 ```text
 app / routes → features → shared / api
-screens → mechanics → domain api / model / lib / config
+screens → domain shared → domain api / model / lib / config
 screens → domain api / model / lib / config
 ui → 해당 소유자의 model / lib / config
 ```
 
-- domain api/model/lib/config/fixtures는 screens나 mechanics 내부를 역참조하지 않는다.
-- mechanics는 screens를 참조하지 않는다. 서로 다른 screens의 내부 파일을 import하지 않는다.
+- domain api/model/lib/config/fixtures는 screens나 domain shared 내부를 역참조하지 않는다.
+- domain shared는 screens를 참조하지 않는다. 서로 다른 screens의 내부 파일을 import하지 않는다.
 - model/lib/config는 feature ui를 역참조하지 않는다. UI가 정의한 데이터 타입을 API/model도 쓰면 그 타입의
   의미에 맞는 model 또는 API 계약으로 옮긴다. 렌더 전용 props까지 옮기지는 않는다.
-- domain model은 React와 실행 훅을 모른다. screens/mechanics model은 React·Query를 사용할 수 있다.
+- domain model은 React와 실행 훅을 모른다. screens/domain-shared model은 React·Query를 사용할 수 있다.
 - domain api는 옵션 선언과 API-only 훅을 소유한다. URL·폼·선택·확인·navigation·mutation 뒤 캐시
   후속 처리는 workflow가 소유한다. lib/config는 React·Query 실행 훅을 소유하지 않는다.
 - fixture는 예시 데이터의 소유자다. 화면의 URL schema나 UI 타입에 기대지 않고 공통 입력·값을 소비한다.
@@ -35,7 +35,7 @@ API 입력 타입과 URL 정규화는 소유가 다르다. 공통 입력 타입�
 소유권, import 방향을 참고했다. 그 구조를 그대로 복제한 것은 아니다.
 
 - **채택:** 업무 응집, 목적별 분리, 실제 재사용 확인 뒤 공통 소유자로 이동, 의존성 검사.
-- **수정:** pages/features/entities 대신 현재 domain/screens/mechanics를 유지한다. API 계약은
+- **수정:** pages/features/entities 대신 현재 domain/screens/domain-shared를 유지한다. API 계약은
   domain/api 한 위치에서 찾고 workflow별 상태는 screens/model에 둔다.
 - **제외:** 전체 FSD 레이어 도입, 모든 폴더의 사전 생성, 단순 함수까지 lib로 분산하는 규칙.
 

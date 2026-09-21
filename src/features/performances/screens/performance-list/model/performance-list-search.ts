@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { standardPageSizeOptions } from '@/shared/model/list-options';
+import { standardPageSizeOptions } from '@/shared/lib/list-options';
 import { defineSearchFields } from '@/shared/lib/search-fields';
 import {
   optionalInstant,

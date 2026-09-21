@@ -9,7 +9,7 @@ import { MemberListActions } from './MemberListActions';
 import { MemberListFilters } from './MemberListFilters';
 import { useMemberListResult } from './useMemberListResult';
 import { PagedListResult } from '@/shared/ui/list/PagedListResult';
-import { standardPageSizeOptions } from '@/shared/model/list-options';
+import { standardPageSizeOptions } from '@/shared/lib/list-options';
 import { memberSortKeys } from '@/features/members/model/member';
 
 /**

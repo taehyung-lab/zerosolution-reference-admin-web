@@ -9,7 +9,7 @@ import {
 } from '@/features/performances/model/content';
 import { performanceTicketKinds, performanceTypes } from '@/features/performances/model/performance';
 import { usePeriodPresets } from '@/shared/i18n/use-period-presets';
-import { standardPeriodPresetValues } from '@/shared/model/list-options';
+import { standardPeriodPresetValues } from '@/shared/lib/list-options';
 import { AsyncFieldBoundary } from '@/shared/ui/feedback/AsyncFieldBoundary';
 import { FilterField } from '@/shared/ui/filter/FilterField';
 import { FilterPanel } from '@/shared/ui/filter/FilterPanel';

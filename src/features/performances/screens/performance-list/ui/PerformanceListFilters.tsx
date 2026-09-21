@@ -8,7 +8,7 @@ import {
   performanceTypes,
   type PerformancePeriodType,
 } from '@/features/performances/model/performance';
-import { standardPeriodPresetValues } from '@/shared/model/list-options';
+import { standardPeriodPresetValues } from '@/shared/lib/list-options';
 import { usePeriodPresets } from '@/shared/i18n/use-period-presets';
 import { AsyncFieldBoundary } from '@/shared/ui/feedback/AsyncFieldBoundary';
 import { FilterField } from '@/shared/ui/filter/FilterField';

@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { deleteMemberActivityMutation } from '@/features/members/api/mutations';
 import { useWithdrawnDetail } from '@/features/members/api/useWithdrawnDetail';
 import { formatMemberInstant } from '@/features/members/lib/format-member-instant';
-import { MemberActivitySection } from '@/features/members/mechanics/activity/ui/MemberActivitySection';
+import { MemberActivitySection } from '@/features/members/shared/activity/ui/MemberActivitySection';
 import type { WithdrawnMemberRow } from '@/features/members/model/member-records';
 import { useLocale } from '@/shared/i18n/locale-context';
 import { maskEmail } from '@/shared/lib/mask-contact';

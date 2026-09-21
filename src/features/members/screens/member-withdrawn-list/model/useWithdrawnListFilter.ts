@@ -1,5 +1,5 @@
 import type { SubmitEvent } from 'react';
-import { useListFilterDraft } from '@/shared/model/use-list-filter-draft';
+import { useListFilterDraft } from '@/shared/hooks/use-list-filter-draft';
 import { withdrawnListSearch, type WithdrawnListView } from './withdrawn-list-search';
 
 /** 검색 영역의 입력 초안과 두 커밋(검색·초기화). 검색어 대상은 이메일 하나다. */

@@ -319,7 +319,7 @@ describe('plan / stage / apply against a target directory', () => {
       'list-query',
       'list-view',
     ])
-    expect(files.has('src/shared/model/use-draft-commit.ts')).toBe(true)
+    expect(files.has('src/shared/hooks/use-draft-commit.ts')).toBe(true)
     expect(files.has('src/shared/lib/search-fields.ts')).toBe(true)
     expect(files.has('src/api/list-query.ts')).toBe(true)
     expect(files.has('src/shared/lib/list-view.ts')).toBe(true)

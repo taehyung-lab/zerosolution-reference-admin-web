@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import type { useSelectionGate } from '@/shared/model/use-selection-gate';
+import type { useSelectionGate } from '@/shared/hooks/use-selection-gate';
 import { AlertDialog } from './AlertDialog';
 
 /** The one rejection alert of every selection-gated action. The gate owns the message; this renders it. */
