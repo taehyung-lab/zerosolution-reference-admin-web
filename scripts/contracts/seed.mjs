@@ -270,7 +270,7 @@ export const SEED_BUNDLES = [
       location(
         '.agents/skills/api-wire/SKILL.md',
         'Envelope and errors',
-        '`ApiError.kind` is the closed 12-kind taxonomy',
+      'Normalize only failure meanings confirmed by the target wire contract',
       ),
       location(
         '.agents/skills/auth-session/SKILL.md',

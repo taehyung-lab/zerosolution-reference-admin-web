@@ -25,14 +25,16 @@ When the generator types an endpoint with the envelope itself (`{ header?, data?
 
 Canonicalize supported failure `data` shapes into one field-error array. Keep server `message` for redacted developer logs only; UI copy is chosen from confirmed `code` or `validCode` through i18n.
 
-`ApiError.kind` is the closed 12-kind taxonomy: `network`, `timeout`, `cancelled`, `business`, `unauthorized`, `forbidden`, `validation`, `not-found`, `conflict`, `rate-limited`, `server-error`, and `contract`. Preserve status, business code, `x-request-id`, and canonical field errors when present. Business-code overrides occur in this boundary only; unconfirmed business codes stay `business`.
+Normalize only failure meanings confirmed by the target wire contract. Consumers receive a stable semantic kind plus
+available status, declared business code, request identifier, and canonical field errors; the exact kind union and field
+names are current code/type API, not a portable list. Unconfirmed application codes remain an unclassified business
+failure rather than being guessed into auth, validation, or not-found.
 
 Kind does not choose a UI location. The operation context owns the result: cancelled work the user left has no surface; recoverable feature operations render in place; terminal auth/access is an app incident; render, route-loader, unhandled fatal, and route not-found belong to root. A recoverable `contract` failure stays in place, while a render/loader contract failure belongs to root.
 
-The four outcomes `none | feature | incident | root` are decided only in `src/api/error-outcome.ts` (`resolveErrorOutcome(context, kind)`, `isFeatureError(error)`); the UI-side placement of each outcome is [공용 UI 의 Feedback](../shared-ui/references/catalog.md#feedback).
-Feature consumers use its context-free feature predicate instead of repeating cancelled/unauthorized/forbidden
-comparisons. Context remains only for real differences such as observerless prefetch, pre-auth failures that end no
-session, and root failures.
+One executable policy maps operation context and semantic failure to no surface, feature surface, app incident, or root
+surface. Feature consumers reuse it instead of repeating kind comparisons. Exact function names remain in code/types;
+the UI-side placement is [공용 UI 의 Feedback](../shared-ui/references/catalog.md#feedback).
 
 Never expose `resultMessage`, another raw server message, or a stack in UI. Safe translated copy and a recovery action are mandatory. `requestId` is the visible inquiry code; a details disclosure may additionally show request ID, status, and kind.
 
@@ -120,8 +122,8 @@ If runtime behavior contradicts the snapshot, stop and report the endpoint, requ
 | 축 | 무엇을 확인하나 |
 | --- | --- |
 | wire | 실제 요청 URL·method·headers·payload 와 응답 본문 |
-| 봉투 | 성공 코드 판정과 `data` 해제가 타입까지 따라가는가 |
-| 실패 | 각 `kind` 가 의도한 자리(none/feature/incident/root)에 표시되는가 |
+| 응답 | target이 선언한 성공 판정과 런타임·정적 결과가 맞는가. payload wrapper가 있을 때만 해제 결과까지 확인 |
+| 실패 | 확인된 semantic failure가 operation context에 맞는 표면에 표시되는가 |
 | 로그 | 원문 server message·stack·비밀 값이 UI 와 로그에 없는가 |
 
 브라우저 증거는 **어떤 요청이 나갔고 무엇이 돌아왔는지**를 적는다. 요청 함수 로그 한 줄은 그 호출
