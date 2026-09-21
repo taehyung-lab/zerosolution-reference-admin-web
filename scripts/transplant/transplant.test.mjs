@@ -375,6 +375,21 @@ describe('plan / stage / apply against a target directory', () => {
     expect(catalog).not.toContain('examples:')
   })
 
+  it('stages generic evidence policy without this account access procedure', () => {
+    const target = temporaryDirectory('evidence-target-')
+    const out = temporaryDirectory('evidence-stage-')
+    stageTransplant(target, out)
+    const policy = readFileSync(join(out, 'product/policies/evidence.md'), 'utf8')
+    const skill = readFileSync(join(out, '.agents/skills/product-evidence/SKILL.md'), 'utf8')
+    const returnGuide = readFileSync(join(out, '.agents/skills/product-evidence/references/return.md'), 'utf8')
+
+    expect(policy).not.toMatch(/View seat|aside repl|Figma MCP|Shift\+2/)
+    expect(skill).not.toMatch(/미이관|옛 원장|두 표/)
+    expect(returnGuide).not.toMatch(/미이관|옛 원장|두 표|원장 행/)
+    expect(policy).toContain('추론을 확인으로 승격하지 않는다')
+    expect(skill).toContain('product/generated-index.md')
+  })
+
   it('classifies files, stages a renumbered product-neutral copy with a pending list, and never overwrites the target', () => {
     const target = temporaryDirectory('transplant-target-')
     const out = temporaryDirectory('transplant-stage-')

@@ -6,6 +6,7 @@ Figma `ZEROsol (For Kakao)`(`Ogb6WpSpwCVhKggQ1NLRlQ`) 78 page와 Notion `DB: Wor
 판정(공용 / feature / 미확인)은 여기에 쓰지 않는다. 판정과 그 근거는
 [zero-sol-figma-analysis.md](../zero-sol-figma-analysis.md), 승격 절차는
 `.agents/skills/source-structure/SKILL.md` 의 공용 단위의 승격, 단계는 `docs/decisions/0014-single-screen-shape.md`가 소유한다.
+현재 계정으로 Figma·Notion 원문을 다시 여는 방법은 [원문 접근](source-access.md)이 소유한다.
 
 ## 프로젝트 사실
 
@@ -161,8 +162,7 @@ Figma 최상위 page 번호를 따른다. 파일 하나가 200줄을 넘으면 �
 
 ## 관찰 한계
 
-- 원문 구성·라벨·컬럼을 직접 확인할 때 `aside-browser` skill을 읽고 `rtk proxy aside guide` → `rtk proxy aside guide repl` → 서비스 skill 조회 지침을 수행한 뒤 `aside repl`로 직접 읽는다. MCP 성공 여부와 별개로 이 렌더 판독 경로를 사용하며 `aside exec`의 LLM 작업으로 대신하지 않는다.
-- 기존 탭 조회→해당 원문 탭 연결→snapshot→원장의 실제 frame/절 선택→선택 후 URL·이름 재확인→원본 해상도 렌더 판독 순서다. 아래 과거 URL 오프셋 때문에 선택 전 URL과 master 레이어 텍스트는 근거가 아니다. 실패하면 도구·대상·오류·못 읽은 사실만 보고하며 현재 계정 한도나 제품 정책을 추정하지 않는다.
+- 원문 구성·라벨·컬럼 재관찰은 [원문 접근](source-access.md)의 직접 렌더 절차를 따른다. 선택 전 URL과 master 레이어 텍스트는 근거가 아니다.
 - Figma: 2026-09-02 Aside 브라우저 캡처는 선택 갱신 전에 URL을 읽어 node ID가 계통적으로 직전 frame으로 밀렸다. 당시 MCP는 View seat 호출 한도로 사용 불가했고 목록형 화면의 검색후·Case 정의와 화면 유형별 대표 frame에 집중했다. 2026-09-04에는 `aside repl`로 78 page를 전수 재판독해 **frame을 가진 leaf page 59개와 top-level frame 272개**를 확인하고 원장의 node ID를 실측값으로 교체했다. view-only라 prototype interaction은 재생하지 않았고 상태는 정적 frame 기준이다.
 - Notion: 문서에 없는 정책은 Notion 부재를 뜻할 뿐 정책 부재를 뜻하지 않는다. 문장은 원문 인용이며 해석을
   섞지 않았다. 페이지 Status는 대부분 `Backlog`다.
