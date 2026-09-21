@@ -68,6 +68,14 @@ describe('구조화된 관측', () => {
     expect(result).not.toHaveProperty('ok')
     expect(result).not.toHaveProperty('verdict')
   })
+
+  it('expect와 allow 밖에서 고른 계약을 과선택으로 보여준다', () => {
+    const result = observeCase(
+      { id: 'list/재표현', expect: ['list-contract'], allow: ['route-composition'], reject: ['form-contract'] },
+      { requiredContracts: ['list-contract', 'route-composition', 'detail-contract'], actuallyLoadedSkills: null, loadObservation: 'unavailable' },
+    )
+    expect(result.unexpectedContracts).toEqual(['detail-contract'])
+  })
 })
 
 describe('fixture', () => {
@@ -85,6 +93,10 @@ describe('fixture', () => {
     const smoke = selectCases(CASES, 'smoke')
     expect(smoke).toHaveLength(15)
     expect(smoke.every((item) => item.id.endsWith('/재표현'))).toBe(true)
+  })
+
+  it('모든 smoke case에는 열리면 안 되는 이웃 계약이 있다', () => {
+    expect(selectCases(CASES, 'smoke').every((item) => (item.reject ?? []).length > 0)).toBe(true)
   })
 
   it('full은 명백·재표현·비발동 45개를 유지한다', () => {

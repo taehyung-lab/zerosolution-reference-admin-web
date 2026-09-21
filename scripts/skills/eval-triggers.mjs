@@ -72,6 +72,7 @@ export function requiredContractsFrom(output) {
 export function observeCase(testCase, observation) {
   const requiredContracts = observation.requiredContracts
   const expected = testCase.expect ?? []
+  const allowed = [...expected, ...(testCase.allow ?? [])]
   const rejected = testCase.reject ?? []
   return {
     id: testCase.id,
@@ -82,6 +83,7 @@ export function observeCase(testCase, observation) {
     loadObservation: observation.loadObservation,
     missingRequired: requiredContracts === null ? expected : expected.filter((name) => !requiredContracts.includes(name)),
     forbiddenRequired: requiredContracts === null ? [] : rejected.filter((name) => requiredContracts.includes(name)),
+    unexpectedContracts: requiredContracts === null ? [] : requiredContracts.filter((name) => !allowed.includes(name)),
   }
 }
 
