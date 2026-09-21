@@ -48,7 +48,7 @@
 | `SortableList` | `items: stableIds`, `onMove(from, to)`, `getItemLabel`, children | dnd 센서·handle·접근성 안내 | 순서의 소유(Form 배열) |
 | `FormSubmitButton` / `FormCancelButton` | `pending` / `onClick`, `disabled?`, children? | `shared:formAction.save/cancel` 기본 문구, cancel 은 `type="button"` | — |
 | `FormSaveDialogs` / `FormSaveFailureMessage` | `stage`, `pending`, `onConfirm/onCancel/onAcknowledge` / `failure` | 저장 확인·완료 쌍의 `shared:formSave.*` 문구, root 실패 한 줄 | 어떤 mutation, 목적지 |
-| `useSaveForm` | `schema`, `defaultValues`, `resetKey?`, `sections`, `save: { run, isPending, getDefaultValues? }`, `mapError`, `onDone` | 폼 인스턴스, 저장 단계, 잘못된 제출 reveal·focus, `onServer` 배치·정리, 기준선 갱신, dirty guard, `dialogs` 노드 | schema·mutation·오류 분류·목적지([form](../../form-contract/SKILL.md#저장-lifecycle)) |
+| `useSaveForm` | `schema`, `defaultValues`, `resetKey?`, `sections`, `blurValidator?`(값 → 필드별 문구. 제출 전에도 알려야 하는 교차 필드 불일치 하나), `save: { run, isPending, getDefaultValues? }`, `mapError`, `onDone` | 폼 인스턴스, 저장 단계, 잘못된 제출 reveal·focus, `onServer` 배치·정리, 기준선 갱신, dirty guard, `dialogs` 노드 | schema·mutation·오류 분류·목적지([form](../../form-contract/SKILL.md#저장-lifecycle)) |
 | `UnsavedChangesProvider` / `useUnsavedChangesGuard({ when, refuseSilently? })` | dirty·pending 사실 | 앱의 Router blocker 하나와 `beforeunload`, `{ dialog, leave(navigate), close(discard, { when? }) }`, 취소 문구와 이동 문구의 구분 | 값·목적지, 보호 대상 범위(원장) |
 
 ## Filter

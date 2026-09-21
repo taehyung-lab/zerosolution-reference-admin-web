@@ -142,7 +142,7 @@ snapshot은 dev 출처 하나만 유지하고 환경별 snapshot 및 `api:pull:d
 
 리허설 계약에서 Orval이 endpoint 반환 타입 인자로 봉투 타입(`Rs...` = `{header?, data?}`)을 넘기는 사실을
 확인했다. mutator가 봉투를 벗기면서 타입을 그대로 두면 정적 타입이 런타임과 어긋나므로, 반환 타입 매핑
-규칙(`UnwrapEnvelope<T>`)은 `.agents/skills/api-contract/references/transport.md` "Envelope and errors"가 소유하고
+규칙(`UnwrapEnvelope<T>`)은 `.agents/skills/api-wire/SKILL.md`의 "Envelope and errors"가 소유하고
 회귀는 `src/api/http/transport.test.ts`가 막는다.
 
 ## 결과

@@ -280,6 +280,34 @@ test('@reference ticket test and reissue requests require a printer', async ({ p
   await expect(dialog).toBeVisible();
 });
 
+/**
+ * 6.7.1 일괄변경의 3단계(거절 → 확인 → 완료)와 선택 해제까지가 하나의 전이다. 문구는 원문이 적은
+ * 제품 동작이고 fixture 의 id·값에는 걸지 않는다.
+ */
+test('@reference printer bulk change rejects, confirms, completes and releases the selection', async ({ page }) => {
+  const observed = observeRequests(page);
+  await page.goto('/ticketing/printers');
+  const alert = page.getByRole('dialog', { name: '알림', exact: true });
+  await page.getByRole('button', { name: '변경', exact: true }).click();
+  await expect(alert).toContainText('변경할 항목을 선택해주세요.');
+  await alert.getByRole('button', { name: '확인', exact: true }).click();
+  expect(observed.logs).toEqual([]);
+  const row = page.getByRole('row').nth(1).getByRole('checkbox');
+  await row.check();
+  await choose(page, '일괄변경 항목', '용도 > 현장발권용');
+  await page.getByRole('button', { name: '변경', exact: true }).click();
+  await expect(alert).toContainText('선택 항목을 변경하시겠습니까?');
+  await alert.getByRole('button', { name: '취소', exact: true }).click();
+  expect(observed.logs).toEqual([]);
+  await page.getByRole('button', { name: '변경', exact: true }).click();
+  await alert.getByRole('button', { name: '확인', exact: true }).click();
+  await expect(alert).toContainText('변경되었습니다.');
+  await expectRequests(observed, '스마트프린터 일괄변경');
+  await alert.getByRole('button', { name: '확인', exact: true }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(row).not.toBeChecked();
+});
+
 test('@reference appeal save and notification use distinct confirmed inputs', async ({ page }) => {
   const observed = observeRequests(page);
   await page.goto('/members/appeals/appeal-1');
@@ -337,20 +365,28 @@ test('@reference member create reaches its request without clearing private inpu
   await expect(page).toHaveURL(/\/members\/active\/all$/);
 });
 
-test('@reference shell search and profile expose their unconnected destinations', async ({ page }) => {
+test('@reference shell search exposes its unconnected destination and keeps the keyword', async ({ page }) => {
   const observed = observeRequests(page);
   await page.goto('/members/active/all');
   const header = page.getByRole('banner');
   await header.getByRole('textbox', { name: '통합검색' }).fill('검색어를 콘솔에 출력하지 않음');
   await header.getByRole('button', { name: '검색', exact: true }).click();
   await expect.poll(() => observed.logs).toEqual(['[시나리오] 통합검색: 검색 입력 수신 → API·결과 화면 연결 대기']);
-  await header.locator('summary').filter({ hasText: '내 정보' }).click();
-  await header.getByRole('button', { name: '내 정보', exact: true }).click();
-  await expect.poll(() => observed.logs).toEqual([
-    '[시나리오] 통합검색: 검색 입력 수신 → API·결과 화면 연결 대기',
-    '[시나리오] 내 정보 이동: 진입 요청 확인 → 대상 화면 연결 대기',
-  ]);
   expect(observed.writes).toEqual([]);
   await expect(page).toHaveURL(/members\/active\/all$/);
   await expect(header.getByRole('textbox', { name: '통합검색' })).toHaveValue('검색어를 콘솔에 출력하지 않음');
+});
+
+// `내 정보` 는 더 이상 미연결 진입이 아니다 — 목적지가 확정돼 route 로 간다(2026-09-17).
+test('@reference shell profile menu navigates to the profile screen', async ({ page }) => {
+  const observed = observeRequests(page);
+  await page.goto('/members/active/all');
+  const header = page.getByRole('banner');
+  await header.locator('summary').filter({ hasText: '내 정보' }).click();
+  await header.getByRole('link', { name: '내 정보', exact: true }).click();
+
+  await expect(page).toHaveURL(/\/profile$/);
+  await expect(page.getByRole('heading', { name: '내정보 조회' })).toBeVisible();
+  expect(observed.logs).toEqual([]);
+  expect(observed.writes).toEqual([]);
 });

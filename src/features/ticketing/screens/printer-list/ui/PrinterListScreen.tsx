@@ -55,7 +55,13 @@ export function PrinterListScreen({
         columns={result.columns}
         getRowId={(row) => row.id}
         onRowActivate={(row) => onActivate(row.id)}
-        actions={<PrinterListActions selectedIds={result.selection.selectedIds} onCreate={onCreate} />}
+        actions={
+          <PrinterListActions
+            selectedIds={result.selection.selectedIds}
+            onChanged={result.selection.clear}
+            onCreate={onCreate}
+          />
+        }
         copy={{ empty: t('printer.result.empty') }}
         pageSizeOptions={standardPageSizeOptions}
         sortOptions={printerSortKeys.map((value) => ({ value, label: t(`printer.sort.${value}`) }))}

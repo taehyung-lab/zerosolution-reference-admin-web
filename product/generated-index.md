@@ -17,8 +17,10 @@
 | `PRINTER-DETAIL` | 스마트프린터 조회 | detail | 관찰됨 | [PRINTER-DETAIL.md](facts/PRINTER-DETAIL.md) |
 | `PRINTER-FORM` | 스마트프린터 등록·수정 | form | 관찰됨 | [PRINTER-FORM.md](facts/PRINTER-FORM.md) |
 | `PRINTER-LIST` | 스마트프린터 목록 | list | 관찰됨 | [PRINTER-LIST.md](facts/PRINTER-LIST.md) |
+| `PROFILE-DETAIL` | 내정보 조회 | detail | 관찰됨 | [PROFILE-DETAIL.md](facts/PROFILE-DETAIL.md) |
+| `PROFILE-EDIT` | 내정보 수정 | form | 관찰됨 | [PROFILE-EDIT.md](facts/PROFILE-EDIT.md) |
 
-총 7개.
+총 9개.
 
 ## 아직 fact 로 옮기지 않은 화면
 
@@ -49,10 +51,9 @@
 | `manager-edit` | 운영자 수정 | — | **미이관** | [docs/reference/zero-sol/11-settings.md § 11.1 운영자 — 수정](../docs/reference/zero-sol/11-settings.md) |
 | `settings` | 운영자·약관·정책·권한·로그 | — | **미이관** | [docs/reference/zero-sol/11-settings.md](../docs/reference/zero-sol/11-settings.md) |
 | `search` | 통합검색의 독립 결과 영역 | — | **미이관** | [docs/reference/zero-sol/12-search.md](../docs/reference/zero-sol/12-search.md) |
-| `profile` | 내정보 조회·수정 | — | **미이관** | [docs/reference/zero-sol/13-profile.md](../docs/reference/zero-sol/13-profile.md) |
 | `onsite` | 현장발권 예매검색·신규예매·출입조회 | — | **미이관** | [docs/reference/zero-sol/14-onsite.md](../docs/reference/zero-sol/14-onsite.md) |
 | `notifications` | 개별 알림·알림 목록 패널 | — | **미이관** | [docs/reference/zero-sol/15-notification.md](../docs/reference/zero-sol/15-notification.md) |
 | `content-bulk` | 5.1 콘텐츠 사용상태 일괄변경 | — | **미이관** | [docs/reference/zero-sol/05-performances.md](../docs/reference/zero-sol/05-performances.md) |
 | `content-edit` | 5.1 콘텐츠 조회·수정 | — | **미이관** | [docs/reference/zero-sol/05-performances.md](../docs/reference/zero-sol/05-performances.md) |
 
-총 26개.
+총 25개.

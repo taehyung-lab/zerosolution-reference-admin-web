@@ -37,7 +37,7 @@ resultCode 표가 정한다. 실패처럼 들리는 코드를 그 자리에서 �
 아무것도 억제되지 않는다.
 
 규칙 본문(저장 adapter, cookie credential, reissue·replay 순서, cross-tab 직렬화, pre-auth 실패와 세션 종료의
-구분, 세대 기반 억제, 401/403 incident 표면)은 `.agents/skills/api-contract/references/auth-session.md`가 소유한다.
+구분, 세대 기반 억제, 401/403 incident 표면)은 `.agents/skills/auth-session/SKILL.md`가 소유한다.
 
 ## 채택한 것과 제외한 것
 
@@ -45,7 +45,7 @@ resultCode 표가 정한다. 실패처럼 들리는 코드를 그 자리에서 �
 `auth-session.md`에 있다.
 
 제외 범주: 신규 백엔드 계약이 없는 부가 요청 헤더, 추정된 복제 지연 창, SSE 복구와 refresh singleton 결합.
-제외 목록의 exact 이름은 `.agents/skills/api-contract/references/transport.md`가 소유하며, 신규 계약과 현재
+제외 목록의 exact 이름은 `.agents/skills/api-wire/SKILL.md`가 소유하며, 신규 계약과 현재
 요구사항이 없으므로 이 레퍼런스의 사실로 승격하지 않는다.
 
 ## 미확인과 이행 조건
