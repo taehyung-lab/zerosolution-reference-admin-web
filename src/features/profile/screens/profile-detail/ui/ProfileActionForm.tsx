@@ -90,12 +90,13 @@ export function ProfileActionForm({
       setFailure(undefined);
       try {
         await run({ type: action, password: schema.parse(value).password });
-        onCompleted();
       } catch (error: unknown) {
         setFailure(errorTraceOf(error));
-      } finally {
         setPending(false);
+        return;
       }
+      setPending(false);
+      onCompleted();
     },
   });
   const dirty = useSelector(form.store, (state) => state.isDirty && !state.isDefaultValue);
