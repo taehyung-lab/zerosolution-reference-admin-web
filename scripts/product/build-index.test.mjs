@@ -37,4 +37,20 @@ describe('fact 집합의 정합성', () => {
       'D.md: frontmatter 가 없다',
     ])
   })
+
+  it('보류는 같은 fact의 미확인 번호를 가리킨다', () => {
+    const valid = fact('A')
+    valid.text += '\n## 미확인\n\n| # | 무엇 |\n| --- | --- |\n| 1 | 정책 |\n\n## 보류\n\n- 미확인 1 때문에 생략\n'
+    expect(factIndexFailures([valid]).errors).toEqual([])
+
+    const invalid = fact('B')
+    invalid.text += '\n## 미확인\n\n| # | 무엇 |\n| --- | --- |\n| 1 | 정책 |\n\n## 보류\n\n- 미확인 2 때문에 생략\n'
+    expect(factIndexFailures([invalid]).errors).toContain('B.md: 보류가 존재하지 않는 미확인 2를 가리킨다')
+  })
+
+  it('현재 코드 구현 서술은 fact에 두지 않는다', () => {
+    const narrated = fact('A')
+    narrated.text += '\n## 현재 코드\n\n화면이 구현돼 있다.\n'
+    expect(factIndexFailures([narrated]).errors).toContain('A.md: 현재 코드 절 대신 근거가 있는 보류만 남긴다')
+  })
 })

@@ -495,6 +495,8 @@ describe('plan / stage / apply against a target directory', () => {
     expect(inventoryReadme).toContain('TRANSPLANT_PENDING_FACTS')
     expect(inventoryReadme).toContain('## frontmatter')
     expect(inventoryReadme).toContain('## 본문의 절')
+    expect(inventoryReadme).toContain('| 보류 |')
+    expect(inventoryReadme).not.toContain('현재 코드')
     expect(inventoryReadme).not.toMatch(/BOOSTER|loginId|ZERO|Ogb6WpSpwCVhKggQ1NLRlQ/)
     const scenariosReadme = readFileSync(join(out, 'product/generated-index.md'), 'utf8')
     // 색인은 생성물이라 뼈대가 비어 있고, 채우려면 fact 를 만든 뒤 다시 생성해야 한다.

@@ -78,6 +78,17 @@ export function factIndexFailures(entries) {
   const facts = []
   const errors = []
   for (const { file, text } of entries) {
+    if (/^## 현재 코드\s*$/m.test(text)) errors.push(`${file}: 현재 코드 절 대신 근거가 있는 보류만 남긴다`)
+    const unknownSection = /^## 미확인\s*$([\s\S]*?)(?=^## |(?![\s\S]))/m.exec(text)?.[1] ?? ''
+    const unknownNumbers = new Set([...unknownSection.matchAll(/^\|\s*(\d+)\s*\|/gm)].map((match) => match[1]))
+    const deferredSection = /^## 보류\s*$([\s\S]*?)(?=^## |(?![\s\S]))/m.exec(text)?.[1] ?? ''
+    for (const line of deferredSection.split('\n').filter((item) => /^\s*-\s+/.test(item))) {
+      const references = [...line.matchAll(/미확인\s+(\d+)/g)].map((match) => match[1])
+      if (references.length === 0) errors.push(`${file}: 보류 항목은 같은 fact의 미확인 번호를 가리켜야 한다`)
+      for (const number of references) {
+        if (!unknownNumbers.has(number)) errors.push(`${file}: 보류가 존재하지 않는 미확인 ${number}를 가리킨다`)
+      }
+    }
     let meta
     try {
       meta = parseFrontmatter(text, file)
