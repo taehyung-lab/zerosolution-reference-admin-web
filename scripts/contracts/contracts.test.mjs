@@ -547,6 +547,18 @@ describe('contracts check CLI wiring', () => {
     } finally { writeFileSync(baseline, original) }
   })
 
+  it('target 모드는 source 상한 대신 자기 baseline 상한을 사용한다', () => {
+    const baseline = resolve(fixtureRoot, 'scripts/loop/baseline.json')
+    const original = readFileSync(baseline, 'utf8')
+    try {
+      const target = JSON.parse(original)
+      target.entry.budgetCharacters = 6000
+      writeFileSync(baseline, JSON.stringify(target))
+      const result = runCheck(['--mode', 'target'])
+      expect(result.stderr).not.toContain('budgetCharacters=5400')
+    } finally { writeFileSync(baseline, original) }
+  })
+
   it('fails through the real CLI when the Claude import is invalid', () => {
     writeFileSync(resolve(fixtureRoot, 'CLAUDE.md'), '# Claude\n\nRead AGENTS.md later.\n')
 

@@ -67,12 +67,9 @@ second locale owner; the exact provider API belongs to current code.
 
 ## 형태
 
-목록 route 본문의 요소는 셋이다: `validateSearch: {entity}ListSearch.schema`, `beforeLoad: canonicalSearchGuard({entity}ListSearch.canonical)`, 그리고 `component` 가 `<{Entity}ListScreen search={Route.useSearch()} onSearchChange={(next) => void navigate({ search: () => next })} onActivate={(id) => void navigate({ to: …, params })} onCreate={() => void navigate({ to: … })} />` 를 mount 한다. URL 변형은 같은 화면에 `definition` 을 넘긴다. 다른 feature 의 다이얼로그를 함께 조립하는 것은 위 [Thin route](#thin-route) 가 허용하는 배선이다.
-**목록 자체의 query 는 진입 즉시 조회 화면이어도 loader 에서 await 하지 않는다** — 진입 progress 는 `useListQuery` 가, 이후 전이는 `contentProgress` 가 소유하며 `loaderDeps` 로 검색을 loader 에 묶으면 정렬·페이지마다 loader 가 다시 돈다. 해소(`resolve`)는 route 가 아니라 화면이 한다. 검색 정책(즉시 조회인가 검색 뒤 조회인가)은 제품 원장에서 읽고 [list URL](../list-contract/SKILL.md#url) 의 두 선언 함수 중 하나로 표현한다.
-
-상세·수정 route 본문의 요소는 둘이다: `loader: ({ context, params, preload }) => loadRequired(context.queryClient, {entity}DetailQueryOptions(context.locale, params.id), { preload })` 와 화면을 mount 하는 `component`(`key={id}` 로 ID 가 바뀌면 새 수명). 없는 ID·그 외 실패는 app error boundary 가 셸 안에서 상태 페이지를 그리고, 403 은 접근 제한 표면, 401 은 인증 진입 이동 하나가 소유한다(`{ preload }` 를 빼면 hover 예열마다 제한 표면이 뜬다). 화면의 `DetailStateBoundary` 는 진입 이후 전이만 담당한다.
-
-등록 route 는 loader 가 없고 `<{Entity}CreateScreen onSaved={goToList} onCancel={goToList} />` 를 mount 한다. 수정 route 는 상세와 같은 loader 에 `<{Entity}EditScreen id={id} onSaved={goToDetail} onCancel={goToDetail} />` 다. 목적지가 다른 제품은 원장을 따른다.
+Route는 검증된 params/search, 진입 guard, 필요한 loader, 화면 mount와 navigation callback만 조립한다.
+목록 query를 진입 전에 기다릴지, 상세 record를 기다릴지, 등록·수정의 목적지는 확인된 역할 계약과 fact가
+정한다. exact helper·prop·component·route file shape는 Router 타입과 현재 코드 테스트가 소유한다.
 
 ## Guards
 
