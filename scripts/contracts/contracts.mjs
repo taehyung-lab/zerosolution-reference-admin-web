@@ -174,7 +174,7 @@ function decodedAnchor(anchor) {
  * 2026-09-10 까지 앵커를 보지 않아 루트가 깊은 절을 11곳 가리키면서도 절 제목 변경을 잡을 수 없었다.
  */
 /**
- * 계약·제품 문서를 **백틱 이름으로** 가리키는 문장이 실존 파일을 가리키는지 본다.
+ * 현재 정본 계약·제품 경로를 가리키는 문장이 실존 파일을 가리키는지 본다.
  *
  * markdown link 검사는 `[label](path)` 만 본다. 라우팅 표는 경로를 `` `.agents/skills/list-contract/SKILL.md` ``
  * 처럼 코드 표기로 쓰는 일이 많고, 그 자리가 끊겨도 아무도 잡지 못했다 — 새 문서 체계 첫 드릴에서
@@ -182,10 +182,10 @@ function decodedAnchor(anchor) {
  */
 export function citedContractPathFailures(files, exists) {
   const failures = []
-  const pattern = /`((?:contracts|product)\/[A-Za-z0-9._/-]+\.md)`/g
+  const pattern = /(?:`)?((?:\.agents\/skills|contracts|product)\/[A-Za-z0-9._/-]+\.md)(?:`)?/g
   for (const { file, content } of files) {
     for (const [, cited] of content.matchAll(pattern)) {
-      if (!exists(cited)) failures.push(`${file}: 백틱으로 가리킨 계약·제품 문서가 없다 → ${cited}`)
+      if (!exists(cited)) failures.push(`${file}: 가리킨 계약·제품 문서가 없다 → ${cited}`)
     }
   }
   return [...new Set(failures)].sort()
