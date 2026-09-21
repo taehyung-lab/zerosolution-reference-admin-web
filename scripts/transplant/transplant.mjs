@@ -287,7 +287,7 @@ export function ledgerTemplates(sourceRoot, source, target) {
   files.set(`${target.inventory}/README.md`, [
     '# 제품 사실 — fact 쓰는 법',
     '',
-    'surface 하나의 **관찰 · 정책 · 전이 · 미확인 · 현재 코드**를 이 폴더의 파일 하나가 소유한다.',
+    'surface 하나의 **관찰 · 정책 · 전이 · 미확인 · 보류**를 이 폴더의 파일 하나가 소유한다.',
     '파일 이름은 `<ID>.md` 이고 그 `ID` 는 **불변**이다. 색인은 frontmatter 에서 생성되므로',
     `[${posix.basename(target.index)}](${posix.relative(target.inventory, target.index)}) 를 손으로 고치지 않는다.`,
     '',
@@ -299,7 +299,7 @@ export function ledgerTemplates(sourceRoot, source, target) {
     '```yaml',
     'id: <불변 ID. 파일 이름과 같다>',
     'title: <사람이 읽는 화면 이름>',
-    'role: list | detail | form | collection | shared-ui | api | policy',
+    'role: list | detail | form | collection | specialized | shared-ui | api | policy',
     'status: 관찰됨 | 확정됨 | 미확인',
     'related: [<다른 fact 의 ID>]',
     'sources:',
@@ -321,7 +321,7 @@ export function ledgerTemplates(sourceRoot, source, target) {
     '| 상태와 소유자 | 그 화면의 값이 어디에 사는가 |',
     '| 전이 | 무엇을 누르면 어디로 가는가 |',
     '| 미확인 | 무엇이 미확인인가 · 답에 따라 무엇이 달라지나 · 누구에게 묻나 |',
-    '| 현재 코드 | 어디까지 구현됐고 무엇이 보류인가 |',
+    '| 보류 | 번호가 있는 미확인 때문에 의도적으로 하지 않는 것. 각 항목에 `미확인 N`을 적는다 |',
     '',
     '관찰을 갱신하면 **무엇이 달라졌는지**를 남긴다. 조용히 덮어쓰지 않는다.',
     '근거의 종류와 수명, 원문을 읽는 경로는 `product/policies/` 가 소유한다.',
@@ -517,9 +517,12 @@ export function stageTransplant(targetRoot, outRoot, sourceRoot = SOURCE_ROOT, o
   const stagedPaths = new Set(items.filter((item) => item.action !== 'exclude').map((item) => item.targetPath))
   const sourceReferences = []
   const rewrite = (text, sourceFile, targetPath) => {
-    const delinked = targetPath.endsWith('.md')
-      ? delinkUntravelled(text, { sourceFile, targetPath, source, target, retired, staged: stagedPaths, targetRoot, collect: sourceReferences, withLedger })
+    const targetOwned = sourceFile === 'docs/decisions/0014-single-screen-shape.md'
+      ? text.replace(/^- 상태:.*$/m, '- 상태: 채택 대기 — 대상 제품의 첫 실제 소비자와 검증이 채택 여부를 결정한다')
       : text
+    const delinked = targetPath.endsWith('.md')
+      ? delinkUntravelled(targetOwned, { sourceFile, targetPath, source, target, retired, staged: stagedPaths, targetRoot, collect: sourceReferences, withLedger })
+      : targetOwned
     const renumbered = rewriteText(delinked, { retired })
     const linked = targetPath.endsWith('.md') ? rewriteMarkdownLinks(renumbered, posix.dirname(targetPath), source, target) : renumbered
     return restoreSourcePaths(rewriteProductPaths(linked, source, target), sourceReferences)

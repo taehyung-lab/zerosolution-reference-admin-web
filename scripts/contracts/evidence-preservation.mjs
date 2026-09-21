@@ -5,7 +5,7 @@ import { tableRows } from '../evidence/screen-rows.mjs'
 
 /**
  * 원장은 새 관찰로만 바뀐다. 구현을 설명하려고 기존 근거를 지우는 변경을 HEAD 대조로 막는다.
- * 허용: `현재 코드` 포인터 교체, 오탈자·링크 수정, 새 관찰 추가, 기존 기록을 남긴 정정.
+ * 허용: 옛 원장의 `현재 코드` 포인터 교체, 오탈자·링크 수정, 새 관찰 추가, 기존 기록을 남긴 정정.
  * 금지: 날짜 붙은 실측 기록의 삭제, 보호 열의 관찰·정책 표식 삭제, 비어 있지 않던 `미확인`의 제거.
  */
 const PROTECTED_COLUMNS = ['Figma 관찰', 'Notion 동작·정책', '미확인']
@@ -84,8 +84,12 @@ export function evidencePreservationFailures(root, inventoryDir, read = (file) =
     const after = read(file)
     if (before === after) continue
 
-    // 파일 단위: 날짜 붙은 실측 기록은 지우지 않는다. 정정은 남겨 두고 새 기록을 더한다.
-    for (const date of tokens(before, DATE)) {
+    // 파일 단위: 날짜 붙은 제품 근거는 지우지 않는다. fact의 `현재 코드`는 제품 근거가 아니며
+    // fact 정합성 검사가 그 절 자체를 금지하므로 보존 대상에서 제외한다.
+    const datedEvidence = inventoryDir === 'product/facts'
+      ? before.replace(/^## 현재 코드\s*$[\s\S]*?(?=^## |$(?![\s\S]))/m, '')
+      : before
+    for (const date of tokens(datedEvidence, DATE)) {
       if (!after.includes(date)) failures.push(`원장 근거 삭제: ${file} 에서 ${date} 실측 기록이 사라졌다. 기존 기록을 남기고 새 관찰을 더한다.`)
     }
 

@@ -11,8 +11,9 @@ const PNPM_BUILTINS = new Set([
   'publish', 'pack', 'link', 'unlink', 'store', 'import', 'prune', 'rebuild', 'setup', 'env',
 ])
 
-/** 정합성 대조 대상 문서. 임시 작업물(.ai-work)은 저장소 산출물이 아니므로 제외한다. */
+/** 정합성 대조 대상 문서. 세션용 임시 작업물은 저장소 산출물이 아니므로 제외한다. */
 const DOCUMENT_ROOTS = ['.agents', 'docs', 'product']
+const DOCUMENT_EXCLUDED_PREFIXES = ['docs/superpowers/']
 const DOCUMENT_FILES = [
   'AGENTS.md',
   'README.md',
@@ -29,7 +30,9 @@ export function collectDocumentFiles() {
     for (const entry of readdirSync(resolve(root), { recursive: true, withFileTypes: true })) {
       if (!entry.isFile() || !entry.name.endsWith('.md')) continue
       const absolute = resolve(entry.parentPath, entry.name)
-      files.push(absolute.slice(resolve('.').length + 1))
+      const relative = absolute.slice(resolve('.').length + 1)
+      if (DOCUMENT_EXCLUDED_PREFIXES.some((prefix) => relative.startsWith(prefix))) continue
+      files.push(relative)
     }
   }
   return files.sort()
@@ -174,7 +177,7 @@ function decodedAnchor(anchor) {
  * 2026-09-10 까지 앵커를 보지 않아 루트가 깊은 절을 11곳 가리키면서도 절 제목 변경을 잡을 수 없었다.
  */
 /**
- * 현재 정본 계약·제품 경로를 가리키는 문장이 실존 파일을 가리키는지 본다.
+ * 현재 정본 계약·제품 경로와 백틱으로 인용한 live 저장소 파일이 실존하는지 본다.
  *
  * markdown link 검사는 `[label](path)` 만 본다. 라우팅 표는 경로를 `` `.agents/skills/list-contract/SKILL.md` ``
  * 처럼 코드 표기로 쓰는 일이 많고, 그 자리가 끊겨도 아무도 잡지 못했다 — 새 문서 체계 첫 드릴에서
@@ -182,11 +185,16 @@ function decodedAnchor(anchor) {
  */
 export function citedContractPathFailures(files, exists) {
   const failures = []
-  const pattern = /(?<![A-Za-z0-9._/-])(?:`)?((?:\.agents\/skills|contracts|product)\/[A-Za-z0-9._/-]+\.md)(?:`)?(?=$|[^A-Za-z0-9_./-]|\.(?![A-Za-z0-9_]))/g
+  const canonicalPattern = /(?<![A-Za-z0-9._/-])(?:`)?((?:\.agents\/skills|contracts|product)\/[A-Za-z0-9._/-]+\.md)(?:`)?(?=$|[^A-Za-z0-9_./-]|\.(?![A-Za-z0-9_]))/g
+  const livePattern = /`((?:\.agents\/skills|contracts|docs\/decisions|product|scripts|src)\/[A-Za-z0-9._/-]+\.[A-Za-z0-9]+)`/g
   for (const { file, content } of files) {
     const citationText = content.replace(/\[([^\]]*)\]\([^)\s]+\)/g, '$1')
-    for (const [, cited] of citationText.matchAll(pattern)) {
-      if (!exists(cited)) failures.push(`${file}: 가리킨 계약·제품 문서가 없다 → ${cited}`)
+    const citedPaths = new Set([
+      ...[...citationText.matchAll(canonicalPattern)].map((match) => match[1]),
+      ...[...content.matchAll(livePattern)].map((match) => match[1]),
+    ])
+    for (const cited of citedPaths) {
+      if (!exists(cited)) failures.push(`${file}: 가리킨 live 경로가 없다 → ${cited}`)
     }
   }
   return [...new Set(failures)].sort()

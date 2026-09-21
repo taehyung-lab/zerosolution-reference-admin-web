@@ -23,9 +23,9 @@ description: >
 | 저장 mutation | 도메인 `api/mutations.ts` |
 | 저장·취소의 목적지 | route 가 `onSaved`·`onCancel` 에 navigate 를 넣는다. 어디로 가는지는 fact |
 
-값은 전부 문자열이다 — `Select` 의 빈 선택은 `''` 이어야 schema 가 placeholder 상태를 거부할 수
-있다. 검증 문구는 schema 안에 있고 필드 어댑터가 그린다. **필드·필수·길이·문구는 fact 에서 읽고
-형제 화면에서 복사하지 않는다.**
+값의 타입은 확인된 필드 의미와 저장 계약이 정한다. 문자열뿐 아니라 boolean·배열·객체도 폼 값이 될 수
+있고, 빈 선택 표현은 해당 control과 schema가 함께 정한다. 검증 문구는 schema 안에 있고 필드 어댑터가
+그린다. **필드·필수·길이·문구는 fact에서 읽고 형제 화면에서 복사하지 않는다.**
 
 ## 저장 lifecycle
 

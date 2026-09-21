@@ -53,10 +53,12 @@ screen:       const detail = use{Entity}Detail(id)
 
 ## Actions
 
-액션은 두 종류다. 둘 다 `useMutation({entity}ActionMutation(locale))` 하나에 닿고, mutation 입력이 대상 ID 를 실는다.
+액션의 종류와 결과는 fact가 정한다. 요청을 보내는 액션은 대상 식별자와 확인된 입력을 mutation에 싣지만,
+이동·다운로드·외부 workflow 위임처럼 mutation이 아닌 액션을 억지로 같은 형태에 넣지 않는다.
 
-- **확인만 받는 액션**(승인·삭제·활성·비활성): `useConfirmation<Kind>({ run: (kind) => action.mutateAsync({ type: kind, id }), description: (kind) => …, confirmLabel?: (kind) => … })`. 버튼은 `confirmation.request(kind)`, Content 끝에 `{confirmation.dialog}` 를 한 번 렌더한다. 삭제 문구는 `shared:deleteConfirm.description`, 그 외 문구는 feature namespace.
-- **입력이 필요한 액션**(사유·비밀번호·재인증): `ui/{Entity}ActionForm.tsx` 다이얼로그 하나가 종류별 schema 를 고르고 자기 `useForm`·`useUnsavedChangesGuard`·pending·실패 문구를 소유한다. 유효 입력을 `run(action)` 에 넘겨 이행되면 닫힌다. `key={kind}` 로 종류가 바뀌면 새 폼 수명이다.
+- 확인이 필요한 액션은 확인 취소 시 아무 요청도 보내지 않고, 확정 시 한 번만 실행한다.
+- 입력이 필요한 액션은 자기 입력·검증·dirty·pending·실패 수명을 소유하고 유효 입력일 때만 실행한다.
+- 즉시 실행·이동·다운로드처럼 별도 확인이나 입력이 없는 액션은 그 제품 동작에 필요한 최소 경계만 둔다.
 - 다른 도메인의 기능(발송 등)은 화면이 채널만 알리고(`onMessage(channel)`) route 가 그 도메인의 훅·다이얼로그를 조립한다([router Thin route](../route-composition/SKILL.md#thin-route)).
 - 수정 진입은 `onEdit(id)` prop 이다. 어떤 상태에서 보이는가는 원장에서 읽는다.
 - 미연결 mutation 은 [mutations](../server-state/SKILL.md#시나리오-요청) 의 `scenarioRequest(label)` 이다. 비밀번호·사유는 로그에 싣지 않는다.
@@ -79,6 +81,8 @@ screen:       const detail = use{Entity}Detail(id)
 
 ## Verification
 
-바뀐 것만: ID·key 동일성, ready·error·notFound 매핑과 재시도, 상태별 액션 가시성, 확인·입력 액션이 요청 함수에 닿는 한 번, 목적지. 브라우저 증거는 어떤 상태의 어떤 레코드를 열어 어떤 액션을 눌렀는지를 적는다.
+바뀐 것만: ID·key 동일성, ready·error·notFound 매핑과 재시도, 상태별 액션 가시성, 확인·입력 액션의
+요청 도달, 이동·다운로드·외부 위임을 포함한 해당 액션의 관찰 가능한 결과. 브라우저 증거는 어떤 상태의
+어떤 레코드를 열어 어떤 액션을 눌렀고 무엇이 일어났는지를 적는다.
 
 실측한 것 중 되돌아올 전이 하나를 `tests/e2e/` 에 회귀 앵커로 남긴다([브라우저로 판정되는 결과](../../../AGENTS.md#브라우저로-판정되는-결과)).

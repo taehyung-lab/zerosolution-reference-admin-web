@@ -24,7 +24,7 @@ const legacyIndexPath = join(root, LEGACY_LEDGER.index)
 const checkOnly = process.argv.includes('--check')
 
 const REQUIRED = ['id', 'title', 'role', 'status']
-const ROLES = new Set(['list', 'detail', 'form', 'collection', 'shared-ui', 'api', 'policy'])
+const ROLES = new Set(['list', 'detail', 'form', 'collection', 'specialized', 'shared-ui', 'api', 'policy'])
 const STATUSES = new Set(['관찰됨', '확정됨', '미확인'])
 
 function parseFrontmatter(text, file) {
@@ -78,6 +78,21 @@ export function factIndexFailures(entries) {
   const facts = []
   const errors = []
   for (const { file, text } of entries) {
+    if (/^## 현재 코드\s*$/m.test(text)) errors.push(`${file}: 현재 코드 절 대신 근거가 있는 보류만 남긴다`)
+    const unknownSection = /^## 미확인\s*$([\s\S]*?)(?=^## |(?![\s\S]))/m.exec(text)?.[1] ?? ''
+    const unknownNumbers = new Set([...unknownSection.matchAll(/^\|\s*(\d+)\s*\|/gm)].map((match) => match[1]))
+    const deferredSection = /^## 보류\s*$([\s\S]*?)(?=^## |(?![\s\S]))/m.exec(text)?.[1] ?? ''
+    const deferredLines = deferredSection.split('\n').filter((item) => item.trim() !== '')
+    for (const line of deferredLines.filter((item) => !/^\s*-\s+/.test(item))) {
+      errors.push(`${file}: 보류는 미확인 번호를 가진 bullet만 허용한다 → ${line.trim()}`)
+    }
+    for (const line of deferredLines.filter((item) => /^\s*-\s+/.test(item))) {
+      const references = [...line.matchAll(/미확인\s+(\d+)/g)].map((match) => match[1])
+      if (references.length === 0) errors.push(`${file}: 보류 항목은 같은 fact의 미확인 번호를 가리켜야 한다`)
+      for (const number of references) {
+        if (!unknownNumbers.has(number)) errors.push(`${file}: 보류가 존재하지 않는 미확인 ${number}를 가리킨다`)
+      }
+    }
     let meta
     try {
       meta = parseFrontmatter(text, file)

@@ -8,10 +8,14 @@ description: >
 
 **답하는 질문**: 새 화면의 뼈대를 무엇으로 세우고, route 와 feature 가 무엇을 나눠 갖는가.
 
-**담지 않는 것**: 역할별 파일 집합 — `list.md`·`detail.md`·`form.md` 의 `형태` 절이다.
+**담지 않는 것**: 역할별 동작 — 선택된 역할 skill이 소유한다.
 파일이 어디 놓이는가 — `.agents/skills/source-structure/SKILL.md` 다.
 
 Read this file for a new ordinary screen skeleton, app-shell/navigation metadata, or when deciding how a screen's responsibilities split into files. List, detail, form, and specialized workflows have their own references.
+
+역할이 아직 확인되지 않았다면 가장 비슷해 보이는 CRUD 역할을 먼저 고르지 않는다. fact에서 진입점,
+핵심 상호작용, 상태·실패·복구를 확인한 뒤 역할 계약이나 specialized workflow로 보낸다. 그래도 닫히지
+않으면 이 문서는 최소 조립 경계만 세우고 새 역할의 고정 파일 집합을 발명하지 않는다.
 
 ## Explicit composition
 
@@ -23,9 +27,10 @@ Routes and feature screens compose visible parts explicitly. Repeated JSX is acc
 
 ## One responsibility map per role
 
-Every list, detail, and form in every domain classifies its responsibilities the same way and gives each one the same name and place ([list 형태](../list-contract/SKILL.md#형태), [detail 형태](../detail-contract/SKILL.md#형태), [form 형태](../form-contract/SKILL.md#형태)). **The map is fixed; the file set is not.** A screen creates only the responsibilities it actually has, so two lists can differ in file count and still have the same shape — what a reader carries from one screen to the next is where to look, not how many files to expect. The product facts inside those files (fields, copy, defaults, policy) come from that screen's ledger, never from a sibling.
+역할이 확인된 화면은 그 역할 계약의 책임 경계를 사용한다. 파일 이름과 개수는
+[source-structure](../source-structure/SKILL.md)가 정하고, 제품 사실은 해당 화면 fact에서만 가져온다.
 
-- A Screen is the composition entry. It receives the URL (or ID) and navigation callbacks as props, calls the role hooks in order, and wires their results into the role components. It holds no state of its own.
+- A Screen is the visible composition entry. URL·ID·navigation 배선과 역할 소유 상태를 연결하되, 정확한 prop·hook 순서나 파일 분리는 현재 구현이 소유한다.
 - State lives with its owner: `model/` hooks own URL transitions, drafts, query facts, and action policy; `ui/` hooks own only what the renderer consumes (columns, view controls, selection). Pure render-local formatting stays with its renderer.
 - Variants of one screen (URL tabs, fixed filters) are one Screen plus a typed `definition` in `model/`. If state transitions, selection, actions, or query gates differ, it is another screen.
 - A piece two screens of one domain share with identical meaning, transitions, and failure lifecycle moves to the domain's `shared/{capability}/{ui,model}` ([folder-structure](../source-structure/SKILL.md)). Screens never import sibling screens; ESLint enforces it.

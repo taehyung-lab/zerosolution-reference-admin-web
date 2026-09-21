@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "capturedAt": "2026-09-18",
+  "capturedAt": "2026-09-21",
   "source": "current working-tree snapshot; history is owned by Git",
   "supersedes": {
-    "revision": "c-skill-routing@7504302",
+    "revision": "main@8487d39 pre-excess-selection exam",
     "comparable": false,
-    "reason": "skill description 언어, 명백 요청 언어, 측정 방식과 suite 범위가 함께 바뀌어 이전 점수와 직접 비교할 수 없음",
+    "reason": "모든 smoke case에 reject를 추가하고 expect+allow 밖 선택을 관찰하기 시작해 이전 시험과 직접 비교할 수 없음",
     "note": "이전 원시 값은 Git history가 소유함"
   },
   "entry": {
@@ -16,18 +16,20 @@
   },
   "routing": {
     "suite": "smoke",
-    "status": "pending-remeasurement",
-    "observedAt": "2026-09-18",
+    "status": "partial",
+    "observedAt": "2026-09-21",
     "coverage": {
       "codex": {
         "observed": 15,
         "unconfirmed": 0,
         "missingRequired": 0,
-        "forbiddenRequired": 0
+        "forbiddenRequired": 0,
+        "unexpectedCases": 1,
+        "unexpectedContracts": 2
       },
       "copilot": {
-        "observed": 1,
-        "unconfirmed": 0,
+        "observed": 0,
+        "unconfirmed": 15,
         "isolationConfirmed": false
       },
       "claude": {
@@ -37,21 +39,18 @@
     },
     "observations": [
       {
-        "case": "list/재표현",
+        "case": "server-state/재표현",
         "runtime": "codex",
-        "requiredContracts": ["list-contract", "route-composition"],
+        "expected": ["server-state"],
+        "requiredContracts": ["product-evidence", "list-contract", "server-state"],
         "actuallyLoadedSkills": null,
-        "loadObservation": "unavailable"
-      },
-      {
-        "case": "list/재표현",
-        "runtime": "copilot",
-        "requiredContracts": ["list-contract", "route-composition"],
-        "actuallyLoadedSkills": null,
-        "loadObservation": "unavailable"
+        "loadObservation": "unavailable",
+        "missingRequired": [],
+        "forbiddenRequired": [],
+        "unexpectedContracts": ["product-evidence", "list-contract"]
       }
     ],
-    "reason": "smoke reject와 unexpectedContracts 오라클을 추가해 과거 결과와 직접 비교할 수 없으며, portable skill 정리 뒤 재측정한다"
+    "reason": "Codex 15건은 관찰했으나 실제 skill 로드 telemetry는 없고 Claude·Copilot의 같은 시험은 미확인임"
   },
   "transplant": {
     "observedAt": "2026-09-21",
@@ -75,7 +74,7 @@
       "model": null,
       "configuration": "project context with --ignore-user-config --ephemeral --sandbox read-only",
       "isolation": "ignore-user-config",
-      "status": "partial"
+      "status": "observed-routing-unobserved-load"
     },
     "copilot": {
       "version": "1.0.86",

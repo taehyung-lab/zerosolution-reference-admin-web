@@ -158,13 +158,33 @@ failures.push(...checkNegativeControlFailures())
 const skillDocuments = readdirSync(resolve('.agents/skills'), { withFileTypes: true })
   .filter((entry) => entry.isDirectory() && existsSync(resolve('.agents/skills', entry.name, 'SKILL.md')))
   .map((entry) => readFileSync(resolve('.agents/skills', entry.name, 'SKILL.md'), 'utf8'))
-failures.push(...alwaysLoadedBudgetFailures(readFileSync(resolve('AGENTS.md'), 'utf8'), skillDocuments))
 if (mode === 'source') {
+  failures.push(...alwaysLoadedBudgetFailures(readFileSync(resolve('AGENTS.md'), 'utf8'), skillDocuments))
   failures.push(...baselineEntryFailures(
     readFileSync(resolve('AGENTS.md'), 'utf8'),
     skillDocuments,
     readFileSync(resolve('scripts/loop/baseline.json'), 'utf8'),
   ))
+} else {
+  const targetBaseline = resolve('scripts/loop/baseline.json')
+  if (!existsSync(targetBaseline)) {
+    failures.push('target 문서 예산 baseline이 없다 — 첫 소비자 기준선을 세우고 대상 저장소의 상한을 기록한다')
+  } else {
+    const targetBaselineDocument = readFileSync(targetBaseline, 'utf8')
+    let targetBudget
+    try { targetBudget = JSON.parse(targetBaselineDocument).entry?.budgetCharacters } catch { targetBudget = null }
+    if (!Number.isInteger(targetBudget) || targetBudget <= 0) {
+      failures.push('target baseline의 entry.budgetCharacters는 양의 정수여야 한다')
+    } else {
+      failures.push(...baselineEntryFailures(
+        readFileSync(resolve('AGENTS.md'), 'utf8'),
+        skillDocuments,
+        targetBaselineDocument,
+        targetBudget,
+      ))
+    }
+  }
+  notes.push('target 문서 예산은 대상 baseline이 소유한다 (source 5,400자 상한 미적용)')
 }
 failures.push(...skillAdapterFailures())
 failures.push(...prohibitedAbstractionSourceFailures(readFileSync(resolve('eslint.config.js'), 'utf8')))

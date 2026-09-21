@@ -77,4 +77,10 @@ describe('fact 절 보존', () => {
     const after = fact.replace('1. 정렬 default 가 마지막 설정값인지.', '1. 정렬 default 가 마지막 설정값인지. (2026-09-17 재관찰: 원문 그대로)')
     expect(runFact(after)).toEqual([])
   })
+
+  it('fact의 제품 근거를 보존한 채 현재 코드 이력만 제거하면 통과한다', () => {
+    const beforeWithImplementation = `${fact}\n## 현재 코드\n\n2026-09-18 구현 상태 기록.\n`
+
+    expect(runFact(fact, beforeWithImplementation)).toEqual([])
+  })
 })

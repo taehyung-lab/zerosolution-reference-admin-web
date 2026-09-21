@@ -105,8 +105,3 @@ breadcrumb·발송 링크는 11.1 운영자 조회 artboard 를 복제한 잔재
 | 3 | 탈퇴 완료 뒤 **저장된 자격증명 처리**. 원문은 `로그인 화면으로 이동`만 말한다 | 이동만 하는가, 토큰까지 지우는가 | 제품 |
 | 4 | 탈퇴 비밀번호 불일치 메시지의 정확한 표기(`비밀버호` 오타) | 화면 문구 | 제품 |
 | 5 | frame 의 `이메일/SMS 발송` 링크가 내정보에도 있는 기능인지 | 헤더 액션이 있는가 | 제품 |
-
-## 현재 코드
-
-`src/features/profile/screens/profile-detail/` 와 `src/routes/_app/profile/index.tsx`.
-진입은 GNB 프로필 메뉴의 `내 정보` 다. 이 절의 수명은 [근거 수명 규칙](../policies/evidence.md)이 소유한다.

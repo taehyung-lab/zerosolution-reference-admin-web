@@ -79,7 +79,7 @@ Admin 그룹만 사용한다. 합본은 어드민 웹이 호출하지 않는 44�
 - **응답 코드 체계 (dev 서버 실측, 2026-08-27)**
   - 성공: HTTP 200 + `{"header":{"resultCode":200,"resultMessage":"SUCCESS"}, "data": ...}`
   - **업무 실패: HTTP 200 + `{"header":{"resultCode":2100,"resultMessage":"NOT EXIST"}, ...}`**
-    → HTTP 200만으로 성공을 판정하면 안 된다는 `api-contract` transport 경계의 근거가 실측으로 확인됐다
+    → HTTP 200만으로 성공을 판정하면 안 된다는 transport 경계의 근거가 실측으로 확인됐다
   - 입력값 실패: HTTP 400 + `data: [{field, validCode, message}]`
   - 인증 실패: HTTP 401 + `{"header":{"resultCode":401,...}, "data": null}`
   - 응답에 `x-request-id` 헤더는 **없다**
@@ -142,8 +142,8 @@ snapshot은 dev 출처 하나만 유지하고 환경별 snapshot 및 `api:pull:d
 
 리허설 계약에서 Orval이 endpoint 반환 타입 인자로 봉투 타입(`Rs...` = `{header?, data?}`)을 넘기는 사실을
 확인했다. mutator가 봉투를 벗기면서 타입을 그대로 두면 정적 타입이 런타임과 어긋나므로, 반환 타입 매핑
-규칙(`UnwrapEnvelope<T>`)은 `.agents/skills/api-wire/SKILL.md`의 "Envelope and errors"가 소유하고
-회귀는 `src/api/http/transport.test.ts`가 막는다.
+당시에는 봉투를 벗긴 런타임 값과 생성 타입을 함께 맞추는 규칙(`UnwrapEnvelope<T>`)을 두었고,
+그 선택의 회귀는 transport 단위 테스트로 확인했다. 현재 규칙과 파일 위치는 실행 코드와 검사가 소유한다.
 
 ## 결과
 

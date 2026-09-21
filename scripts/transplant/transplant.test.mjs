@@ -481,6 +481,9 @@ describe('plan / stage / apply against a target directory', () => {
     expect(existsSync(join(out, 'MANIFEST.json'))).toBe(true)
     expect(existsSync(join(out, 'docs/decisions/0005-single-screen-shape.md'))).toBe(true)
     expect(existsSync(join(out, 'docs/decisions/0014-single-screen-shape.md'))).toBe(false)
+    expect(readFileSync(join(out, 'docs/decisions/0005-single-screen-shape.md'), 'utf8')).toContain(
+      '- 상태: 채택 대기 — 대상 제품의 첫 실제 소비자와 검증이 채택 여부를 결정한다',
+    )
     const agents = readFileSync(join(out, 'AGENTS.md'), 'utf8')
     expect(agents).toContain('product/generated-index.md')
     expect(agents).not.toMatch(/ZERO|BOOSTER|zero-sol/)
@@ -495,6 +498,8 @@ describe('plan / stage / apply against a target directory', () => {
     expect(inventoryReadme).toContain('TRANSPLANT_PENDING_FACTS')
     expect(inventoryReadme).toContain('## frontmatter')
     expect(inventoryReadme).toContain('## 본문의 절')
+    expect(inventoryReadme).toContain('| 보류 |')
+    expect(inventoryReadme).not.toContain('현재 코드')
     expect(inventoryReadme).not.toMatch(/BOOSTER|loginId|ZERO|Ogb6WpSpwCVhKggQ1NLRlQ/)
     const scenariosReadme = readFileSync(join(out, 'product/generated-index.md'), 'utf8')
     // 색인은 생성물이라 뼈대가 비어 있고, 채우려면 fact 를 만든 뒤 다시 생성해야 한다.

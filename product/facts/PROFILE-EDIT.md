@@ -80,8 +80,3 @@ sources:
 | 2 | 이름·휴대폰번호·이메일·소속의 **길이·문자 제한**. 원문이 비밀번호만 적는다 | 그 필드의 검증 규칙 | 제품 |
 | 3 | `비밀번화 확인` placeholder 의 정확한 표기(원문 오타) | placeholder 문구 | 제품 |
 | 4 | 저장의 **서버 계약**(내 계정 수정 endpoint, 비밀번호 동봉 방식) | 요청 payload 와 실패 분류 | 서버 계약 |
-
-## 현재 코드
-
-`src/features/profile/screens/profile-form/` 와 `src/routes/_app/profile/edit.tsx`.
-이 절의 수명은 [근거 수명 규칙](../policies/evidence.md)이 소유한다.

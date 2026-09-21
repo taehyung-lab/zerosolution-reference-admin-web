@@ -11,6 +11,7 @@ import {
   ciWorkflowConcurrencyFailures,
   ciWorkflowScriptFailures,
   copilotAgentsPointerFailure,
+  collectDocumentFiles,
   documentBudgetNotices,
   headingAnchors,
   productNameNotices,
@@ -76,6 +77,25 @@ function createDocuments(files) {
   }
   return written
 }
+
+describe('운영 문서 수집', () => {
+  it('저장소 문서는 포함하고 세션용 docs/superpowers 작업물은 제외한다', () => {
+    const root = mkdtempSync(join(tmpdir(), 'contract-documents-'))
+    temporaryRoots.push(root)
+    mkdirSync(join(root, 'docs', 'decisions'), { recursive: true })
+    mkdirSync(join(root, 'docs', 'superpowers', 'plans'), { recursive: true })
+    writeFileSync(join(root, 'docs', 'decisions', 'kept.md'), '# kept\n')
+    writeFileSync(join(root, 'docs', 'superpowers', 'plans', 'session.md'), '# session\n')
+
+    const previous = process.cwd()
+    process.chdir(root)
+    try {
+      expect(collectDocumentFiles()).toEqual(['docs/decisions/kept.md'])
+    } finally {
+      process.chdir(previous)
+    }
+  })
+})
 
 const CHAIN = 'pnpm api:check && pnpm typecheck && pnpm lint'
 const PROJECTION = '| `pnpm verify` | **단일 검증 진입점.** api:check → typecheck → lint |'
@@ -516,13 +536,27 @@ describe('contracts check CLI wiring', () => {
     }
   })
 
-  it('target 모드는 source baseline 없이도 ENOENT로 죽지 않는다', () => {
+  it('target 모드는 자기 baseline이 없으면 명시적으로 실패하고 ENOENT로 죽지 않는다', () => {
     const baseline = resolve(fixtureRoot, 'scripts/loop/baseline.json')
     const original = readFileSync(baseline)
     try {
       rmSync(baseline)
       const result = runCheck(['--mode', 'target'])
+      expect(result.status).toBe(1)
+      expect(result.stderr).toContain('target 문서 예산 baseline이 없다')
       expect(result.stderr).not.toContain('ENOENT')
+    } finally { writeFileSync(baseline, original) }
+  })
+
+  it('target 모드는 source 상한 대신 자기 baseline 상한을 사용한다', () => {
+    const baseline = resolve(fixtureRoot, 'scripts/loop/baseline.json')
+    const original = readFileSync(baseline, 'utf8')
+    try {
+      const target = JSON.parse(original)
+      target.entry.budgetCharacters = 6000
+      writeFileSync(baseline, JSON.stringify(target))
+      const result = runCheck(['--mode', 'target'])
+      expect(result.stderr).not.toContain('budgetCharacters=5400')
     } finally { writeFileSync(baseline, original) }
   })
 
@@ -991,7 +1025,7 @@ describe('현재형 계약·제품 경로 인용', () => {
   it('가리킨 문서가 없으면 실패한다', () => {
     // 대조군: 링크가 아니라 백틱 표기라 markdown link 검사는 이 자리를 보지 못한다.
     expect(citedContractPathFailures(files, (path) => path !== 'contracts/contract/gone.md')).toEqual([
-      'AGENTS.md: 가리킨 계약·제품 문서가 없다 → contracts/contract/gone.md',
+      'AGENTS.md: 가리킨 live 경로가 없다 → contracts/contract/gone.md',
     ])
   })
 
@@ -1009,8 +1043,8 @@ describe('현재형 계약·제품 경로 인용', () => {
     }]
 
     expect(citedContractPathFailures(files, () => false)).toEqual([
-      'docs/decisions/x.md: 가리킨 계약·제품 문서가 없다 → .agents/skills/api-contract/references/auth-session.md',
-      'docs/decisions/x.md: 가리킨 계약·제품 문서가 없다 → .agents/skills/api-contract/references/transport.md',
+      'docs/decisions/x.md: 가리킨 live 경로가 없다 → .agents/skills/api-contract/references/auth-session.md',
+      'docs/decisions/x.md: 가리킨 live 경로가 없다 → .agents/skills/api-contract/references/transport.md',
     ])
   })
 
@@ -1055,9 +1089,9 @@ describe('현재형 계약·제품 경로 인용', () => {
     }]
 
     expect(citedContractPathFailures(files, () => false)).toEqual([
-      'docs/decisions/x.md: 가리킨 계약·제품 문서가 없다 → .agents/skills/gone/SKILL.md',
-      'docs/decisions/x.md: 가리킨 계약·제품 문서가 없다 → contracts/gone.md',
-      'docs/decisions/x.md: 가리킨 계약·제품 문서가 없다 → product/gone.md',
+      'docs/decisions/x.md: 가리킨 live 경로가 없다 → .agents/skills/gone/SKILL.md',
+      'docs/decisions/x.md: 가리킨 live 경로가 없다 → contracts/gone.md',
+      'docs/decisions/x.md: 가리킨 live 경로가 없다 → product/gone.md',
     ])
   })
 
@@ -1072,6 +1106,16 @@ describe('현재형 계약·제품 경로 인용', () => {
     }]
 
     expect(citedContractPathFailures(files, () => false)).toEqual([])
+  })
+  it('백틱으로 인용한 source와 script 경로도 검사한다', () => {
+    const liveFiles = [{
+      file: 'docs/decisions/x.md',
+      content: '`src/live.ts`와 `scripts/gone.mjs`를 함께 실행한다.',
+    }]
+
+    expect(citedContractPathFailures(liveFiles, (path) => path === 'src/live.ts')).toEqual([
+      'docs/decisions/x.md: 가리킨 live 경로가 없다 → scripts/gone.mjs',
+    ])
   })
 })
 
