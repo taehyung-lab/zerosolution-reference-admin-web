@@ -207,6 +207,9 @@ describe('limitSeedCatalog', () => {
     'export const SEED_BUNDLES = [',
     '  {',
     "    id: 'ascii-triplet',",
+    '    examples: [',
+    "      { files: ['src/features/managers/ManagerList.tsx'] },",
+    '    ],',
     "    code: ['src/shared/lib/ascii-triplet.ts'],",
     '  },',
     '  {',
@@ -233,6 +236,21 @@ describe('limitSeedCatalog', () => {
   it('is the identity for a full selection and refuses an id the catalog does not declare', () => {
     expect(limitSeedCatalog(catalog, ['ascii-triplet', 'data-table'])).toBe(catalog)
     expect(() => limitSeedCatalog(catalog, ['no-such-bundle'])).toThrow(/no-such-bundle/)
+  })
+
+  it('removes source consumers from the staged target catalog', () => {
+    const staged = limitSeedCatalog(catalog, ['ascii-triplet'], { examples: false })
+
+    expect(staged).toContain("id: 'ascii-triplet'")
+    expect(staged).not.toContain('src/features/managers')
+    expect(staged).not.toContain('examples:')
+  })
+
+  it('rejects an unclosed examples block instead of truncating the catalog', () => {
+    const malformed = catalog.replace('    ],\n', '')
+
+    expect(() => limitSeedCatalog(malformed, ['ascii-triplet'], { examples: false }))
+      .toThrow('seed examples 블록이 닫히지 않았다')
   })
 })
 
@@ -314,6 +332,47 @@ describe('plan / stage / apply against a target directory', () => {
     expect(empty.has('src/shared/lib/list-view.ts')).toBe(false)
     expect(ascii.has('src/shared/lib/ascii-triplet.ts')).toBe(true)
     expect(ascii.has('src/shared/lib/list-view.ts')).toBe(false)
+  })
+
+  it('keeps source-only decisions out of the default plan', () => {
+    const target = temporaryDirectory('decision-target-')
+    const files = new Set(planTransplant(target).map((item) => item.file))
+
+    expect(files.has('docs/decisions/0006-auth-token-storage.md')).toBe(false)
+    expect(files.has('docs/decisions/0003-datetime-utc.md')).toBe(false)
+    expect(files.has('docs/decisions/0005-locale-query-key.md')).toBe(false)
+    expect(files.has('docs/decisions/0008-primitive-implementation-selection.md')).toBe(false)
+    expect(files.has('docs/decisions/0014-single-screen-shape.md')).toBe(true)
+  })
+
+  it('carries the auth decision only with explicit transport-auth adoption', () => {
+    const target = temporaryDirectory('auth-decision-target-')
+    const files = new Set(planTransplant(target, { bundles: ['transport-auth'] }).map((item) => item.file))
+
+    expect(files.has('docs/decisions/0006-auth-token-storage.md')).toBe(true)
+  })
+
+  it('stages the explicit first-list set as an exact closed catalog', () => {
+    const selected = [
+      'draft-commit',
+      'search-partition',
+      'list-query',
+      'list-result',
+      'filter-surface',
+      'data-table',
+      'table-navigation',
+      'list-view',
+      'page-header',
+    ]
+    const target = temporaryDirectory('first-list-target-')
+    const out = temporaryDirectory('first-list-stage-')
+    stageTransplant(target, out, undefined, { bundles: selected })
+    const catalog = readFileSync(join(out, 'scripts/contracts/seed.mjs'), 'utf8')
+    const stagedIds = [...catalog.matchAll(/\bid:\s*'([^']+)'/g)].map((match) => match[1])
+
+    expect(stagedIds.sort()).toEqual([...selected].sort())
+    expect(catalog).not.toContain('src/features/managers')
+    expect(catalog).not.toContain('examples:')
   })
 
   it('classifies files, stages a renumbered product-neutral copy with a pending list, and never overwrites the target', () => {
@@ -451,7 +510,7 @@ describe('plan / stage / apply against a target directory', () => {
     expect(existsSync(join(out, 'product/generated-index.md'))).toBe(true)
   })
 
-  it('limits the seed code to the selected bundles while keeping every ADR the travelling skills and gates name', async () => {
+  it('limits seed code and carries only decisions owned by the selected bundle or portable manifest', async () => {
     const target = temporaryDirectory('transplant-target-')
     const out = temporaryDirectory('transplant-stage-')
 
@@ -461,16 +520,12 @@ describe('plan / stage / apply against a target directory', () => {
     expect(files.has('src/shared/lib/ascii-triplet.test.ts')).toBe(true)
     expect(files.has('src/shared/ui/list/ListResult.tsx')).toBe(false)
     expect(files.has('.agents/skills/list-contract/SKILL.md')).toBe(true)
-    // The skills and eslint.config.js travel whole and name these decisions, so the decisions travel with them.
-    for (const adr of [
-      'docs/decisions/0006-auth-token-storage.md',
-      'docs/decisions/0014-single-screen-shape.md',
-    ]) expect(files.has(adr)).toBe(true)
+    expect(files.has('docs/decisions/0006-auth-token-storage.md')).toBe(false)
+    expect(files.has('docs/decisions/0014-single-screen-shape.md')).toBe(true)
 
     const staged = stageTransplant(target, out, undefined, { bundles: ['ascii-triplet'] })
-    expect(staged.retired).toEqual(['0001'])
+    expect(staged.retired).toEqual(['0001', '0003', '0005', '0006', '0008'])
     expect(existsSync(join(out, 'docs/decisions/0005-single-screen-shape.md'))).toBe(true)
-    expect(staged.review.some((item) => item.number === '0001')).toBe(true)
     expect(() => planTransplant(target, { bundles: ['no-such-bundle'] })).toThrow(/no-such-bundle/)
 
     // The staged catalog is what the target's own gates read: it may not claim code that never travelled.
@@ -498,7 +553,7 @@ describe('plan / stage / apply against a target directory', () => {
   it('stages source-only evidence as a plain reference path', () => {
     const target = temporaryDirectory('transplant-target-')
     const out = temporaryDirectory('transplant-stage-')
-    const staged = stageTransplant(target, out, undefined, { bundles: ['ascii-triplet'] })
+    const staged = stageTransplant(target, out, undefined, { bundles: ['transport-auth'] })
 
     const auth = readFileSync(join(out, 'docs/decisions/0003-auth-token-storage.md'), 'utf8')
     expect(auth).toContain('레퍼런스 저장소 docs/decisions/0001-rehearsal-api-contract.md')

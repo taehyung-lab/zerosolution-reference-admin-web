@@ -197,7 +197,7 @@ export function restoreSourcePaths(text, collected) {
  * 오지 않은 code·test·skill marker 를 그대로 두면 대상이 없는 파일을 요구한다(실측: 대상 `contracts:check` 가
  * 이관되지 않은 공용 파일 없음으로 죽었다). 형식이 바뀌면 조용히 전부 내보내지 않고 여기서 실패한다.
  */
-export function limitSeedCatalog(text, ids) {
+export function limitSeedCatalog(text, ids, { examples = true } = {}) {
   const kept = new Set(ids)
   const lines = text.split('\n')
   const bundles = replaceCatalogBlock(lines, 'export const SEED_BUNDLES = [', ']', (body) => {
@@ -217,10 +217,25 @@ export function limitSeedCatalog(text, ids) {
     for (const id of kept) {
       if (!declared.has(id)) throw new Error(`seed 카탈로그에 없는 bundle: ${id}`)
     }
-    return chunks.filter((chunk) => kept.has(/^\s*id: '([^']+)'/m.exec(chunk.join('\n'))?.[1])).flat()
+    return chunks
+      .filter((chunk) => kept.has(/^\s*id: '([^']+)'/m.exec(chunk.join('\n'))?.[1]))
+      .map((chunk) => examples ? chunk : withoutExamples(chunk))
+      .flat()
   })
   return replaceCatalogBlock(bundles, 'export const SEED_BUNDLE_EXPORTS = {', '}', (body) =>
     body.filter((line) => kept.has(/^\s{2}'?([A-Za-z0-9-]+)'?:/.exec(line)?.[1]))).join('\n')
+}
+
+function withoutExamples(chunk) {
+  const start = chunk.findIndex((line) => /^\s+examples:\s*\[/.test(line))
+  if (start === -1) return chunk
+  let depth = 0
+  for (let index = start; index < chunk.length; index += 1) {
+    depth += [...chunk[index]].filter((character) => character === '[').length
+    depth -= [...chunk[index]].filter((character) => character === ']').length
+    if (depth === 0) return [...chunk.slice(0, start), ...chunk.slice(index + 1)]
+  }
+  throw new Error('seed examples 블록이 닫히지 않았다')
 }
 
 function replaceCatalogBlock(lines, opener, closer, transform) {
@@ -326,7 +341,9 @@ export function ledgerTemplates(sourceRoot, source, target) {
  */
 function sourceText(sourcePath, file, selected, stagedPaths) {
   const text = readFileSync(sourcePath, 'utf8')
-  if (file === 'scripts/contracts/seed.mjs') return limitSeedCatalog(text, selected.map((bundle) => bundle.id))
+  if (file === 'scripts/contracts/seed.mjs') {
+    return limitSeedCatalog(text, selected.map((bundle) => bundle.id), { examples: false })
+  }
   if (file === 'scripts/contracts/check.mjs') {
     const declaration = "const DEFAULT_MODE = 'source'"
     if (text.split(declaration).length !== 2) throw new Error('contracts check 기본 모드 선언이 바뀌었다')

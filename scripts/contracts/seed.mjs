@@ -187,7 +187,10 @@ export const SEED_BUNDLES = [
     id: 'period-draft',
     code: ['src/shared/model/use-period-draft.ts'],
     skills: [location('.agents/skills/source-structure/references/promotion.md', 'Shared logic', 'period preset/custom transitions')],
-    adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
+    adrs: [
+      location('docs/decisions/0003-datetime-utc.md', '소유권', '`src/shared/model/use-period-draft.ts`'),
+      location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가'),
+    ],
     tests: ['src/shared/model/use-period-draft.test.tsx'],
     ownership: {
       shared: 'Owns preset/custom draft transitions and conversion from explicit timezone inputs.',
@@ -784,10 +787,6 @@ export const TRANSPLANT_MANIFEST = {
   // 여기 있는 skill 전체와 `gates` 의 `eslint.config.js` 가 이름으로 가리키는 결정. 선택한 bundle 과 무관하게
   // 함께 나가야 그 문장들이 대상에서 끊기지 않는다.
   adrs: [
-    'docs/decisions/0003-datetime-utc.md',
-    'docs/decisions/0005-locale-query-key.md',
-    'docs/decisions/0006-auth-token-storage.md',
-    'docs/decisions/0008-primitive-implementation-selection.md',
     'docs/decisions/0014-single-screen-shape.md',
   ],
   conditional: [
