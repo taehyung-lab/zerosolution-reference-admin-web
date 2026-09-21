@@ -40,7 +40,7 @@ Never expose `resultMessage`, another raw server message, or a stack in UI. Safe
 
 Do not copy `X-Client-Path`, `X-Menu-Id`, `X-Write-Consistency`, a guessed replication-delay window, or SSE recovery coupling without a new backend contract. No reverse import from transport to app exists.
 
-Auth/reissue rules are owned by `.agents/skills/auth-session/SKILL.md`(미작성 — 인증·재발급을 바꿀 때 쓴다). Locale-sensitive transport and cache identity are owned by `.agents/skills/server-state/SKILL.md`.
+Auth/reissue rules are owned by `.agents/skills/auth-session/SKILL.md`. Locale-sensitive transport and cache identity are owned by `.agents/skills/server-state/SKILL.md`.
 
 ## OpenAPI snapshot
 

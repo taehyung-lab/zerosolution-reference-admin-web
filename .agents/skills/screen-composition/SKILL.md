@@ -8,7 +8,7 @@ description: >
 
 **답하는 질문**: 새 화면의 뼈대를 무엇으로 세우고, route 와 feature 가 무엇을 나눠 갖는가.
 
-**담지 않는 것**: 역할별 파일 집합 — `list.md`·`detail.md`·`form.md` 의 `형태` 절이다.
+**담지 않는 것**: 역할별 동작 — 선택된 역할 skill이 소유한다.
 파일이 어디 놓이는가 — `.agents/skills/source-structure/SKILL.md` 다.
 
 Read this file for a new ordinary screen skeleton, app-shell/navigation metadata, or when deciding how a screen's responsibilities split into files. List, detail, form, and specialized workflows have their own references.
