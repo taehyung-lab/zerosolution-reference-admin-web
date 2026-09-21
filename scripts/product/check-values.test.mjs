@@ -74,48 +74,67 @@ describe('fact verifier 허용 경계', () => {
     ])
   })
 
-  it('inline comment가 있는 checks와 여분 공백 list item의 verifier를 CLI까지 실행한다', () => {
+  it('block item과 flow mapping의 verifier를 CLI까지 선언 순서대로 실행한다', () => {
     const root = rootWithVerifyDir()
     const text = [
       '---',
       'id: X',
       'checks: # active checks',
-      '  -   id: first',
-      '    verify: scripts/verify/failing.mjs',
+      '  - id: first',
+      '    verify: scripts/verify/passing.mjs',
+      '  - { verify: scripts/verify/failing.mjs }',
       '---',
       '',
     ].join('\n')
     mkdirSync(join(root, 'product/facts'), { recursive: true })
     writeFileSync(join(root, 'product/facts/X.md'), text)
+    writeFileSync(join(root, 'scripts/verify/passing.mjs'), "console.log('passing ran')\n")
     writeFileSync(join(root, 'scripts/verify/failing.mjs'), 'process.exit(1)\n')
 
     expect(declaredVerifierPaths([{ file: 'X.md', text }])).toEqual([
+      { file: 'X.md', path: 'scripts/verify/passing.mjs' },
       { file: 'X.md', path: 'scripts/verify/failing.mjs' },
     ])
 
     const result = spawnSync(process.execPath, [runnerPath], { cwd: root, encoding: 'utf8' })
     expect(result.status).toBe(1)
+    expect(result.stdout).toContain('passing ran')
     expect(result.stderr).toContain('✗ scripts/verify/failing.mjs: verifier exit 1')
   })
 
-  it('인식할 수 없는 checks 선언은 parse error로 실패한다', () => {
-    const root = rootWithVerifyDir()
-    const entry = {
-      file: 'X.md',
-      text: '---\nid: X\nchecks: # active checks\n  verify: scripts/verify/failing.mjs\n---\n',
-    }
+  it('quoted verify key와 six-space continuation을 선언으로 읽는다', () => {
+    const text = [
+      '---',
+      'id: X',
+      'checks:',
+      '  -   id: wide',
+      '      "verify": scripts/verify/wide.mjs',
+      '  - { "verify": scripts/verify/quoted.mjs }',
+      '---',
+      '',
+    ].join('\n')
 
-    expect(resolveVerifierPaths([entry], root).errors).toEqual([
-      'X.md: checks 선언을 해석할 수 없다 → checks 항목은 목록이어야 한다',
+    expect(declaredVerifierPaths([{ file: 'X.md', text }])).toEqual([
+      { file: 'X.md', path: 'scripts/verify/wide.mjs' },
+      { file: 'X.md', path: 'scripts/verify/quoted.mjs' },
     ])
   })
 
-  it('scalar checks 선언은 verifier가 없더라도 parse error로 실패한다', () => {
+  it('malformed YAML frontmatter를 per-file parse error로 반환한다', () => {
     const root = rootWithVerifyDir()
-    const entry = { file: 'X.md', text: '---\nid: X\nchecks: []\n---\n' }
+    const entry = { file: 'X.md', text: '---\nid: X\nchecks:\n  - { verify: [ }\n---\n' }
 
     expect(resolveVerifierPaths([entry], root).errors).toEqual([
-      'X.md: checks 선언을 해석할 수 없다 → checks 선언 형식을 해석할 수 없다',
+      'X.md: frontmatter YAML을 해석할 수 없다',
+    ])
+  })
+
+  it('checks의 scalar item을 per-file parse error로 반환한다', () => {
+    const root = rootWithVerifyDir()
+    const entry = { file: 'X.md', text: '---\nid: X\nchecks:\n  - scripts/verify/failing.mjs\n---\n' }
+
+    expect(resolveVerifierPaths([entry], root).errors).toEqual([
+      'X.md: checks[0] 은 mapping 이어야 한다',
     ])
   })
 

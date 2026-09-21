@@ -3,6 +3,7 @@ import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from 'n
 import { spawnSync } from 'node:child_process'
 import { isAbsolute, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { parseDocument } from 'yaml'
 
 export function declaredVerifierPaths(entries) {
   const { paths, errors } = declaredVerifierResult(entries)
@@ -13,50 +14,31 @@ export function declaredVerifierPaths(entries) {
 function verifierPathsFromChecks(text) {
   if (!text.startsWith('---\n')) return { paths: [] }
   const end = text.indexOf('\n---\n', 4)
-  if (end === -1) return { paths: [] }
+  if (end === -1) return { paths: [], error: 'frontmatter YAML을 해석할 수 없다' }
+
+  const document = parseDocument(text.slice(4, end), { prettyErrors: false, uniqueKeys: true })
+  if (document.errors.length > 0) return { paths: [], error: 'frontmatter YAML을 해석할 수 없다' }
+
+  const frontmatter = document.toJS()
+  if (!isMapping(frontmatter) || !Object.hasOwn(frontmatter, 'checks')) return { paths: [] }
+  if (!Array.isArray(frontmatter.checks) || frontmatter.checks.length === 0) {
+    return { paths: [], error: 'checks 는 비어있지 않은 배열이어야 한다' }
+  }
 
   const paths = []
-  let inChecks = false
-  let itemIndent = null
-  for (const line of text.slice(4, end).split('\n')) {
-    if (!inChecks) {
-      const checks = /^checks:\s*(.*)$/.exec(line)
-      if (checks) {
-        if (checks[1] !== '' && !checks[1].startsWith('#')) {
-          return { paths, error: 'checks 선언 형식을 해석할 수 없다' }
-        }
-        inChecks = true
-      }
-      continue
+  for (const [index, check] of frontmatter.checks.entries()) {
+    if (!isMapping(check)) return { paths: [], error: `checks[${index}] 은 mapping 이어야 한다` }
+    if (!Object.hasOwn(check, 'verify')) continue
+    if (typeof check.verify !== 'string' || check.verify.trim() === '') {
+      return { paths: [], error: `checks[${index}].verify 는 비어있지 않은 문자열이어야 한다` }
     }
-    if (/^\s*(?:#.*)?$/.test(line)) continue
-    if (/^\S/.test(line)) break
-
-    const item = /^(\s*)-\s+([A-Za-z][A-Za-z0-9_-]*):\s*(.*?)\s*$/.exec(line)
-    if (item) {
-      if (itemIndent !== null && item[1].length !== itemIndent) {
-        return { paths, error: 'checks 항목 들여쓰기가 일치하지 않는다' }
-      }
-      itemIndent = item[1].length
-      if (item[2] === 'verify') paths.push(item[3])
-      continue
-    }
-
-    const property = /^(\s+)([A-Za-z][A-Za-z0-9_-]*):\s*(.*?)\s*$/.exec(line)
-    if (property) {
-      if (itemIndent === null) return { paths, error: 'checks 항목은 목록이어야 한다' }
-      if (property[2] === 'verify') {
-        if (property[1].length !== itemIndent + 2) {
-          return { paths, error: 'verify field 들여쓰기를 해석할 수 없다' }
-        }
-        paths.push(property[3])
-      }
-    }
+    paths.push(check.verify)
   }
-  if (!inChecks) return { paths }
-  if (itemIndent === null) return { paths, error: 'checks 항목은 목록이어야 한다' }
-  if (paths.length === 0) return { paths, error: 'checks 에 verify 선언이 없다' }
   return { paths }
+}
+
+function isMapping(value) {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
 
 function declaredVerifierResult(entries) {
@@ -65,7 +47,7 @@ function declaredVerifierResult(entries) {
   for (const { file, text } of entries) {
     const parsed = verifierPathsFromChecks(text)
     if (parsed.error) {
-      errors.push(`${file}: checks 선언을 해석할 수 없다 → ${parsed.error}`)
+      errors.push(`${file}: ${parsed.error}`)
       continue
     }
     paths.push(...parsed.paths.map((path) => ({ file, path })))
