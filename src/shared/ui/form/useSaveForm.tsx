@@ -46,6 +46,7 @@ export function useSaveForm<TInput, TOutput, TSection extends string, TSaveResul
   defaultValues,
   resetKey,
   sections,
+  blurValidator,
   save,
   mapError,
   onDone,
@@ -54,6 +55,14 @@ export function useSaveForm<TInput, TOutput, TSection extends string, TSaveResul
   readonly defaultValues: TInput;
   readonly resetKey?: string | number;
   readonly sections: Readonly<Record<TSection, readonly DeepKeys<TInput>[]>>;
+  /**
+   * Fields that must also say something on blur, before the form has ever been submitted — a
+   * cross-field mismatch the user should see when leaving the second input rather than at submit.
+   * Values in, one message per field out; the hook never reads a field name or its meaning.
+   */
+  readonly blurValidator?: (
+    values: TInput
+  ) => Partial<Record<DeepKeys<TInput>, string | undefined>>;
   readonly save: {
     readonly run: (values: TOutput) => Promise<TSaveResult>;
     readonly getDefaultValues?: (result: TSaveResult) => TInput | undefined;
@@ -75,7 +84,12 @@ export function useSaveForm<TInput, TOutput, TSection extends string, TSaveResul
   const form = useForm({
     defaultValues: formDefaults,
     validationLogic: revalidateLogic(),
-    validators: { onDynamic: schema },
+    validators: {
+      onDynamic: schema,
+      ...(blurValidator === undefined
+        ? {}
+        : { onBlur: ({ value }: { value: TInput }) => ({ fields: blurValidator(value) }) }),
+    },
     onSubmit: ({ value }) => {
       setStage({ kind: 'confirming', values: schema.parse(value), submitted: value });
     },
@@ -169,6 +183,7 @@ export function useSaveForm<TInput, TOutput, TSection extends string, TSaveResul
     isPending: save.isPending,
     run: () => {
       clearServerErrors();
+      if (blurValidator !== undefined) void form.validate('blur');
       return form.handleSubmit();
     },
     confirm,

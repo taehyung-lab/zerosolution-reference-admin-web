@@ -22,7 +22,7 @@
     "contracts:check": "node scripts/contracts/check.mjs",
     "product:index": "node scripts/product/build-index.mjs",
     "product:check": "node scripts/product/build-index.mjs --check",
-    "product:values": "node scripts/verify/contact-masking.mjs",
+    "product:values": "node scripts/product/check-values.mjs",
     "eval:routing": "node scripts/skills/eval-triggers.mjs",
     "observe": "node scripts/observe/entry.mjs",
     "transplant:plan": "node scripts/transplant/transplant.mjs plan",
@@ -91,7 +91,8 @@
     "typescript": "5.9.3",
     "typescript-eslint": "8.68.0",
     "vite": "8.2.2",
-    "vitest": "4.1.11"
+    "vitest": "4.1.11",
+    "yaml": "2.9.0"
   },
   "msw": {
     "workerDirectory": [

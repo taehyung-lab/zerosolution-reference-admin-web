@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { AlertDialog } from '@/shared/ui/dialog/AlertDialog';
 import { SelectionAlert } from '@/shared/ui/dialog/SelectionAlert';
 import { useConfirmation } from '@/shared/ui/dialog/useConfirmation';
 import { Button } from '@/shared/ui/primitives/Button';
@@ -12,21 +14,30 @@ import {
 
 /**
  * Figma 결과 toolbar 우측: `선택 ▾` + `변경` · `선택복사` · `등록`.
- * 일괄변경의 확인 lifecycle 과 거절·확인 팝업의 수명은 이 컴포넌트가 소유해 조회 상태가 바뀌어도
- * 열린 팝업이 사라지지 않는다. 선택복사는 확인이 없어 훅에서 바로 끝난다.
+ * 일괄변경은 원문의 3단계를 그대로 돈다 — 미선택 오류 alert → `선택 항목을 변경하시겠습니까?` 확인
+ * alert → `변경되었습니다.` 완료 alert. 완료를 확인하면 선택이 풀리고, 무효화된 조회가 바뀐 상태를
+ * 다시 그린다(원문 `확인 : alert 닫히고, 변경 상태로 화면 갱신됨`).
+ * 선택복사는 원문이 미선택 오류 alert 하나만 적어 확인·완료 없이 훅에서 끝난다.
+ * alert·확인창의 수명은 늘 mount 되는 이 컴포넌트가 소유해 조회 상태가 바뀌어도 열린 팝업이 사라지지 않는다.
  */
 export function PrinterListActions({
   selectedIds,
+  onChanged,
   onCreate,
 }: {
   readonly selectedIds: readonly string[];
+  readonly onChanged: () => void;
   readonly onCreate: () => void;
 }) {
   const { t } = useTranslation('ticketing');
   const { t: shared } = useTranslation('shared');
   const actions = usePrinterListActions(selectedIds);
+  const [completed, setCompleted] = useState(false);
   const confirmation = useConfirmation({
-    run: actions.runBulkChange,
+    run: async (request: Parameters<typeof actions.runBulkChange>[0]) => {
+      await actions.runBulkChange(request);
+      setCompleted(true);
+    },
     description: shared('bulkAction.confirm'),
   });
   const requestBulkChange = () => {
@@ -61,6 +72,16 @@ export function PrinterListActions({
       </div>
       <SelectionAlert controller={actions.gate} />
       {confirmation.dialog}
+      <AlertDialog
+        open={completed}
+        onOpenChange={(open) => {
+          if (!open) setCompleted(false);
+        }}
+        title={shared('alert.title')}
+        description={shared('bulkAction.completed')}
+        acknowledgeLabel={shared('bulkAction.acknowledge')}
+        onAcknowledge={onChanged}
+      />
     </>
   );
 }

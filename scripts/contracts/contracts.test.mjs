@@ -984,18 +984,93 @@ describe('scenario ledger index', () => {
   })
 })
 
-describe('백틱으로 가리킨 계약·제품 문서', () => {
+describe('현재형 계약·제품 경로 인용', () => {
   const files = [{ file: 'AGENTS.md', content: '읽을 계약은 `.agents/skills/list-contract/SKILL.md` 와 `contracts/contract/gone.md` 다.' }]
 
   it('가리킨 문서가 없으면 실패한다', () => {
     // 대조군: 링크가 아니라 백틱 표기라 markdown link 검사는 이 자리를 보지 못한다.
     expect(citedContractPathFailures(files, (path) => path !== 'contracts/contract/gone.md')).toEqual([
-      'AGENTS.md: 백틱으로 가리킨 계약·제품 문서가 없다 → contracts/contract/gone.md',
+      'AGENTS.md: 가리킨 계약·제품 문서가 없다 → contracts/contract/gone.md',
     ])
   })
 
   it('전부 실존하면 통과한다', () => {
     expect(citedContractPathFailures(files, () => true)).toEqual([])
+  })
+
+  it('백틱과 평문의 죽은 skill 경로를 모두 실패시킨다', () => {
+    const files = [{
+      file: 'docs/decisions/x.md',
+      content: [
+        '현재 소유자는 `.agents/skills/api-contract/references/transport.md`다.',
+        '현재 소유자는 .agents/skills/api-contract/references/auth-session.md 다.',
+      ].join('\n'),
+    }]
+
+    expect(citedContractPathFailures(files, () => false)).toEqual([
+      'docs/decisions/x.md: 가리킨 계약·제품 문서가 없다 → .agents/skills/api-contract/references/auth-session.md',
+      'docs/decisions/x.md: 가리킨 계약·제품 문서가 없다 → .agents/skills/api-contract/references/transport.md',
+    ])
+  })
+
+  it('과거 이름만 말하고 구체 경로를 주장하지 않으면 이 검사 대상이 아니다', () => {
+    const files = [{ file: 'docs/decisions/x.md', content: '당시 이름은 api-contract였다.' }]
+
+    expect(citedContractPathFailures(files, () => false)).toEqual([])
+  })
+
+  it('상대 Markdown link 안 경로는 이 검사 대상이 아니다', () => {
+    const files = [{ file: 'docs/decisions/x.md', content: '[검사 안내](../../../scripts/contracts/README.md)' }]
+
+    expect(citedContractPathFailures(files, () => false)).toEqual([])
+  })
+
+  it('외부 URL 안 경로는 이 검사 대상이 아니다', () => {
+    const files = [{ file: 'docs/decisions/x.md', content: 'https://example.test/contracts/README.md' }]
+
+    expect(citedContractPathFailures(files, () => false)).toEqual([])
+  })
+
+  it('임의 접두 경로는 이 검사 대상이 아니다', () => {
+    const files = [{ file: 'docs/decisions/x.md', content: 'archive/contracts/README.md' }]
+
+    expect(citedContractPathFailures(files, () => false)).toEqual([])
+  })
+
+  it('파일명 일부인 md 접미사는 이 검사 대상이 아니다', () => {
+    const files = [{ file: 'docs/decisions/x.md', content: 'contracts/README.mdx' }]
+
+    expect(citedContractPathFailures(files, () => false)).toEqual([])
+  })
+
+  it('문장부호로 끝난 죽은 정본 경로를 세 root에서 모두 실패시킨다', () => {
+    const files = [{
+      file: 'docs/decisions/x.md',
+      content: [
+        '.agents/skills/gone/SKILL.md.',
+        'contracts/gone.md.',
+        'product/gone.md.',
+      ].join('\n'),
+    }]
+
+    expect(citedContractPathFailures(files, () => false)).toEqual([
+      'docs/decisions/x.md: 가리킨 계약·제품 문서가 없다 → .agents/skills/gone/SKILL.md',
+      'docs/decisions/x.md: 가리킨 계약·제품 문서가 없다 → contracts/gone.md',
+      'docs/decisions/x.md: 가리킨 계약·제품 문서가 없다 → product/gone.md',
+    ])
+  })
+
+  it('직접 상대 Markdown destination은 이 검사 대상이 아니다', () => {
+    const files = [{
+      file: 'docs/decisions/x.md',
+      content: [
+        '[skill](.agents/skills/gone/SKILL.md)',
+        '[contract](contracts/gone.md)',
+        '[product](product/gone.md)',
+      ].join('\n'),
+    }]
+
+    expect(citedContractPathFailures(files, () => false)).toEqual([])
   })
 })
 

@@ -1220,19 +1220,20 @@
     {
       "id": "profile",
       "title": "내정보 조회·수정",
-      "coverage": "group",
+      "coverage": "surface",
       "inventory": "docs/reference/zero-sol/13-profile.md",
       "scenarios": [],
-      "paths": [],
+      "paths": [
+        "src/features/profile",
+        "src/routes/_app/profile"
+      ],
       "references": [
-        {
-          "file": "docs/reference/zero-sol-figma-analysis.md",
-          "heading": "8. 상세·폼·팝업 판정 (2026-09-02 ①′~②′, Claude·Codex 독립 초안 + 교차 리뷰)"
-        },
+        "product/facts/PROFILE-DETAIL.md",
+        "product/facts/PROFILE-EDIT.md",
         "docs/reference/zero-sol/notion/13-profile.md"
       ],
       "related": [],
-      "gap": "인벤토리는 조회·수정 frame 존재만 기록한다. 실제 필드·전이·별도 시나리오는 원문 확인 후 보강해야 한다."
+      "gap": "조회·수정 frame 을 판독해 product/facts/PROFILE-DETAIL.md · PROFILE-EDIT.md 로 옮겼다. 남은 미확인은 그 fact 의 표가 소유한다."
     },
     {
       "id": "onsite",

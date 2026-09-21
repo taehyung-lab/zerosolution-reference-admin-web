@@ -1,0 +1,43 @@
+{
+  "path": {
+    "profile": "マイ情報",
+    "detail": "照会",
+    "edit": "修正"
+  },
+  "detailTitle": "マイ情報照会",
+  "editTitle": "マイ情報修正",
+  "section": "運営者情報",
+  "fields": {
+    "id": "ID",
+    "password": "パスワード",
+    "name": "氏名",
+    "phone": "携帯電話番号",
+    "email": "メール",
+    "organization": "所属",
+    "registrationRoute": "登録経路",
+    "accountStatus": "アカウント状態"
+  },
+  "detail": {
+    "emptyValue": "-"
+  },
+  "actions": {
+    "edit": "修正",
+    "changePassword": "パスワード変更",
+    "changePasswordDescription": "変更するパスワードを入力してください。",
+    "changePasswordCompleted": "パスワードが変更されました。",
+    "withdraw": "退会",
+    "withdrawDescription": "退会後は直ちに退会が進行し、復元できません。\n退会を進めますか？",
+    "withdrawCompleted": "退会が完了しました。"
+  },
+  "form": {
+    "passwordEdit": "修正",
+    "password": "パスワード",
+    "passwordConfirm": "パスワード確認",
+    "passwordPlaceholder": "英大文字・小文字＋数字＋特殊文字のうち3種類以上、8～20文字",
+    "passwordConfirmPlaceholder": "パスワード確認",
+    "errors": {
+      "password": "英大文字・小文字、数字、特殊文字のうち3種類以上を組み合わせて入力してください。",
+      "passwordMismatch": "パスワードと同じ値を入力してください。"
+    }
+  }
+}

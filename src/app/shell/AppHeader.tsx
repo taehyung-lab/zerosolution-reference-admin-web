@@ -1,6 +1,7 @@
+import { Link } from "@tanstack/react-router";
 import { useState, type SubmitEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { requestGlobalSearch, requestMyInfo } from './shell-requests';
+import { requestGlobalSearch } from './shell-requests';
 
 export function AppHeader({
   appName,
@@ -43,9 +44,9 @@ export function AppHeader({
         <details>
           <summary className="cursor-pointer">{t("shell.profile")}</summary>
           <div className="absolute z-10 mt-2 rounded border bg-white p-2 shadow-sm">
-            <button className="block px-2 py-1 text-left" type="button" onClick={requestMyInfo}>
+            <Link className="block px-2 py-1 text-left" to="/profile">
               {t("shell.profileMenu.myInfo")}
-            </button>
+            </Link>
             <button
               className="block px-2 py-1 text-left"
               type="button"

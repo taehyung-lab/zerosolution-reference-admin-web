@@ -15,8 +15,9 @@
 
 ## 1.3 Alert · 1.4 공통화면 frame별 카피 (2026-08-31 원장에서 이관, 실측값)
 
-2026-09-06 헤더 구현 대조: 통합검색 제출·내 정보 클릭은 `app/shell/shell-requests.ts`에서 한글 요청 로그까지 연결한다.
-검색어는 출력하지 않으며 API·결과 route·내 정보 목적지는 미확정이다. 현장발권·알림은 비활성 진입으로 유지한다.
+2026-09-06 헤더 구현 대조: 통합검색 제출은 `app/shell/shell-requests.ts`에서 한글 요청 로그까지 연결한다.
+검색어는 출력하지 않으며 API·결과 route는 미확정이다. 현장발권·알림은 비활성 진입으로 유지한다.
+2026-09-17: `내 정보`의 목적지가 확정돼 GNB 메뉴가 `/profile` 링크가 됐다(근거는 [PROFILE-DETAIL](../../../product/facts/PROFILE-DETAIL.md)).
 
 `1.3 Alert` 9개 top-level frame의 title은 모두 `알림`이다.
 
