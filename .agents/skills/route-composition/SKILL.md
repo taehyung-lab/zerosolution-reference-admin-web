@@ -54,12 +54,16 @@ server-state library.
 
 Independent prerequisites may use `Promise.all`. Do not create a second loader-only query definition or fetch generated operations directly.
 
-A detail or edit route awaits its record: `loader: ({ context, params, preload }) => loadRequired(context.queryClient, xDetailQueryOptions(context.locale, params.id), { preload })` (`src/app/router/required-loader.ts`). `loadRequired` turns a `not-found` ApiError into Router `notFound({ data: { kind: 'record' } })`, so a missing ID renders the not-found page with the record sentence — inside the shell, because `_app` declares `notFoundComponent`/`errorComponent` around the same components the root declares shell-less. A 403 belongs to `IncidentBoundary` alone: the loader republishes the incident with `origin: 'route-loader'` (never on preload), the boundary shows the access cover, and the error component renders nothing underneath ([catalog Feedback](../shared-ui/references/catalog.md#feedback)). Any other failure renders the unexpected-error page. The screen keeps `useDetailQuery` + `DetailStateBoundary` for transitions after entry only (refetch failure, a record deleted meanwhile), so detail queries do not declare `blockingProgress`; the awaited query has no observer while the loader runs, and the router's `defaultPendingComponent` (`RoutePending`) is the wait surface after the router's default pending delay. `contracts:check` fails a `$param` route leaf under `src/routes/_app` without a loader.
+A detail or edit entry waits for the record when the screen cannot render meaningfully without it. Missing records become
+the Router's not-found result; confirmed auth/access failures go to the app incident boundary; other entry failures use
+the route error boundary. Preload must not show an incident. After entry, the screen owns refetch and meanwhile-deleted
+transitions. Exact loader helpers, meta fields, shell files, and component names belong to current code and tests.
 
 Auxiliary option data renders its own loading/error/retry state, so a route works without warming it. Warming is optional,
 non-blocking, and never replaces that field state; its exact Query/Router call belongs to the installed API and current code.
 
-Loaders read `context.locale`; components read `useLocale().locale`. The app-level Router provider projects locale changes into the existing Router context and never recreates the Router.
+Loaders and components read the same app-boundary locale fact. Locale changes update Router context without creating a
+second locale owner; the exact provider API belongs to current code.
 
 ## 형태
 

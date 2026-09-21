@@ -57,4 +57,12 @@ describe('fact 집합의 정합성', () => {
     narrated.text += '\n## 현재 코드\n\n화면이 구현돼 있다.\n'
     expect(factIndexFailures([narrated]).errors).toContain('A.md: 현재 코드 절 대신 근거가 있는 보류만 남긴다')
   })
+
+  it('보류 절의 bullet 밖 구현 서술을 거부한다', () => {
+    const narrated = fact('A')
+    narrated.text += '\n## 보류\n\n현재 구현은 src/features/demo.tsx에 있다.\n'
+    expect(factIndexFailures([narrated]).errors).toContain(
+      'A.md: 보류는 미확인 번호를 가진 bullet만 허용한다 → 현재 구현은 src/features/demo.tsx에 있다.',
+    )
+  })
 })

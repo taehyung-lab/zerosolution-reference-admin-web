@@ -15,13 +15,16 @@ description: >
 
 ## Transport boundary
 
-One project Axios instance owns base URL, cancellation, confirmed credentials, `Accept-Language`, request ID extraction, and normalized errors. It never navigates or renders toast/dialog UI. Replication delay, menu context, client path, and other custom headers require an explicit backend contract; do not copy them from another project.
+One project transport boundary owns base URL, cancellation, confirmed credentials and headers, request tracing, and
+normalized errors. Its library and adapter API are current-code choices. It never navigates or renders UI. Custom headers
+require an explicit backend contract; do not copy them from another project.
 
 ## Envelope and errors
 
 If the declared response is `{ header: { resultCode, resultMessage }, data }`, HTTP 200 is not sufficient for success. One boundary checks the documented success codes, unwraps successful `data`, and converts every failure before it reaches Query or UI.
 
-When the generator types an endpoint with the envelope itself (`{ header?, data? }`), the mutator that unwraps `data` must also unwrap the static type: map the return type through `UnwrapEnvelope<T>` (`T extends { data?: infer D } ? Exclude<D, undefined> : T`) so callers receive `Promise<Data>`, never a cast or `any`. A test that reads a field of the unwrapped result directly guards the regression.
+When a boundary unwraps a declared payload wrapper, its static return type must describe the same unwrapped value. Exact
+type helpers and generator adapters belong to current code; casts do not prove agreement.
 
 Canonicalize supported failure `data` shapes into one field-error array. Keep server `message` for redacted developer logs only; UI copy is chosen from confirmed `code` or `validCode` through i18n.
 
@@ -42,43 +45,15 @@ Do not copy `X-Client-Path`, `X-Menu-Id`, `X-Write-Consistency`, a guessed repli
 
 Auth/reissue rules are owned by `.agents/skills/auth-session/SKILL.md`. Locale-sensitive transport and cache identity are owned by `.agents/skills/server-state/SKILL.md`.
 
-## OpenAPI snapshot
+## Schema source and generated output
 
-Read this file only when work touches the API snapshot, generator, generated output, or offline generation checks.
+When the target uses generated clients, one reviewable schema source and a reproducible offline generation step own the
+wire types. A clean checkout validates that source, regenerates, and typechecks a real generated import before project
+code. Network drift checks stay outside the local build. Exact generator, paths, commands, and committed/generated policy
+belong to `README.md`, `package.json`, and executable configuration.
 
-## Sources and generated output
-
-```text
-remote Admin OpenAPI
-  -- explicit api:pull --> openapi/admin.snapshot.json (committed)
-  -- api:generate -----> src/api/generated/** (gitignored)
-                                |
-                                v
-                         features/*/api/**
-```
-
-- `openapi/admin.snapshot.json` is the reviewable declared contract.
-- `orval.config.ts`, the lockfile, and the custom Axios mutator are committed.
-- `api:generate` is offline and consumes only the snapshot.
-- `api:check` validates the snapshot, reproduces offline generation, and typechecks a real generated import without contacting Swagger.
-- `api:pull` is the only normal command that contacts Swagger. It must leave a reviewable snapshot diff.
-- Generated output is gitignored, so `postinstall` runs offline `api:generate` after install and `api:check` reproduces it inside `verify`/CI. No `dev`, `typecheck`, or CI command may depend on Swagger availability.
-- A scheduled or explicit remote-drift check may compare Swagger with the snapshot. It is evidence, not the build source.
-
-A clean clone uses this invariant:
-
-```text
-api:generate
-→ typecheck a real generated import
-→ project typecheck
-→ lint/test/build
-```
-
-`pnpm verify` and CI preserve this dependency order. Listing a generation check after project typecheck is invalid when generated output is gitignored.
-
-Generate typed models and endpoint functions with Orval. Do not generate project-owned TanStack Query hooks, keys, invalidation policy, UI schemas, or domain models.
-
-Runtime validation and mismatch handling are owned by [contract-validation.md](#계약-검증). Transport and envelope errors are owned by [transport.md](#transport-boundary).
+Generate wire models and endpoint functions only. Query keys, cache policy, UI schemas, and domain models remain
+project-owned unless the target explicitly adopts another boundary.
 
 ## 계약 검증
 

@@ -82,7 +82,11 @@ export function factIndexFailures(entries) {
     const unknownSection = /^## 미확인\s*$([\s\S]*?)(?=^## |(?![\s\S]))/m.exec(text)?.[1] ?? ''
     const unknownNumbers = new Set([...unknownSection.matchAll(/^\|\s*(\d+)\s*\|/gm)].map((match) => match[1]))
     const deferredSection = /^## 보류\s*$([\s\S]*?)(?=^## |(?![\s\S]))/m.exec(text)?.[1] ?? ''
-    for (const line of deferredSection.split('\n').filter((item) => /^\s*-\s+/.test(item))) {
+    const deferredLines = deferredSection.split('\n').filter((item) => item.trim() !== '')
+    for (const line of deferredLines.filter((item) => !/^\s*-\s+/.test(item))) {
+      errors.push(`${file}: 보류는 미확인 번호를 가진 bullet만 허용한다 → ${line.trim()}`)
+    }
+    for (const line of deferredLines.filter((item) => /^\s*-\s+/.test(item))) {
       const references = [...line.matchAll(/미확인\s+(\d+)/g)].map((match) => match[1])
       if (references.length === 0) errors.push(`${file}: 보류 항목은 같은 fact의 미확인 번호를 가리켜야 한다`)
       for (const number of references) {

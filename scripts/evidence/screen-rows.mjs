@@ -7,9 +7,8 @@ import { resolve } from 'node:path'
  * so gates can compare against product facts instead of only checking declaration shape. A table
  * without an `id` column, or a row with an empty one, is simply not migrated yet.
  *
- * Ownership stays in the inventory README linked by `docs/reference/product.json`: these rows are the denominator
- * of completeness, scenario cards own verification, and `현재 코드` is a discovery pointer. Nothing
- * here reports implementation completeness.
+ * Ownership stays in the legacy inventory while a surface has not moved to product/facts. Migrated surfaces use
+ * product/generated-index.md; implementation completeness remains owned by code and executable checks.
  */
 export const ROW_KINDS = ['열거', '서술', 'ref', 'n/a']
 /** Cells the ledger uses for "nothing here"; any of them reads as empty. */
