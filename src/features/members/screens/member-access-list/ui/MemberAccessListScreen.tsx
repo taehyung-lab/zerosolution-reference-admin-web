@@ -1,14 +1,14 @@
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/shared/ui/layout/PageHeader';
+import { PagedListResult } from '@/shared/ui/list/PagedListResult';
+import { standardPageSizeOptions } from '@/shared/lib/list-options';
+import { accessSortKeys } from '@/features/members/model/member-records';
 import { accessListSearch, type AccessListSearch, type AccessListView } from '../model/access-list-search';
 import { useAccessListData } from '../model/useAccessListData';
 import { useAccessListFilter } from '../model/useAccessListFilter';
 import { AccessListActions } from './AccessListActions';
 import { AccessListFilters } from './AccessListFilters';
 import { useAccessListResult } from './useAccessListResult';
-import { PagedListResult } from '@/shared/ui/list/PagedListResult';
-import { standardPageSizeOptions } from '@/shared/lib/list-options';
-import { accessSortKeys } from '@/features/members/model/member-records';
 
 /** 4.5 회원접속 목록. 검색 전에는 조회하지 않고, 검색 뒤 선택한 행 또는 조건 전체를 다운로드 요청에 넘긴다. */
 export function MemberAccessListScreen({
@@ -31,7 +31,7 @@ export function MemberAccessListScreen({
     <section>
       <PageHeader title={t('screens.access')} breadcrumbs={[t('path.members'), t('screens.access')]} />
       <AccessListFilters filter={filter} />
-<PagedListResult
+      <PagedListResult
         data={{ rows, ...data }}
         total={total}
         view={result.view}

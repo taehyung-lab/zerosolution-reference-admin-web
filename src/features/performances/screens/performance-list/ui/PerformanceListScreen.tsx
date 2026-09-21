@@ -5,13 +5,13 @@ import {
   type PerformanceListSearch,
   type PerformanceListView,
 } from '../model/performance-list-search';
+import { PagedListResult } from '@/shared/ui/list/PagedListResult';
+import { standardPageSizeOptions } from '@/shared/lib/list-options';
+import { performanceSortKeys } from '@/features/performances/model/performance';
 import { usePerformanceListData } from '../model/usePerformanceListData';
 import { usePerformanceListFilter } from '../model/usePerformanceListFilter';
 import { PerformanceListFilters } from './PerformanceListFilters';
 import { usePerformanceListResult } from './usePerformanceListResult';
-import { PagedListResult } from '@/shared/ui/list/PagedListResult';
-import { standardPageSizeOptions } from '@/shared/lib/list-options';
-import { performanceSortKeys } from '@/features/performances/model/performance';
 
 /**
  * 5.2 공연 목록. 조립만 하고 상태는 각 소유자에 둔다.
@@ -38,7 +38,7 @@ export function PerformanceListScreen({
     <section>
       <PageHeader title={t('title')} />
       <PerformanceListFilters filter={filter} />
-<PagedListResult
+      <PagedListResult
         data={{ rows, ...data }}
         total={total}
         view={result.view}

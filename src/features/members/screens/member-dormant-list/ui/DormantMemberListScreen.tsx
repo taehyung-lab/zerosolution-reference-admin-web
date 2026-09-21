@@ -1,15 +1,15 @@
 import { useTranslation } from 'react-i18next';
 import type { MemberMessageChannel } from '@/features/members/model/member';
 import { PageHeader } from '@/shared/ui/layout/PageHeader';
+import { PagedListResult } from '@/shared/ui/list/PagedListResult';
+import { standardPageSizeOptions } from '@/shared/lib/list-options';
+import { dormantSortKeys } from '@/features/members/model/member-records';
 import { dormantListSearch, type DormantListSearch, type DormantListView } from '../model/dormant-list-search';
 import { useDormantListData } from '../model/useDormantListData';
 import { useDormantListFilter } from '../model/useDormantListFilter';
 import { DormantListActions } from './DormantListActions';
 import { DormantListFilters } from './DormantListFilters';
 import { useDormantListResult } from './useDormantListResult';
-import { PagedListResult } from '@/shared/ui/list/PagedListResult';
-import { standardPageSizeOptions } from '@/shared/lib/list-options';
-import { dormantSortKeys } from '@/features/members/model/member-records';
 
 /**
  * 4.3 휴면회원 목록. 조립만 하고 상태는 각 소유자에 둔다. route 는 검증한 sparse search 를 넘기고 화면이 한 번
@@ -39,7 +39,7 @@ export function DormantMemberListScreen({
     <section>
       <PageHeader title={t('screens.dormant')} breadcrumbs={[t('path.members'), t('screens.dormant')]} />
       <DormantListFilters filter={filter} />
-<PagedListResult
+      <PagedListResult
         data={{ rows, ...data }}
         total={total}
         view={result.view}

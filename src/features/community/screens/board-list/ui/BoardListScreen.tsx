@@ -5,14 +5,14 @@ import {
   type BoardListSearch,
   type BoardListView,
 } from '../model/board-list-search';
-import { useBoardListData } from '../model/useBoardListData';
-import { useBoardListFilter } from '../model/useBoardListFilter';
-import { BoardListFilters } from './BoardListFilters';
-import { useBoardListResult } from './useBoardListResult';
 import { PagedListResult } from '@/shared/ui/list/PagedListResult';
 import { standardPageSizeOptions } from '@/shared/lib/list-options';
 import { Button } from '@/shared/ui/primitives/Button';
 import { boardSortKeys } from '@/features/community/model/board';
+import { useBoardListData } from '../model/useBoardListData';
+import { useBoardListFilter } from '../model/useBoardListFilter';
+import { BoardListFilters } from './BoardListFilters';
+import { useBoardListResult } from './useBoardListResult';
 
 /**
  * 9.1 게시판 목록. 조립만 하고 상태는 각 소유자에 둔다.

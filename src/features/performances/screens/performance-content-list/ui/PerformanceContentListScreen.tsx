@@ -6,15 +6,15 @@ import {
   type ContentListSearch,
   type ContentListView,
 } from '../model/content-list-search';
+import { PagedListResult } from '@/shared/ui/list/PagedListResult';
+import { standardPageSizeOptions } from '@/shared/lib/list-options';
+import { contentSortKeys } from '@/features/performances/model/content';
 import { useContentListData } from '../model/useContentListData';
 import { useContentListFilter } from '../model/useContentListFilter';
 import { ContentListActions } from './ContentListActions';
 import { ContentListFilters } from './ContentListFilters';
 import { ContentPreviewDialog } from './ContentPreviewDialog';
 import { useContentListResult } from './useContentListResult';
-import { PagedListResult } from '@/shared/ui/list/PagedListResult';
-import { standardPageSizeOptions } from '@/shared/lib/list-options';
-import { contentSortKeys } from '@/features/performances/model/content';
 
 /**
  * 5.1 콘텐츠 목록. 조립만 하고 상태는 각 소유자에 둔다.
@@ -46,7 +46,7 @@ export function PerformanceContentListScreen({
     <section>
       <PageHeader title={t('content.title')} />
       <ContentListFilters filter={filter} />
-<PagedListResult
+      <PagedListResult
         data={{ rows, ...data }}
         total={total}
         view={result.view}

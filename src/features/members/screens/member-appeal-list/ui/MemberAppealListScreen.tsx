@@ -1,15 +1,15 @@
 import { useTranslation } from 'react-i18next';
 import type { MemberMessageChannel } from '@/features/members/model/member';
 import { PageHeader } from '@/shared/ui/layout/PageHeader';
+import { PagedListResult } from '@/shared/ui/list/PagedListResult';
+import { standardPageSizeOptions } from '@/shared/lib/list-options';
+import { appealSortKeys } from '@/features/members/model/member-records';
 import { appealListSearch, type AppealListSearch, type AppealListView } from '../model/appeal-list-search';
 import { useAppealListData } from '../model/useAppealListData';
 import { useAppealListFilter } from '../model/useAppealListFilter';
 import { AppealListActions } from './AppealListActions';
 import { AppealListFilters } from './AppealListFilters';
 import { useAppealListResult } from './useAppealListResult';
-import { PagedListResult } from '@/shared/ui/list/PagedListResult';
-import { standardPageSizeOptions } from '@/shared/lib/list-options';
-import { appealSortKeys } from '@/features/members/model/member-records';
 
 /** 4.7 불량회원 소명신청 목록. 진입 즉시 조회한다. 행 클릭은 소명신청 조회로, SMS·이메일은 route 가 조립한다. */
 export function MemberAppealListScreen({
@@ -34,7 +34,7 @@ export function MemberAppealListScreen({
     <section>
       <PageHeader title={t('screens.appeals')} breadcrumbs={[t('path.members'), t('screens.appeals')]} />
       <AppealListFilters filter={filter} />
-<PagedListResult
+      <PagedListResult
         data={{ rows, ...data }}
         total={total}
         view={result.view}

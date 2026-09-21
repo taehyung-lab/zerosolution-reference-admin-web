@@ -70,7 +70,6 @@ export const EXAMPLE_SYMBOL_SUBSTITUTIONS = [
   ['useManagerListFilter', 'use{Domain}ListFilter'],
   ['useManagerListResult', 'use{Domain}ListResult'],
   ['useManagerDetail', 'use{Domain}Detail'],
-  ['ManagerListResult', '{Domain}ListResult'],
   ['ManagerCreateScreen', '{Domain}CreateScreen'],
   ['ManagerForm', '{Domain}Form'],
 ]

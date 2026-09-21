@@ -16,8 +16,8 @@ surface: `manager-list`
 | `manager-list.permission-filter` | 서술 | 11.1 | **option-source select** | 권한: 단일 select, 옵션 = 서버 권한명 목록(`{권한명}` 반복) | 목록은 사용 상태인 전체 권한 중 택1; 등록·수정만 선택 유형에 종속 | 실제 옵션 계약 | `src/features/managers/api/useManagerOptions.ts` |
 | `manager-list.filters` | 열거 | 11.1 | 다중선택 | 유형(전체·기획사·매표처), 가입경로(전체·WEB·APP), 계정 상태(전체·대기·거절·활성·비활성·잠금…) | (대기) | 리허설 `INACTIVE`와 거절·비활성·잠금 대응 | `src/features/managers/screens/manager-list/ui/ManagerListFilters.tsx` |
 | `manager-list.toolbar` | 열거 | 11.1 | toolbar | 보기·정렬(가입일·최근접속일·유형·소속·아이디·이름·휴대폰번호·이메일·권한·가입경로·계정 상태). 우측 `선택▾`+`변경` · `등록` | 변경 대상은 계정 상태 > 활성/비활성, 대기·거절·잠금은 제외 | 전부 변경 불가인 선택의 후속 UX | `src/features/managers/screens/manager-list/ui/useManagerListResult.ts` · `src/features/managers/screens/manager-list/ui/ManagerListActions.tsx` |
-| `manager-list.table` | 열거 | 11.1 | table | checkbox. 유형·소속·아이디·이름·휴대폰번호·이메일·권한·가입경로·계정 상태·가입일(정렬)·최근접속일 | 행 클릭→상세 | 실제 정렬·검색 응답 계약 | `src/features/managers/screens/manager-list/ui/manager-list-columns.tsx` · `src/features/managers/screens/manager-list/ui/ManagerListResult.tsx` |
-| `manager-list.empty` | 서술 | 11.1 | 빈 결과 | (미판독) | 메시지 `일치하는 검색결과가 없습니다.` — [원문](notion/99-cross-screen.md) 등장 화면에 설정 > 운영자 | — | `src/features/managers/screens/manager-list/ui/ManagerListResult.tsx` |
+| `manager-list.table` | 열거 | 11.1 | table | checkbox. 유형·소속·아이디·이름·휴대폰번호·이메일·권한·가입경로·계정 상태·가입일(정렬)·최근접속일 | 행 클릭→상세 | 실제 정렬·검색 응답 계약 | `src/features/managers/screens/manager-list/ui/manager-list-columns.tsx` · `src/features/managers/screens/manager-list/ui/ManagerListScreen.tsx`(`PagedListResult`) |
+| `manager-list.empty` | 서술 | 11.1 | 빈 결과 | (미판독) | 메시지 `일치하는 검색결과가 없습니다.` — [원문](notion/99-cross-screen.md) 등장 화면에 설정 > 운영자 | — | `src/features/managers/screens/manager-list/ui/ManagerListScreen.tsx`(`PagedListResult`) |
 
 ## 11.1 운영자 — 상세
 

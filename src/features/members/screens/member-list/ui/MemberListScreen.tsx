@@ -1,6 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import type { MemberMessageChannel } from '@/features/members/model/member';
 import { PageHeader } from '@/shared/ui/layout/PageHeader';
+import { PagedListResult } from '@/shared/ui/list/PagedListResult';
+import { standardPageSizeOptions } from '@/shared/lib/list-options';
+import { memberSortKeys } from '@/features/members/model/member';
 import type { MemberListDefinition } from '../model/member-list-definition';
 import { memberListSearch, type MemberListSearch, type MemberListView } from '../model/member-list-search';
 import { useMemberListData } from '../model/useMemberListData';
@@ -8,9 +11,6 @@ import { useMemberListFilter } from '../model/useMemberListFilter';
 import { MemberListActions } from './MemberListActions';
 import { MemberListFilters } from './MemberListFilters';
 import { useMemberListResult } from './useMemberListResult';
-import { PagedListResult } from '@/shared/ui/list/PagedListResult';
-import { standardPageSizeOptions } from '@/shared/lib/list-options';
-import { memberSortKeys } from '@/features/members/model/member';
 
 /**
  * 4.1 활성 회원 목록(전체·일반·불량). 조립만 하고 상태는 각 소유자에 둔다.
@@ -49,7 +49,7 @@ export function MemberListScreen({
         tooltip={definition.tooltip ? { content: t('screens.allTooltip'), label: t('screens.help') } : undefined}
       />
       <MemberListFilters filter={filter} definition={definition} />
-<PagedListResult
+      <PagedListResult
         data={{ rows, ...data }}
         total={total}
         view={result.view}

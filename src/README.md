@@ -36,9 +36,9 @@ src/
 | 층 간 조립 | `routes/` |
 | shared | `shared/` (+ `api/` 는 shared 위의 전송 층) |
 
-층을 접은 이유는 화면 하나를 고칠 때 한 도메인 폴더 안에서 끝나게 하려는 것이다. 대신 규칙 둘이 남는다:
-feature 는 다른 feature 를 import 하지 않고(route 가 조립한다), 화면은 형제 화면을 import 하지 않는다(나눠 쓰는
-것은 도메인 `shared` 로 올린다). 둘 다 lint 가 잡는다.
+층을 접은 이유는 화면 하나를 고칠 때 한 도메인 폴더 안에서 끝나게 하려는 것이다. 그 대신 지켜지는 두 경계
+(feature 사이, 형제 화면 사이)의 정본은 `eslint.config.js` 의 zone 과
+[`source-structure`](../.agents/skills/source-structure/references/dependency-direction.md) 다. 여기서는 위치만 가리킨다.
 
 ## 자주 묻는 것
 

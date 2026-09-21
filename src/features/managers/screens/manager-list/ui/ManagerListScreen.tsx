@@ -5,14 +5,14 @@ import {
   type ManagerListSearch,
   type ManagerListView,
 } from '../model/manager-list-search';
+import { PagedListResult } from '@/shared/ui/list/PagedListResult';
+import { standardPageSizeOptions } from '@/shared/lib/list-options';
+import { managerSortKeys } from '@/features/managers/model/manager';
 import { useManagerListData } from '../model/useManagerListData';
 import { useManagerListFilter } from '../model/useManagerListFilter';
 import { ManagerListActions } from './ManagerListActions';
 import { ManagerListFilters } from './ManagerListFilters';
 import { useManagerListResult } from './useManagerListResult';
-import { PagedListResult } from '@/shared/ui/list/PagedListResult';
-import { standardPageSizeOptions } from '@/shared/lib/list-options';
-import { managerSortKeys } from '@/features/managers/model/manager';
 
 /**
  * 11.1 운영자 목록(설정 > 운영자). 조립만 하고 상태는 각 소유자에 둔다.
@@ -41,7 +41,7 @@ export function ManagerListScreen({
     <section>
       <PageHeader title={t('title')} breadcrumbs={[t('path.settings'), t('path.managers')]} />
       <ManagerListFilters filter={filter} />
-<PagedListResult
+      <PagedListResult
         data={{ rows, ...data }}
         total={total}
         view={result.view}

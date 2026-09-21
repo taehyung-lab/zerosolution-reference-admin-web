@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCounselInquiryOptions } from '@/features/members/api/useCounselOptions';
 import { PageHeader } from '@/shared/ui/layout/PageHeader';
+import { PagedListResult } from '@/shared/ui/list/PagedListResult';
+import { standardPageSizeOptions } from '@/shared/lib/list-options';
+import { counselSortKeys } from '@/features/members/model/member-records';
 import { counselListSearch, type CounselListSearch, type CounselListView } from '../model/counsel-list-search';
 import { useCounselListData } from '../model/useCounselListData';
 import { useCounselListFilter } from '../model/useCounselListFilter';
@@ -9,9 +12,6 @@ import { CounselDetailDialog } from './CounselDetailDialog';
 import { CounselListActions } from './CounselListActions';
 import { CounselListFilters } from './CounselListFilters';
 import { useCounselListResult } from './useCounselListResult';
-import { PagedListResult } from '@/shared/ui/list/PagedListResult';
-import { standardPageSizeOptions } from '@/shared/lib/list-options';
-import { counselSortKeys } from '@/features/members/model/member-records';
 
 /**
  * 4.6 회원상담 목록. 진입 즉시 조회하고, 행을 클릭하면 같은 화면 위에 상담 팝업(문의·기록 CRUD·재발권)을 연다.
@@ -37,7 +37,7 @@ export function MemberCounselListScreen({
     <section>
       <PageHeader title={t('screens.counsel')} breadcrumbs={[t('path.members'), t('screens.counsel')]} />
       <CounselListFilters filter={filter} inquiryOptions={inquiryOptions} />
-<PagedListResult
+      <PagedListResult
         data={{ rows, ...data }}
         total={total}
         view={result.view}

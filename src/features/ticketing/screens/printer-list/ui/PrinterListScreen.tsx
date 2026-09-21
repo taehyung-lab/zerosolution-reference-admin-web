@@ -5,14 +5,14 @@ import {
   type PrinterListSearch,
   type PrinterListView,
 } from '../model/printer-list-search';
+import { PagedListResult } from '@/shared/ui/list/PagedListResult';
+import { standardPageSizeOptions } from '@/shared/lib/list-options';
+import { printerSortKeys } from '@/features/ticketing/model/printer';
 import { usePrinterListData } from '../model/usePrinterListData';
 import { usePrinterListFilter } from '../model/usePrinterListFilter';
 import { PrinterListActions } from './PrinterListActions';
 import { PrinterListFilters } from './PrinterListFilters';
 import { usePrinterListResult } from './usePrinterListResult';
-import { PagedListResult } from '@/shared/ui/list/PagedListResult';
-import { standardPageSizeOptions } from '@/shared/lib/list-options';
-import { printerSortKeys } from '@/features/ticketing/model/printer';
 
 /**
  * 6.7.1 스마트프린터 목록(발권 > 부가기능). 조립만 하고 상태는 각 소유자에 둔다.
@@ -48,7 +48,7 @@ export function PrinterListScreen({
         title={t('printer.title')}
       />
       <PrinterListFilters filter={filter} />
-<PagedListResult
+      <PagedListResult
         data={{ rows, ...data }}
         total={total}
         view={result.view}

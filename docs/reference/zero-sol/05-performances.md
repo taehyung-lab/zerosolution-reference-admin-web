@@ -26,7 +26,7 @@
 | `performance-list.period` | 열거 | 5.2 | 기간 | 기준 공연일·최근업데이트일 | **공연일·등록일·최근업데이트일 채택**(2026-09-06 사용자: Notion 기준). 초기 선택 공연일·preset 전체(2026-09-07 Aside에서 5.2.1 원본 재관찰) | — | `PeriodFilterField` + feature options |
 | `performance-list.venue-lookup` | 서술 | 5.2 | 공연장 lookup | 검색 input + 결과 행 | **택1, 삭제 후 재선택**, 사용 중인 공연장명 검색(원문 및 사용자 확인) | 검색 API·사용상태 식별자 | `InlineSearchSelect` + feature 옵션·라벨, fixture 입력만 |
 | `performance-list.filters` | 열거 | 5.2 (`43656:5808` Case) | 검색어·다중선택 | 5.1과 동일 대상. 구분·공연유형·공연장 lookup + **예매처**(원본 전체 집합은 Notion 열 참조) | 공연유형 7개·예매처 6개 + 전체. [원문 선택지](notion/05-performances.md) | API 식별자 | `PerformanceListFilters` |
-| `performance-list.result-summary` | 열거 | 5.2 (`43656:2077`) | 결과 요약 | `검색결과 : 1,000` | 빈 결과: `일치하는 검색결과가 없습니다.` | — | `PerformanceListResult` + `shared:list.total` |
+| `performance-list.result-summary` | 열거 | 5.2 (`43656:2077`) | 결과 요약 | `검색결과 : 1,000` | 빈 결과: `일치하는 검색결과가 없습니다.` | — | `PerformanceListScreen` 의 `PagedListResult` + `shared:list.total` |
 | `performance-list.view-sort` | 열거 | 5.2 (`43656:2077` 안 `5.2.1. 공연목록`) | toolbar 좌 보기·정렬 | 2026-09-21 aside 실측: `검색결과 : 1,000` 아래에 `보기`(100)·`정렬`(등록일) select 두 개, 그 아래 표. 같은 줄 우측 버튼 없음 | 보기: URL 값 우선, 없으면 상수 기본값 100(화면 Notion이 다른 값을 표기하면 그 값), 방문 간 기억 없음 — [판정 질문 1](../zero-sol-figma-analysis.md) 2026-09-09 사용자 확정, 목록 공통 | 정렬 방향 전환 UI (`Q3`) | `search-schema.ts`(보기·정렬 기본값), `performanceSortTypes` |
 | `performance-list.toolbar-right` | n/a | 5.2 | toolbar 우 | **action 없음** | (대기) | — | — |
 | `performance-list.table` | 열거 | 5.2 | table | **checkbox 없음**, `No.` 역순 번호 컬럼. 구분·공연유형·공연명·총회차·출연자·주최/기획·공연기간·장소·예매처·최근업데이트일(정렬) | (대기) | 행 클릭→조회 | `performance-columns.tsx` + `DataTable` |

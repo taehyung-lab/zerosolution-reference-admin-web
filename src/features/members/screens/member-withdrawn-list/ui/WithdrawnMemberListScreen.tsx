@@ -1,14 +1,14 @@
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/shared/ui/layout/PageHeader';
 import { Button } from '@/shared/ui/primitives/Button';
+import { PagedListResult } from '@/shared/ui/list/PagedListResult';
+import { standardPageSizeOptions } from '@/shared/lib/list-options';
+import { withdrawnSortKeys } from '@/features/members/model/member-records';
 import { useWithdrawnListData } from '../model/useWithdrawnListData';
 import { useWithdrawnListFilter } from '../model/useWithdrawnListFilter';
 import { withdrawnListSearch, type WithdrawnListSearch, type WithdrawnListView } from '../model/withdrawn-list-search';
 import { useWithdrawnListResult } from './useWithdrawnListResult';
 import { WithdrawnListFilters } from './WithdrawnListFilters';
-import { PagedListResult } from '@/shared/ui/list/PagedListResult';
-import { standardPageSizeOptions } from '@/shared/lib/list-options';
-import { withdrawnSortKeys } from '@/features/members/model/member-records';
 
 /**
  * 4.4 탈퇴회원 목록. toolbar 액션은 `등록` 하나라 별도 액션 훅·컴포넌트 없이 여기서 조립한다.
@@ -36,7 +36,7 @@ export function WithdrawnMemberListScreen({
     <section>
       <PageHeader title={t('screens.withdrawn')} breadcrumbs={[t('path.members'), t('screens.withdrawn')]} />
       <WithdrawnListFilters filter={filter} />
-<PagedListResult
+      <PagedListResult
         data={{ rows, ...data }}
         total={total}
         view={result.view}
