@@ -36,7 +36,10 @@ Segment names are the product's external URL contract and need not match the scr
 
 ## Search and navigation
 
-Use a feature-owned Zod 4 schema directly as TanStack Router's Standard Schema validator; do not add `@tanstack/zod-adapter` while its peer contract is Zod 3. Invalid optional search fields recover to declared defaults with schema fallback, while missing resource params/not-found remain explicit failures. A loader that reads search declares `loaderDeps` from validated search.
+Use one feature-owned schema as the Router validator. The installed Router/schema types and executable tests decide the
+compatible adapter API; this contract does not pin a library major. Invalid optional search fields recover to declared
+defaults, while missing resource params/not-found remain explicit failures. A loader that reads search declares
+dependencies from validated search.
 
 Committed filter, sort, page, page size, and shareable tab state live in route search. Field declarations, resolution, canonical form, and transitions are owned by [list.md](../list-contract/SKILL.md#url). This file owns only their Router integration.
 
@@ -44,13 +47,17 @@ Committed filter, sort, page, page size, and shareable tab state live in route s
 
 A list route's loader is optional (option warming only). A detail or edit route's loader is required: it awaits the record (below). Other legitimate uses are redirect, data-dependent entry permission, and named first-paint readiness. The route and screen call the same exported query options.
 
-Trigger and waiting are separate decisions. Use the current QueryClient `query` API: await `queryClient.query(options)` only for data that must be ready before entry, and start independent auxiliary warming with `void queryClient.query(options).catch(...)`. Do not introduce `ensureQueryData`, `prefetchQuery`, `fetchQuery`, or `fetchInfiniteQuery`: TanStack Query 5.102 marks them `@deprecated` in favour of `queryClient.query`/`infiniteQuery` (verified in the installed `query-core` types), and `@typescript-eslint/no-deprecated` fails the build on any deprecated library API. Configure `defaultPreload: 'intent'` only when desired and set `defaultPreloadStaleTime: 0` so Router does not become a second server-cache freshness owner above TanStack Query.
+Trigger and waiting are separate decisions. Await only data that must be ready before entry and start independent
+auxiliary warming without turning it into an entry failure. Use the installed QueryClient's supported API; types and lint
+own deprecation, not this portable contract. Router preload must not become a second cache-freshness owner above the
+server-state library.
 
 Independent prerequisites may use `Promise.all`. Do not create a second loader-only query definition or fetch generated operations directly.
 
 A detail or edit route awaits its record: `loader: ({ context, params, preload }) => loadRequired(context.queryClient, xDetailQueryOptions(context.locale, params.id), { preload })` (`src/app/router/required-loader.ts`). `loadRequired` turns a `not-found` ApiError into Router `notFound({ data: { kind: 'record' } })`, so a missing ID renders the not-found page with the record sentence — inside the shell, because `_app` declares `notFoundComponent`/`errorComponent` around the same components the root declares shell-less. A 403 belongs to `IncidentBoundary` alone: the loader republishes the incident with `origin: 'route-loader'` (never on preload), the boundary shows the access cover, and the error component renders nothing underneath ([catalog Feedback](../shared-ui/references/catalog.md#feedback)). Any other failure renders the unexpected-error page. The screen keeps `useDetailQuery` + `DetailStateBoundary` for transitions after entry only (refetch failure, a record deleted meanwhile), so detail queries do not declare `blockingProgress`; the awaited query has no observer while the loader runs, and the router's `defaultPendingComponent` (`RoutePending`) is the wait surface after the router's default pending delay. `contracts:check` fails a `$param` route leaf under `src/routes/_app` without a loader.
 
-Option queries declare `meta.progress: 'inline'` and their field renders its own loading/error/retry state, so a route works without warming them. A route may still warm them with `void queryClient.query(options).catch(() => undefined)`; with `defaultPreload: 'intent'` this runs on link hover. Warming is optional; the field state is the contract.
+Auxiliary option data renders its own loading/error/retry state, so a route works without warming it. Warming is optional,
+non-blocking, and never replaces that field state; its exact Query/Router call belongs to the installed API and current code.
 
 Loaders read `context.locale`; components read `useLocale().locale`. The app-level Router provider projects locale changes into the existing Router context and never recreates the Router.
 
