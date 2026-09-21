@@ -22,7 +22,7 @@
     "contracts:check": "node scripts/contracts/check.mjs",
     "product:index": "node scripts/product/build-index.mjs",
     "product:check": "node scripts/product/build-index.mjs --check",
-    "product:values": "node scripts/verify/contact-masking.mjs",
+    "product:values": "node scripts/product/run-checks.mjs",
     "eval:routing": "node scripts/skills/eval-triggers.mjs",
     "observe": "node scripts/observe/entry.mjs",
     "transplant:plan": "node scripts/transplant/transplant.mjs plan",

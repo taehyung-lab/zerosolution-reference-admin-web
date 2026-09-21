@@ -30,6 +30,7 @@ pnpm dev
 | `pnpm verify` | **단일 검증 진입점.** api:check → contracts:check → product:check → product:values → typecheck → lint → test:unit → i18n:check → gates:negative → build → test:e2e:verify |
 | `pnpm api:check` | snapshot 검증 + Orval 생성 + 생성물 typecheck |
 | `pnpm contracts:check` | 규범 문서와 저장소 설정의 기계적 정합성. verify 체인 투영, `pnpm` 명령·로컬 link, 문서 notice와 항상 로드되는 `AGENTS.md + description` 5,400자 상한, 런타임 포인터·skill 어댑터, 이관 sentinel, API 이음매, seed 폐쇄, 이관 manifest를 검사한다. `--mode target`은 이관된 저장소용이다 |
+| `pnpm product:values` | fact가 선언한 제품 값 검사를 모두 실행한다 |
 | `pnpm transplant:plan` · `transplant:stage` · `transplant:apply` · `transplant:verify` | 신규 저장소 이관 명령(`--target <repo>`). bundle 생략은 코드가 선언한 Foundation, `--bundles`는 명시적 opt-in이다. plan은 분류, stage는 대상용 사본과 `PENDING.md`, apply는 대상에 없는 파일만 복사하며, 첫 실제 대상의 API·auth·브라우저 수용 전 검증 상한은 `경계까지 확인됨`이다 |
 | `pnpm eval:routing -- --runtime all --suite smoke` | Claude·Codex·Copilot 각 런타임에 재표현 15건, 총 45회 호출한다. `full`은 런타임당 45건, 총 135회라 루트·description·라우팅 구조를 바꿀 때만 쓴다. `requiredContracts`와 관측 가능한 `actuallyLoadedSkills`를 분리하며 실행 불가는 exit 2와 `unconfirmed`다. 원시 로그는 저장소에 넣지 않는다 |
 | `pnpm api:pull` / `api:diff` | 원격 Swagger 수집·차이 분석. 네트워크가 필요하므로 `verify` 밖의 별도 작업이다 |
