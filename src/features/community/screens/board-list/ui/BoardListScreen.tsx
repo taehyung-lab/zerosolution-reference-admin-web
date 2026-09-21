@@ -8,8 +8,11 @@ import {
 import { useBoardListData } from '../model/useBoardListData';
 import { useBoardListFilter } from '../model/useBoardListFilter';
 import { BoardListFilters } from './BoardListFilters';
-import { BoardListResult } from './BoardListResult';
 import { useBoardListResult } from './useBoardListResult';
+import { PagedListResult } from '@/shared/ui/list/PagedListResult';
+import { standardPageSizeOptions } from '@/shared/model/list-options';
+import { Button } from '@/shared/ui/primitives/Button';
+import { boardSortKeys } from '@/features/community/model/board';
 
 /**
  * 9.1 게시판 목록. 조립만 하고 상태는 각 소유자에 둔다.
@@ -41,12 +44,17 @@ export function BoardListScreen({
         title={t('board.title')}
       />
       <BoardListFilters filter={filter} />
-      <BoardListResult
+      <PagedListResult
         data={{ rows, ...data }}
         total={total}
-        result={result}
-        onActivate={onActivate}
-        onCreate={onCreate}
+        view={result.view}
+        columns={result.columns}
+        getRowId={(row) => row.id}
+        onRowActivate={(row) => onActivate(row.id)}
+        actions={<Button onClick={onCreate}>{t('board.result.create')}</Button>}
+        copy={{ empty: t('board.result.empty') }}
+        pageSizeOptions={standardPageSizeOptions}
+        sortOptions={boardSortKeys.map((value) => ({ value, label: t(`board.sort.${value}`) }))}
       />
     </section>
   );

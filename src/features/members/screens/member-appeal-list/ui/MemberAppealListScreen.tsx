@@ -6,8 +6,10 @@ import { useAppealListData } from '../model/useAppealListData';
 import { useAppealListFilter } from '../model/useAppealListFilter';
 import { AppealListActions } from './AppealListActions';
 import { AppealListFilters } from './AppealListFilters';
-import { AppealListResult } from './AppealListResult';
 import { useAppealListResult } from './useAppealListResult';
+import { PagedListResult } from '@/shared/ui/list/PagedListResult';
+import { standardPageSizeOptions } from '@/shared/model/list-options';
+import { appealSortKeys } from '@/features/members/model/member-records';
 
 /** 4.7 불량회원 소명신청 목록. 진입 즉시 조회한다. 행 클릭은 소명신청 조회로, SMS·이메일은 route 가 조립한다. */
 export function MemberAppealListScreen({
@@ -32,12 +34,17 @@ export function MemberAppealListScreen({
     <section>
       <PageHeader title={t('screens.appeals')} breadcrumbs={[t('path.members'), t('screens.appeals')]} />
       <AppealListFilters filter={filter} />
-      <AppealListResult
+<PagedListResult
         data={{ rows, ...data }}
         total={total}
-        result={result}
+        view={result.view}
+        columns={result.columns}
+        getRowId={(row) => row.id}
+        onRowActivate={(row) => onActivate(row.id)}
         actions={<AppealListActions selectedIds={result.selection.selectedIds} onMessage={onMessage} />}
-        onActivate={onActivate}
+        copy={{ empty: t('result.empty') }}
+        pageSizeOptions={standardPageSizeOptions}
+        sortOptions={appealSortKeys.map((value) => ({ value, label: t(`fields.${value}`) }))}
       />
     </section>
   );

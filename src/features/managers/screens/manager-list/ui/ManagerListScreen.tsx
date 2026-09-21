@@ -9,8 +9,10 @@ import { useManagerListData } from '../model/useManagerListData';
 import { useManagerListFilter } from '../model/useManagerListFilter';
 import { ManagerListActions } from './ManagerListActions';
 import { ManagerListFilters } from './ManagerListFilters';
-import { ManagerListResult } from './ManagerListResult';
 import { useManagerListResult } from './useManagerListResult';
+import { PagedListResult } from '@/shared/ui/list/PagedListResult';
+import { standardPageSizeOptions } from '@/shared/model/list-options';
+import { managerSortKeys } from '@/features/managers/model/manager';
 
 /**
  * 11.1 운영자 목록(설정 > 운영자). 조립만 하고 상태는 각 소유자에 둔다.
@@ -39,10 +41,13 @@ export function ManagerListScreen({
     <section>
       <PageHeader title={t('title')} breadcrumbs={[t('path.settings'), t('path.managers')]} />
       <ManagerListFilters filter={filter} />
-      <ManagerListResult
+<PagedListResult
         data={{ rows, ...data }}
         total={total}
-        result={result}
+        view={result.view}
+        columns={result.columns}
+        getRowId={(row) => row.id}
+        onRowActivate={(row) => onActivate(row.id)}
         actions={
           <ManagerListActions
             searched={search.searched}
@@ -51,7 +56,9 @@ export function ManagerListScreen({
             onCreate={onCreate}
           />
         }
-        onActivate={onActivate}
+        copy={{ notSearched: t('result.notSearched'), empty: t('result.empty') }}
+        pageSizeOptions={standardPageSizeOptions}
+        sortOptions={managerSortKeys.map((value) => ({ value, label: t(`fields.${value}`) }))}
       />
     </section>
   );

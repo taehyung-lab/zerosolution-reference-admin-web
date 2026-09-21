@@ -9,8 +9,10 @@ import { usePrinterListData } from '../model/usePrinterListData';
 import { usePrinterListFilter } from '../model/usePrinterListFilter';
 import { PrinterListActions } from './PrinterListActions';
 import { PrinterListFilters } from './PrinterListFilters';
-import { PrinterListResult } from './PrinterListResult';
 import { usePrinterListResult } from './usePrinterListResult';
+import { PagedListResult } from '@/shared/ui/list/PagedListResult';
+import { standardPageSizeOptions } from '@/shared/model/list-options';
+import { printerSortKeys } from '@/features/ticketing/model/printer';
 
 /**
  * 6.7.1 스마트프린터 목록(발권 > 부가기능). 조립만 하고 상태는 각 소유자에 둔다.
@@ -46,14 +48,17 @@ export function PrinterListScreen({
         title={t('printer.title')}
       />
       <PrinterListFilters filter={filter} />
-      <PrinterListResult
+<PagedListResult
         data={{ rows, ...data }}
         total={total}
-        result={result}
-        actions={
-          <PrinterListActions selectedIds={result.selection.selectedIds} onCreate={onCreate} />
-        }
-        onActivate={onActivate}
+        view={result.view}
+        columns={result.columns}
+        getRowId={(row) => row.id}
+        onRowActivate={(row) => onActivate(row.id)}
+        actions={<PrinterListActions selectedIds={result.selection.selectedIds} onCreate={onCreate} />}
+        copy={{ empty: t('printer.result.empty') }}
+        pageSizeOptions={standardPageSizeOptions}
+        sortOptions={printerSortKeys.map((value) => ({ value, label: t(`printer.sort.${value}`) }))}
       />
     </section>
   );

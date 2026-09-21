@@ -8,8 +8,10 @@ import {
 import { usePerformanceListData } from '../model/usePerformanceListData';
 import { usePerformanceListFilter } from '../model/usePerformanceListFilter';
 import { PerformanceListFilters } from './PerformanceListFilters';
-import { PerformanceListResult } from './PerformanceListResult';
 import { usePerformanceListResult } from './usePerformanceListResult';
+import { PagedListResult } from '@/shared/ui/list/PagedListResult';
+import { standardPageSizeOptions } from '@/shared/model/list-options';
+import { performanceSortKeys } from '@/features/performances/model/performance';
 
 /**
  * 5.2 공연 목록. 조립만 하고 상태는 각 소유자에 둔다.
@@ -36,7 +38,17 @@ export function PerformanceListScreen({
     <section>
       <PageHeader title={t('title')} />
       <PerformanceListFilters filter={filter} />
-      <PerformanceListResult data={{ rows, ...data }} total={total} result={result} onActivate={onActivate} />
+<PagedListResult
+        data={{ rows, ...data }}
+        total={total}
+        view={result.view}
+        columns={result.columns}
+        getRowId={(row) => row.id}
+        onRowActivate={(row) => onActivate(row.id)}
+        copy={{ empty: t('result.empty') }}
+        pageSizeOptions={standardPageSizeOptions}
+        sortOptions={performanceSortKeys.map((value) => ({ value, label: t(`fields.${value}`) }))}
+      />
     </section>
   );
 }

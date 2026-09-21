@@ -10,9 +10,11 @@ import { useContentListData } from '../model/useContentListData';
 import { useContentListFilter } from '../model/useContentListFilter';
 import { ContentListActions } from './ContentListActions';
 import { ContentListFilters } from './ContentListFilters';
-import { ContentListResult } from './ContentListResult';
 import { ContentPreviewDialog } from './ContentPreviewDialog';
 import { useContentListResult } from './useContentListResult';
+import { PagedListResult } from '@/shared/ui/list/PagedListResult';
+import { standardPageSizeOptions } from '@/shared/model/list-options';
+import { contentSortKeys } from '@/features/performances/model/content';
 
 /**
  * 5.1 콘텐츠 목록. 조립만 하고 상태는 각 소유자에 둔다.
@@ -44,16 +46,21 @@ export function PerformanceContentListScreen({
     <section>
       <PageHeader title={t('content.title')} />
       <ContentListFilters filter={filter} />
-      <ContentListResult
+<PagedListResult
         data={{ rows, ...data }}
         total={total}
-        result={result}
+        view={result.view}
+        columns={result.columns}
+        getRowId={(row) => row.id}
         actions={
           <ContentListActions
             selectedIds={result.selection.selectedIds}
             onChanged={result.selection.clear}
           />
         }
+        copy={{ empty: t('content.result.empty') }}
+        pageSizeOptions={standardPageSizeOptions}
+        sortOptions={contentSortKeys.map((value) => ({ value, label: t(`content.fields.${value}`) }))}
       />
       {previewId === undefined ? null : (
         <ContentPreviewDialog contentId={previewId} onClose={() => setPreviewId(undefined)} />

@@ -6,8 +6,10 @@ import { useDormantListData } from '../model/useDormantListData';
 import { useDormantListFilter } from '../model/useDormantListFilter';
 import { DormantListActions } from './DormantListActions';
 import { DormantListFilters } from './DormantListFilters';
-import { DormantListResult } from './DormantListResult';
 import { useDormantListResult } from './useDormantListResult';
+import { PagedListResult } from '@/shared/ui/list/PagedListResult';
+import { standardPageSizeOptions } from '@/shared/model/list-options';
+import { dormantSortKeys } from '@/features/members/model/member-records';
 
 /**
  * 4.3 휴면회원 목록. 조립만 하고 상태는 각 소유자에 둔다. route 는 검증한 sparse search 를 넘기고 화면이 한 번
@@ -37,10 +39,13 @@ export function DormantMemberListScreen({
     <section>
       <PageHeader title={t('screens.dormant')} breadcrumbs={[t('path.members'), t('screens.dormant')]} />
       <DormantListFilters filter={filter} />
-      <DormantListResult
+<PagedListResult
         data={{ rows, ...data }}
         total={total}
-        result={result}
+        view={result.view}
+        columns={result.columns}
+        getRowId={(row) => row.id}
+        onRowActivate={(row) => onActivate(row.id)}
         actions={
           <DormantListActions
             searched={search.searched}
@@ -49,7 +54,9 @@ export function DormantMemberListScreen({
             onMessage={onMessage}
           />
         }
-        onActivate={onActivate}
+        copy={{ notSearched: t('result.notSearched'), empty: t('result.empty') }}
+        pageSizeOptions={standardPageSizeOptions}
+        sortOptions={dormantSortKeys.map((value) => ({ value, label: t(`fields.${value}`) }))}
       />
     </section>
   );
