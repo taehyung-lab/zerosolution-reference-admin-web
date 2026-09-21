@@ -300,7 +300,7 @@ export function ledgerTemplates(sourceRoot, source, target) {
     '```yaml',
     'id: <불변 ID. 파일 이름과 같다>',
     'title: <사람이 읽는 화면 이름>',
-    'role: list | detail | form | collection | shared-ui | api | policy',
+    'role: list | detail | form | collection | specialized | shared-ui | api | policy',
     'status: 관찰됨 | 확정됨 | 미확인',
     'related: [<다른 fact 의 ID>]',
     'sources:',

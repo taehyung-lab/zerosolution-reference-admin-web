@@ -24,7 +24,7 @@ const legacyIndexPath = join(root, LEGACY_LEDGER.index)
 const checkOnly = process.argv.includes('--check')
 
 const REQUIRED = ['id', 'title', 'role', 'status']
-const ROLES = new Set(['list', 'detail', 'form', 'collection', 'shared-ui', 'api', 'policy'])
+const ROLES = new Set(['list', 'detail', 'form', 'collection', 'specialized', 'shared-ui', 'api', 'policy'])
 const STATUSES = new Set(['관찰됨', '확정됨', '미확인'])
 
 function parseFrontmatter(text, file) {

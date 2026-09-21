@@ -784,6 +784,8 @@ export const TRANSPLANT_MANIFEST = {
     'product/policies',
     'scripts/product/build-index.mjs',
     'scripts/product/build-index.test.mjs',
+    'scripts/product/run-checks.mjs',
+    'scripts/product/run-checks.test.mjs',
   ],
   // 여기 있는 skill 전체와 `gates` 의 `eslint.config.js` 가 이름으로 가리키는 결정. 선택한 bundle 과 무관하게
   // 함께 나가야 그 문장들이 대상에서 끊기지 않는다.

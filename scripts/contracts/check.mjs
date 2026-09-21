@@ -165,7 +165,17 @@ if (mode === 'source') {
     readFileSync(resolve('scripts/loop/baseline.json'), 'utf8'),
   ))
 } else {
-  notes.push('target 문서 예산은 첫 소비자 기준선을 세운 뒤 대상 저장소가 소유한다 (source 5,400자 상한 미적용)')
+  const targetBaseline = resolve('scripts/loop/baseline.json')
+  if (!existsSync(targetBaseline)) {
+    failures.push('target 문서 예산 baseline이 없다 — 첫 소비자 기준선을 세우고 대상 저장소의 상한을 기록한다')
+  } else {
+    failures.push(...baselineEntryFailures(
+      readFileSync(resolve('AGENTS.md'), 'utf8'),
+      skillDocuments,
+      readFileSync(targetBaseline, 'utf8'),
+    ))
+  }
+  notes.push('target 문서 예산은 대상 baseline이 소유한다 (source 5,400자 상한 미적용)')
 }
 failures.push(...skillAdapterFailures())
 failures.push(...prohibitedAbstractionSourceFailures(readFileSync(resolve('eslint.config.js'), 'utf8')))

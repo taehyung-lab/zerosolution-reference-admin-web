@@ -11,6 +11,10 @@ describe('fact 집합의 정합성', () => {
     expect(factIndexFailures([fact('A'), fact('B')]).errors).toEqual([])
   })
 
+  it('일반 CRUD로 닫히지 않는 specialized 화면 역할을 허용한다', () => {
+    expect(factIndexFailures([{ ...fact('MATRIX'), text: fact('MATRIX').text.replace('role: list', 'role: specialized') }]).errors).toEqual([])
+  })
+
   it('없는 fact 를 related 로 가리키면 실패한다', () => {
     // 대조군: 손으로 쓴 색인 시절 dangling 참조를 잡던 판단이 여기로 옮겨 왔다.
     expect(factIndexFailures([fact('A', 'related: [GONE]\n')]).errors).toEqual([

@@ -535,12 +535,14 @@ describe('contracts check CLI wiring', () => {
     }
   })
 
-  it('target 모드는 source baseline 없이도 ENOENT로 죽지 않는다', () => {
+  it('target 모드는 자기 baseline이 없으면 명시적으로 실패하고 ENOENT로 죽지 않는다', () => {
     const baseline = resolve(fixtureRoot, 'scripts/loop/baseline.json')
     const original = readFileSync(baseline)
     try {
       rmSync(baseline)
       const result = runCheck(['--mode', 'target'])
+      expect(result.status).toBe(1)
+      expect(result.stderr).toContain('target 문서 예산 baseline이 없다')
       expect(result.stderr).not.toContain('ENOENT')
     } finally { writeFileSync(baseline, original) }
   })
