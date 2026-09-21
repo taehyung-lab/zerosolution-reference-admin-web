@@ -17,6 +17,16 @@ describe('무엇이 열렸는지 센다', () => {
     )
     expect(observed.actuallyLoadedSkills).toBeNull()
     expect(observed.loadObservation).toBe('unavailable')
+    expect(observed.unexpectedContracts).toEqual([])
+  })
+
+  it('필수 계약도 미확인이면 과잉·금지 계약을 확정하지 않는다', () => {
+    const observed = observeCase(
+      { id: 'x', expect: ['list-contract'], reject: ['api-wire'] },
+      { requiredContracts: null, actuallyLoadedSkills: null, loadObservation: 'unavailable' },
+    )
+    expect(observed.forbiddenRequired).toEqual([])
+    expect(observed.unexpectedContracts).toEqual([])
   })
 
   it('대조군 — Claude가 성공 종료해도 완결된 telemetry envelope가 없으면 빈 로드로 확정하지 않는다', () => {
@@ -58,6 +68,17 @@ describe('구조화된 관측', () => {
     expect(result.actuallyLoadedSkills).toEqual(['product-evidence'])
   })
 
+  it('기대·허용 범위 밖의 필수 계약을 reject와 별개로 드러낸다', () => {
+    const result = observeCase(
+      { id: 'x', expect: ['list-contract'], allowed: ['route-composition'], reject: ['api-wire'] },
+      { requiredContracts: ['list-contract', 'route-composition', 'api-wire', 'shared-ui'], actuallyLoadedSkills: null, loadObservation: 'unavailable' },
+    )
+    expect(result.unexpectedContracts).toEqual(['api-wire', 'shared-ui'])
+    expect(result.forbiddenRequired).toEqual(['api-wire'])
+    expect(result.allowed).toEqual(['route-composition'])
+    expect(result.loadObservation).toBe('unavailable')
+  })
+
   it('대조군 — 기대와 어긋난 것을 보여주지만 자동 verdict를 내리지 않는다', () => {
     const result = observeCase(
       { id: 'x', expect: ['list-contract'], reject: ['api-wire'] },
@@ -85,6 +106,7 @@ describe('fixture', () => {
     const smoke = selectCases(CASES, 'smoke')
     expect(smoke).toHaveLength(15)
     expect(smoke.every((item) => item.id.endsWith('/재표현'))).toBe(true)
+    expect(smoke.every((item) => item.reject?.length)).toBe(true)
   })
 
   it('full은 명백·재표현·비발동 45개를 유지한다', () => {

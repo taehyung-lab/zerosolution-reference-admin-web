@@ -16,7 +16,7 @@
   },
   "routing": {
     "suite": "smoke",
-    "status": "partial",
+    "status": "pending-remeasurement",
     "observedAt": "2026-09-18",
     "coverage": {
       "codex": {
@@ -51,7 +51,7 @@
         "loadObservation": "unavailable"
       }
     ],
-    "reason": "15개 전체와 Claude 관측을 완료하지 않았고 Copilot 격리 수준이 미확인임"
+    "reason": "smoke reject와 unexpectedContracts 오라클을 추가해 과거 결과와 직접 비교할 수 없으며, portable skill 정리 뒤 재측정한다"
   },
   "transplant": {
     "observedAt": "2026-09-21",
