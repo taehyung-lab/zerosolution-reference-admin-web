@@ -59,7 +59,7 @@ Use three stages: **target-owned documents → required shared contracts/code �
 
 | Stage | Carry and replace | Evidence needed to move on |
 | --- | --- | --- |
-| 1. Documents | Adapt `AGENTS.md` and runtime pointers; bring only applicable skill/reference and ADR decisions with their linked owners. Register the target’s sources through `docs/reference/product.json`. Replace product facts, defaults, wording, inventory, judgments and scenarios with target evidence. | A screen, partial UI, or logic request can reach its own requirements and relevant contract without consulting a source-product domain. Referenced owners exist; unknown API/policy remains explicit. This is document readiness, not bootstrap or implementation completion. |
+| 1. Documents | Adapt `AGENTS.md` and runtime pointers; bring only applicable skill/reference and ADR decisions with their linked owners. Register target evidence in `product/facts/` and regenerate `product/generated-index.md`. Replace product facts, defaults, wording, inventory, judgments and scenarios with target evidence. | A screen, partial UI, or logic request can reach its own requirements and relevant contract without consulting a source-product domain. Referenced owners exist; unknown API/policy remains explicit. This is document readiness, not bootstrap or implementation completion. |
 | 2. Shared | Choose only what the first real screen needs. Compare each candidate’s code, contract, ADR and focused tests with that requirement; declare adopt/modify/exclude and the feature-owned remainder. | Trace requirement → first consumer → focused verification in the existing task. No shared API widening for one consumer and no need to copy an unrelated source feature to satisfy a bundle example. |
 | 3. Screens | Implement one bounded workflow, or the requested component/logic slice, using the target’s design and policy. Keep the implementation request small; inspect connected transitions without rebuilding unrequested screens. | Observe UI and interactions, verify state ownership/shared boundaries/failure paths, return to the cause of a failure and update its existing owner. Compare a different second consumer before confirming a provisional abstraction. |
 
@@ -103,7 +103,8 @@ under `.worktrees/` or `.claude/worktrees/`) is linted whole unless its root is 
 exceeded the Node heap. CI runs on a fresh checkout and never has such a tree, so this regression is
 local-only and no CI stage guards it.
 
-The surface index selected by `docs/reference/product.json` fails when a surface cites a skill file that has a unique `형태` heading but delivers neither that heading nor the whole file. The index does not name product domains as the skill set; the context selector adds `형태` when another heading alone was cited.
+`product/generated-index.md` is regenerated from `product/facts/`; missing or mismatched fact metadata fails before an
+agent can treat an absent index row as product absence. The generated index routes to evidence and does not select skills.
 
 `screen-shape.mjs` checks selected sort-source mistakes in existing role-named files. It does **not** require a companion search/filter/data/policy/schema/request
 file: a partial request and a coherent single-file responsibility must not trigger whole-screen scaffolding.

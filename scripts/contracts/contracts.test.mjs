@@ -11,6 +11,7 @@ import {
   ciWorkflowConcurrencyFailures,
   ciWorkflowScriptFailures,
   copilotAgentsPointerFailure,
+  collectDocumentFiles,
   documentBudgetNotices,
   headingAnchors,
   productNameNotices,
@@ -75,6 +76,25 @@ function createDocuments(files) {
   }
   return written
 }
+
+describe('운영 문서 수집', () => {
+  it('저장소 문서는 포함하고 세션용 docs/superpowers 작업물은 제외한다', () => {
+    const root = mkdtempSync(join(tmpdir(), 'contract-documents-'))
+    temporaryRoots.push(root)
+    mkdirSync(join(root, 'docs', 'decisions'), { recursive: true })
+    mkdirSync(join(root, 'docs', 'superpowers', 'plans'), { recursive: true })
+    writeFileSync(join(root, 'docs', 'decisions', 'kept.md'), '# kept\n')
+    writeFileSync(join(root, 'docs', 'superpowers', 'plans', 'session.md'), '# session\n')
+
+    const previous = process.cwd()
+    process.chdir(root)
+    try {
+      expect(collectDocumentFiles()).toEqual(['docs/decisions/kept.md'])
+    } finally {
+      process.chdir(previous)
+    }
+  })
+})
 
 const CHAIN = 'pnpm api:check && pnpm typecheck && pnpm lint'
 const PROJECTION = '| `pnpm verify` | **단일 검증 진입점.** api:check → typecheck → lint |'
@@ -990,12 +1010,30 @@ describe('백틱으로 가리킨 계약·제품 문서', () => {
   it('가리킨 문서가 없으면 실패한다', () => {
     // 대조군: 링크가 아니라 백틱 표기라 markdown link 검사는 이 자리를 보지 못한다.
     expect(citedContractPathFailures(files, (path) => path !== 'contracts/contract/gone.md')).toEqual([
-      'AGENTS.md: 백틱으로 가리킨 계약·제품 문서가 없다 → contracts/contract/gone.md',
+      'AGENTS.md: 백틱으로 가리킨 live 문서가 없다 → contracts/contract/gone.md',
     ])
   })
 
   it('전부 실존하면 통과한다', () => {
     expect(citedContractPathFailures(files, () => true)).toEqual([])
+  })
+
+  it('skill 경로는 검사하고 과거 문서 이름을 쓴 일반 문장은 경로로 추측하지 않는다', () => {
+    const skillFiles = [{
+      file: 'docs/decisions/0001.md',
+      content: [
+        '현재 소유자는 `.agents/skills/list-contract/SKILL.md`다.',
+        '없어진 `.agents/skills/api-contract/references/transport.md`를 가리키면 실패한다.',
+        '과거에는 screen-loop라는 이름을 썼다.',
+      ].join('\n'),
+    }]
+
+    expect(citedContractPathFailures(
+      skillFiles,
+      (path) => path === '.agents/skills/list-contract/SKILL.md',
+    )).toEqual([
+      'docs/decisions/0001.md: 백틱으로 가리킨 live 문서가 없다 → .agents/skills/api-contract/references/transport.md',
+    ])
   })
 })
 

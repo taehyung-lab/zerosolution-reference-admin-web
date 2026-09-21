@@ -14,7 +14,8 @@
 | MultiSelect, CheckboxTree, InlineSearchSelect | 직접 구현 | 도메인 없는 controlled 선택 대수 |
 | Table, Badge, Tooltip | native/직접 구현 | semantic markup 또는 token 표현 |
 
-선택은 `shared-ui-contract` 의 primitive 소유권과 catalog 의 명시적 public contract 를 따른다. 구현 선택이 바뀌어도 public contract 는 바뀌지 않는다. `Select` 는 교체 전후로 동일하게 `value: string | null`, `onValueChange`, `options`, `placeholder` 만 노출한다.
+선택 당시에는 공용 primitive의 소유권과 명시적 public contract를 기준으로 삼았다. 구현 선택이 바뀌어도
+public contract는 바뀌지 않는다는 판단이며, 현재 contract의 정확한 모양은 공용 UI 코드와 검사가 소유한다.
 
 ## 이 저장소의 primitive 는 source-owned Radix + Tailwind 다
 

@@ -19,7 +19,8 @@ locale을 key에서 빼면 언어 전환 후 이전 언어 응답을 재사용�
 locale 전환 뒤 이전 언어 응답을 재사용하는 결함을 확실히 막는 쪽을 택했고, helper 하나가 prefix를
 소유하므로 폐기 조건이 성립했을 때 좁히는 비용도 한 곳에 머문다.
 
-key 형태·helper·feature 적용 규칙은 `.agents/skills/api-contract/references/locale-cache.md`가 소유한다.
+이 결정은 locale을 key에 포함한 이유만 보존한다. 현재 key 형태·helper 위치·적용 범위는 실행 코드와
+그 검사가 소유한다.
 
 ## 폐기 조건
 
