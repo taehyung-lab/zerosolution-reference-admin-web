@@ -16,10 +16,14 @@ function verifierPathsFromChecks(text) {
   const end = text.indexOf('\n---\n', 4)
   if (end === -1) return { paths: [], error: 'frontmatter YAML을 해석할 수 없다' }
 
-  const document = parseDocument(text.slice(4, end), { prettyErrors: false, uniqueKeys: true })
-  if (document.errors.length > 0) return { paths: [], error: 'frontmatter YAML을 해석할 수 없다' }
-
-  const frontmatter = document.toJS()
+  let frontmatter
+  try {
+    const document = parseDocument(text.slice(4, end), { prettyErrors: false, uniqueKeys: true })
+    if (document.errors.length > 0) return { paths: [], error: 'frontmatter YAML을 해석할 수 없다' }
+    frontmatter = document.toJS()
+  } catch {
+    return { paths: [], error: 'frontmatter YAML을 해석할 수 없다' }
+  }
   if (!isMapping(frontmatter) || !Object.hasOwn(frontmatter, 'checks')) return { paths: [] }
   if (!Array.isArray(frontmatter.checks) || frontmatter.checks.length === 0) {
     return { paths: [], error: 'checks 는 비어있지 않은 배열이어야 한다' }

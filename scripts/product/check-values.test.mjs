@@ -138,6 +138,35 @@ describe('fact verifier 허용 경계', () => {
     ])
   })
 
+  it('unresolved YAML alias fact 오류 뒤 valid fact verifier를 계속 resolve한다', () => {
+    const root = rootWithVerifyDir()
+    writeFileSync(join(root, 'scripts/verify/valid.mjs'), '')
+    const entries = [
+      { file: 'BROKEN.md', text: '---\nid: BROKEN\nchecks: [*missing]\n---\n' },
+      fact('VALID.md', 'scripts/verify/valid.mjs'),
+    ]
+
+    const resolved = resolveVerifierPaths(entries, root)
+
+    expect(resolved.errors).toEqual(['BROKEN.md: frontmatter YAML을 해석할 수 없다'])
+    expect(resolved.paths).toEqual([realpathSync(join(root, 'scripts/verify/valid.mjs'))])
+  })
+
+  it('CLI는 unresolved alias를 ✗로 출력하면서 뒤 valid verifier를 실행한다', () => {
+    const root = rootWithVerifyDir()
+    mkdirSync(join(root, 'product/facts'), { recursive: true })
+    writeFileSync(join(root, 'product/facts/BROKEN.md'), '---\nid: BROKEN\nchecks: [*missing]\n---\n')
+    writeFileSync(join(root, 'product/facts/VALID.md'), fact('VALID.md', 'scripts/verify/valid.mjs').text)
+    writeFileSync(join(root, 'scripts/verify/valid.mjs'), "console.log('valid ran')\n")
+
+    const result = spawnSync(process.execPath, [runnerPath], { cwd: root, encoding: 'utf8' })
+
+    expect(result.status).toBe(1)
+    expect(result.stdout).toContain('valid ran')
+    expect(result.stderr).toContain('✗ BROKEN.md: frontmatter YAML을 해석할 수 없다')
+    expect(result.stderr).not.toContain('YAMLReferenceError')
+  })
+
   it('모든 fact의 선언 순서를 보존하고 중복은 한 번만 실행한다', () => {
     const root = rootWithVerifyDir()
     writeFileSync(join(root, 'scripts/verify/a.mjs'), '')
