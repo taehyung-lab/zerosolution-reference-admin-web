@@ -21,6 +21,7 @@ function verifierPathsFromChecks(text) {
       if (/^checks:\s*$/.test(line)) inChecks = true
       continue
     }
+    if (/^\s*(?:#.*)?$/.test(line)) continue
     if (/^\S/.test(line)) break
 
     const item = /^(\s*)-\s+([A-Za-z][A-Za-z0-9_-]*):\s*(.*?)\s*$/.exec(line)

@@ -52,6 +52,28 @@ describe('fact verifier 허용 경계', () => {
     ])
   })
 
+  it('checks 안의 blank와 column-zero comment 뒤 verifier를 계속 읽는다', () => {
+    const text = [
+      '---',
+      'id: X',
+      'checks:',
+      '# 첫 check 전 주석',
+      '',
+      '  - verify: scripts/verify/first.mjs',
+      '',
+      '# check 사이 주석',
+      '  - id: second',
+      '    verify: scripts/verify/second.mjs',
+      '---',
+      '',
+    ].join('\n')
+
+    expect(declaredVerifierPaths([{ file: 'X.md', text }])).toEqual([
+      { file: 'X.md', path: 'scripts/verify/first.mjs' },
+      { file: 'X.md', path: 'scripts/verify/second.mjs' },
+    ])
+  })
+
   it('모든 fact의 선언 순서를 보존하고 중복은 한 번만 실행한다', () => {
     const root = rootWithVerifyDir()
     writeFileSync(join(root, 'scripts/verify/a.mjs'), '')
