@@ -26,6 +26,7 @@ import { fileURLToPath } from 'node:url'
 import { productTermsInLine, TRANSPLANT_SENTINEL } from '../contracts/contracts.mjs'
 import { productPaths } from '../contracts/product-paths.mjs'
 import {
+  FOUNDATION_BUNDLE_IDS,
   FORBIDDEN_SEED_PATTERNS,
   listSeedFiles,
   listTransplantManifestFiles,
@@ -360,8 +361,8 @@ export function rewriteAgentsForTarget(agents, { source, target, finish } = {}) 
 }
 
 function selectBundles(ids) {
-  if (ids === undefined) return SEED_BUNDLES
-  return ids.map((id) => {
+  const selectedIds = ids === undefined ? FOUNDATION_BUNDLE_IDS : ids
+  return selectedIds.map((id) => {
     const bundle = SEED_BUNDLES.find((candidate) => candidate.id === id)
     if (!bundle) throw new Error(`알 수 없는 seed bundle: ${id}. node scripts/evidence/cli.mjs bundle 로 목록을 본다.`)
     return bundle

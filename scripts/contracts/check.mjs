@@ -51,6 +51,7 @@ import {
   SEED_BUNDLES,
   collectImportClosure,
   collectTestImportClosure,
+  foundationBundleFailures,
   findBundleClosureLeaks,
   findForbiddenSeedFiles,
   findUndeclaredContractExports,
@@ -193,6 +194,7 @@ failures.push(...findContractPathMismatches(declaredPaths))
 
 let seedSummary = null
 if (mode === 'source') {
+  failures.push(...foundationBundleFailures())
   failures.push(...validateSeedBundles())
   failures.push(...findBundleExportDrift())
   failures.push(...validateTransplantManifest())

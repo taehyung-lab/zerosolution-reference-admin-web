@@ -2,7 +2,13 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, 
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
-import { listTransplantManifestFiles, productLedgerManifest, TRANSPLANT_MANIFEST } from '../contracts/seed.mjs'
+import {
+  FOUNDATION_BUNDLE_IDS,
+  listTransplantManifestFiles,
+  productLedgerManifest,
+  SEED_BUNDLES,
+  TRANSPLANT_MANIFEST,
+} from '../contracts/seed.mjs'
 import {
   applyTransplant,
   delinkUntravelled,
@@ -282,13 +288,42 @@ describe('transplant manifest', () => {
 })
 
 describe('plan / stage / apply against a target directory', () => {
+  it('selects only the declared Foundation when bundles are omitted', () => {
+    const target = temporaryDirectory('foundation-target-')
+    const files = new Set(planTransplant(target).map((item) => item.file))
+
+    expect(FOUNDATION_BUNDLE_IDS).toEqual([
+      'draft-commit',
+      'search-partition',
+      'list-query',
+      'list-view',
+    ])
+    expect(files.has('src/shared/model/use-draft-commit.ts')).toBe(true)
+    expect(files.has('src/shared/lib/search-fields.ts')).toBe(true)
+    expect(files.has('src/api/list-query.ts')).toBe(true)
+    expect(files.has('src/shared/lib/list-view.ts')).toBe(true)
+    expect(files.has('src/api/http/credential.ts')).toBe(false)
+    expect(files.has('src/shared/ui/list/DataTable.tsx')).toBe(false)
+  })
+
+  it('keeps explicit empty and explicit opt-in selection exact', () => {
+    const target = temporaryDirectory('selection-target-')
+    const empty = new Set(planTransplant(target, { bundles: [] }).map((item) => item.file))
+    const ascii = new Set(planTransplant(target, { bundles: ['ascii-triplet'] }).map((item) => item.file))
+
+    expect(empty.has('src/shared/lib/list-view.ts')).toBe(false)
+    expect(ascii.has('src/shared/lib/ascii-triplet.ts')).toBe(true)
+    expect(ascii.has('src/shared/lib/list-view.ts')).toBe(false)
+  })
+
   it('classifies files, stages a renumbered product-neutral copy with a pending list, and never overwrites the target', () => {
     const target = temporaryDirectory('transplant-target-')
     const out = temporaryDirectory('transplant-stage-')
     write(target, 'src/shared/ui/layout/PageHeader.tsx', 'export const PageHeader = () => null\n')
     write(target, 'package.json', '{"name":"target"}\n')
 
-    const plan = planTransplant(target)
+    const bundleIds = SEED_BUNDLES.map(({ id }) => id)
+    const plan = planTransplant(target, { bundles: bundleIds })
     const byFile = new Map(plan.map((item) => [item.file, item]))
     expect(byFile.get('src/shared/ui/layout/PageHeader.tsx').action).toBe('merge')
     expect(byFile.get('src/shared/ui/detail/DetailField.tsx').action).toBe('copy')
@@ -313,7 +348,7 @@ describe('plan / stage / apply against a target directory', () => {
     expect(byFile.get('product/generated-index.md').action).toBe('generate')
     expect(byFile.has('docs/reference/product.json')).toBe(false)
 
-    const staged = stageTransplant(target, out)
+    const staged = stageTransplant(target, out, undefined, { bundles: bundleIds })
     expect(existsSync(join(out, 'MANIFEST.json'))).toBe(true)
     expect(existsSync(join(out, 'docs/decisions/0005-single-screen-shape.md'))).toBe(true)
     expect(existsSync(join(out, 'docs/decisions/0014-single-screen-shape.md'))).toBe(false)
@@ -478,7 +513,7 @@ describe('plan / stage / apply against a target directory', () => {
     const target = temporaryDirectory('transplant-target-')
     const out = temporaryDirectory('transplant-stage-')
     stageTransplant(target, out)
-    writeFileSync(join(out, 'src/shared/ui/detail/DetailField.tsx'), '// tampered\n')
+    writeFileSync(join(out, 'src/shared/lib/list-view.ts'), '// tampered\n')
 
     expect(() => applyTransplant(target, out)).toThrow(/MANIFEST/)
     expect(readdirSync(target)).toEqual([])

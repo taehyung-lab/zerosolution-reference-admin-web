@@ -37,6 +37,7 @@ import {
   findSeedLeaks,
   findUndeclaredContractExports,
   findUnexpectedSeedTests,
+  foundationBundleFailures,
   listSeedFiles,
   listTransplantManifestFiles,
   SEED_BUNDLES,
@@ -645,6 +646,13 @@ describe('seed contract bundles', () => {
         expect(listSeedFiles([bundle])).not.toContain(file)
       }
     }
+  })
+
+  it('rejects missing or repeated Foundation bundle IDs', () => {
+    expect(foundationBundleFailures(SEED_BUNDLES, ['list-view', 'list-view', 'missing'])).toEqual([
+      'Foundation bundle ID가 중복된다: list-view',
+      'Foundation bundle이 없다: missing',
+    ])
   })
 
   it('rejects a bundle when one of the four required parts is missing', () => {

@@ -416,6 +416,25 @@ export const SEED_BUNDLES = [
   },
 ]
 
+export const FOUNDATION_BUNDLE_IDS = Object.freeze([
+  'draft-commit',
+  'search-partition',
+  'list-query',
+  'list-view',
+])
+
+export function foundationBundleFailures(bundles = SEED_BUNDLES, ids = FOUNDATION_BUNDLE_IDS) {
+  const declared = new Set(bundles.map(({ id }) => id))
+  const seen = new Set()
+  const failures = []
+  for (const id of ids) {
+    if (seen.has(id)) failures.push(`Foundation bundle ID가 중복된다: ${id}`)
+    else seen.add(id)
+    if (!declared.has(id)) failures.push(`Foundation bundle이 없다: ${id}`)
+  }
+  return failures.sort()
+}
+
 /**
  * code root 가 내보내는 이름. 집합이 바뀌면 이 표와 함께 고친다. 소비자가 그 이름을 호출하는지는 보지 않는다.
  * 해시는 읽히지 않으므로 이름을 적는다.
