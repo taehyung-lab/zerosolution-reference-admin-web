@@ -182,9 +182,10 @@ function decodedAnchor(anchor) {
  */
 export function citedContractPathFailures(files, exists) {
   const failures = []
-  const pattern = /(?<![A-Za-z0-9._/-])(?:`)?((?:\.agents\/skills|contracts|product)\/[A-Za-z0-9._/-]+\.md)(?:`)?(?=$|[^A-Za-z0-9._/-])/g
+  const pattern = /(?<![A-Za-z0-9._/-])(?:`)?((?:\.agents\/skills|contracts|product)\/[A-Za-z0-9._/-]+\.md)(?:`)?(?=$|[^A-Za-z0-9_./-]|\.(?![A-Za-z0-9_]))/g
   for (const { file, content } of files) {
-    for (const [, cited] of content.matchAll(pattern)) {
+    const citationText = content.replace(/\[([^\]]*)\]\([^)\s]+\)/g, '$1')
+    for (const [, cited] of citationText.matchAll(pattern)) {
       if (!exists(cited)) failures.push(`${file}: 가리킨 계약·제품 문서가 없다 → ${cited}`)
     }
   }
