@@ -70,15 +70,21 @@ shared 가 소유하는 것: 위 표의 mechanic 과 렌더 계약([catalog](../
 
 ## Result
 
-`ui/use{Entity}ListResult({ search, rows, totalPages, commit })` 가 `selection`(`usePageRowSelection`, `resetKey: JSON.stringify(search)`)·`view`(`listViewControls`)·`columns` 를 돌려주고, `ui/{Entity}ListResult.tsx` 가 이 순서로 그린다: `ResultTotal` → `ResultToolbar`(왼쪽 `PageSizeControl`·`SortControl` 은 검색 뒤에만, 오른쪽 `actions` slot) → `ListResult`(`data`, `copy: { notSearched, empty }`, `footer: <Pagination {...view.pagination} />`) → 안에 `DataTable`(`rows`, `columns`, `getRowId`, `onRowActivate`).
+결과 표면은 검색 전·대기·실패·빈 결과·준비 상태와 제품이 요구한 total·toolbar·table·pagination을
+조립한다. 보이는 순서와 component·hook 분리는 fact와 현재 UI가 정하며, URL 복원·페이지 전이·stable
+row identity·검색 변경 시 선택 해제라는 불변식을 바꾸지 않는다.
+현재 표 구현의 `ListResult`는 이 상태 우선순위를 재사용하는 한 소비자이지 이관 대상의 필수 API가 아니다.
 
-- `ListResult` 가 `notSearched → loading → error → empty → ready` 를 판정하고 공용 로딩·오류·재시도·trace 를 그린다. 화면은 두 문구만 준다.
+- 결과 상태는 `notSearched → loading → error → empty → ready` 우선순위를 한 곳에서 판정하고, 실패에는
+  재시도와 안전한 trace를 제공한다. 정확한 renderer와 문구 입력 API는 현재 UI가 소유한다.
 - 행 클릭 목적지(`onActivate`)와 등록 목적지(`onCreate`)는 Screen 의 props 이고 route 가 navigate 를 넣는다.
-- 컬럼(`ui/{entity}-list-columns.tsx`)은 `selectionColumn(...)` + 정렬 키 배열을 순서대로 map 한다. 셀 포맷은 컬럼 파일 안의 한 함수다.
+- 표를 쓰는 화면은 stable row ID와 제품이 확인한 컬럼·셀 포맷을 제공한다. 카드 등 다른 결과 표면에는
+  표 전용 파일이나 selection column을 만들지 않는다.
 
 ## Sorting
 
-`SortControl` 은 정렬 **필드** select 만이다. 방향 UI 는 컬럼 헤더 하나다: `DataTable` 이 `meta.sort: { direction, onSort }` 로 헤더 버튼·`aria-sort`·glyph 를 그린다.
+정렬 UI의 위치와 control 종류는 fact와 접근성 요구가 정한다. 어떤 표현을 쓰더라도 활성 정렬 키와 방향은
+URL의 같은 상태를 읽고, 키·방향 전이가 서로 다른 규칙을 만들지 않는다.
 
 - `direction` 은 `headerSortDirection({ type: search.sortType, direction: search.sortDirection }, key)`(`shared/lib/list-sort.ts`)로만 만든다. 활성 키만 값을 갖고 나머지는 `undefined`(테이블당 `aria-sort` 하나). `contracts:check` 는 `ui/*-columns.tsx` 가 `onSort` 를 선언하면 이 import 를 요구하고 손으로 쓴 `'ascending'|'descending'` 을 거부한다.
 - `onSort` 는 `view.sort.onHeaderSort(key)` 다. 방향 전이 규칙은 [URL](#url) 의 `listViewControls` 가 소유한다.
@@ -100,20 +106,9 @@ shared 가 소유하는 것: 위 표의 mechanic 과 렌더 계약([catalog](../
 
 ## 형태
 
-**책임이 있으면 이 이름·이 자리에 둔다. 없으면 파일도 없다.** 파일 개수는 규칙이 아니다 — 기간·검색어·다중선택이 다 있는 목록과 텍스트 하나로 거르는 목록은 책임 수가 다르고, 그러면 파일 수도 다르다. 이 표가 고정하는 것은 "있을 때 어디서 찾는가" 뿐이다. 폴더는 `screens/{entity}-list/`([folder-structure](../source-structure/SKILL.md)).
-
-| 책임 | 있으면 이 자리 |
-| --- | --- |
-| URL 필드 선언·해소·canonical·요청 mapper([URL](#url)) | `model/{entity}-list-search.ts` |
-| 필터 초안과 두 커밋([Filter](#filter)) | `model/use{Entity}ListFilter.ts` |
-| 조회 사실([Query](#query)) | `model/use{Entity}ListData.ts` |
-| 컬럼과 정렬 매핑([Sorting](#sorting)) | `ui/{entity}-list-columns.tsx` |
-| 선택·보기 컨트롤·컬럼 조립 | `ui/use{Entity}ListResult.ts` |
-| 필터 패널 렌더와 라벨 | `ui/{Entity}ListFilters.tsx` |
-| 건수·툴바·표·페이지 렌더 | `ui/{Entity}ListResult.tsx` |
-| 선택 요구 액션([Selection and actions](#selection-and-actions)) | `model/use{Entity}ListActions.ts` · `ui/{Entity}ListActions.tsx` |
-| URL 변형의 고정 조건 | `model/{entity}-list-definition.ts` |
-| 위의 것들을 배선하고 URL·이동 callback 을 받는 진입 | `ui/{Entity}ListScreen.tsx` |
+URL 선언, 초안, 조회, 결과 표현, 액션과 화면 진입의 책임은 섞지 않되 실제 파일 분리는 복잡도가 생길
+때만 한다. 이름·폴더·승격 위치는 [source-structure](../source-structure/SKILL.md)가 소유하며 이 계약은
+파일 집합을 규정하지 않는다.
 
 - **작은 목록은 나누지 않아도 된다.** 필터가 텍스트 하나면 그 상태를 Screen 이 직접 들 수 있고, 결과가 표 하나면 Result 컴포넌트를 따로 만들지 않아도 된다. 나누는 기준은 파일 수가 아니라 **한 파일이 두 가지 상태를 소유하기 시작할 때**다. 한 번 나누면 위 이름을 쓴다.
 - 반대로 빈 어댑터는 만들지 않는다. 책임이 없는데 파일만 있으면 읽는 사람이 없는 상태를 찾게 된다.
