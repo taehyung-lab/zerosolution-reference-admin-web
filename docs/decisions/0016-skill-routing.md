@@ -2,7 +2,7 @@
 
 - 상태: **채택**
 - 날짜: 2026-09-17
-- 관련: [0015](0015-document-system-two-questions.md), [0013](0013-agent-implementation-workflow.md)
+- 관련: [0015](0015-document-system-two-questions.md)
 
 ## 결정
 

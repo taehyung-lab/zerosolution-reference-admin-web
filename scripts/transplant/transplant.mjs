@@ -518,9 +518,12 @@ export function stageTransplant(targetRoot, outRoot, sourceRoot = SOURCE_ROOT, o
   const stagedPaths = new Set(items.filter((item) => item.action !== 'exclude').map((item) => item.targetPath))
   const sourceReferences = []
   const rewrite = (text, sourceFile, targetPath) => {
-    const delinked = targetPath.endsWith('.md')
-      ? delinkUntravelled(text, { sourceFile, targetPath, source, target, retired, staged: stagedPaths, targetRoot, collect: sourceReferences, withLedger })
+    const targetOwned = sourceFile === 'docs/decisions/0014-single-screen-shape.md'
+      ? text.replace(/^- 상태:.*$/m, '- 상태: 채택 대기 — 대상 제품의 첫 실제 소비자와 검증이 채택 여부를 결정한다')
       : text
+    const delinked = targetPath.endsWith('.md')
+      ? delinkUntravelled(targetOwned, { sourceFile, targetPath, source, target, retired, staged: stagedPaths, targetRoot, collect: sourceReferences, withLedger })
+      : targetOwned
     const renumbered = rewriteText(delinked, { retired })
     const linked = targetPath.endsWith('.md') ? rewriteMarkdownLinks(renumbered, posix.dirname(targetPath), source, target) : renumbered
     return restoreSourcePaths(rewriteProductPaths(linked, source, target), sourceReferences)

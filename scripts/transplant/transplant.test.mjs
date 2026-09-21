@@ -481,6 +481,9 @@ describe('plan / stage / apply against a target directory', () => {
     expect(existsSync(join(out, 'MANIFEST.json'))).toBe(true)
     expect(existsSync(join(out, 'docs/decisions/0005-single-screen-shape.md'))).toBe(true)
     expect(existsSync(join(out, 'docs/decisions/0014-single-screen-shape.md'))).toBe(false)
+    expect(readFileSync(join(out, 'docs/decisions/0005-single-screen-shape.md'), 'utf8')).toContain(
+      '- 상태: 채택 대기 — 대상 제품의 첫 실제 소비자와 검증이 채택 여부를 결정한다',
+    )
     const agents = readFileSync(join(out, 'AGENTS.md'), 'utf8')
     expect(agents).toContain('product/generated-index.md')
     expect(agents).not.toMatch(/ZERO|BOOSTER|zero-sol/)

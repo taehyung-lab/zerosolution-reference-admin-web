@@ -2,7 +2,7 @@
 
 - 상태: **채택**
 - 날짜: 2026-09-17
-- 관련: [0013](0013-agent-implementation-workflow.md), [0014](0014-single-screen-shape.md),
+- 관련: [0014](0014-single-screen-shape.md),
   [0016](0016-skill-routing.md)
 
 ## 결정

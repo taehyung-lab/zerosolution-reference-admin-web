@@ -773,7 +773,7 @@ export function findBundleClosureLeaks(bundles = SEED_BUNDLES) {
  * `entrypoints`는 각 런타임이 AGENTS.md 로 들어오는 루트 포인터다.
  * 대상에 없으면 복사하고 있으면 병합 대상으로 보고한다.
  *
- * 이 제품의 활성 원장(인벤토리·판정·시나리오·색인)은 기본 이관 재료가 아니다(ADR 0013). 다른 제품의
+ * 이 제품의 활성 원장(인벤토리·판정·시나리오·색인)은 기본 이관 재료가 아니다. 다른 제품의
  * 기본값이 될 수 없으므로 `productLedgerManifest` 로 명시 요청할 때만 나가고, 기본 stage 는 대상 포인터 경로에
  * 빈 원장 뼈대를 만든다.
  */

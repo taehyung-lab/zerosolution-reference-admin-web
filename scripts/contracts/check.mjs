@@ -157,13 +157,15 @@ failures.push(...checkNegativeControlFailures())
 const skillDocuments = readdirSync(resolve('.agents/skills'), { withFileTypes: true })
   .filter((entry) => entry.isDirectory() && existsSync(resolve('.agents/skills', entry.name, 'SKILL.md')))
   .map((entry) => readFileSync(resolve('.agents/skills', entry.name, 'SKILL.md'), 'utf8'))
-failures.push(...alwaysLoadedBudgetFailures(readFileSync(resolve('AGENTS.md'), 'utf8'), skillDocuments))
 if (mode === 'source') {
+  failures.push(...alwaysLoadedBudgetFailures(readFileSync(resolve('AGENTS.md'), 'utf8'), skillDocuments))
   failures.push(...baselineEntryFailures(
     readFileSync(resolve('AGENTS.md'), 'utf8'),
     skillDocuments,
     readFileSync(resolve('scripts/loop/baseline.json'), 'utf8'),
   ))
+} else {
+  notes.push('target 문서 예산은 첫 소비자 기준선을 세운 뒤 대상 저장소가 소유한다 (source 5,400자 상한 미적용)')
 }
 failures.push(...skillAdapterFailures())
 failures.push(...prohibitedAbstractionSourceFailures(readFileSync(resolve('eslint.config.js'), 'utf8')))
