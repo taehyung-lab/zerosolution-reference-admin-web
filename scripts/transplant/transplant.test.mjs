@@ -22,6 +22,7 @@ import {
   restoreSourcePaths,
   rewriteProductPaths,
   rewriteText,
+  stageReviewSummary,
   stageTransplant,
 } from './transplant.mjs'
 
@@ -427,6 +428,21 @@ describe('plan / stage / apply against a target directory', () => {
       { file: 'docs/decisions/portable.md', terms: ['manager'] },
       { group: 'adrs', action: 'copy' },
     )).toBe('unclassified')
+  })
+
+  it('reports classified and unclassified vocabulary instead of calling the full scan root-only', () => {
+    const summary = stageReviewSummary({
+      pending: [{ id: 'ONE' }],
+      review: [{ line: 1 }],
+      classifiedProductTerms: [{ line: 2 }, { line: 3 }],
+      unclassifiedProductTerms: [],
+      sourceReferences: [],
+      danglingLinks: [],
+    })
+
+    expect(summary).toContain('분류 제품 어휘 2줄')
+    expect(summary).toContain('미분류 0줄')
+    expect(summary).not.toContain('루트 제품 어휘')
   })
 
   it('classifies files, stages a renumbered product-neutral copy with a pending list, and never overwrites the target', () => {

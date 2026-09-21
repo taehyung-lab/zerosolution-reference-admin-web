@@ -662,6 +662,10 @@ export function applyTransplant(targetRoot, outRoot) {
   return { copied, skipped }
 }
 
+export function stageReviewSummary(result) {
+  return `pending sentinel ${result.pending.length}개, 미이관 ADR 인용 ${result.review.length}줄, 분류 제품 어휘 ${result.classifiedProductTerms.length}줄, 미분류 ${result.unclassifiedProductTerms.length}줄, 레퍼런스 근거 링크 ${result.sourceReferences.length}개, 남은 끊긴 링크 ${result.danglingLinks.length}개`
+}
+
 export function verifyTarget(targetRoot) {
   const steps = [
     ['pnpm', ['contracts:check', '--mode', 'target']],
@@ -724,7 +728,7 @@ function main() {
     const result = stageTransplant(target, outRoot, SOURCE_ROOT, options)
     console.log(`  ✓ stage → ${relativeTo(SOURCE_ROOT, outRoot)}: ${Object.entries(summarize(result.items)).map(([action, count]) => `${action} ${count}`).join(' · ')}`)
     console.log(`  · 원장 포인터 ${JSON.stringify(result.pointer.target)}`)
-    console.log(`  · pending sentinel ${result.pending.length}개, 미이관 ADR 인용 ${result.review.length}줄, 루트 제품 어휘 ${result.productTerms.length}줄, 레퍼런스 근거 링크 ${result.sourceReferences.length}개, 남은 끊긴 링크 ${result.danglingLinks.length}개 → ${relativeTo(SOURCE_ROOT, join(outRoot, 'PENDING.md'))}`)
+    console.log(`  · ${stageReviewSummary(result)} → ${relativeTo(SOURCE_ROOT, join(outRoot, 'PENDING.md'))}`)
     return
   }
   if (command === 'apply') {
