@@ -1018,6 +1018,30 @@ describe('현재형 계약·제품 경로 인용', () => {
 
     expect(citedContractPathFailures(files, () => false)).toEqual([])
   })
+
+  it('상대 Markdown link 안 경로는 이 검사 대상이 아니다', () => {
+    const files = [{ file: 'docs/decisions/x.md', content: '[검사 안내](../../../scripts/contracts/README.md)' }]
+
+    expect(citedContractPathFailures(files, () => false)).toEqual([])
+  })
+
+  it('외부 URL 안 경로는 이 검사 대상이 아니다', () => {
+    const files = [{ file: 'docs/decisions/x.md', content: 'https://example.test/contracts/README.md' }]
+
+    expect(citedContractPathFailures(files, () => false)).toEqual([])
+  })
+
+  it('임의 접두 경로는 이 검사 대상이 아니다', () => {
+    const files = [{ file: 'docs/decisions/x.md', content: 'archive/contracts/README.md' }]
+
+    expect(citedContractPathFailures(files, () => false)).toEqual([])
+  })
+
+  it('파일명 일부인 md 접미사는 이 검사 대상이 아니다', () => {
+    const files = [{ file: 'docs/decisions/x.md', content: 'contracts/README.mdx' }]
+
+    expect(citedContractPathFailures(files, () => false)).toEqual([])
+  })
 })
 
 describe('검사가 자기를 검사한다', () => {

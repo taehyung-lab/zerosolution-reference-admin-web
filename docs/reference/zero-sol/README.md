@@ -40,7 +40,7 @@ Figma `ZEROsol (For Kakao)`(`Ogb6WpSpwCVhKggQ1NLRlQ`) 78 page와 Notion `DB: Wor
 시나리오에 그대로 둔다. `node scripts/evidence/cli.mjs context`로 대상 목록을, 뒤에 ID를 붙여 해당
 인벤토리·시나리오·관련 내부 surface·기존 코드 경로를 찾는다. 구현 절차는
 [`AGENTS.md`](../../../AGENTS.md)가, 검사 계약은
-[검사 안내](../../../scripts/contracts/)가 소유한다.
+[검사 안내](../../../scripts/contracts/README.md)가 소유한다.
 
 현재 15개 인벤토리군을 연결하고 공연과 메시지의 일부 내부 surface를 별도로 이름 붙였다.
 `group`은 업무군 진입점이며 하위 화면 전체를 기계적으로 열거한 상태가 아니다. `surface`도
