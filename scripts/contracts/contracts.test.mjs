@@ -26,10 +26,12 @@ import {
   citedContractPathFailures,
   prohibitedAbstractionSourceFailures,
   sourceMapFailures,
+  sourceMapPresenceFailures,
   retiredDocumentNameFailures,
   transplantSentinelFailures,
   transplantSentinelOccurrences,
   alwaysLoadedBudgetFailures,
+  baselineDriftNotices,
   baselineEntryFailures,
   skillAdapterFailures,
   unclassifiedProductTermFailures,
@@ -536,14 +538,26 @@ describe('contracts check CLI wiring', () => {
     }
   })
 
-  it('target 모드는 자기 baseline이 없으면 명시적으로 실패하고 ENOENT로 죽지 않는다', () => {
+  // 이관은 baseline 을 내보내지 않는다. 없는 결정을 실패로 부르면 대상이 source 의 상한을 물려받는다.
+  it('target 모드는 자기 baseline이 없으면 상한 검사를 건너뛰고 ENOENT로 죽지 않는다', () => {
     const baseline = resolve(fixtureRoot, 'scripts/loop/baseline.json')
     const original = readFileSync(baseline)
     try {
       rmSync(baseline)
       const result = runCheck(['--mode', 'target'])
+      expect(`${result.stdout}${result.stderr}`).not.toContain('target 문서 예산 baseline이 없다')
+      expect(result.stderr).not.toContain('ENOENT')
+    } finally { writeFileSync(baseline, original) }
+  })
+
+  it('source 모드는 baseline이 없으면 실패한다 — 기준선의 소유자다', () => {
+    const baseline = resolve(fixtureRoot, 'scripts/loop/baseline.json')
+    const original = readFileSync(baseline)
+    try {
+      rmSync(baseline)
+      const result = runCheck()
       expect(result.status).toBe(1)
-      expect(result.stderr).toContain('target 문서 예산 baseline이 없다')
+      expect(result.stderr).toContain('source 는 문서 비용 기준선을 소유한다')
       expect(result.stderr).not.toContain('ENOENT')
     } finally { writeFileSync(baseline, original) }
   })
@@ -1173,84 +1187,80 @@ describe('항상 로드되는 지시 예산', () => {
 })
 
 describe('현재 문서 baseline', () => {
-  const lineage = {
-    supersedes: {
-      revision: 'previous@abc1234',
-      comparable: false,
-      reason: '측정 기준이 바뀌어 직접 비교할 수 없음',
-      note: '이전 값은 Git history가 소유함',
-    },
-  }
+  const skillDoc = ['---', 'name: x', 'description: short', '---', ''].join('\n')
+  const lineage = { supersedes: { revision: 'previous@abc1234', comparable: false, reason: '측정 기준이 바뀌어 직접 비교할 수 없음' } }
   const transplant = {
     observedAt: '2026-09-21',
     sourceRevision: '7bb3271',
     defaultBundleIds: ['draft-commit', 'search-partition', 'list-query', 'list-view'],
     verificationCeiling: '경계까지 확인됨',
     targetRuntime: 'unconfirmed',
-    reason: '실 API·실 auth·대상 UI 수용은 첫 대상 프로젝트에서 확인한다',
   }
-  const currentEntry = {
-    rootCharacters: 4,
-    descriptionCharacters: 5,
-    alwaysLoadedCharacters: 9,
-    budgetCharacters: 10,
-  }
+  const foundationIds = ['draft-commit', 'search-partition', 'list-query', 'list-view']
+  const entry = { rootCharacters: 4, descriptionCharacters: 5, alwaysLoadedCharacters: 9, budgetCharacters: 10 }
+  const baselineOf = (extra = {}) => JSON.stringify({ ...lineage, entry, transplant, ...extra })
 
-  it('같은 계산으로 잰 현재 값이면 통과한다', () => {
-    const baseline = JSON.stringify({ ...lineage, entry: { rootCharacters: 4, descriptionCharacters: 5, alwaysLoadedCharacters: 9, budgetCharacters: 10 } })
-    expect(baselineEntryFailures('root', ['---\nname: x\ndescription: short\n---\n'], baseline, 10)).toEqual([])
+  it('관찰을 온전히 적은 baseline은 통과한다', () => {
+    expect(baselineEntryFailures(baselineOf(), { foundationIds })).toEqual([])
   })
 
-  it('대조군 — 문서가 바뀌어 baseline이 낡으면 실패한다', () => {
-    const baseline = JSON.stringify({ ...lineage, entry: { rootCharacters: 3, descriptionCharacters: 5, alwaysLoadedCharacters: 8, budgetCharacters: 10 } })
-    expect(baselineEntryFailures('root', ['---\nname: x\ndescription: short\n---\n'], baseline, 10)).toHaveLength(1)
+  // 이전 게이트는 `comparable`을 영구히 false로 강제해, 비교 가능한 기준선을 기록하는 것 자체가 불가능했다.
+  it('비교할 수 있다고 적는 것을 막지 않는다', () => {
+    expect(baselineEntryFailures(baselineOf({ supersedes: { revision: 'r', comparable: true } }), { foundationIds })).toEqual([])
   })
 
-  it('대조군 — 이전 기준선 계보를 지우면 현재 숫자가 맞아도 실패한다', () => {
-    const baseline = JSON.stringify({ entry: { rootCharacters: 4, descriptionCharacters: 5, alwaysLoadedCharacters: 9, budgetCharacters: 10 } })
-    expect(baselineEntryFailures('root', ['---\nname: x\ndescription: short\n---\n'], baseline, 10)).toContain('baseline supersedes.revision이 없다.')
+  it('대조군 — comparable이 boolean이 아니면 실패한다', () => {
+    expect(baselineEntryFailures(baselineOf({ supersedes: { comparable: 'no' } })))
+      .toEqual(['baseline supersedes.comparable은 true 또는 false 여야 한다.'])
   })
 
-  it('대조군 — 비교 불가인데 이유를 지우면 실패한다', () => {
-    const baseline = JSON.stringify({
-      ...lineage,
-      supersedes: { ...lineage.supersedes, reason: '' },
-      entry: { rootCharacters: 4, descriptionCharacters: 5, alwaysLoadedCharacters: 9, budgetCharacters: 10 },
-    })
-    expect(baselineEntryFailures('root', ['---\nname: x\ndescription: short\n---\n'], baseline, 10)).toContain('직접 비교할 수 없는 이유가 없다.')
+  it('대조군 — 비교 불가라고 적고 이유를 비우면 실패한다', () => {
+    expect(baselineEntryFailures(baselineOf({ supersedes: { comparable: false, reason: '  ' } })))
+      .toEqual(['baseline supersedes.comparable false 에는 직접 비교할 수 없는 이유가 필요하다.'])
   })
 
-  it('이관 관측은 Foundation 집합과 경계 검증 상한을 기록한다', () => {
-    const baseline = JSON.stringify({ ...lineage, entry: currentEntry, transplant })
-    expect(baselineEntryFailures('root', ['---\nname: x\ndescription: short\n---\n'], baseline, 10)).toEqual([])
+  it('대조군 — 기록한 Foundation이 실제 집합과 다르면 실패한다', () => {
+    expect(baselineEntryFailures(baselineOf(), { foundationIds: ['draft-commit'] }))
+      .toContain('baseline transplant.defaultBundleIds가 실제 Foundation과 다르다: 기록 [draft-commit, search-partition, list-query, list-view] · 실제 [draft-commit]')
   })
 
-  it('대조군 — 이관 검증 상한이 없으면 실패한다', () => {
-    const { verificationCeiling, ...missingCeiling } = transplant
-    void verificationCeiling
-    const baseline = JSON.stringify({ ...lineage, entry: currentEntry, transplant: missingCeiling })
-    expect(baselineEntryFailures('root', ['---\nname: x\ndescription: short\n---\n'], baseline, 10))
-      .toContain('transplant.verificationCeiling이 없다.')
+  it('이관을 소유하지 않는 저장소에서는 Foundation을 대조하지 않는다', () => {
+    expect(baselineEntryFailures(baselineOf())).toEqual([])
   })
 
-  it('대조군 — Foundation bundle ID가 배열이 아니면 실패한다', () => {
-    const baseline = JSON.stringify({
-      ...lineage,
-      entry: currentEntry,
-      transplant: { ...transplant, defaultBundleIds: 'draft-commit' },
-    })
-    expect(baselineEntryFailures('root', ['---\nname: x\ndescription: short\n---\n'], baseline, 10))
-      .toContain('transplant.defaultBundleIds는 비어 있지 않은 문자열 배열이어야 한다.')
+  it('대조군 — 도달 상태가 아닌 검증 상한은 실패한다', () => {
+    expect(baselineEntryFailures(baselineOf({ transplant: { ...transplant, verificationCeiling: '거의 다 됨' } })))
+      .toContain('baseline transplant.verificationCeiling은 도달 상태여야 한다(근거 확정됨 · 경계까지 확인됨 · 완료 · 이관 검증됨): 거의 다 됨')
   })
 
-  it('대조군 — 실제 대상 근거 없이 target runtime을 passed로 쓰면 실패한다', () => {
-    const baseline = JSON.stringify({
-      ...lineage,
-      entry: currentEntry,
-      transplant: { ...transplant, targetRuntime: 'passed' },
-    })
-    expect(baselineEntryFailures('root', ['---\nname: x\ndescription: short\n---\n'], baseline, 10))
-      .toContain('transplant.targetRuntime passed에는 targetEvidence가 필요하다.')
+  it('대조군 — 허용되지 않은 런타임 상태는 실패한다', () => {
+    expect(baselineEntryFailures(baselineOf({ transplant: { ...transplant, targetRuntime: 'probably' } })))
+      .toContain('baseline transplant.targetRuntime은 unconfirmed | observed | passed 중 하나여야 한다: probably')
+  })
+
+  it('대조군 — 근거 없이 passed로 올리면 실패한다', () => {
+    expect(baselineEntryFailures(baselineOf({ transplant: { ...transplant, targetRuntime: 'passed' } })))
+      .toContain('baseline transplant.targetRuntime passed 에는 실제 대상 근거(targetEvidence)가 필요하다.')
+  })
+
+  it('근거를 적은 passed는 통과한다', () => {
+    expect(baselineEntryFailures(baselineOf({ transplant: { ...transplant, targetRuntime: 'passed', targetEvidence: '첫 대상 2026-10-01 verify 통과' } })))
+      .toEqual([])
+  })
+
+  // 숫자를 손으로 맞추게 만드는 것은 검사가 아니라 장부다. 상한은 alwaysLoadedBudgetFailures 가 따로 막는다.
+  it('문서가 자란 것은 실패가 아니라 관찰로 보고한다', () => {
+    const stale = JSON.stringify({ ...lineage, entry: { ...entry, rootCharacters: 3, alwaysLoadedCharacters: 8 } })
+    expect(baselineEntryFailures(stale, { foundationIds: null })).toEqual([])
+    expect(baselineDriftNotices('root', [skillDoc], stale, 10)).toHaveLength(1)
+  })
+
+  it('기록과 현재가 같으면 관찰도 조용하다', () => {
+    expect(baselineDriftNotices('root', [skillDoc], baselineOf(), 10)).toEqual([])
+  })
+
+  it('대조군 — JSON이 깨지면 실패한다', () => {
+    expect(baselineEntryFailures('{')).toEqual(['scripts/loop/baseline.json 이 유효한 JSON이 아니다.'])
   })
 })
 
@@ -1309,5 +1319,25 @@ describe('src map', () => {
 
   it('reports a README without a tree block', () => {
     expect(sourceMapFailures('# 지도만', { src: ['app'] })).toEqual(['src/README.md: ```text 트리 블록이 없다'])
+  })
+
+  it('대조군 — source 에 지도가 없으면 실패다', () => {
+    expect(sourceMapPresenceFailures('source', { hasFeatures: true, hasMap: false }))
+      .toEqual(['src/README.md 가 없다 — 폴더 지도는 source 가 반드시 소유한다.'])
+  })
+
+  it('대조군 — 대상이 feature 를 채택했는데 지도가 없으면 실패다', () => {
+    expect(sourceMapPresenceFailures('target', { hasFeatures: true, hasMap: false }))
+      .toEqual(['src/README.md 가 없다 — 대상이 `src/features` 를 채택했으면 폴더 지도도 소유한다.'])
+  })
+
+  // Foundation 이관본의 모습이다. 여기서 실패를 내면 대상은 쓰지도 않을 지도를 만들어야 한다.
+  it('feature 를 내보내지 않은 대상에서는 지도를 요구하지 않는다', () => {
+    expect(sourceMapPresenceFailures('target', { hasFeatures: false, hasMap: false })).toEqual([])
+  })
+
+  it('source 는 feature 가 아직 없어도 지도를 요구한다', () => {
+    expect(sourceMapPresenceFailures('source', { hasFeatures: false, hasMap: false }))
+      .toEqual(['src/README.md 가 없다 — 폴더 지도는 source 가 반드시 소유한다.'])
   })
 })

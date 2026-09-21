@@ -31,11 +31,12 @@ import {
   productNameNotices,
   prohibitedAbstractionSourceFailures,
   sourceMapFailures,
+  sourceMapPresenceFailures,
   readLocalLinkFailures,
   citedContractPathFailures,
   retiredDocumentNameFailures,
   transplantSentinelFailures,
-  transplantSentinelOccurrences, alwaysLoadedBudgetFailures, baselineEntryFailures, skillAdapterFailures,
+  transplantSentinelOccurrences, alwaysLoadedBudgetFailures, baselineDriftNotices, baselineEntryFailures, skillAdapterFailures,
 } from './contracts.mjs'
 import {
   findContractPathMismatches,
@@ -49,6 +50,7 @@ import {
   screenShapeFailures,
 } from './screen-shape.mjs'
 import {
+  FOUNDATION_BUNDLE_IDS,
   SEED_BUNDLES,
   collectImportClosure,
   collectTestImportClosure,
@@ -158,47 +160,57 @@ failures.push(...checkNegativeControlFailures())
 const skillDocuments = readdirSync(resolve('.agents/skills'), { withFileTypes: true })
   .filter((entry) => entry.isDirectory() && existsSync(resolve('.agents/skills', entry.name, 'SKILL.md')))
   .map((entry) => readFileSync(resolve('.agents/skills', entry.name, 'SKILL.md'), 'utf8'))
+const rootDocument = readFileSync(resolve('AGENTS.md'), 'utf8')
+const baselinePath = resolve('scripts/loop/baseline.json')
+const baselineDocument = existsSync(baselinePath) ? readFileSync(baselinePath, 'utf8') : null
 if (mode === 'source') {
-  failures.push(...alwaysLoadedBudgetFailures(readFileSync(resolve('AGENTS.md'), 'utf8'), skillDocuments))
-  failures.push(...baselineEntryFailures(
-    readFileSync(resolve('AGENTS.md'), 'utf8'),
-    skillDocuments,
-    readFileSync(resolve('scripts/loop/baseline.json'), 'utf8'),
-  ))
-} else {
-  const targetBaseline = resolve('scripts/loop/baseline.json')
-  if (!existsSync(targetBaseline)) {
-    failures.push('target 문서 예산 baseline이 없다 — 첫 소비자 기준선을 세우고 대상 저장소의 상한을 기록한다')
+  failures.push(...alwaysLoadedBudgetFailures(rootDocument, skillDocuments))
+  if (baselineDocument === null) {
+    failures.push('scripts/loop/baseline.json 이 없다 — source 는 문서 비용 기준선을 소유한다.')
   } else {
-    const targetBaselineDocument = readFileSync(targetBaseline, 'utf8')
-    let targetBudget
-    try { targetBudget = JSON.parse(targetBaselineDocument).entry?.budgetCharacters } catch { targetBudget = null }
-    if (!Number.isInteger(targetBudget) || targetBudget <= 0) {
-      failures.push('target baseline의 entry.budgetCharacters는 양의 정수여야 한다')
-    } else {
-      failures.push(...baselineEntryFailures(
-        readFileSync(resolve('AGENTS.md'), 'utf8'),
-        skillDocuments,
-        targetBaselineDocument,
-        targetBudget,
-      ))
-    }
+    failures.push(...baselineEntryFailures(baselineDocument, { foundationIds: FOUNDATION_BUNDLE_IDS }))
+    notes.push(...baselineDriftNotices(rootDocument, skillDocuments, baselineDocument))
+  }
+} else if (baselineDocument === null) {
+  // 대상은 자기 상한을 아직 정하지 않았다. 없는 결정을 실패로 부르면 source 의 5,400자를 물려받게 된다
+  // — 이관이 baseline 을 내보내지 않는 것은 그래서다(2026-09-21). 결정이 서면 그때부터 상한이 막는다.
+  notes.push('대상 baseline이 없어 항상 로드되는 지시의 상한을 검사하지 않는다 — 첫 소비자가 자기 기준선을 세운다')
+} else {
+  failures.push(...baselineEntryFailures(baselineDocument))
+  let targetBudget
+  try { targetBudget = JSON.parse(baselineDocument).entry?.budgetCharacters } catch { targetBudget = null }
+  if (!Number.isInteger(targetBudget) || targetBudget <= 0) {
+    failures.push('target baseline의 entry.budgetCharacters는 양의 정수여야 한다')
+  } else {
+    failures.push(...alwaysLoadedBudgetFailures(rootDocument, skillDocuments, targetBudget))
+    notes.push(...baselineDriftNotices(rootDocument, skillDocuments, baselineDocument, targetBudget))
   }
   notes.push('target 문서 예산은 대상 baseline이 소유한다 (source 5,400자 상한 미적용)')
 }
 failures.push(...skillAdapterFailures())
 failures.push(...prohibitedAbstractionSourceFailures(readFileSync(resolve('eslint.config.js'), 'utf8')))
 // `src/README.md` 는 지도다. 폴더가 생기거나 사라지면 지도도 바뀌어야 하므로 실제 디렉터리와 대조한다.
+//
+// Foundation 이관본은 `src/features`·`src/routes`·`src/app` 을 내보내지 않는다. 대조할 폴더가 아예
+// 없으면 지도도 없는 것이 정상이므로 target 에서는 건너뛴다. 지도를 새로 만들어 검사를 맞추는 방향이
+// 아니다 — 대상이 feature 를 채택하면 그때 지도를 소유한다. source 는 지도가 없는 것 자체가 실패다.
 {
   const dirsOf = (path) => existsSync(resolve(path))
     ? readdirSync(resolve(path), { withFileTypes: true }).filter((entry) => entry.isDirectory() && !entry.name.startsWith('.')).map((entry) => entry.name).sort()
     : []
-  const featureChildren = [...new Set(dirsOf('src/features').flatMap((domain) => dirsOf(`src/features/${domain}`)))].sort()
-  failures.push(...sourceMapFailures(readFileSync(resolve('src/README.md'), 'utf8'), {
-    src: dirsOf('src'),
-    'src/features/{domain}': featureChildren,
-    'src/shared': dirsOf('src/shared'),
-  }))
+  const hasFeatures = existsSync(resolve('src/features'))
+  const hasMap = existsSync(resolve('src/README.md'))
+  failures.push(...sourceMapPresenceFailures(mode, { hasFeatures, hasMap }))
+  if (hasMap && (mode === 'source' || hasFeatures)) {
+    const featureChildren = [...new Set(dirsOf('src/features').flatMap((domain) => dirsOf(`src/features/${domain}`)))].sort()
+    failures.push(...sourceMapFailures(readFileSync(resolve('src/README.md'), 'utf8'), {
+      src: dirsOf('src'),
+      'src/features/{domain}': featureChildren,
+      'src/shared': dirsOf('src/shared'),
+    }))
+  } else if (!hasFeatures) {
+    notes.push('`src/features` 가 없어 폴더 지도 검사를 건너뛴다 (Foundation 이관본은 feature 를 내보내지 않는다)')
+  }
 }
 // 제품 사실 색인의 정합성은 `pnpm product:check` 가 fact frontmatter 에서 본다. 여기서는 **관찰이
 // 사라지지 않았는지**를 본다 — fact 는 늘, 아직 옮기지 않은 옛 원장은 그것이 남아 있는 동안.

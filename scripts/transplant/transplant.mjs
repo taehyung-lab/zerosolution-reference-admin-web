@@ -168,11 +168,20 @@ const sourcePlaceholder = (index) => `\u0000SOURCE${index}\u0000`
  * **레퍼런스 저장소의 경로를 그대로** 남겨 출처를 드러낸다. 남긴 경로는 자리표시자로 감싸 뒤따르는 ADR 재번호·원장
  * 경로 치환이 건드리지 않는다. 대상이 이미 가진 파일과 이번에 stage 되는 파일은 링크 그대로 둔다.
  */
+/**
+ * 백틱으로 인용한 live 경로. `scripts/contracts/contracts.mjs` 의 `livePattern` 과 같은 모양을 본다 —
+ * 검사가 보는 자리를 이관이 보지 않으면 대상에 죽은 경로가 남는다.
+ *
+ * `docs/decisions/` 는 빠진다: 미이관 ADR 인용은 `rewriteText` 와 PENDING 의 「이관하지 않은 ADR 인용」이
+ * 이미 소유한다. 여기서 또 풀면 소유자가 둘이 된다.
+ */
+const LIVE_CITATION = /`((?:\.agents\/skills|product|scripts|src)\/[A-Za-z0-9._/-]+\.[A-Za-z0-9]+)`/g
+
 export function delinkUntravelled(text, { sourceFile, targetPath, source, target, retired, staged, targetRoot, collect, withLedger = false }) {
   const sourceDir = posix.dirname(sourceFile)
-  return text.replace(/\[([^\]]*)\]\(([^)\s#]+)(#[^)]*)?\)/g, (match, label, path, anchor = '') => {
-    if (/^[a-z]+:/i.test(path) || path.startsWith('/')) return match
-    const sourceAbsolute = posix.normalize(posix.join(sourceDir, path))
+
+  /** 이 자리가 대상으로 가는가. 링크와 백틱 인용이 같은 판정을 쓴다. null 이면 그대로 둔다. */
+  const untravelled = (sourceAbsolute) => {
     const targetAbsolute = renamedPath(rewriteProductPaths(sourceAbsolute, source, target), retired)
     const productEvidence = !withLedger && (
       sourceAbsolute === source.judgment ||
@@ -180,15 +189,29 @@ export function delinkUntravelled(text, { sourceFile, targetPath, source, target
         ![`${root}/README.md`, source.index].includes(sourceAbsolute)) ||
       /^(src\/features\/|src\/routes\/|tests\/e2e\/)/.test(sourceAbsolute)
     )
-    if (!productEvidence && (staged.has(targetAbsolute) || existsSync(join(targetRoot, targetAbsolute)))) return match
+    if (!productEvidence && (staged.has(targetAbsolute) || existsSync(join(targetRoot, targetAbsolute)))) return null
     // 디렉터리를 가리키는 링크(문서 지도의 `.agents/skills/`)는 파일 의존이 아니다.
     const requiredContract = (sourceAbsolute.endsWith('.md')
       && (sourceAbsolute.startsWith('.agents/skills/') || sourceAbsolute.startsWith('product/policies/'))) ||
       (sourceAbsolute.startsWith('docs/decisions/') && !retired.some((id) => posix.basename(sourceAbsolute).startsWith(`${id}-`)))
     if (requiredContract) throw new Error(`Missing normative transplant dependency: ${sourceAbsolute}`)
-    const link = `${sourceAbsolute}${anchor}`
-    collect.push({ file: targetPath, link })
+    return sourceAbsolute
+  }
+
+  const delinked = text.replace(/\[([^\]]*)\]\(([^)\s#]+)(#[^)]*)?\)/g, (match, label, path, anchor = '') => {
+    if (/^[a-z]+:/i.test(path) || path.startsWith('/')) return match
+    const kept = untravelled(posix.normalize(posix.join(sourceDir, path)))
+    if (kept === null) return match
+    collect.push({ file: targetPath, link: `${kept}${anchor}` })
     return `${label} (레퍼런스 저장소 ${sourcePlaceholder(collect.length - 1)})`
+  })
+
+  // 백틱 인용은 저장소 루트 기준이라 `sourceDir` 을 붙이지 않는다. 백틱을 함께 지워야 검사가 다시 읽지 않는다.
+  return delinked.replace(LIVE_CITATION, (match, path) => {
+    const kept = untravelled(posix.normalize(path))
+    if (kept === null) return match
+    collect.push({ file: targetPath, link: kept })
+    return `레퍼런스 저장소 ${sourcePlaceholder(collect.length - 1)}`
   })
 }
 
@@ -378,9 +401,21 @@ export function rewriteAgentsForTarget(agents, { source, target, finish } = {}) 
   const close = finish ?? ((text) => rewriteProductPaths(rewriteText(text), sourcePointer, targetPointer))
   const sourceMode = '이 저장소는 다른 제품으로 옮길 레퍼런스다.'
   const productMode = '이 저장소는 제품 저장소다. 제품 사실은 이 저장소의 원문·서버 계약·정책이 소유하며 레퍼런스 제품 값을 복사하지 않는다.'
-  const matchingLines = agents.split('\n').filter((line) => line.startsWith(sourceMode))
-  if (matchingLines.length !== 1) throw new Error(`AGENTS.md 레퍼런스 운영 모드 문장은 정확히 하나여야 한다: ${matchingLines.length}`)
-  return close(agents.split('\n').map((line) => line.startsWith(sourceMode) ? productMode : line).join('\n'))
+  const lines = agents.split('\n')
+  const matchingLines = lines.filter((line) => line.startsWith(sourceMode))
+  if (matchingLines.length > 1) {
+    throw new Error(`AGENTS.md 레퍼런스 운영 모드 문장이 여러 개라 무엇을 바꿀지 정할 수 없다: ${matchingLines.length}`)
+  }
+  if (matchingLines.length === 1) {
+    return close(lines.map((line) => line.startsWith(sourceMode) ? productMode : line).join('\n'))
+  }
+  // 루트 문서의 문장은 루트 문서가 소유한다. 이관이 특정 문장을 요구하면 루트를 고칠 때마다 이관이
+  // 깨지고, 실제로 2026-09-21 AGENTS.md 를 다시 쓰자 이관 테스트 9건이 무너졌다.
+  //
+  // 선언이 없으면 **넣지 않는다.** 대상의 AGENTS.md 는 manifest 가 `template` 로 표시해 사람이 다시
+  // 쓰는 문서이고, 운영 모드는 거기서 선언된다. 이관이 문장을 지어 넣으면 소유자가 둘이 되고 항상
+  // 로드되는 지시의 상한까지 밀어 올린다(넣어 봤더니 5,400자 상한을 넘겼다).
+  return close(agents)
 }
 
 function selectBundles(ids) {

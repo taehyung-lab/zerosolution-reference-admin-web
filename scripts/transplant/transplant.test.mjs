@@ -180,6 +180,32 @@ describe('delinkUntravelled', () => {
     ])
   })
 
+  // 2026-09-21: 링크만 풀고 백틱 인용은 두어, stage 는 "끊긴 링크 0개"라고 보고했는데
+  // `contracts:check --mode target` 은 죽은 live 경로 9건을 찾았다. 두 검사가 같은 자리를 봐야 한다.
+  it('백틱으로 인용한 live 경로도 푼다 — 검사가 보는 자리를 이관도 본다', () => {
+    const collected = []
+    const text = [
+      '- `useDetailQuery(options)` from `src/api/required-query.ts` 가 소유한다.',
+      '- 이미 가는 것은 그대로: `docs/decisions/0005-single-screen-shape.md`',
+    ].join('\n')
+
+    const out = delinkUntravelled(text, { ...context, collect: collected })
+    const restored = restoreSourcePaths(out, collected)
+
+    expect(restored).toContain('from 레퍼런스 저장소 src/api/required-query.ts 가 소유한다.')
+    expect(restored).toContain('`docs/decisions/0005-single-screen-shape.md`')
+    expect(collected.map((item) => item.link)).toEqual(['src/api/required-query.ts'])
+  })
+
+  it('백틱을 지워 검사가 그 경로를 다시 읽지 않는다', () => {
+    const collected = []
+    const restored = restoreSourcePaths(
+      delinkUntravelled('`src/app/i18n/resources.ts` 가 등록한다', { ...context, collect: collected }),
+      collected,
+    )
+    expect(restored).not.toContain('`src/app/i18n/resources.ts`')
+  })
+
   it('keeps a link the target repository already owns', () => {
     const target = temporaryDirectory('delink-target-')
     write(target, 'openapi/README.md', '# 대상 계약\n')
@@ -276,8 +302,21 @@ describe('rewriteAgentsForTarget', () => {
     expect(rewritten).toContain('상태는 한 곳만 소유한다.')
   })
 
-  it('fails instead of silently staging when the source mode contract drifts', () => {
-    expect(() => rewriteAgentsForTarget('# no source mode', { source: SOURCE_POINTER, target: NEUTRAL_POINTER })).toThrow(/정확히 하나/)
+  // 루트가 자기 문장을 바꿀 자유를 되찾는다. 운영 모드 선언이 없으면 이관은 지어내지 않는다 —
+  // 대상의 AGENTS.md 는 사람이 다시 쓰는 template 이고 거기서 선언된다.
+  it('레퍼런스가 운영 모드를 선언하지 않으면 문장을 지어 넣지 않는다', () => {
+    const root = ['# 프로젝트 에이전트 기준', '', '## 목적', '', '요구에 맞는 설계를 실제 작업으로 검증한다.'].join('\n')
+
+    const rewritten = rewriteAgentsForTarget(root, { source: SOURCE_POINTER, target: NEUTRAL_POINTER })
+
+    expect(rewritten).not.toContain('이 저장소는 제품 저장소다.')
+    expect(rewritten).toContain('요구에 맞는 설계를 실제 작업으로 검증한다.')
+    expect(rewritten.split('\n')[0]).toBe('# 프로젝트 에이전트 기준')
+  })
+
+  it('대조군 — 운영 모드 문장이 여러 개면 무엇을 바꿀지 정할 수 없어 실패한다', () => {
+    const doubled = ['# 루트', '이 저장소는 다른 제품으로 옮길 레퍼런스다. 하나.', '이 저장소는 다른 제품으로 옮길 레퍼런스다. 둘.'].join('\n')
+    expect(() => rewriteAgentsForTarget(doubled, { source: SOURCE_POINTER, target: NEUTRAL_POINTER })).toThrow(/여러 개/)
   })
 })
 
@@ -384,11 +423,9 @@ describe('plan / stage / apply against a target directory', () => {
     stageTransplant(target, out)
     const policy = readFileSync(join(out, 'product/policies/evidence.md'), 'utf8')
     const skill = readFileSync(join(out, '.agents/skills/product-evidence/SKILL.md'), 'utf8')
-    const returnGuide = readFileSync(join(out, '.agents/skills/product-evidence/references/return.md'), 'utf8')
 
     expect(policy).not.toMatch(/View seat|aside repl|Figma MCP|Shift\+2/)
     expect(skill).not.toMatch(/미이관|옛 원장|두 표/)
-    expect(returnGuide).not.toMatch(/미이관|옛 원장|두 표|원장 행/)
     expect(policy).toContain('추론을 확인으로 승격하지 않는다')
     expect(skill).toContain('product/generated-index.md')
   })
@@ -530,7 +567,8 @@ describe('plan / stage / apply against a target directory', () => {
     // The common root points at product-owned facts, whose unresolved status survives apply.
     const targetAgents = readFileSync(join(target, 'AGENTS.md'), 'utf8')
     expect(targetAgents).toContain('product/generated-index.md')
-    expect(targetAgents).toContain('이 저장소는 제품 저장소다.')
+    // 운영 모드는 레퍼런스가 선언했을 때만 대상 문장으로 치환된다. 선언이 없으면 이관이 지어내지
+    // 않고, 대상의 AGENTS.md 를 다시 쓰는 사람이 소유한다.
     expect(targetAgents).not.toContain('이 저장소는 다른 제품으로 옮길 레퍼런스다.')
     expect(readFileSync(join(target, 'product/facts/README.md'), 'utf8')).toContain('TRANSPLANT_PENDING_FACTS')
     expect(readFileSync(join(target, 'README.md'), 'utf8')).toContain('TRANSPLANT_PENDING_README')

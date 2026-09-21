@@ -159,3 +159,39 @@ names a replaced API, update that reference with the replacement. `local/no-proh
 only rejects exact prohibited names; it does not enforce the whole ban on speculative frameworks.
 Change its names together with the supporting skill/ADR statements. `gates:negative` owns the normal
 and negative fixtures that exercise these gates. Their success is evidence of those controls only.
+
+## Gate lifecycle
+
+This gate set is frozen. An audit finding is not a reason to add one. A reproducible failure that real
+work hit, and that the existing verification missed, is. The repository that owns this set records in its
+own decision log why it froze and what thaws it; this file owns the standing rules.
+
+Register a new gate only when all five hold:
+
+- a real incident produced it — name the run, the diff or the target that hit it;
+- the existing verification let that failure through;
+- it reproduces cheaply and deterministically;
+- it can happen again;
+- a focused test closer to the code cannot catch it.
+
+Retire or demote a gate when any one holds:
+
+- its real consumer is gone;
+- a focused test nearer the code now catches the same failure;
+- it only inspects a name or the presence of a file or field;
+- it blocks correct work as a false positive;
+- it turns an observation into a pass/fail verdict.
+
+Demotion means the check keeps reporting as a note and stops failing the run. A number that has to be
+updated by hand to stay green is a ledger, not a gate.
+
+The independent review of any diff that adds a `*Failures` export owns this: it confirms the incident and
+the four remaining conditions before the export lands. `meta.mjs` separately requires a negative control
+for that export, so a registered gate is always both *provoked by something real* and *proven to fire*.
+
+This lifecycle is deliberately not itself a machine gate. The verification layer is self-referential —
+every gate adds a surface that can be audited — and encoding this rule as another check would restart
+the growth it exists to stop.
+
+Product verification is not frozen: a fact's `checks`, a screen's focused tests and that screen's E2E
+grow with each screen and are owned by that screen's work.

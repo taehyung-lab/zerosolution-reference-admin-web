@@ -295,50 +295,69 @@ export function alwaysLoadedBudgetFailures(rootDocument, skillDocuments, budget 
   return [`항상 로드되는 지시가 ${total}자다(루트 ${rootCharacters}자 + description ${descriptionCharacters}자, 상한 ${budget}자). 상한을 늘리지 말고 조건부 정보를 소유자로 옮긴다.`]
 }
 
-export function baselineEntryFailures(rootDocument, skillDocuments, baselineDocument, budget = ALWAYS_LOADED_CHARACTER_BUDGET) {
+/** 대상이 선언할 수 있는 도달 상태. 어휘는 `AGENTS.md` 의 도달 상태가 소유한다. */
+export const VERIFICATION_CEILINGS = Object.freeze(['근거 확정됨', '경계까지 확인됨', '완료', '이관 검증됨'])
+
+/** 첫 대상 런타임 관측 상태. `passed` 는 관찰이 아니라 주장이므로 실제 근거를 요구한다. */
+export const TARGET_RUNTIME_STATES = Object.freeze(['unconfirmed', 'observed', 'passed'])
+
+const filled = (value) => typeof value === 'string' && value.trim() !== ''
+
+/**
+ * baseline 이 **관찰과 주장을 구분하는가**. 값의 존재가 아니라 값들 사이의 관계를 본다.
+ *
+ * 이전에는 문자열 10개의 존재를 검사했다. `reason: 'x'` 면 통과했으므로 아무것도 막지 못했고,
+ * `supersedes.comparable` 은 영구히 `false` 여야 해서 추이 비교를 기록하는 것 자체가 불가능했다
+ * (2026-09-21 검증 v1 정리). 지금 남은 것은 어긴 값이 실제로 틀린 것뿐이다.
+ *
+ * @param {string} baselineDocument `scripts/loop/baseline.json` 원문
+ * @param {{foundationIds?: readonly string[] | null}} options 이관을 소유한 저장소만 Foundation 집합을 대조한다.
+ */
+export function baselineEntryFailures(baselineDocument, { foundationIds = null } = {}) {
+  let baseline
+  try { baseline = JSON.parse(baselineDocument) } catch { return ['scripts/loop/baseline.json 이 유효한 JSON이 아니다.'] }
+  const failures = []
+
+  // 비교 가능 여부는 관찰이다. 비교할 수 **없다**고 적을 때만 이유를 요구한다.
+  const supersedes = baseline.supersedes
+  if (supersedes !== undefined) {
+    if (typeof supersedes.comparable !== 'boolean') {
+      failures.push('baseline supersedes.comparable은 true 또는 false 여야 한다.')
+    } else if (supersedes.comparable === false && !filled(supersedes.reason)) {
+      failures.push('baseline supersedes.comparable false 에는 직접 비교할 수 없는 이유가 필요하다.')
+    }
+  }
+
+  const transplant = baseline.transplant
+  if (transplant !== undefined) {
+    if (foundationIds !== null) {
+      const declared = Array.isArray(transplant.defaultBundleIds) ? transplant.defaultBundleIds : []
+      if (declared.join(' ') !== [...foundationIds].join(' ')) {
+        failures.push(`baseline transplant.defaultBundleIds가 실제 Foundation과 다르다: 기록 [${declared.join(', ')}] · 실제 [${foundationIds.join(', ')}]`)
+      }
+    }
+    if (transplant.verificationCeiling !== undefined && !VERIFICATION_CEILINGS.includes(transplant.verificationCeiling)) {
+      failures.push(`baseline transplant.verificationCeiling은 도달 상태여야 한다(${VERIFICATION_CEILINGS.join(' · ')}): ${transplant.verificationCeiling}`)
+    }
+    if (transplant.targetRuntime !== undefined && !TARGET_RUNTIME_STATES.includes(transplant.targetRuntime)) {
+      failures.push(`baseline transplant.targetRuntime은 ${TARGET_RUNTIME_STATES.join(' | ')} 중 하나여야 한다: ${transplant.targetRuntime}`)
+    }
+    if (transplant.targetRuntime === 'passed' && !filled(transplant.targetEvidence)) {
+      failures.push('baseline transplant.targetRuntime passed 에는 실제 대상 근거(targetEvidence)가 필요하다.')
+    }
+  }
+  return failures
+}
+
+/**
+ * 문서가 자란 만큼을 **보여 준다.** 실패가 아니다 — 숫자를 손으로 맞추게 만드는 것은 검사가 아니라 장부이고,
+ * 실제 상한 초과는 `alwaysLoadedBudgetFailures` 가 따로 막는다.
+ */
+export function baselineDriftNotices(rootDocument, skillDocuments, baselineDocument, budget = ALWAYS_LOADED_CHARACTER_BUDGET) {
   const descriptions = skillDocuments.map(skillDescription)
   if (descriptions.some((description) => description === null)) return ['현재 baseline을 계산할 skill description을 읽지 못했다.']
   let baseline
-  try { baseline = JSON.parse(baselineDocument) } catch { return ['scripts/loop/baseline.json 이 유효한 JSON이 아니다.'] }
-  const lineageFailures = []
-  if (typeof baseline.supersedes?.revision !== 'string' || baseline.supersedes.revision.trim() === '') {
-    lineageFailures.push('baseline supersedes.revision이 없다.')
-  }
-  if (baseline.supersedes?.comparable !== false) {
-    lineageFailures.push('baseline supersedes.comparable은 false여야 한다.')
-  }
-  if (typeof baseline.supersedes?.reason !== 'string' || baseline.supersedes.reason.trim() === '') {
-    lineageFailures.push('직접 비교할 수 없는 이유가 없다.')
-  }
-  if (typeof baseline.supersedes?.note !== 'string' || baseline.supersedes.note.trim() === '') {
-    lineageFailures.push('이전 원시 값 보존 위치가 없다.')
-  }
-  if (baseline.transplant !== undefined) {
-    const transplant = baseline.transplant
-    if (typeof transplant.observedAt !== 'string' || transplant.observedAt.trim() === '') {
-      lineageFailures.push('transplant.observedAt이 없다.')
-    }
-    if (typeof transplant.sourceRevision !== 'string' || transplant.sourceRevision.trim() === '') {
-      lineageFailures.push('transplant.sourceRevision이 없다.')
-    }
-    if (!Array.isArray(transplant.defaultBundleIds)
-      || transplant.defaultBundleIds.length === 0
-      || transplant.defaultBundleIds.some((id) => typeof id !== 'string' || id.trim() === '')) {
-      lineageFailures.push('transplant.defaultBundleIds는 비어 있지 않은 문자열 배열이어야 한다.')
-    }
-    if (typeof transplant.verificationCeiling !== 'string' || transplant.verificationCeiling.trim() === '') {
-      lineageFailures.push('transplant.verificationCeiling이 없다.')
-    }
-    if (typeof transplant.targetRuntime !== 'string' || transplant.targetRuntime.trim() === '') {
-      lineageFailures.push('transplant.targetRuntime이 없다.')
-    }
-    if (typeof transplant.reason !== 'string' || transplant.reason.trim() === '') {
-      lineageFailures.push('transplant.reason이 없다.')
-    }
-    if (transplant.targetRuntime === 'passed' && transplant.targetEvidence === undefined) {
-      lineageFailures.push('transplant.targetRuntime passed에는 targetEvidence가 필요하다.')
-    }
-  }
+  try { baseline = JSON.parse(baselineDocument) } catch { return [] }
   const current = {
     rootCharacters: rootDocument.length,
     descriptionCharacters: descriptions.reduce((total, description) => total + description.length, 0),
@@ -346,8 +365,8 @@ export function baselineEntryFailures(rootDocument, skillDocuments, baselineDocu
   }
   current.alwaysLoadedCharacters = current.rootCharacters + current.descriptionCharacters
   const drift = Object.entries(current).filter(([key, value]) => baseline.entry?.[key] !== value)
-  if (drift.length === 0) return lineageFailures
-  return [...lineageFailures, `현재 문서와 baseline이 다르다: ${drift.map(([key, value]) => `${key}=${value}(기록 ${baseline.entry?.[key] ?? '없음'})`).join(', ')}`]
+  if (drift.length === 0) return []
+  return [`문서가 baseline과 다르다(관찰): ${drift.map(([key, value]) => `${key}=${value}(기록 ${baseline.entry?.[key] ?? '없음'})`).join(', ')}. 상한 안이면 실패가 아니다 — 기준선 갱신은 baseline 소유자가 정한다.`]
 }
 
 /**
@@ -673,6 +692,26 @@ export function ledgerIndexFailures(
   return failures
 }
 
+
+/**
+ * 폴더 지도를 **언제** 요구하는가. 대조 자체는 `sourceMapFailures` 가 한다.
+ *
+ * Foundation 이관본은 `src/features`·`src/routes`·`src/app` 을 내보내지 않는다. 대조할 폴더가 아예
+ * 없으면 지도도 없는 것이 정상이므로 target 에서는 요구하지 않는다. 2026-09-21 이관 검사가 없는
+ * `src/README.md` 를 무조건 읽어 ENOENT 로 죽었다 — 정상적인 검사 실패가 아니라 크래시였고, 그래서
+ * 그 뒤의 실패 10건을 아무도 보지 못했다. 지도를 새로 만들어 검사를 맞추는 방향이 아니다: 대상이
+ * feature 를 채택하면 그때 지도를 소유한다.
+ *
+ * @param {'source'|'target'} mode
+ * @param {{hasFeatures: boolean, hasMap: boolean}} tree `src/features` 와 `src/README.md` 의 실재 여부
+ */
+export function sourceMapPresenceFailures(mode, { hasFeatures, hasMap }) {
+  if (mode !== 'source' && !hasFeatures) return []
+  if (hasMap) return []
+  return [mode === 'source'
+    ? 'src/README.md 가 없다 — 폴더 지도는 source 가 반드시 소유한다.'
+    : 'src/README.md 가 없다 — 대상이 `src/features` 를 채택했으면 폴더 지도도 소유한다.']
+}
 
 /**
  * `src/README.md` 의 트리 블록이 실제 디렉터리와 맞는가. 지도는 규칙이 아니라 "무엇이 어디 있나" 이므로
