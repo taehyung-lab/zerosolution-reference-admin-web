@@ -74,6 +74,51 @@ describe('fact verifier 허용 경계', () => {
     ])
   })
 
+  it('inline comment가 있는 checks와 여분 공백 list item의 verifier를 CLI까지 실행한다', () => {
+    const root = rootWithVerifyDir()
+    const text = [
+      '---',
+      'id: X',
+      'checks: # active checks',
+      '  -   id: first',
+      '    verify: scripts/verify/failing.mjs',
+      '---',
+      '',
+    ].join('\n')
+    mkdirSync(join(root, 'product/facts'), { recursive: true })
+    writeFileSync(join(root, 'product/facts/X.md'), text)
+    writeFileSync(join(root, 'scripts/verify/failing.mjs'), 'process.exit(1)\n')
+
+    expect(declaredVerifierPaths([{ file: 'X.md', text }])).toEqual([
+      { file: 'X.md', path: 'scripts/verify/failing.mjs' },
+    ])
+
+    const result = spawnSync(process.execPath, [runnerPath], { cwd: root, encoding: 'utf8' })
+    expect(result.status).toBe(1)
+    expect(result.stderr).toContain('✗ scripts/verify/failing.mjs: verifier exit 1')
+  })
+
+  it('인식할 수 없는 checks 선언은 parse error로 실패한다', () => {
+    const root = rootWithVerifyDir()
+    const entry = {
+      file: 'X.md',
+      text: '---\nid: X\nchecks: # active checks\n  verify: scripts/verify/failing.mjs\n---\n',
+    }
+
+    expect(resolveVerifierPaths([entry], root).errors).toEqual([
+      'X.md: checks 선언을 해석할 수 없다 → checks 항목은 목록이어야 한다',
+    ])
+  })
+
+  it('scalar checks 선언은 verifier가 없더라도 parse error로 실패한다', () => {
+    const root = rootWithVerifyDir()
+    const entry = { file: 'X.md', text: '---\nid: X\nchecks: []\n---\n' }
+
+    expect(resolveVerifierPaths([entry], root).errors).toEqual([
+      'X.md: checks 선언을 해석할 수 없다 → checks 선언 형식을 해석할 수 없다',
+    ])
+  })
+
   it('모든 fact의 선언 순서를 보존하고 중복은 한 번만 실행한다', () => {
     const root = rootWithVerifyDir()
     writeFileSync(join(root, 'scripts/verify/a.mjs'), '')
@@ -125,6 +170,24 @@ describe('fact verifier 허용 경계', () => {
     symlinkSync(join(root, 'outside.mjs'), join(root, 'scripts/verify/escape.mjs'))
 
     expect(resolveVerifierPaths([fact('X.md', 'scripts/verify/escape.mjs')], root).errors).not.toEqual([])
+  })
+
+  it('대조군 — scripts/verify directory symlink가 repository 밖이면 거부한다', () => {
+    const root = mkdtempSync(join(tmpdir(), 'fact-values-'))
+    const outside = mkdtempSync(join(tmpdir(), 'fact-values-outside-'))
+    mkdirSync(join(root, 'scripts'), { recursive: true })
+    writeFileSync(join(outside, 'runner.mjs'), '')
+    symlinkSync(outside, join(root, 'scripts/verify'))
+
+    expect(resolveVerifierPaths([fact('X.md', 'scripts/verify/runner.mjs')], root).errors).not.toEqual([])
+  })
+
+  it('대조군 — .mjs alias의 canonical target이 .js면 거부한다', () => {
+    const root = rootWithVerifyDir()
+    writeFileSync(join(root, 'scripts/verify/payload.js'), '')
+    symlinkSync('payload.js', join(root, 'scripts/verify/alias.mjs'))
+
+    expect(resolveVerifierPaths([fact('X.md', 'scripts/verify/alias.mjs')], root).errors).not.toEqual([])
   })
 
   it('Node 직접 실행 중 첫 verifier가 non-zero여도 다음 verifier를 실행한다', () => {
