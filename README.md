@@ -27,7 +27,7 @@ pnpm dev
 | 명령 | 하는 일 |
 | ---- | ------- |
 | `pnpm dev` | 개발 서버 |
-| `pnpm verify` | **단일 검증 진입점.** api:check → contracts:check → product:check → product:values → typecheck → lint → test:unit → i18n:check → gates:negative → build → test:e2e:verify |
+| `pnpm verify` | **통합 검증 진입점.** api:check → contracts:check → product:check → product:values → typecheck → lint → test:unit → i18n:check → gates:negative → build → test:e2e:verify |
 | `pnpm api:check` | snapshot 검증 + Orval 생성 + 생성물 typecheck |
 | `pnpm contracts:check` | 규범 문서와 저장소 설정의 기계적 정합성. verify 체인 투영, `pnpm` 명령·로컬 link, 문서 notice와 항상 로드되는 `AGENTS.md + description` 5,400자 상한, 런타임 포인터·skill 어댑터, 이관 sentinel, API 이음매, seed 폐쇄, 이관 manifest를 검사한다. `--mode target`은 이관된 저장소용이다 |
 | `pnpm product:values` | 활성 fact가 선언한 `scripts/verify/*.mjs`를 경로 경계 안에서 Node로 직접 실행한다. 파일 존재만으로 통과하지 않으며 하나라도 실패하면 전체가 실패한다 |
@@ -42,7 +42,14 @@ pnpm dev
 
 격리 worktree에서 검증할 때는 `PLAYWRIGHT_PORT=4184 pnpm verify`처럼 비어 있는 전용 포트를 지정한다. Playwright는 기존 서버를 재사용하지 않으므로 포트가 겹치면 바로 실패한다.
 
-`pnpm verify` 통과는 완성의 **필요조건이지 충분조건이 아니다.** 화면이 디자인과 같은지, 상호작용이 실제로 동작하는지는 검사하지 않는다. 판정 기준은 [`AGENTS.md` 의 전역 완료 기준](AGENTS.md#전역-완료-기준)이 소유한다.
+작업 중에는 바뀐 동작과 연결된 회귀 위험을 확인하는 검사를 선택한다. `pnpm verify`는 병합 전 통합
+안전망이며 매 작업마다 전체 실행할 의무는 아니다. CI는 위 단계 집합을 계속 검사한다. 통과해도 제품
+근거의 옳음이나 화면의 시각적 일치까지 증명하지 않는다. 판정은 [전역 완료 기준](AGENTS.md#전역-완료-기준)을 따른다.
+
+검증을 고를 때 순수 계산은 입출력, Query 변경은 조회·쓰기·cache 연결, 화면 상호작용은 바뀐 사용자
+경로를 본다. 공용 변경은 해당 계약의 테스트와 영향을 받는 소비 방식을 확인한다. 기존 검사를 먼저
+재사용하고, 자동 검사로 닫히지 않는 렌더·focus는 [브라우저에서 관찰](AGENTS.md#브라우저로-판정되는-결과)한다.
+새 검사·문서는 필요한 판단이나 재발 방지에 기여할 때 추가한다. 개수나 분량 자체를 목표로 삼지 않는다.
 
 ## 기술 스택
 
@@ -56,16 +63,20 @@ React 19 + Vite SPA · TypeScript 5.9.3 ([ADR 0002](docs/decisions/0002-typescri
 
 | 위치 | 내용 |
 | ---- | ---- |
-| [`AGENTS.md`](AGENTS.md) | 전역 라우팅, 저장소 함정, 완료 기준. 사람과 에이전트 모두 여기서 시작한다 |
+| [`AGENTS.md`](AGENTS.md) | 요구 → 문서 진입 → 설계·구현 → 검증의 작업 흐름. 사람과 에이전트 모두 여기서 시작한다 |
 | [`.agents/skills/`](.agents/skills/) | 역할·경계 계약 15개의 단일 정본. 런타임은 `description`으로 고르고 Claude만 `.claude/skills` 심링크 어댑터를 쓴다 |
 | [`scripts/loop/baseline.json`](scripts/loop/baseline.json) | 현재 문서 비용과 세 런타임 관측 상태 한 장. 과거 값은 Git history가 소유한다 |
 | [`product/facts/`](product/facts/) | **이 제품의 사실.** 한 surface 의 관찰·정책·전이·미확인을 한 파일이 소유한다 |
 | [`product/policies/`](product/policies/) | 여러 fact 에 걸친 판독 규칙과 근거 수명 |
 | [`product/generated-index.md`](product/generated-index.md) | fact frontmatter 에서 생성한 색인. 손으로 고치지 않는다(`pnpm product:index`) |
 | `docs/decisions/` | 결정 이유·대안·상태·재검토 조건을 보존하는 ADR |
+| [`docs/workflow/failure-learning.md`](docs/workflow/failure-learning.md) | 실패가 발생했을 때 기록·원인 분류·재확인과 다음 작업 반영 |
 | [`openapi/README.md`](openapi/README.md) | 현재 snapshot의 사용법·금지 사항·검증 명령. 채택 이유와 폐기 조건은 ADR 0001이 소유한다 |
 
-**구현 입력은 셋이다.** `AGENTS.md`(안전·라우팅·완료 기준) → 두 질문이 고른 **계약** → 그 대상의 **fact 한 파일**. 계약은 "어떻게 나누고 연결하는가"만 정하고 "무엇을 구현하는가"는 그 fact 만 말한다. 다른 도메인의 문서·코드·값은 근거가 아니다.
+**변경할 책임에서 시작한다.** 요구·현재 흐름·성공 조건을 정한 뒤 해당 계약과 실제 소비자·테스트를
+읽는다. 제품 값·동작을 정할 때는 그 대상의 fact와 필요한 원문을 추가로 확인한다. 계약은 책임과
+판단을, 코드·타입·테스트는 현재 사용법과 실행을, fact는 제품 사실을 소유한다. 형제 화면은 제품 값의
+근거가 아니다. 작업 기록은 [루트의 기록 기준](AGENTS.md#설계와-작업-기록)을 따른다.
 
 활성 ADR은 번호 순서가 아니라 관련 작업의 Skill·README·다른 ADR에서 진입하며, 구현 중에 읽어야 하는 ADR 은 보통 없다. 인증 토큰 결정(ADR 0006)은 `.agents/skills/auth-session/SKILL.md`, primitive 선택(ADR 0008)은 `.agents/skills/shared-ui/SKILL.md`가 연결한다. 번호 0007·0009~0012는 결번이다 — 재사용하지 않고, 대체·삭제된 결정의 과거는 git history가 소유한다. 0002·0004는 설계가 아니라 버전 고정 기록이라 해당 버전을 바꾸는 작업에서만 읽는다.
 

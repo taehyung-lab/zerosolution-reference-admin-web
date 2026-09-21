@@ -40,16 +40,8 @@
 
 ### 승격 보고 · 공용 로직 · 수명 · 강등 신호
 
-The completion report answers every admission item, not a verdict word:
-
-| admission item | required evidence |
-| --- | --- |
-| semantics, lifecycle, ownership, failure behavior match | compared call sites and the matching/differing transitions |
-| public API has no domain, DTO, Query, Router, permission, or mutation policy | the smallest domain-free input/output and the feature-owned remainder |
-| no resource switch, schema injection, or callback override | the required variation and why an opaque generic does not teach shared a domain fact |
-| implementation reduces observed cost or risk | the concrete duplication, change cost, or defect |
-
-If any row is unanswered, keep the code feature-local.
+승격을 결정한 작업 기록에 비교한 호출자·같은 전이·남겨 둔 차이·줄어드는 비용이나 결함 위험을 적는다.
+위 판단을 뒷받침하지 못하면 feature-local로 둔다. 기존 단위를 그대로 쓰는 작업에 별도 심사표를 요구하지 않는다.
 
 ## Shared logic
 
@@ -69,7 +61,9 @@ A unit stays provisional until a second real workflow validates the same semanti
 4. compare the next real consumer
 5. confirm, narrow, or demote from observed differences
 
-When the request names a shared unit rather than a screen, the same procedure applies from the other direction: the unit's focused tests are the contract, completeness is those tests plus every existing consumer still passing, and a caller's need never widens the contract on its own — that is step 4 with a new consumer. Implement only inside the unit's ownership; absorbing anything the catalog assigns to the feature is a failure even when a caller asks for it.
+When the request names a shared unit, inspect its actual consumers before changing its contract. Verify
+the changed behavior and affected consumption patterns as defined by [shared-ui](../../shared-ui/SKILL.md#이-계약의-검증-대상).
+A caller's need does not by itself justify widening the public responsibility. Keep feature-owned meaning with the caller.
 
 Consequential selection (a select whose change needs confirmation before it commits) is not a shared control feature: keep the committed value unchanged, hold one local candidate, open `ConfirmDialog`, commit through the caller on confirm, discard on cancel. Shared controls expose controlled values and never open workflow dialogs themselves.
 

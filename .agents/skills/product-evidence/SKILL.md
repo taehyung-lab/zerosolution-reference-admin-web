@@ -30,5 +30,5 @@ description: >
 
 ## 근거와 어긋났을 때
 
-읽은 것과 실제가 어긋나면 [references/return.md](references/return.md) 를 연다. 어긋남을 실제로
+읽은 것과 실제가 어긋나면 [실패 학습](../../../docs/workflow/failure-learning.md)을 연다. 어긋남을 실제로
 만났을 때만 연다 — 만나지 않은 실패를 미리 읽지 않는다.

@@ -100,13 +100,9 @@ mapper·액션 정책**(`{entity}-list-search`·`use{Entity}ListData`·`use{Enti
 
 ## Boundaries
 
-- `features/{domain}` owns domain workflows. `api/` owns query/mutation options, keys and API-only hooks; `model/` owns domain values, types and pure rules; `screens/{entity}-{role}/` owns one screen; `shared/` (domain-local) owns pieces two screens of the domain share; it knows the domain, unlike `src/shared`.
-- There is no `pages` layer. Features do not import another feature's UI, model, or hooks; a route composes multiple screens. Cross-feature API leaf exceptions are limited to the cases defined by [`server-state.md`](../server-state/SKILL.md).
+- 도메인 간 API leaf 예외는 [server-state](../server-state/SKILL.md)의 확인된 cache·참조 데이터 경계만 허용한다.
 - 제품 enum 의 집합·의미·필수·기본값은 원장, 내부 철자는 feature `model/` 의 한 선언이 소유한다. 화면은 재선언하지 않는다. 서버가 미확정이어도 내부 선언은 확정할 수 있다. raw shape·fixture 공유는 [query-cache](../server-state/SKILL.md#서버-연결-전후의-책임), 실제 wire 대응은 확인된 서버 계약이 소유한다.
-- Components do not call generated operations or reconstruct query keys.
-- Hooks have one state or behavior owner. Do not bundle query, mutation, form, dialog, toast, navigation, and permission into a page controller hook.
 - Separate UI from business rules by ownership, not by forcing every calculation into a hook. Render-local formatting and columns stay near the result UI; URL transitions, Query enablement, payload/cache identity, permission, and workflow decisions stay in `model/` hooks.
-- Do not build `useCrud`, `ResourcePage`, universal list/form descriptors, or a resource framework around feature workflows.
 - 테스트는 **검증하는 소유자 옆에** 둔다. 여러 화면을 조립하는 통합 테스트만 `src/test/workflows` 에
   둔다. 테스트 편의를 이유로 production import 경계를 완화하지 않는다.
 - **같은 feature 는 한 요청, 한 소유자다.** 한 feature 를 화면 단위로 병렬 분할하면 `model/`·`api/`
