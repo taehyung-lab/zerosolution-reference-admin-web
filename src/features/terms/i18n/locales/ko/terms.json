@@ -1,0 +1,101 @@
+{
+  "terms": {
+    "title": "약관",
+    "breadcrumb": {
+      "settings": "설정",
+      "terms": "약관",
+      "detail": "조회",
+      "create": "등록",
+      "edit": "수정"
+    },
+    "filter": {
+      "period": {
+        "label": "기간"
+      },
+      "keyword": {
+        "label": "검색어",
+        "chip": "{{field}} : {{value}}"
+      },
+      "status": {
+        "label": "게시 상태"
+      }
+    },
+    "columns": {
+      "version": "버전",
+      "body": "본문",
+      "effectiveAt": "시행일",
+      "status": "게시 상태",
+      "publishedAt": "게시일",
+      "timestamps": "등록일/최근업데이트일",
+      "emptyValue": "-"
+    },
+    "sort": {
+      "registeredAt": "등록일",
+      "updatedAt": "최근업데이트일",
+      "effectiveAt": "시행일",
+      "publishedAt": "게시일",
+      "version": "버전",
+      "body": "본문",
+      "status": "게시 상태"
+    },
+    "values": {
+      "periodType": {
+        "registeredAt": "등록일",
+        "updatedAt": "최근업데이트일",
+        "effectiveAt": "시행일",
+        "publishedAt": "게시일"
+      },
+      "keywordField": {
+        "body": "본문",
+        "content": "내용"
+      },
+      "status": {
+        "PUBLISHED": "게시",
+        "UNPUBLISHED": "게시안함"
+      },
+      "version": "V{{version}}"
+    },
+    "result": {
+      "create": "등록",
+      "copy": "선택복사",
+      "empty": "일치하는 검색결과가 없습니다.",
+      "selectAll": "이 페이지의 약관 전체 선택",
+      "selectRow": "{{version}} 선택",
+      "bulkField": "일괄변경 항목",
+      "bulkPlaceholder": "선택",
+      "bulkChange": "변경"
+    },
+    "detail": {
+      "title": "약관 조회",
+      "section": "기본정보",
+      "version": "V {{version}}",
+      "statusConfirm": {
+        "PUBLISHED": "게시로 변경하시겠습니까?",
+        "UNPUBLISHED": "게시안함으로 변경하시겠습니까?"
+      },
+      "history": "업데이트 이력",
+      "historyDate": "업데이트일",
+      "historyChange": "업데이트 사항",
+      "historyManager": "담당자",
+      "historyEmpty": "업데이트 이력이 없습니다.",
+      "historyCreated": "등록",
+      "historyUpdated": "수정",
+      "edit": "수정",
+      "delete": "삭제"
+    },
+    "form": {
+      "createTitle": "약관 등록",
+      "editTitle": "약관 수정",
+      "section": "기본정보",
+      "errors": {
+        "version": "버전을 입력해주세요.",
+        "versionLength": "버전은 10자 이하로 입력해주세요.",
+        "versionFormat": "버전은 숫자와 점(.)만 입력할 수 있습니다.",
+        "effectiveAt": "시행일을 선택해주세요.",
+        "status": "게시 상태를 선택해주세요.",
+        "publishedAt": "게시일을 선택해주세요.",
+        "body": "본문을 입력해주세요."
+      }
+    }
+  }
+}

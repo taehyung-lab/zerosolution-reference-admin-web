@@ -22,6 +22,8 @@ import { Route as AppPerformancesIndexRouteImport } from './routes/_app/performa
 import { Route as AppPerformancesContentsRouteImport } from './routes/_app/performances/contents'
 import { Route as AppProfileIndexRouteImport } from './routes/_app/profile/index'
 import { Route as AppProfileEditRouteImport } from './routes/_app/profile/edit'
+import { Route as AppTermsIndexRouteImport } from './routes/_app/terms/index'
+import { Route as AppTermsNewRouteImport } from './routes/_app/terms/new'
 import { Route as AppTicketingIssuesRouteImport } from './routes/_app/ticketing/issues'
 import { Route as AppCommunityBoardsIndexRouteImport } from './routes/_app/community/boards/index'
 import { Route as AppCommunityBoardsNewRouteImport } from './routes/_app/community/boards/new'
@@ -40,6 +42,8 @@ import { Route as AppMembersWithdrawnIndexRouteImport } from './routes/_app/memb
 import { Route as AppMembersWithdrawnMemberIdRouteImport } from './routes/_app/members/withdrawn/$memberId'
 import { Route as AppPerformancesPerformanceIdIndexRouteImport } from './routes/_app/performances/$performanceId/index'
 import { Route as AppPerformancesPerformanceIdEditRouteImport } from './routes/_app/performances/$performanceId/edit'
+import { Route as AppTermsTermsIdIndexRouteImport } from './routes/_app/terms/$termsId/index'
+import { Route as AppTermsTermsIdEditRouteImport } from './routes/_app/terms/$termsId/edit'
 import { Route as AppTicketingPrintersIndexRouteImport } from './routes/_app/ticketing/printers/index'
 import { Route as AppTicketingPrintersNewRouteImport } from './routes/_app/ticketing/printers/new'
 import { Route as AppCommunityBoardsBoardIdIndexRouteImport } from './routes/_app/community/boards/$boardId/index'
@@ -111,6 +115,16 @@ const AppProfileIndexRoute = AppProfileIndexRouteImport.update({
 const AppProfileEditRoute = AppProfileEditRouteImport.update({
   id: '/profile/edit',
   path: '/profile/edit',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTermsIndexRoute = AppTermsIndexRouteImport.update({
+  id: '/terms/',
+  path: '/terms/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTermsNewRoute = AppTermsNewRouteImport.update({
+  id: '/terms/new',
+  path: '/terms/new',
   getParentRoute: () => AppRoute,
 } as any)
 const AppTicketingIssuesRoute = AppTicketingIssuesRouteImport.update({
@@ -210,6 +224,16 @@ const AppPerformancesPerformanceIdEditRoute =
     path: '/performances/$performanceId/edit',
     getParentRoute: () => AppRoute,
   } as any)
+const AppTermsTermsIdIndexRoute = AppTermsTermsIdIndexRouteImport.update({
+  id: '/terms/$termsId/',
+  path: '/terms/$termsId/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTermsTermsIdEditRoute = AppTermsTermsIdEditRouteImport.update({
+  id: '/terms/$termsId/edit',
+  path: '/terms/$termsId/edit',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppTicketingPrintersIndexRoute =
   AppTicketingPrintersIndexRouteImport.update({
     id: '/ticketing/printers/',
@@ -268,10 +292,12 @@ export interface FileRoutesByFullPath {
   '/members/new': typeof AppMembersNewRoute
   '/performances/contents': typeof AppPerformancesContentsRoute
   '/profile/edit': typeof AppProfileEditRoute
+  '/terms/new': typeof AppTermsNewRoute
   '/ticketing/issues': typeof AppTicketingIssuesRoute
   '/managers/': typeof AppManagersIndexRoute
   '/performances/': typeof AppPerformancesIndexRoute
   '/profile/': typeof AppProfileIndexRoute
+  '/terms/': typeof AppTermsIndexRoute
   '/community/boards/new': typeof AppCommunityBoardsNewRoute
   '/community/posts/new': typeof AppCommunityPostsNewRoute
   '/managers/$managerId/edit': typeof AppManagersManagerIdEditRoute
@@ -282,6 +308,7 @@ export interface FileRoutesByFullPath {
   '/members/appeals/$appealId': typeof AppMembersAppealsAppealIdRoute
   '/members/withdrawn/$memberId': typeof AppMembersWithdrawnMemberIdRoute
   '/performances/$performanceId/edit': typeof AppPerformancesPerformanceIdEditRoute
+  '/terms/$termsId/edit': typeof AppTermsTermsIdEditRoute
   '/ticketing/printers/new': typeof AppTicketingPrintersNewRoute
   '/community/boards/': typeof AppCommunityBoardsIndexRoute
   '/community/posts/': typeof AppCommunityPostsIndexRoute
@@ -290,6 +317,7 @@ export interface FileRoutesByFullPath {
   '/members/appeals/': typeof AppMembersAppealsIndexRoute
   '/members/withdrawn/': typeof AppMembersWithdrawnIndexRoute
   '/performances/$performanceId/': typeof AppPerformancesPerformanceIdIndexRoute
+  '/terms/$termsId/': typeof AppTermsTermsIdIndexRoute
   '/ticketing/printers/': typeof AppTicketingPrintersIndexRoute
   '/community/boards/$boardId/edit': typeof AppCommunityBoardsBoardIdEditRoute
   '/community/posts/$postId/edit': typeof AppCommunityPostsPostIdEditRoute
@@ -308,10 +336,12 @@ export interface FileRoutesByTo {
   '/members/new': typeof AppMembersNewRoute
   '/performances/contents': typeof AppPerformancesContentsRoute
   '/profile/edit': typeof AppProfileEditRoute
+  '/terms/new': typeof AppTermsNewRoute
   '/ticketing/issues': typeof AppTicketingIssuesRoute
   '/managers': typeof AppManagersIndexRoute
   '/performances': typeof AppPerformancesIndexRoute
   '/profile': typeof AppProfileIndexRoute
+  '/terms': typeof AppTermsIndexRoute
   '/community/boards/new': typeof AppCommunityBoardsNewRoute
   '/community/posts/new': typeof AppCommunityPostsNewRoute
   '/managers/$managerId/edit': typeof AppManagersManagerIdEditRoute
@@ -322,6 +352,7 @@ export interface FileRoutesByTo {
   '/members/appeals/$appealId': typeof AppMembersAppealsAppealIdRoute
   '/members/withdrawn/$memberId': typeof AppMembersWithdrawnMemberIdRoute
   '/performances/$performanceId/edit': typeof AppPerformancesPerformanceIdEditRoute
+  '/terms/$termsId/edit': typeof AppTermsTermsIdEditRoute
   '/ticketing/printers/new': typeof AppTicketingPrintersNewRoute
   '/community/boards': typeof AppCommunityBoardsIndexRoute
   '/community/posts': typeof AppCommunityPostsIndexRoute
@@ -330,6 +361,7 @@ export interface FileRoutesByTo {
   '/members/appeals': typeof AppMembersAppealsIndexRoute
   '/members/withdrawn': typeof AppMembersWithdrawnIndexRoute
   '/performances/$performanceId': typeof AppPerformancesPerformanceIdIndexRoute
+  '/terms/$termsId': typeof AppTermsTermsIdIndexRoute
   '/ticketing/printers': typeof AppTicketingPrintersIndexRoute
   '/community/boards/$boardId/edit': typeof AppCommunityBoardsBoardIdEditRoute
   '/community/posts/$postId/edit': typeof AppCommunityPostsPostIdEditRoute
@@ -350,10 +382,12 @@ export interface FileRoutesById {
   '/_app/members/new': typeof AppMembersNewRoute
   '/_app/performances/contents': typeof AppPerformancesContentsRoute
   '/_app/profile/edit': typeof AppProfileEditRoute
+  '/_app/terms/new': typeof AppTermsNewRoute
   '/_app/ticketing/issues': typeof AppTicketingIssuesRoute
   '/_app/managers/': typeof AppManagersIndexRoute
   '/_app/performances/': typeof AppPerformancesIndexRoute
   '/_app/profile/': typeof AppProfileIndexRoute
+  '/_app/terms/': typeof AppTermsIndexRoute
   '/_app/community/boards/new': typeof AppCommunityBoardsNewRoute
   '/_app/community/posts/new': typeof AppCommunityPostsNewRoute
   '/_app/managers/$managerId/edit': typeof AppManagersManagerIdEditRoute
@@ -364,6 +398,7 @@ export interface FileRoutesById {
   '/_app/members/appeals/$appealId': typeof AppMembersAppealsAppealIdRoute
   '/_app/members/withdrawn/$memberId': typeof AppMembersWithdrawnMemberIdRoute
   '/_app/performances/$performanceId/edit': typeof AppPerformancesPerformanceIdEditRoute
+  '/_app/terms/$termsId/edit': typeof AppTermsTermsIdEditRoute
   '/_app/ticketing/printers/new': typeof AppTicketingPrintersNewRoute
   '/_app/community/boards/': typeof AppCommunityBoardsIndexRoute
   '/_app/community/posts/': typeof AppCommunityPostsIndexRoute
@@ -372,6 +407,7 @@ export interface FileRoutesById {
   '/_app/members/appeals/': typeof AppMembersAppealsIndexRoute
   '/_app/members/withdrawn/': typeof AppMembersWithdrawnIndexRoute
   '/_app/performances/$performanceId/': typeof AppPerformancesPerformanceIdIndexRoute
+  '/_app/terms/$termsId/': typeof AppTermsTermsIdIndexRoute
   '/_app/ticketing/printers/': typeof AppTicketingPrintersIndexRoute
   '/_app/community/boards/$boardId/edit': typeof AppCommunityBoardsBoardIdEditRoute
   '/_app/community/posts/$postId/edit': typeof AppCommunityPostsPostIdEditRoute
@@ -392,10 +428,12 @@ export interface FileRouteTypes {
     | '/members/new'
     | '/performances/contents'
     | '/profile/edit'
+    | '/terms/new'
     | '/ticketing/issues'
     | '/managers/'
     | '/performances/'
     | '/profile/'
+    | '/terms/'
     | '/community/boards/new'
     | '/community/posts/new'
     | '/managers/$managerId/edit'
@@ -406,6 +444,7 @@ export interface FileRouteTypes {
     | '/members/appeals/$appealId'
     | '/members/withdrawn/$memberId'
     | '/performances/$performanceId/edit'
+    | '/terms/$termsId/edit'
     | '/ticketing/printers/new'
     | '/community/boards/'
     | '/community/posts/'
@@ -414,6 +453,7 @@ export interface FileRouteTypes {
     | '/members/appeals/'
     | '/members/withdrawn/'
     | '/performances/$performanceId/'
+    | '/terms/$termsId/'
     | '/ticketing/printers/'
     | '/community/boards/$boardId/edit'
     | '/community/posts/$postId/edit'
@@ -432,10 +472,12 @@ export interface FileRouteTypes {
     | '/members/new'
     | '/performances/contents'
     | '/profile/edit'
+    | '/terms/new'
     | '/ticketing/issues'
     | '/managers'
     | '/performances'
     | '/profile'
+    | '/terms'
     | '/community/boards/new'
     | '/community/posts/new'
     | '/managers/$managerId/edit'
@@ -446,6 +488,7 @@ export interface FileRouteTypes {
     | '/members/appeals/$appealId'
     | '/members/withdrawn/$memberId'
     | '/performances/$performanceId/edit'
+    | '/terms/$termsId/edit'
     | '/ticketing/printers/new'
     | '/community/boards'
     | '/community/posts'
@@ -454,6 +497,7 @@ export interface FileRouteTypes {
     | '/members/appeals'
     | '/members/withdrawn'
     | '/performances/$performanceId'
+    | '/terms/$termsId'
     | '/ticketing/printers'
     | '/community/boards/$boardId/edit'
     | '/community/posts/$postId/edit'
@@ -473,10 +517,12 @@ export interface FileRouteTypes {
     | '/_app/members/new'
     | '/_app/performances/contents'
     | '/_app/profile/edit'
+    | '/_app/terms/new'
     | '/_app/ticketing/issues'
     | '/_app/managers/'
     | '/_app/performances/'
     | '/_app/profile/'
+    | '/_app/terms/'
     | '/_app/community/boards/new'
     | '/_app/community/posts/new'
     | '/_app/managers/$managerId/edit'
@@ -487,6 +533,7 @@ export interface FileRouteTypes {
     | '/_app/members/appeals/$appealId'
     | '/_app/members/withdrawn/$memberId'
     | '/_app/performances/$performanceId/edit'
+    | '/_app/terms/$termsId/edit'
     | '/_app/ticketing/printers/new'
     | '/_app/community/boards/'
     | '/_app/community/posts/'
@@ -495,6 +542,7 @@ export interface FileRouteTypes {
     | '/_app/members/appeals/'
     | '/_app/members/withdrawn/'
     | '/_app/performances/$performanceId/'
+    | '/_app/terms/$termsId/'
     | '/_app/ticketing/printers/'
     | '/_app/community/boards/$boardId/edit'
     | '/_app/community/posts/$postId/edit'
@@ -601,6 +649,20 @@ declare module '@tanstack/react-router' {
       path: '/profile/edit'
       fullPath: '/profile/edit'
       preLoaderRoute: typeof AppProfileEditRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/terms/': {
+      id: '/_app/terms/'
+      path: '/terms'
+      fullPath: '/terms/'
+      preLoaderRoute: typeof AppTermsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/terms/new': {
+      id: '/_app/terms/new'
+      path: '/terms/new'
+      fullPath: '/terms/new'
+      preLoaderRoute: typeof AppTermsNewRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/ticketing/issues': {
@@ -729,6 +791,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPerformancesPerformanceIdEditRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/terms/$termsId/': {
+      id: '/_app/terms/$termsId/'
+      path: '/terms/$termsId'
+      fullPath: '/terms/$termsId/'
+      preLoaderRoute: typeof AppTermsTermsIdIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/terms/$termsId/edit': {
+      id: '/_app/terms/$termsId/edit'
+      path: '/terms/$termsId/edit'
+      fullPath: '/terms/$termsId/edit'
+      preLoaderRoute: typeof AppTermsTermsIdEditRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/ticketing/printers/': {
       id: '/_app/ticketing/printers/'
       path: '/ticketing/printers'
@@ -796,10 +872,12 @@ interface AppRouteChildren {
   AppMembersNewRoute: typeof AppMembersNewRoute
   AppPerformancesContentsRoute: typeof AppPerformancesContentsRoute
   AppProfileEditRoute: typeof AppProfileEditRoute
+  AppTermsNewRoute: typeof AppTermsNewRoute
   AppTicketingIssuesRoute: typeof AppTicketingIssuesRoute
   AppManagersIndexRoute: typeof AppManagersIndexRoute
   AppPerformancesIndexRoute: typeof AppPerformancesIndexRoute
   AppProfileIndexRoute: typeof AppProfileIndexRoute
+  AppTermsIndexRoute: typeof AppTermsIndexRoute
   AppCommunityBoardsNewRoute: typeof AppCommunityBoardsNewRoute
   AppCommunityPostsNewRoute: typeof AppCommunityPostsNewRoute
   AppManagersManagerIdEditRoute: typeof AppManagersManagerIdEditRoute
@@ -810,6 +888,7 @@ interface AppRouteChildren {
   AppMembersAppealsAppealIdRoute: typeof AppMembersAppealsAppealIdRoute
   AppMembersWithdrawnMemberIdRoute: typeof AppMembersWithdrawnMemberIdRoute
   AppPerformancesPerformanceIdEditRoute: typeof AppPerformancesPerformanceIdEditRoute
+  AppTermsTermsIdEditRoute: typeof AppTermsTermsIdEditRoute
   AppTicketingPrintersNewRoute: typeof AppTicketingPrintersNewRoute
   AppCommunityBoardsIndexRoute: typeof AppCommunityBoardsIndexRoute
   AppCommunityPostsIndexRoute: typeof AppCommunityPostsIndexRoute
@@ -818,6 +897,7 @@ interface AppRouteChildren {
   AppMembersAppealsIndexRoute: typeof AppMembersAppealsIndexRoute
   AppMembersWithdrawnIndexRoute: typeof AppMembersWithdrawnIndexRoute
   AppPerformancesPerformanceIdIndexRoute: typeof AppPerformancesPerformanceIdIndexRoute
+  AppTermsTermsIdIndexRoute: typeof AppTermsTermsIdIndexRoute
   AppTicketingPrintersIndexRoute: typeof AppTicketingPrintersIndexRoute
   AppCommunityBoardsBoardIdEditRoute: typeof AppCommunityBoardsBoardIdEditRoute
   AppCommunityPostsPostIdEditRoute: typeof AppCommunityPostsPostIdEditRoute
@@ -835,10 +915,12 @@ const AppRouteChildren: AppRouteChildren = {
   AppMembersNewRoute: AppMembersNewRoute,
   AppPerformancesContentsRoute: AppPerformancesContentsRoute,
   AppProfileEditRoute: AppProfileEditRoute,
+  AppTermsNewRoute: AppTermsNewRoute,
   AppTicketingIssuesRoute: AppTicketingIssuesRoute,
   AppManagersIndexRoute: AppManagersIndexRoute,
   AppPerformancesIndexRoute: AppPerformancesIndexRoute,
   AppProfileIndexRoute: AppProfileIndexRoute,
+  AppTermsIndexRoute: AppTermsIndexRoute,
   AppCommunityBoardsNewRoute: AppCommunityBoardsNewRoute,
   AppCommunityPostsNewRoute: AppCommunityPostsNewRoute,
   AppManagersManagerIdEditRoute: AppManagersManagerIdEditRoute,
@@ -849,6 +931,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppMembersAppealsAppealIdRoute: AppMembersAppealsAppealIdRoute,
   AppMembersWithdrawnMemberIdRoute: AppMembersWithdrawnMemberIdRoute,
   AppPerformancesPerformanceIdEditRoute: AppPerformancesPerformanceIdEditRoute,
+  AppTermsTermsIdEditRoute: AppTermsTermsIdEditRoute,
   AppTicketingPrintersNewRoute: AppTicketingPrintersNewRoute,
   AppCommunityBoardsIndexRoute: AppCommunityBoardsIndexRoute,
   AppCommunityPostsIndexRoute: AppCommunityPostsIndexRoute,
@@ -858,6 +941,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppMembersWithdrawnIndexRoute: AppMembersWithdrawnIndexRoute,
   AppPerformancesPerformanceIdIndexRoute:
     AppPerformancesPerformanceIdIndexRoute,
+  AppTermsTermsIdIndexRoute: AppTermsTermsIdIndexRoute,
   AppTicketingPrintersIndexRoute: AppTicketingPrintersIndexRoute,
   AppCommunityBoardsBoardIdEditRoute: AppCommunityBoardsBoardIdEditRoute,
   AppCommunityPostsPostIdEditRoute: AppCommunityPostsPostIdEditRoute,

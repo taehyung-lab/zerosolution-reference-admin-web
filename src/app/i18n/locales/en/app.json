@@ -45,7 +45,9 @@
       "boards": "Boards",
       "posts": "Posts",
       "ticketIssues": "All ticket issues",
-      "smartPrinters": "Smart printers"
+      "smartPrinters": "Smart printers",
+      "managers": "Managers",
+      "terms": "Terms"
     }
   },
   "bootstrap": {

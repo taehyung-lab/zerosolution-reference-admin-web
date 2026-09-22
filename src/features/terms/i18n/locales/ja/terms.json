@@ -1,0 +1,101 @@
+{
+  "terms": {
+    "title": "規約",
+    "breadcrumb": {
+      "settings": "設定",
+      "terms": "規約",
+      "detail": "照会",
+      "create": "登録",
+      "edit": "修正"
+    },
+    "filter": {
+      "period": {
+        "label": "期間"
+      },
+      "keyword": {
+        "label": "検索語",
+        "chip": "{{field}} : {{value}}"
+      },
+      "status": {
+        "label": "掲載状態"
+      }
+    },
+    "columns": {
+      "version": "バージョン",
+      "body": "本文",
+      "effectiveAt": "施行日",
+      "status": "掲載状態",
+      "publishedAt": "掲載日",
+      "timestamps": "登録日/最終更新日",
+      "emptyValue": "-"
+    },
+    "sort": {
+      "registeredAt": "登録日",
+      "updatedAt": "最終更新日",
+      "effectiveAt": "施行日",
+      "publishedAt": "掲載日",
+      "version": "バージョン",
+      "body": "本文",
+      "status": "掲載状態"
+    },
+    "values": {
+      "periodType": {
+        "registeredAt": "登録日",
+        "updatedAt": "最終更新日",
+        "effectiveAt": "施行日",
+        "publishedAt": "掲載日"
+      },
+      "keywordField": {
+        "body": "本文",
+        "content": "内容"
+      },
+      "status": {
+        "PUBLISHED": "掲載",
+        "UNPUBLISHED": "掲載しない"
+      },
+      "version": "V{{version}}"
+    },
+    "result": {
+      "create": "登録",
+      "copy": "選択コピー",
+      "empty": "一致する検索結果がありません。",
+      "selectAll": "このページの規約をすべて選択",
+      "selectRow": "{{version}} を選択",
+      "bulkField": "一括変更項目",
+      "bulkPlaceholder": "選択",
+      "bulkChange": "変更"
+    },
+    "detail": {
+      "title": "規約照会",
+      "section": "基本情報",
+      "version": "V {{version}}",
+      "statusConfirm": {
+        "PUBLISHED": "掲載に変更しますか？",
+        "UNPUBLISHED": "掲載しないに変更しますか？"
+      },
+      "history": "更新履歴",
+      "historyDate": "更新日",
+      "historyChange": "更新内容",
+      "historyManager": "担当者",
+      "historyEmpty": "更新履歴がありません。",
+      "historyCreated": "登録",
+      "historyUpdated": "修正",
+      "edit": "修正",
+      "delete": "削除"
+    },
+    "form": {
+      "createTitle": "規約登録",
+      "editTitle": "規約修正",
+      "section": "基本情報",
+      "errors": {
+        "version": "バージョンを入力してください。",
+        "versionLength": "バージョンは10文字以内で入力してください。",
+        "versionFormat": "バージョンは数字とドット(.)のみ入力できます。",
+        "effectiveAt": "施行日を選択してください。",
+        "status": "掲載状態を選択してください。",
+        "publishedAt": "掲載日を選択してください。",
+        "body": "本文を入力してください。"
+      }
+    }
+  }
+}

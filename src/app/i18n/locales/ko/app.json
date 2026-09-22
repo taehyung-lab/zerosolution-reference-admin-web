@@ -45,7 +45,9 @@
       "boards": "게시판",
       "posts": "게시물",
       "ticketIssues": "전체발권",
-      "smartPrinters": "스마트프린터"
+      "smartPrinters": "스마트프린터",
+      "managers": "운영자",
+      "terms": "약관"
     }
   },
   "bootstrap": {

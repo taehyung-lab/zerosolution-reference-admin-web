@@ -10,6 +10,7 @@ import enManagers from '@/features/managers/i18n/locales/en/managers.json'
 import enMembers from '@/features/members/i18n/locales/en/members.json'
 import enMessaging from '@/features/messaging/i18n/locales/en/messaging.json'
 import enProfile from '@/features/profile/i18n/locales/en/profile.json'
+import enTerms from '@/features/terms/i18n/locales/en/terms.json'
 import enTicketing from '@/features/ticketing/i18n/locales/en/ticketing.json'
 import jaApp from '@/app/i18n/locales/ja/app.json'
 import jaAuth from '@/features/auth/i18n/locales/ja/auth.json'
@@ -18,6 +19,7 @@ import jaManagers from '@/features/managers/i18n/locales/ja/managers.json'
 import jaMembers from '@/features/members/i18n/locales/ja/members.json'
 import jaMessaging from '@/features/messaging/i18n/locales/ja/messaging.json'
 import jaProfile from '@/features/profile/i18n/locales/ja/profile.json'
+import jaTerms from '@/features/terms/i18n/locales/ja/terms.json'
 import jaTicketing from '@/features/ticketing/i18n/locales/ja/ticketing.json'
 import koApp from '@/app/i18n/locales/ko/app.json'
 import koAuth from '@/features/auth/i18n/locales/ko/auth.json'
@@ -26,6 +28,7 @@ import koManagers from '@/features/managers/i18n/locales/ko/managers.json'
 import koMembers from '@/features/members/i18n/locales/ko/members.json'
 import koMessaging from '@/features/messaging/i18n/locales/ko/messaging.json'
 import koProfile from '@/features/profile/i18n/locales/ko/profile.json'
+import koTerms from '@/features/terms/i18n/locales/ko/terms.json'
 import koTicketing from '@/features/ticketing/i18n/locales/ko/ticketing.json'
 
 /**
@@ -35,13 +38,13 @@ import koTicketing from '@/features/ticketing/i18n/locales/ko/ticketing.json'
  * feature namespace 는 `src/features/<domain>/i18n/locales`). `pnpm i18n:check` 가 `src` 아래
  * 모든 `i18n/locales` root 를 찾아 parity 와 소유자 일치를 함께 검사한다.
  */
-export const appI18nNamespaces = ['app', 'auth', 'community', 'managers', 'members', 'messaging', 'performances', 'profile', 'ticketing'] as const
+export const appI18nNamespaces = ['app', 'auth', 'community', 'managers', 'members', 'messaging', 'performances', 'profile', 'terms', 'ticketing'] as const
 export type AppI18nNamespace = (typeof appI18nNamespaces)[number]
 
 const resources: Record<UiLocale, Record<AppI18nNamespace, object>> = {
-  ko: { app: koApp, auth: koAuth, community: koCommunity, managers: koManagers, members: koMembers, messaging: koMessaging, performances: koPerformances, profile: koProfile, ticketing: koTicketing },
-  en: { app: enApp, auth: enAuth, community: enCommunity, managers: enManagers, members: enMembers, messaging: enMessaging, performances: enPerformances, profile: enProfile, ticketing: enTicketing },
-  ja: { app: jaApp, auth: jaAuth, community: jaCommunity, managers: jaManagers, members: jaMembers, messaging: jaMessaging, performances: jaPerformances, profile: jaProfile, ticketing: jaTicketing },
+  ko: { app: koApp, auth: koAuth, community: koCommunity, managers: koManagers, members: koMembers, messaging: koMessaging, performances: koPerformances, profile: koProfile, terms: koTerms, ticketing: koTicketing },
+  en: { app: enApp, auth: enAuth, community: enCommunity, managers: enManagers, members: enMembers, messaging: enMessaging, performances: enPerformances, profile: enProfile, terms: enTerms, ticketing: enTicketing },
+  ja: { app: jaApp, auth: jaAuth, community: jaCommunity, managers: jaManagers, members: jaMembers, messaging: jaMessaging, performances: jaPerformances, profile: jaProfile, terms: jaTerms, ticketing: jaTicketing },
 }
 
 export function registerAppI18nResources(): void {
