@@ -5,6 +5,7 @@ import {
   communityNavigationItems,
   memberNavigationItems,
   performanceNavigationItems,
+  settingsNavigationItems,
   ticketingNavigationItems,
   type AppNavigationItem,
   type AppNavigationLink,
@@ -16,6 +17,7 @@ function children(id: string): readonly AppNavigationLink[] {
   if (id === "performances") return performanceNavigationItems;
   if (id === "community") return communityNavigationItems;
   if (id === "ticketing") return ticketingNavigationItems;
+  if (id === "settings") return settingsNavigationItems;
   return [];
 }
 

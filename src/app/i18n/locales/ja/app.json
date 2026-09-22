@@ -45,7 +45,9 @@
       "boards": "掲示板",
       "posts": "投稿",
       "ticketIssues": "全体発券",
-      "smartPrinters": "スマートプリンター"
+      "smartPrinters": "スマートプリンター",
+      "managers": "運営者",
+      "terms": "規約"
     }
   },
   "bootstrap": {

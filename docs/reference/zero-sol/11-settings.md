@@ -32,7 +32,7 @@ surface: `manager-detail`
 
 | 화면 | surface | Figma 관찰 | Notion 동작·정책 | 미확인 | 현재 코드 |
 | --- | --- | --- | --- | --- | --- |
-| 11.2 약관 | 구조 | 리스트(검색전 없음)·Case·조회·등록·수정. 미판독 | (대기) | — | — |
+| 11.2 약관 | 리스트·Case·조회·등록·수정 | **2026-09-22 판독 완료.** 관찰은 fact 가 소유한다 — [TERMS-LIST](../../../product/facts/TERMS-LIST.md) · [TERMS-DETAIL](../../../product/facts/TERMS-DETAIL.md) · [TERMS-FORM](../../../product/facts/TERMS-FORM.md) | 같은 fact 가 Notion 전사 `설정 > 약관` 절을 함께 담는다 | 각 fact 의 미확인 표 | `src/features/terms/` |
 | 11.3.2 접근권한 | 리스트 | 검색전 없음. 기간 등록일·최근업데이트일, 검색어 권한 1개, 유형(기획사·매표처)·사용 상태. toolbar `선택▾`+`변경` · `선택복사` · `등록`. table 유형·권한·사용 상태·등록일/최근업데이트일 | (대기) | — | — |
 | 11.3.2 접근권한 | 상세·등록·수정 | 조회·등록·수정 frame. 권한은 화면 행마다 가능한 기능 집합이 다른 `화면 × 기능` 조합 | (대기) | 서버 권한 식별자 | `CheckboxTree`가 `nodes/values/onValueChange/selectAllLabel/emptyMeansAll`로 controlled leaf 선택을 소유하며 matrix 의미는 소유하지 않음 |
 

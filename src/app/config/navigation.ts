@@ -5,7 +5,7 @@
 export interface AppNavigationItem {
   readonly id: string;
   readonly labelKey: string;
-  readonly to?: "/performances" | "/performances/contents" | "/managers" | "/community/boards" | "/community/posts" | "/ticketing/issues" | "/ticketing/printers" | "/members/active/all" | "/members/active/general" | "/members/active/flagged" | "/members/dormant" | "/members/withdrawn" | "/members/counsel" | "/members/appeals" | "/members/access";
+  readonly to?: "/performances" | "/performances/contents" | "/managers" | "/community/boards" | "/community/posts" | "/ticketing/issues" | "/ticketing/printers" | "/terms" | "/members/active/all" | "/members/active/general" | "/members/active/flagged" | "/members/dormant" | "/members/withdrawn" | "/members/counsel" | "/members/appeals" | "/members/access";
 }
 
 export const appNavigationItems: readonly AppNavigationItem[] = [
@@ -49,6 +49,17 @@ export const communityNavigationItems: readonly AppNavigationLink[] = [
 export const ticketingNavigationItems: readonly AppNavigationLink[] = [
   { id: 'ticketIssues', labelKey: 'shell.navigation.ticketIssues', to: '/ticketing/issues' },
   { id: 'smartPrinters', labelKey: 'shell.navigation.smartPrinters', to: '/ticketing/printers' },
+];
+
+/**
+ * LNB 설정 하위: Figma 11.2 frame 의 LNB 가 `운영자` · `약관` · `정책`(메뉴/기능·접근권한·회원·마케팅·
+ * 전시·다국어) · `로그` 를 그린다(2026-09-22 실측). 지금 구현된 두 화면만 그 순서대로 둔다.
+ * `약관` 아래에 다시 `{약관1}` 항목이 있으나 그 목록의 출처가 미확인이라(TERMS-LIST 미확인 6)
+ * 여기서는 `약관` 화면 하나만 연결한다.
+ */
+export const settingsNavigationItems: readonly AppNavigationLink[] = [
+  { id: 'managers', labelKey: 'shell.navigation.managers', to: '/managers' },
+  { id: 'terms', labelKey: 'shell.navigation.terms', to: '/terms' },
 ];
 
 /** LNB 공연 하위: Figma 5.1/5.2 가 `공연목록`·`콘텐츠` 두 화면을 같은 업무군으로 그린다. */

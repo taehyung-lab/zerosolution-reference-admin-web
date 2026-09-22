@@ -1,0 +1,101 @@
+{
+  "terms": {
+    "title": "Terms",
+    "breadcrumb": {
+      "settings": "Settings",
+      "terms": "Terms",
+      "detail": "Details",
+      "create": "Create",
+      "edit": "Edit"
+    },
+    "filter": {
+      "period": {
+        "label": "Period"
+      },
+      "keyword": {
+        "label": "Keyword",
+        "chip": "{{field}} : {{value}}"
+      },
+      "status": {
+        "label": "Publication status"
+      }
+    },
+    "columns": {
+      "version": "Version",
+      "body": "Body",
+      "effectiveAt": "Effective date",
+      "status": "Publication status",
+      "publishedAt": "Publication date",
+      "timestamps": "Registered / last updated",
+      "emptyValue": "-"
+    },
+    "sort": {
+      "registeredAt": "Registered date",
+      "updatedAt": "Last updated date",
+      "effectiveAt": "Effective date",
+      "publishedAt": "Publication date",
+      "version": "Version",
+      "body": "Body",
+      "status": "Publication status"
+    },
+    "values": {
+      "periodType": {
+        "registeredAt": "Registered date",
+        "updatedAt": "Last updated date",
+        "effectiveAt": "Effective date",
+        "publishedAt": "Publication date"
+      },
+      "keywordField": {
+        "body": "Body",
+        "content": "Content"
+      },
+      "status": {
+        "PUBLISHED": "Published",
+        "UNPUBLISHED": "Unpublished"
+      },
+      "version": "V{{version}}"
+    },
+    "result": {
+      "create": "Create",
+      "copy": "Copy selected",
+      "empty": "No results match your search.",
+      "selectAll": "Select every terms row on this page",
+      "selectRow": "Select {{version}}",
+      "bulkField": "Bulk change target",
+      "bulkPlaceholder": "Select",
+      "bulkChange": "Change"
+    },
+    "detail": {
+      "title": "Terms details",
+      "section": "Basic information",
+      "version": "V {{version}}",
+      "statusConfirm": {
+        "PUBLISHED": "Change to Published?",
+        "UNPUBLISHED": "Change to Unpublished?"
+      },
+      "history": "Update history",
+      "historyDate": "Updated at",
+      "historyChange": "Change",
+      "historyManager": "Manager",
+      "historyEmpty": "There is no update history.",
+      "historyCreated": "Created",
+      "historyUpdated": "Updated",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "form": {
+      "createTitle": "Create terms",
+      "editTitle": "Edit terms",
+      "section": "Basic information",
+      "errors": {
+        "version": "Enter the version.",
+        "versionLength": "Enter up to 10 characters for the version.",
+        "versionFormat": "The version accepts digits and dots (.) only.",
+        "effectiveAt": "Select the effective date.",
+        "status": "Select the publication status.",
+        "publishedAt": "Select the publication date.",
+        "body": "Enter the body."
+      }
+    }
+  }
+}

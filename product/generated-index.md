@@ -22,9 +22,12 @@
 | `PRINTER-LIST` | 스마트프린터 목록 | list | 관찰됨 | [PRINTER-LIST.md](facts/PRINTER-LIST.md) |
 | `PROFILE-DETAIL` | 내정보 조회 | detail | 관찰됨 | [PROFILE-DETAIL.md](facts/PROFILE-DETAIL.md) |
 | `PROFILE-EDIT` | 내정보 수정 | form | 관찰됨 | [PROFILE-EDIT.md](facts/PROFILE-EDIT.md) |
+| `TERMS-DETAIL` | 약관 조회 | detail | 관찰됨 | [TERMS-DETAIL.md](facts/TERMS-DETAIL.md) |
+| `TERMS-FORM` | 약관 등록·수정 | form | 관찰됨 | [TERMS-FORM.md](facts/TERMS-FORM.md) |
+| `TERMS-LIST` | 약관 목록 | list | 관찰됨 | [TERMS-LIST.md](facts/TERMS-LIST.md) |
 | `TICKET-ISSUE-LIST` | 전체발권 목록 | list | 관찰됨 | [TICKET-ISSUE-LIST.md](facts/TICKET-ISSUE-LIST.md) |
 
-총 13개.
+총 16개.
 
 ## 아직 fact 로 옮기지 않은 화면
 
