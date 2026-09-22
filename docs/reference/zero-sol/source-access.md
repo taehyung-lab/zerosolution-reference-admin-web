@@ -3,6 +3,11 @@
 이 문서는 현재 저장소의 Figma·Notion 원문을 다시 관찰할 때 쓰는 source 전용 절차다. 다른 제품으로
 이관하지 않으며, 범용 근거 판독 규칙은 `product/policies/evidence.md`가 소유한다.
 
+## 공통 진입점
+
+Figma: [ZEROsol — For Kakao](https://www.figma.com/design/Ogb6WpSpwCVhKggQ1NLRlQ/ZEROsol--For-Kakao-).
+파일 진입 주소이며, 화면별 관찰 위치·시점·범위는 해당 fact의 `sources`가 소유한다.
+
 ## 접근 절차
 
 1. `aside-browser` skill을 읽고 `rtk proxy aside guide`, `rtk proxy aside guide repl`로 사용법을 확인한다.
