@@ -109,7 +109,7 @@ mapper·액션 정책**(`{entity}-list-search`·`use{Entity}ListData`·`use{Enti
   의 데이터 계약이 작업마다 갈린다. 데이터 계약(model 타입·query options·mutation 입력)을 먼저 한
   곳에서 확정하고 그 위에서 화면을 잇는다. 병렬로 나눌 수 있는 것은 서로 다른 feature 다.
 
-권한·status 의미·bulk·업로드 제한·실 저장 성공 후 이동은 추측하지 않는다. 원장·원문에도 답이 없는 영향 부분만 보류한다. 목적지 파일 부재와 API 미연결은 제품 부재가 아니다. 연결 범위는 [도달 가능한 진입점](../route-composition/SKILL.md#도달-가능한-진입점), 미연결 종착점은 [mutations](../server-state/SKILL.md#시나리오-요청)가 소유한다.
+권한·status 의미·bulk·업로드 제한·실 저장 성공 후 이동은 추측하지 않는다. 원장·원문에도 답이 없는 영향 부분만 보류한다. 목적지 파일 부재와 API 미연결은 제품 부재가 아니다. 연결 범위는 [진입점과 나가는 전이](../route-composition/SKILL.md#도달-가능한-진입점과-나가는-전이), 미연결 종착점은 [mutations](../server-state/SKILL.md#시나리오-요청)가 소유한다.
 
 ## Common mistakes
 

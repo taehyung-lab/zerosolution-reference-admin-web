@@ -18,15 +18,27 @@ A route owns validation, entry guards, loader orchestration, and one feature scr
 
 For cross-feature dialogs, the source feature owns the action intent, selected target IDs, recipient projection, and open/close lifecycle; the destination feature owns its form and validation. The route may invoke the source feature's focused hook and connect its public values/callbacks to the destination UI. It does not duplicate that state with route-local `useState`, query fixtures to resolve recipients, or implement eligibility/policy decisions. Mounting two features together permits wiring, not workflow ownership. Do not evade this boundary by making either feature import the other's UI or adding an app-level domain controller.
 
-## 도달 가능한 진입점
+## 도달 가능한 진입점과 나가는 전이
 
-화면을 만드는 요청의 기본 범위는 **그 화면과 그것을 실제로 여는 최소 연결**이다. 앱에서 도달 가능한
-실제 route 나, 기존 host 에서 그 화면을 여는 조립 중 하나가 있어야 한다. 둘 다 없으면 요청을
-수행하는 최소 route 나 host 를 **같은 작업에서 만든다.** 사용자가 component 나 한 surface 만
-요청한 경우에만 진입점 연결을 범위에서 뺀다.
+화면을 만드는 요청의 기본 범위는 **그 화면, 그것을 실제로 여는 최소 연결, 그리고 그 화면에서 직접
+나가는 확정된 전이의 목적지**다. 사용자가 component 나 한 surface 만 요청한 경우에만 이 연결을
+범위에서 뺀다. 지시가 화면 하나를 이름으로 부른 것은 이 범위를 좁히지 않는다.
+
+**들어오는 쪽.** 앱에서 도달 가능한 실제 route 나, 기존 host 에서 그 화면을 여는 조립 중 하나가
+있어야 한다. 둘 다 없으면 요청을 수행하는 최소 route 나 host 를 **같은 작업에서 만든다.**
+
+**나가는 쪽.** 원문이 확정한 전이 — 행 클릭, 등록, 저장 후 이동 — 의 목적지가 저장소에 없으면
+**같은 작업에서 만든다.** 목적지가 없다는 사실 자체는 범위를 되묻는 사유가 아니다.
+
+**깊이는 한 단계다.** 요청 화면에서 직접 나가는 전이까지 닫고, 그 목적지에서 다시 나가는 전이는
+그 목적지를 요청한 작업이 소유한다. 만든 목적지에는 아직 닫지 않은 전이를 남긴다.
 
 화면 파일을 직접 render 한 테스트는 연결이 아니다. 빈 route·stub 도 아니다 — 그것들은 "열린다"를
-증명하지 않는다.
+증명하지 않으며 나가는 쪽에서도 목적지가 아니다.
+
+목적지의 구성·정책은 그 목적지의 fact 로 확인하고 요청 화면이나 다른 도메인에서 복사하지 않는다
+([근거 정책](../../../product/policies/evidence.md)). 목적지를 만들 의무가 그 목적지의 미확인 값을
+추측할 권한이 되지는 않는다.
 
 ## Route file layout
 
