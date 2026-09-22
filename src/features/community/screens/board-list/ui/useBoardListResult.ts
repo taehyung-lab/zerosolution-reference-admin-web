@@ -8,10 +8,12 @@ export function useBoardListResult({
   search,
   totalPages,
   commit,
+  onViewPosts,
 }: {
   readonly search: BoardListView;
   readonly totalPages: number;
   readonly commit: (next: BoardListView) => void;
+  readonly onViewPosts: (boardId: string) => void;
 }) {
   const { t } = useTranslation('community');
   const view = listViewControls({ search, totalPages, commit });
@@ -23,6 +25,7 @@ export function useBoardListResult({
       search,
       offset: (search.page - 1) * search.pageSize,
       onHeaderSort: view.sort.onHeaderSort,
+      onViewPosts,
     }),
   };
 }

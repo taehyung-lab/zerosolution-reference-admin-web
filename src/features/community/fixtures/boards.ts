@@ -188,6 +188,13 @@ const categories: Readonly<Record<string, readonly BoardCategoryItem[]>> = {
     { id: 'reference-board-1-category-2', name: '티켓인증', usage: 'IN_USE' },
     { id: 'reference-board-1-category-3', name: '스케셜콘텐츠', usage: 'IN_USE' },
   ],
+  // 게시물 예시 행이 가리키는 상담 게시판의 카테고리. 게시물 쪽 예시가 실제 선택지와 맞물리게 둔다.
+  'reference-board-5': [
+    { id: 'reference-board-5-category-1', name: 'Reference Category A', usage: 'IN_USE' },
+  ],
+  'reference-board-6': [
+    { id: 'reference-board-6-category-1', name: 'Reference Category C', usage: 'IN_USE' },
+  ],
 };
 
 /**
@@ -250,4 +257,16 @@ export function readBoardListPage(request: BoardListRequest): Promise<BoardListP
     rows: sorted.slice(start, start + request.pageSize),
     total: sorted.length,
   });
+}
+
+/**
+ * 게시물 검색 영역의 `게시판` select 가 쓰는 옵션 원본. Notion 원문은 `[게시판]에 등록된 게시판 중
+ * [사용상태 : 사용]으로 설정된 리스트` 라고 적으므로 사용 중인 게시판만 돌려준다.
+ *
+ * TRANSPLANT_PENDING_COMMUNITY_BOARD_QUERY: 실제 endpoint 가 확정되면 이 함수도 함께 지운다.
+ */
+export function readInUseBoards(): Promise<readonly { readonly id: string; readonly name: string }[]> {
+  return Promise.resolve(
+    boards.filter((row) => row.usage === 'IN_USE').map(({ id, name }) => ({ id, name })),
+  );
 }

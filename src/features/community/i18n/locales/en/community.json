@@ -206,5 +206,176 @@
       "moveUp": "Move item {{order}} up",
       "moveDown": "Move item {{order}} down"
     }
+  },
+  "post": {
+    "title": "Posts",
+    "breadcrumb": {
+      "community": "Community",
+      "posts": "Posts",
+      "detail": "View",
+      "create": "Register",
+      "edit": "Edit"
+    },
+    "filter": {
+      "all": "All",
+      "period": {
+        "label": "Period"
+      },
+      "keyword": {
+        "label": "Keyword",
+        "chip": "{{field}} : {{value}}"
+      },
+      "category": {
+        "label": "Category"
+      },
+      "board": {
+        "label": "Board"
+      },
+      "memberType": {
+        "label": "Member type"
+      },
+      "answerStatus": {
+        "label": "Answer status"
+      },
+      "status": {
+        "label": "Post status",
+        "IN_USE": "In use",
+        "NOT_IN_USE": "Not in use"
+      }
+    },
+    "columns": {
+      "category": "Category",
+      "board": "Board",
+      "boardCategory": "Board category",
+      "title": "Title",
+      "content": "Content",
+      "thumbnail": "Attached image",
+      "member": "Member type/grade",
+      "author": "Author",
+      "likeCount": "Likes",
+      "dislikeCount": "Dislikes",
+      "rating": "Rating",
+      "commentCount": "Comments",
+      "viewCount": "Views",
+      "answerStatus": "Answer status",
+      "status": "Post status",
+      "timestamps": "Registered/Last updated",
+      "emptyValue": "-"
+    },
+    "sort": {
+      "registeredAt": "Registered date",
+      "updatedAt": "Last updated date",
+      "category": "Category",
+      "board": "Board",
+      "title": "Title",
+      "content": "Content",
+      "member": "Member type/grade",
+      "author": "Author",
+      "likeCount": "Likes",
+      "dislikeCount": "Dislikes",
+      "rating": "Rating",
+      "commentCount": "Comments",
+      "viewCount": "Views",
+      "status": "Post status"
+    },
+    "values": {
+      "periodType": {
+        "registeredAt": "Registered date",
+        "updatedAt": "Last updated date"
+      },
+      "keywordField": {
+        "content": "Content",
+        "title": "Title"
+      },
+      "category": {
+        "GENERAL": "General",
+        "COUNSEL": "Counsel"
+      },
+      "memberType": {
+        "INCLUDING_GUEST": "Including guests",
+        "ALL_MEMBERS": "All members",
+        "MANAGER": "Manager"
+      },
+      "answerStatus": {
+        "PENDING": "Pending",
+        "REVIEWING": "Reviewing",
+        "DONE": "Done"
+      },
+      "status": {
+        "IN_USE": "Published",
+        "NOT_IN_USE": "Unpublished"
+      },
+      "authorType": {
+        "GENERAL_MEMBER": "General member",
+        "MANAGER": "Manager"
+      },
+      "authorGrade": {
+        "GENERAL_MEMBER": "General member"
+      },
+      "member": "{{type}}/{{grade}}",
+      "author": "{{name}}({{contact}})",
+      "recordCategory": {
+        "GENERAL": "General",
+        "COUNSEL": "Counsel",
+        "NOTICE": "Notice"
+      }
+    },
+    "result": {
+      "create": "Register",
+      "empty": "No matching results.",
+      "selectAll": "Select every post on this page",
+      "selectRow": "Select {{name}}",
+      "bulkField": "Bulk change target",
+      "bulkPlaceholder": "Select",
+      "bulkChange": "Change"
+    },
+    "detail": {
+      "title": "Post",
+      "section": "Basic information",
+      "feedback": "Feedback",
+      "memberType": "Member type",
+      "memberGrade": "Member grade",
+      "answerEmail": "Reply email",
+      "registeredAt": "Registered date",
+      "openMember": "Open member",
+      "comments": {
+        "title": "Comments ({{count}})",
+        "answerStatus": "Answer status",
+        "changeAnswerStatus": "Change answer status",
+        "bulkField": "Comment bulk change target",
+        "selectAll": "Select every comment on this page",
+        "empty": "No comments yet."
+      },
+      "history": "Update history",
+      "historyDate": "Updated at",
+      "historyChange": "Change",
+      "historyManager": "Manager",
+      "historyEmpty": "No update history.",
+      "historyCreated": "Registered",
+      "historyUpdated": "Updated",
+      "historyCommentCreated": "Comment registered",
+      "historyCommentUpdated": "Comment updated",
+      "historyLine": "{{field}} : {{before}} > {{after}}",
+      "historyUnknownField": "An unknown item changed.",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "form": {
+      "createTitle": "Register post",
+      "editTitle": "Edit post",
+      "section": "Basic information",
+      "selectPlaceholder": "Select",
+      "errors": {
+        "category": "Select a category.",
+        "boardId": "Select a board.",
+        "boardCategory": "Select a board category.",
+        "answerEmail": "Enter the reply email.",
+        "answerEmailFormat": "Enter a valid email address.",
+        "title": "Enter a title.",
+        "content": "Enter the content.",
+        "registeredAt": "Select the registered date.",
+        "status": "Select the post status."
+      }
+    }
   }
 }

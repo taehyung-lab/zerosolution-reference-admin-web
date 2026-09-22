@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  communityNavigationItems,
   memberNavigationItems,
   performanceNavigationItems,
   type AppNavigationItem,
@@ -12,6 +13,7 @@ import {
 function children(id: string): readonly AppNavigationLink[] {
   if (id === "members") return memberNavigationItems;
   if (id === "performances") return performanceNavigationItems;
+  if (id === "community") return communityNavigationItems;
   return [];
 }
 

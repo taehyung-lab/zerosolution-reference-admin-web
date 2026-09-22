@@ -14,13 +14,16 @@
 | `LIST-COMMON-COPY` | 목록 공통 문구 — 검색 패널·결과 컨트롤 | policy | 관찰됨 | [LIST-COMMON-COPY.md](facts/LIST-COMMON-COPY.md) |
 | `PERF-DETAIL` | 공연 조회 | detail | 관찰됨 | [PERF-DETAIL.md](facts/PERF-DETAIL.md) |
 | `PERF-EDIT-ADMISSION` | 공연 수정 — 입장안내정보 | form | 관찰됨 | [PERF-EDIT-ADMISSION.md](facts/PERF-EDIT-ADMISSION.md) |
+| `POST-DETAIL` | 게시물 조회 | detail | 관찰됨 | [POST-DETAIL.md](facts/POST-DETAIL.md) |
+| `POST-FORM` | 게시물 등록·수정 | form | 관찰됨 | [POST-FORM.md](facts/POST-FORM.md) |
+| `POST-LIST` | 게시물 목록 | list | 관찰됨 | [POST-LIST.md](facts/POST-LIST.md) |
 | `PRINTER-DETAIL` | 스마트프린터 조회 | detail | 관찰됨 | [PRINTER-DETAIL.md](facts/PRINTER-DETAIL.md) |
 | `PRINTER-FORM` | 스마트프린터 등록·수정 | form | 관찰됨 | [PRINTER-FORM.md](facts/PRINTER-FORM.md) |
 | `PRINTER-LIST` | 스마트프린터 목록 | list | 관찰됨 | [PRINTER-LIST.md](facts/PRINTER-LIST.md) |
 | `PROFILE-DETAIL` | 내정보 조회 | detail | 관찰됨 | [PROFILE-DETAIL.md](facts/PROFILE-DETAIL.md) |
 | `PROFILE-EDIT` | 내정보 수정 | form | 관찰됨 | [PROFILE-EDIT.md](facts/PROFILE-EDIT.md) |
 
-총 9개.
+총 12개.
 
 ## 아직 fact 로 옮기지 않은 화면
 

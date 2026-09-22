@@ -41,7 +41,9 @@
       "memberAppeals": "불량회원 소명신청",
       "memberAccess": "회원접속",
       "performanceList": "공연목록",
-      "performanceContents": "콘텐츠"
+      "performanceContents": "콘텐츠",
+      "boards": "게시판",
+      "posts": "게시물"
     }
   },
   "bootstrap": {
