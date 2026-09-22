@@ -9,10 +9,19 @@
     "note": "이전 원시 값은 Git history가 소유함"
   },
   "entry": {
-    "rootCharacters": 3425,
+    "rootCharacters": 3474,
     "descriptionCharacters": 1925,
-    "alwaysLoadedCharacters": 5350,
-    "budgetCharacters": 5400
+    "alwaysLoadedCharacters": 5399,
+    "budgetCharacters": 6000,
+    "observedAt": "2026-09-22",
+    "budgetBasis": {
+      "previous": 5400,
+      "confirmedBy": "사용자, 2026-09-22",
+      "reason": "완료표 분리로 root 가 3,425→3,474 로 늘어 여유가 1자가 됐다. 총합 단일 상한이라 root 편집이 description 예산을 잠식한다. 대안인 「이 저장소의 함정」 411자 이관은 세 드릴에서 위반 0건인 작동 중 장치를 빼는 것이라 택하지 않았다.",
+      "composition": "root 3,600 + description 2,400(skill 16개 × 150자; 현재 15개 1,925자, 평균 128, 최대 151)",
+      "rule": "상한은 금지선이 아니라 확인 지점이다. 넘으면 먼저 조건부 정보를 소유자로 옮기고, 그래도 필요하면 소유자 확인을 받아 올리며 이유를 여기 남긴다.",
+      "unconfirmed": "길이가 라우팅 정확도를 떨어뜨리는 지점은 측정되지 않았다. eval:routing 이 잴 수 있으나 아래 routing 기준선이 partial 이다."
+    }
   },
   "routing": {
     "suite": "smoke",

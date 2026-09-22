@@ -567,10 +567,10 @@ describe('contracts check CLI wiring', () => {
     const original = readFileSync(baseline, 'utf8')
     try {
       const target = JSON.parse(original)
-      target.entry.budgetCharacters = 6000
+      target.entry.budgetCharacters = 7000
       writeFileSync(baseline, JSON.stringify(target))
       const result = runCheck(['--mode', 'target'])
-      expect(result.stderr).not.toContain('budgetCharacters=5400')
+      expect(result.stderr).not.toContain('budgetCharacters=6000')
     } finally { writeFileSync(baseline, original) }
   })
 
