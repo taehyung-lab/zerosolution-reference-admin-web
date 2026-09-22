@@ -5,15 +5,15 @@
 export interface AppNavigationItem {
   readonly id: string;
   readonly labelKey: string;
-  readonly to?: "/performances" | "/performances/contents" | "/managers" | "/community/boards" | "/ticketing/printers" | "/members/active/all" | "/members/active/general" | "/members/active/flagged" | "/members/dormant" | "/members/withdrawn" | "/members/counsel" | "/members/appeals" | "/members/access";
+  readonly to?: "/performances" | "/performances/contents" | "/managers" | "/community/boards" | "/ticketing/issues" | "/ticketing/printers" | "/members/active/all" | "/members/active/general" | "/members/active/flagged" | "/members/dormant" | "/members/withdrawn" | "/members/counsel" | "/members/appeals" | "/members/access";
 }
 
 export const appNavigationItems: readonly AppNavigationItem[] = [
   { id: "dashboard", labelKey: "shell.navigation.dashboard" },
   { id: "members", labelKey: "shell.navigation.members", to: "/members/active/all" },
   { id: "performances", labelKey: "shell.navigation.performances", to: "/performances" },
-  // 발권 업무군에서 구현된 화면은 부가기능 > 스마트프린터 하나뿐이라 그 화면을 진입으로 쓴다(설정 → 운영자와 같다).
-  { id: "ticketing", labelKey: "shell.navigation.ticketing", to: "/ticketing/printers" },
+  // 발권 업무군의 진입은 LNB 에서 첫 번째로 구현된 화면인 전체발권이다(설정 → 운영자와 같다).
+  { id: "ticketing", labelKey: "shell.navigation.ticketing", to: "/ticketing/issues" },
   { id: "exhibitions", labelKey: "shell.navigation.exhibitions" },
   { id: "promotions", labelKey: "shell.navigation.promotions" },
   { id: "community", labelKey: "shell.navigation.community", to: "/community/boards" },
@@ -34,6 +34,15 @@ export const memberNavigationItems: readonly AppNavigationLink[] = [
   { id: 'memberCounsel', labelKey: 'shell.navigation.memberCounsel', to: '/members/counsel' },
   { id: 'memberAppeals', labelKey: 'shell.navigation.memberAppeals', to: '/members/appeals' },
   { id: 'memberAccess', labelKey: 'shell.navigation.memberAccess', to: '/members/access' },
+];
+
+/**
+ * LNB 발권 하위: frame 은 등록(일반발권·대량재발권) · 전체발권 · 발권대기 · 발권완료(신규발권·재발권) ·
+ * 분실 · 부가기능(스마트프린터)를 그린다. 지금 구현된 두 화면만 그 순서대로 둔다.
+ */
+export const ticketingNavigationItems: readonly AppNavigationLink[] = [
+  { id: 'ticketIssues', labelKey: 'shell.navigation.ticketIssues', to: '/ticketing/issues' },
+  { id: 'smartPrinters', labelKey: 'shell.navigation.smartPrinters', to: '/ticketing/printers' },
 ];
 
 /** LNB 공연 하위: Figma 5.1/5.2 가 `공연목록`·`콘텐츠` 두 화면을 같은 업무군으로 그린다. */

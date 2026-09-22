@@ -41,7 +41,9 @@
       "memberAppeals": "不良会員の弁明申請",
       "memberAccess": "会員アクセス",
       "performanceList": "公演一覧",
-      "performanceContents": "コンテンツ"
+      "performanceContents": "コンテンツ",
+      "ticketIssues": "全体発券",
+      "smartPrinters": "スマートプリンター"
     }
   },
   "bootstrap": {

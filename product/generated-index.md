@@ -19,8 +19,9 @@
 | `PRINTER-LIST` | 스마트프린터 목록 | list | 관찰됨 | [PRINTER-LIST.md](facts/PRINTER-LIST.md) |
 | `PROFILE-DETAIL` | 내정보 조회 | detail | 관찰됨 | [PROFILE-DETAIL.md](facts/PROFILE-DETAIL.md) |
 | `PROFILE-EDIT` | 내정보 수정 | form | 관찰됨 | [PROFILE-EDIT.md](facts/PROFILE-EDIT.md) |
+| `TICKET-ISSUE-LIST` | 전체발권 목록 | list | 관찰됨 | [TICKET-ISSUE-LIST.md](facts/TICKET-ISSUE-LIST.md) |
 
-총 9개.
+총 10개.
 
 ## 아직 fact 로 옮기지 않은 화면
 

@@ -133,5 +133,147 @@
         "NOT_IN_USE": "사용안함"
       }
     }
+  },
+  "issue": {
+    "title": "전체발권",
+    "tooltip": "전체 발권 내역을 조회할 수 있습니다.",
+    "tooltipLabel": "화면 안내",
+    "breadcrumb": {
+      "ticketing": "발권",
+      "issues": "전체발권"
+    },
+    "filter": {
+      "performance": "공연 검색",
+      "performanceSearch": "공연 검색",
+      "clearPerformance": "선택한 공연 지우기",
+      "schedule": "공연일",
+      "allSchedules": "전체",
+      "scheduleOption": "{{round}} {{start}} ~ {{end}}",
+      "period": "기간",
+      "keyword": "검색어",
+      "keywordChip": "{{field}} : {{value}}",
+      "vendor": "예매처",
+      "reservationStatus": "예매상태",
+      "issueStatus": "발권상태",
+      "reissueStatus": "재발권상태",
+      "reissueBranch": "재발권"
+    },
+    "columns": {
+      "performance": "공연정보",
+      "reservation": "예매정보",
+      "buyer": "예매자정보",
+      "payment": "결제정보",
+      "issueStatus": "발권상태",
+      "lastIssuedAt": "최근발권일",
+      "timestamps": "등록일/최근업데이트일",
+      "line": "{{field}} : {{value}}"
+    },
+    "fields": {
+      "performanceType": "공연유형",
+      "performanceName": "공연명",
+      "round": "회차",
+      "performedAt": "공연일",
+      "reservationNo": "예매번호",
+      "seatNo": "좌석번호",
+      "grade": "등급",
+      "ticketSerialNo": "티켓일련번호",
+      "buyerName": "이름",
+      "buyerPhone": "휴대폰번호",
+      "paymentMethod": "결제수단",
+      "paymentAmount": "결제금액",
+      "discount": "할인정보",
+      "vendor": "예매처"
+    },
+    "sort": {
+      "registeredAt": "등록일",
+      "updatedAt": "최근업데이트일",
+      "reservedAt": "예매일",
+      "reservationCanceledAt": "예매취소일",
+      "issuedAt": "발권일",
+      "performanceType": "공연유형",
+      "performanceName": "공연명",
+      "round": "회차",
+      "performedAt": "공연일",
+      "reservationNo": "예매번호",
+      "seatNo": "좌석번호",
+      "grade": "등급",
+      "buyerName": "예매자 이름",
+      "buyerPhone": "예매자 휴대폰번호",
+      "paymentMethod": "결제수단",
+      "paymentAmount": "결제금액",
+      "discount": "할인정보",
+      "vendor": "예매처",
+      "issueStatus": "발권상태"
+    },
+    "result": {
+      "notSearched": "검색해주세요.",
+      "empty": "일치하는 검색결과가 없습니다.",
+      "emptyValue": "-",
+      "total": "총 {{formatted}}",
+      "countPending": "발권대기 {{formatted}}",
+      "countIssued": "발권완료 {{formatted}}",
+      "countReissued": "재발권 {{formatted}}",
+      "countLost": "분실 {{formatted}}",
+      "selectAll": "이 페이지의 발권 내역 전체 선택",
+      "selectRow": "예매번호 {{reservationNo}} 선택",
+      "bulkField": "일괄변경 항목",
+      "bulkPlaceholder": "선택",
+      "bulkOption": "발권상태 > {{value}}",
+      "bulkChange": "변경",
+      "downloadField": "다운로드 범위",
+      "downloadPlaceholder": "선택",
+      "downloadScope": {
+        "SELECTED": "선택한 항목",
+        "ALL": "검색결과 전체"
+      },
+      "download": "다운로드"
+    },
+    "values": {
+      "periodType": {
+        "reservedAt": "예매일",
+        "reservationCanceledAt": "예매취소일",
+        "issuedAt": "발권일",
+        "issueCanceledAt": "발권취소일",
+        "lostAt": "분실일",
+        "registeredAt": "등록일",
+        "updatedAt": "최근업데이트일"
+      },
+      "keywordField": {
+        "reservationNo": "예매번호",
+        "seatNo": "좌석번호",
+        "grade": "등급",
+        "buyerName": "예매자 이름",
+        "buyerPhone": "예매자 휴대폰번호",
+        "paymentMethod": "결제수단",
+        "discount": "할인정보"
+      },
+      "vendor": {
+        "ZERO_PLUS": "제로플러스",
+        "MELON_TICKET": "멜론티켓",
+        "TICKET_LINK": "티켓링크",
+        "NOL_UNIVERSE": "놀유니버스",
+        "YES24": "예스24",
+        "ETC": "기타"
+      },
+      "reservationStatus": {
+        "RESERVED": "예매완료",
+        "CANCELED": "예매취소"
+      },
+      "issueStatus": {
+        "PENDING": "발권대기",
+        "ISSUED": "발권완료",
+        "CANCELED": "발권취소",
+        "LOST": "분실"
+      },
+      "reissueStatus": {
+        "NEW": "신규발권",
+        "REISSUE_CS_LOST": "CS 분실",
+        "REISSUE_CS_MISPRINT": "CS 인쇄불량",
+        "REISSUE_CS_ETC": "CS 기타",
+        "REISSUE_GENERAL": "일반"
+      },
+      "round": "{{round}}회차",
+      "amount": "{{formatted}}원"
+    }
   }
 }

@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import {
   memberNavigationItems,
   performanceNavigationItems,
+  ticketingNavigationItems,
   type AppNavigationItem,
   type AppNavigationLink,
 } from "@/app/config/navigation";
@@ -12,6 +13,7 @@ import {
 function children(id: string): readonly AppNavigationLink[] {
   if (id === "members") return memberNavigationItems;
   if (id === "performances") return performanceNavigationItems;
+  if (id === "ticketing") return ticketingNavigationItems;
   return [];
 }
 

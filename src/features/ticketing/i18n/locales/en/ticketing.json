@@ -133,5 +133,147 @@
         "NOT_IN_USE": "Not in use"
       }
     }
+  },
+  "issue": {
+    "title": "All ticket issues",
+    "tooltip": "You can look up every ticket issue record.",
+    "tooltipLabel": "Screen help",
+    "breadcrumb": {
+      "ticketing": "Ticketing",
+      "issues": "All ticket issues"
+    },
+    "filter": {
+      "performance": "Performance",
+      "performanceSearch": "Search performance",
+      "clearPerformance": "Clear selected performance",
+      "schedule": "Performance date",
+      "allSchedules": "All",
+      "scheduleOption": "{{round}} {{start}} ~ {{end}}",
+      "period": "Period",
+      "keyword": "Keyword",
+      "keywordChip": "{{field}} : {{value}}",
+      "vendor": "Vendor",
+      "reservationStatus": "Reservation status",
+      "issueStatus": "Issue status",
+      "reissueStatus": "Reissue status",
+      "reissueBranch": "Reissue"
+    },
+    "columns": {
+      "performance": "Performance",
+      "reservation": "Reservation",
+      "buyer": "Buyer",
+      "payment": "Payment",
+      "issueStatus": "Issue status",
+      "lastIssuedAt": "Last issued",
+      "timestamps": "Registered / Updated",
+      "line": "{{field}} : {{value}}"
+    },
+    "fields": {
+      "performanceType": "Type",
+      "performanceName": "Title",
+      "round": "Round",
+      "performedAt": "Performance date",
+      "reservationNo": "Reservation no.",
+      "seatNo": "Seat",
+      "grade": "Grade",
+      "ticketSerialNo": "Ticket serial",
+      "buyerName": "Name",
+      "buyerPhone": "Mobile",
+      "paymentMethod": "Method",
+      "paymentAmount": "Amount",
+      "discount": "Discount",
+      "vendor": "Vendor"
+    },
+    "sort": {
+      "registeredAt": "Registered",
+      "updatedAt": "Updated",
+      "reservedAt": "Reserved",
+      "reservationCanceledAt": "Reservation canceled",
+      "issuedAt": "Issued",
+      "performanceType": "Performance type",
+      "performanceName": "Performance title",
+      "round": "Round",
+      "performedAt": "Performance date",
+      "reservationNo": "Reservation no.",
+      "seatNo": "Seat",
+      "grade": "Grade",
+      "buyerName": "Buyer name",
+      "buyerPhone": "Buyer mobile",
+      "paymentMethod": "Payment method",
+      "paymentAmount": "Payment amount",
+      "discount": "Discount",
+      "vendor": "Vendor",
+      "issueStatus": "Issue status"
+    },
+    "result": {
+      "notSearched": "Search to see results.",
+      "empty": "No results match your search.",
+      "emptyValue": "-",
+      "total": "Total {{formatted}}",
+      "countPending": "Pending {{formatted}}",
+      "countIssued": "Issued {{formatted}}",
+      "countReissued": "Reissued {{formatted}}",
+      "countLost": "Lost {{formatted}}",
+      "selectAll": "Select every ticket issue on this page",
+      "selectRow": "Select reservation {{reservationNo}}",
+      "bulkField": "Bulk change target",
+      "bulkPlaceholder": "Select",
+      "bulkOption": "Issue status > {{value}}",
+      "bulkChange": "Change",
+      "downloadField": "Download scope",
+      "downloadPlaceholder": "Select",
+      "downloadScope": {
+        "SELECTED": "Selected rows",
+        "ALL": "All search results"
+      },
+      "download": "Download"
+    },
+    "values": {
+      "periodType": {
+        "reservedAt": "Reserved",
+        "reservationCanceledAt": "Reservation canceled",
+        "issuedAt": "Issued",
+        "issueCanceledAt": "Issue canceled",
+        "lostAt": "Lost",
+        "registeredAt": "Registered",
+        "updatedAt": "Updated"
+      },
+      "keywordField": {
+        "reservationNo": "Reservation no.",
+        "seatNo": "Seat",
+        "grade": "Grade",
+        "buyerName": "Buyer name",
+        "buyerPhone": "Buyer mobile",
+        "paymentMethod": "Payment method",
+        "discount": "Discount"
+      },
+      "vendor": {
+        "ZERO_PLUS": "ZERO PLUS",
+        "MELON_TICKET": "Melon Ticket",
+        "TICKET_LINK": "Ticketlink",
+        "NOL_UNIVERSE": "NOL Universe",
+        "YES24": "YES24",
+        "ETC": "Other"
+      },
+      "reservationStatus": {
+        "RESERVED": "Reserved",
+        "CANCELED": "Canceled"
+      },
+      "issueStatus": {
+        "PENDING": "Pending",
+        "ISSUED": "Issued",
+        "CANCELED": "Issue canceled",
+        "LOST": "Lost"
+      },
+      "reissueStatus": {
+        "NEW": "New issue",
+        "REISSUE_CS_LOST": "CS lost",
+        "REISSUE_CS_MISPRINT": "CS misprint",
+        "REISSUE_CS_ETC": "CS other",
+        "REISSUE_GENERAL": "General"
+      },
+      "round": "Round {{round}}",
+      "amount": "{{formatted}} KRW"
+    }
   }
 }
