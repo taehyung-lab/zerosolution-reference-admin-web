@@ -29,6 +29,8 @@ Routes and feature screens compose visible parts explicitly. Repeated JSX is acc
 
 역할이 확인된 화면은 그 역할 계약의 책임 경계를 사용한다. 파일 이름과 개수는
 [source-structure](../source-structure/SKILL.md)가 정하고, 제품 사실은 해당 화면 fact에서만 가져온다.
+새 화면 요청이 어디까지를 뜻하는지 — 진입 연결과 나가는 전이의 폐쇄 범위 — 는
+[진입점과 나가는 전이](../route-composition/SKILL.md#도달-가능한-진입점과-나가는-전이)가 정한다.
 
 - A Screen is the visible composition entry. URL·ID·navigation 배선과 역할 소유 상태를 연결하되, 정확한 prop·hook 순서나 파일 분리는 현재 구현이 소유한다.
 - State lives with its owner: `model/` hooks own URL transitions, drafts, query facts, and action policy; `ui/` hooks own only what the renderer consumes (columns, view controls, selection). Pure render-local formatting stays with its renderer.
