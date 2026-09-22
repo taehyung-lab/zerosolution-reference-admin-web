@@ -93,6 +93,29 @@ export function ciVerifyStageFailures(scripts) {
   return failures
 }
 
+/** 작업 검증이 feature-local 기본 경로와 전체 검사 확대 근거를 잃지 않았는지 확인한다. */
+export function verificationSelectionFailures(rootContract, scripts) {
+  const failures = []
+  if (scripts['test:e2e:focused'] !== 'playwright test --project=chromium') {
+    failures.push('package.json의 test:e2e:focused는 대상 파일·grep을 호출자가 넘기는 Playwright 진입점이어야 한다.')
+  }
+
+  const requiredRootMarkers = [
+    '## 검증 범위 선택',
+    '### 전체 검사 확대 조건',
+    '### 완료 보고',
+    '- 직접 검사:',
+    '- 연결 검사:',
+    '- 브라우저 실측:',
+    '- 전체 검사: 실행 / 생략',
+    '- 확대 또는 생략 근거:',
+  ]
+  for (const marker of requiredRootMarkers) {
+    if (!rootContract.includes(marker)) failures.push(`AGENTS.md 검증 선택 계약 누락: ${marker}`)
+  }
+  return failures
+}
+
 /** workflow가 각 CI stage script를 한 번 이상 호출하는지 텍스트로 확인한다. */
 export function ciWorkflowScriptFailures(workflow) {
   return CI_VERIFY_SCRIPTS

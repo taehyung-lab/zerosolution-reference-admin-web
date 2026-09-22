@@ -35,6 +35,7 @@
     "i18n:check": "node scripts/i18n/check-parity.mjs",
     "gates:negative": "node scripts/verify-negative-controls.mjs",
     "build": "vite build",
+    "test:e2e:focused": "playwright test --project=chromium",
     "test:e2e:smoke": "playwright test --project=chromium --grep @smoke",
     "test:e2e:mock": "PLAYWRIGHT_API_MOCK=true playwright test --project=chromium",
     "ci:static": "pnpm api:check && pnpm contracts:check && pnpm product:check && pnpm product:values && pnpm typecheck && pnpm lint && pnpm i18n:check && pnpm gates:negative && pnpm build",

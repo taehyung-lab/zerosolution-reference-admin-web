@@ -27,6 +27,7 @@ import {
   prohibitedAbstractionSourceFailures,
   sourceMapFailures,
   sourceMapPresenceFailures,
+  verificationSelectionFailures,
   retiredDocumentNameFailures,
   transplantSentinelFailures,
   transplantSentinelOccurrences,
@@ -199,6 +200,59 @@ describe('CI verify stage coverage', () => {
 
     expect(ciVerifyStageFailures(scripts)).toEqual([
       expect.stringContaining('verify에서 중복: api:check'),
+    ])
+  })
+})
+
+describe('작업 검증 범위 선택', () => {
+  const rootContract = `
+## 검증 범위 선택
+
+직접 검사에서 시작하고 영향이 확인될 때만 넓힌다.
+
+### 전체 검사 확대 조건
+
+- 공용 계약 변경
+
+### 완료 보고
+
+- 직접 검사:
+- 연결 검사:
+- 브라우저 실측:
+- 전체 검사: 실행 / 생략
+- 확대 또는 생략 근거:
+`
+  const scripts = {
+    'test:e2e:focused': 'playwright test --project=chromium',
+    'test:e2e:verify': 'playwright test --project=chromium --grep "@smoke|@reference"',
+  }
+  const readme = '`pnpm test:e2e:focused <test-file> --grep <대상>`'
+
+  it('accepts a focused E2E entry and an explicit escalation report', () => {
+    expect(verificationSelectionFailures(rootContract, scripts, readme)).toEqual([])
+  })
+
+  it('rejects a missing focused E2E entry', () => {
+    expect(verificationSelectionFailures(rootContract, {
+      'test:e2e:verify': scripts['test:e2e:verify'],
+    }, readme)).toEqual([
+      expect.stringContaining('test:e2e:focused'),
+    ])
+  })
+
+  it('rejects an incomplete completion report contract', () => {
+    expect(verificationSelectionFailures(rootContract.replace('- 확대 또는 생략 근거:\n', ''), scripts, readme)).toEqual([
+      expect.stringContaining('확대 또는 생략 근거'),
+    ])
+  })
+
+  it('rejects a pnpm delimiter that makes Playwright ignore the focused arguments', () => {
+    expect(verificationSelectionFailures(
+      rootContract,
+      scripts,
+      '`pnpm test:e2e:focused -- <test-file> --grep <대상>`',
+    )).toEqual([
+      expect.stringContaining('구분자 없이'),
     ])
   })
 })

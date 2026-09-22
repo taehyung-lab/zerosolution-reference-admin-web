@@ -28,6 +28,7 @@ import {
   parseReadmeVerifyProjection,
   parseVerifyChain,
   pnpmCommandFailures,
+  verificationSelectionFailures,
   productNameNotices,
   prohibitedAbstractionSourceFailures,
   sourceMapFailures,
@@ -161,6 +162,7 @@ const skillDocuments = readdirSync(resolve('.agents/skills'), { withFileTypes: t
   .filter((entry) => entry.isDirectory() && existsSync(resolve('.agents/skills', entry.name, 'SKILL.md')))
   .map((entry) => readFileSync(resolve('.agents/skills', entry.name, 'SKILL.md'), 'utf8'))
 const rootDocument = readFileSync(resolve('AGENTS.md'), 'utf8')
+failures.push(...verificationSelectionFailures(rootDocument, packageJson.scripts ?? {}))
 const baselinePath = resolve('scripts/loop/baseline.json')
 const baselineDocument = existsSync(baselinePath) ? readFileSync(baselinePath, 'utf8') : null
 if (mode === 'source') {
