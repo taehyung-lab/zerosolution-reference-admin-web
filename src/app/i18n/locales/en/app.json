@@ -41,7 +41,9 @@
       "memberAppeals": "Flagged member appeals",
       "memberAccess": "Member access",
       "performanceList": "Performance list",
-      "performanceContents": "Contents"
+      "performanceContents": "Contents",
+      "boards": "Boards",
+      "posts": "Posts"
     }
   },
   "bootstrap": {

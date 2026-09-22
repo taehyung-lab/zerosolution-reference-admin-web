@@ -5,7 +5,7 @@
 export interface AppNavigationItem {
   readonly id: string;
   readonly labelKey: string;
-  readonly to?: "/performances" | "/performances/contents" | "/managers" | "/community/boards" | "/ticketing/printers" | "/members/active/all" | "/members/active/general" | "/members/active/flagged" | "/members/dormant" | "/members/withdrawn" | "/members/counsel" | "/members/appeals" | "/members/access";
+  readonly to?: "/performances" | "/performances/contents" | "/managers" | "/community/boards" | "/community/posts" | "/ticketing/printers" | "/members/active/all" | "/members/active/general" | "/members/active/flagged" | "/members/dormant" | "/members/withdrawn" | "/members/counsel" | "/members/appeals" | "/members/access";
 }
 
 export const appNavigationItems: readonly AppNavigationItem[] = [
@@ -34,6 +34,12 @@ export const memberNavigationItems: readonly AppNavigationLink[] = [
   { id: 'memberCounsel', labelKey: 'shell.navigation.memberCounsel', to: '/members/counsel' },
   { id: 'memberAppeals', labelKey: 'shell.navigation.memberAppeals', to: '/members/appeals' },
   { id: 'memberAccess', labelKey: 'shell.navigation.memberAccess', to: '/members/access' },
+];
+
+/** LNB 커뮤니티 하위: Figma 9.2.1 frame 의 LNB 가 `게시판`·`게시물` 두 화면을 그린다(2026-09-22 실측). */
+export const communityNavigationItems: readonly AppNavigationLink[] = [
+  { id: 'boards', labelKey: 'shell.navigation.boards', to: '/community/boards' },
+  { id: 'posts', labelKey: 'shell.navigation.posts', to: '/community/posts' },
 ];
 
 /** LNB 공연 하위: Figma 5.1/5.2 가 `공연목록`·`콘텐츠` 두 화면을 같은 업무군으로 그린다. */

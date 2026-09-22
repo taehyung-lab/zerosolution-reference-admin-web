@@ -27,6 +27,9 @@ function BoardListRoute() {
       onCreate={() => {
         void navigate({ to: '/community/boards/new' });
       }}
+      onViewPosts={(boardId) => {
+        void navigate({ to: '/community/posts', search: { boardId } });
+      }}
     />
   );
 }

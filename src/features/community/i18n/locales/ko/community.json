@@ -206,5 +206,176 @@
       "moveUp": "{{order}}번 위로",
       "moveDown": "{{order}}번 아래로"
     }
+  },
+  "post": {
+    "title": "게시물",
+    "breadcrumb": {
+      "community": "커뮤니티",
+      "posts": "게시물",
+      "detail": "조회",
+      "create": "등록",
+      "edit": "수정"
+    },
+    "filter": {
+      "all": "전체",
+      "period": {
+        "label": "기간"
+      },
+      "keyword": {
+        "label": "검색어",
+        "chip": "{{field}} : {{value}}"
+      },
+      "category": {
+        "label": "구분"
+      },
+      "board": {
+        "label": "게시판"
+      },
+      "memberType": {
+        "label": "회원유형"
+      },
+      "answerStatus": {
+        "label": "답변상태"
+      },
+      "status": {
+        "label": "게시상태",
+        "IN_USE": "사용",
+        "NOT_IN_USE": "사용안함"
+      }
+    },
+    "columns": {
+      "category": "구분",
+      "board": "게시판",
+      "boardCategory": "카테고리",
+      "title": "제목",
+      "content": "내용",
+      "thumbnail": "첨부 이미지",
+      "member": "회원유형/회원등급",
+      "author": "작성자",
+      "likeCount": "좋아요",
+      "dislikeCount": "싫어요",
+      "rating": "평점",
+      "commentCount": "댓글",
+      "viewCount": "조회수",
+      "answerStatus": "답변상태",
+      "status": "게시상태",
+      "timestamps": "등록일/최근업데이트일",
+      "emptyValue": "-"
+    },
+    "sort": {
+      "registeredAt": "등록일",
+      "updatedAt": "최근업데이트일",
+      "category": "구분",
+      "board": "게시판",
+      "title": "제목",
+      "content": "내용",
+      "member": "회원유형/회원등급",
+      "author": "작성자",
+      "likeCount": "좋아요",
+      "dislikeCount": "싫어요",
+      "rating": "평점",
+      "commentCount": "댓글",
+      "viewCount": "조회수",
+      "status": "게시상태"
+    },
+    "values": {
+      "periodType": {
+        "registeredAt": "등록일",
+        "updatedAt": "최근업데이트일"
+      },
+      "keywordField": {
+        "content": "내용",
+        "title": "제목"
+      },
+      "category": {
+        "GENERAL": "일반",
+        "COUNSEL": "상담"
+      },
+      "memberType": {
+        "INCLUDING_GUEST": "비회원 포함",
+        "ALL_MEMBERS": "전체회원",
+        "MANAGER": "운영자"
+      },
+      "answerStatus": {
+        "PENDING": "대기",
+        "REVIEWING": "검토중",
+        "DONE": "완료"
+      },
+      "status": {
+        "IN_USE": "게시",
+        "NOT_IN_USE": "게시안함"
+      },
+      "authorType": {
+        "GENERAL_MEMBER": "일반회원",
+        "MANAGER": "운영자"
+      },
+      "authorGrade": {
+        "GENERAL_MEMBER": "일반회원"
+      },
+      "member": "{{type}}/{{grade}}",
+      "author": "{{name}}({{contact}})",
+      "recordCategory": {
+        "GENERAL": "일반",
+        "COUNSEL": "상담",
+        "NOTICE": "공지사항"
+      }
+    },
+    "result": {
+      "create": "등록",
+      "empty": "일치하는 검색결과가 없습니다.",
+      "selectAll": "이 페이지의 게시물 전체 선택",
+      "selectRow": "{{name}} 선택",
+      "bulkField": "일괄변경 항목",
+      "bulkPlaceholder": "선택",
+      "bulkChange": "변경"
+    },
+    "detail": {
+      "title": "게시물 조회",
+      "section": "기본정보",
+      "feedback": "피드백 정보",
+      "memberType": "회원유형",
+      "memberGrade": "회원등급",
+      "answerEmail": "답변받을 이메일",
+      "registeredAt": "등록일",
+      "openMember": "회원 조회",
+      "comments": {
+        "title": "댓글 ({{count}})",
+        "answerStatus": "답변상태",
+        "changeAnswerStatus": "답변상태 변경",
+        "bulkField": "댓글 일괄변경 항목",
+        "selectAll": "이 페이지의 댓글 전체 선택",
+        "empty": "등록된 댓글이 없습니다."
+      },
+      "history": "업데이트 이력",
+      "historyDate": "업데이트일",
+      "historyChange": "업데이트 사항",
+      "historyManager": "담당자",
+      "historyEmpty": "업데이트 이력이 없습니다.",
+      "historyCreated": "등록",
+      "historyUpdated": "수정",
+      "historyCommentCreated": "댓글 등록",
+      "historyCommentUpdated": "댓글 수정",
+      "historyLine": "{{field}} : {{before}} > {{after}}",
+      "historyUnknownField": "알 수 없는 항목이 변경되었습니다.",
+      "edit": "수정",
+      "delete": "삭제"
+    },
+    "form": {
+      "createTitle": "게시물 등록",
+      "editTitle": "게시물 수정",
+      "section": "기본정보",
+      "selectPlaceholder": "선택",
+      "errors": {
+        "category": "구분을 선택해주세요.",
+        "boardId": "게시판을 선택해주세요.",
+        "boardCategory": "카테고리를 선택해주세요.",
+        "answerEmail": "답변받을 이메일을 입력해주세요.",
+        "answerEmailFormat": "이메일 형식으로 입력해주세요.",
+        "title": "제목을 입력해주세요.",
+        "content": "내용을 입력해주세요.",
+        "registeredAt": "등록일을 선택해주세요.",
+        "status": "게시상태를 선택해주세요."
+      }
+    }
   }
 }

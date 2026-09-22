@@ -3,6 +3,7 @@ import type { BoardRow, BoardSortKey } from '@/features/community/model/board';
 import { formatDate } from '@/shared/lib/datetime';
 import { headerSortDirection } from '@/shared/lib/list-sort';
 import type { DataTableProps } from '@/shared/ui/list/DataTable';
+import { Button } from '@/shared/ui/primitives/Button';
 import type { BoardListView } from '../model/board-list-search';
 
 type BoardColumns = DataTableProps<BoardRow>['columns'];
@@ -13,19 +14,22 @@ type BoardColumns = DataTableProps<BoardRow>['columns'];
  * `권한` 은 원장이 쓰기/읽기 두 값을 한 컬럼으로 적었지만 정렬 키는 하나(`permission`)다.
  * 값이 둘이므로 셀을 둘로 나누고 정렬은 쓰기 컬럼에만 건다. CSS 병합은 이 저장소의 범위 밖이다.
  *
- * `게시물` 셀은 원장이 link 셀 `조회` 로 적지만 게시물 목록 route 가 이 저장소에 없어
- * 이동을 걸지 않는다(차단된 요구사항 R13). 목적지가 생기면 이 셀만 Link 로 바꾼다.
+ * `게시물` 셀은 원장이 link 셀 `조회` 로 적는다. 목적지는 그 게시판으로 좁힌 게시물 목록이고,
+ * navigate 는 route 가 넣는다. 행 클릭(조회 화면 이동)과 섞이지 않도록 셀 안의 버튼으로 그린다 —
+ * `DataTable` 은 버튼 위 클릭을 행 활성화로 보지 않는다.
  */
 export function boardListColumns({
   t,
   search,
   offset,
   onHeaderSort,
+  onViewPosts,
 }: {
   readonly t: TFunction<'community'>;
   readonly search: BoardListView;
   readonly offset: number;
   readonly onHeaderSort: (key: BoardSortKey) => void;
+  readonly onViewPosts: (boardId: string) => void;
 }): BoardColumns {
   const active = { type: search.sortType, direction: search.sortDirection };
   const sortMeta = (key: BoardSortKey) => ({
@@ -79,7 +83,15 @@ export function boardListColumns({
     {
       id: 'posts',
       header: t('board.columns.posts'),
-      accessorFn: () => t('board.columns.postsView'),
+      cell: ({ row }: { row: { original: BoardRow } }) => (
+        <Button
+          type="button"
+          className="bg-white text-neutral-900 underline ring-1 ring-neutral-300"
+          onClick={() => onViewPosts(row.original.id)}
+        >
+          {t('board.columns.postsView')}
+        </Button>
+      ),
     },
     {
       id: 'usage',

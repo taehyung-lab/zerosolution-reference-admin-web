@@ -206,5 +206,176 @@
       "moveUp": "{{order}}番を上へ",
       "moveDown": "{{order}}番を下へ"
     }
+  },
+  "post": {
+    "title": "投稿",
+    "breadcrumb": {
+      "community": "コミュニティ",
+      "posts": "投稿",
+      "detail": "照会",
+      "create": "登録",
+      "edit": "修正"
+    },
+    "filter": {
+      "all": "すべて",
+      "period": {
+        "label": "期間"
+      },
+      "keyword": {
+        "label": "検索語",
+        "chip": "{{field}} : {{value}}"
+      },
+      "category": {
+        "label": "区分"
+      },
+      "board": {
+        "label": "掲示板"
+      },
+      "memberType": {
+        "label": "会員タイプ"
+      },
+      "answerStatus": {
+        "label": "回答状態"
+      },
+      "status": {
+        "label": "掲載状態",
+        "IN_USE": "使用",
+        "NOT_IN_USE": "使用しない"
+      }
+    },
+    "columns": {
+      "category": "区分",
+      "board": "掲示板",
+      "boardCategory": "カテゴリ",
+      "title": "タイトル",
+      "content": "内容",
+      "thumbnail": "添付画像",
+      "member": "会員タイプ/会員等級",
+      "author": "作成者",
+      "likeCount": "いいね",
+      "dislikeCount": "よくないね",
+      "rating": "評価",
+      "commentCount": "コメント",
+      "viewCount": "閲覧数",
+      "answerStatus": "回答状態",
+      "status": "掲載状態",
+      "timestamps": "登録日/最終更新日",
+      "emptyValue": "-"
+    },
+    "sort": {
+      "registeredAt": "登録日",
+      "updatedAt": "最終更新日",
+      "category": "区分",
+      "board": "掲示板",
+      "title": "タイトル",
+      "content": "内容",
+      "member": "会員タイプ/会員等級",
+      "author": "作成者",
+      "likeCount": "いいね",
+      "dislikeCount": "よくないね",
+      "rating": "評価",
+      "commentCount": "コメント",
+      "viewCount": "閲覧数",
+      "status": "掲載状態"
+    },
+    "values": {
+      "periodType": {
+        "registeredAt": "登録日",
+        "updatedAt": "最終更新日"
+      },
+      "keywordField": {
+        "content": "内容",
+        "title": "タイトル"
+      },
+      "category": {
+        "GENERAL": "一般",
+        "COUNSEL": "相談"
+      },
+      "memberType": {
+        "INCLUDING_GUEST": "非会員を含む",
+        "ALL_MEMBERS": "全会員",
+        "MANAGER": "運営者"
+      },
+      "answerStatus": {
+        "PENDING": "待機",
+        "REVIEWING": "検討中",
+        "DONE": "完了"
+      },
+      "status": {
+        "IN_USE": "掲載",
+        "NOT_IN_USE": "掲載しない"
+      },
+      "authorType": {
+        "GENERAL_MEMBER": "一般会員",
+        "MANAGER": "運営者"
+      },
+      "authorGrade": {
+        "GENERAL_MEMBER": "一般会員"
+      },
+      "member": "{{type}}/{{grade}}",
+      "author": "{{name}}({{contact}})",
+      "recordCategory": {
+        "GENERAL": "一般",
+        "COUNSEL": "相談",
+        "NOTICE": "お知らせ"
+      }
+    },
+    "result": {
+      "create": "登録",
+      "empty": "一致する検索結果がありません。",
+      "selectAll": "このページの投稿をすべて選択",
+      "selectRow": "{{name}} を選択",
+      "bulkField": "一括変更項目",
+      "bulkPlaceholder": "選択",
+      "bulkChange": "変更"
+    },
+    "detail": {
+      "title": "投稿照会",
+      "section": "基本情報",
+      "feedback": "フィードバック情報",
+      "memberType": "会員タイプ",
+      "memberGrade": "会員等級",
+      "answerEmail": "回答用メール",
+      "registeredAt": "登録日",
+      "openMember": "会員照会",
+      "comments": {
+        "title": "コメント ({{count}})",
+        "answerStatus": "回答状態",
+        "changeAnswerStatus": "回答状態の変更",
+        "bulkField": "コメント一括変更項目",
+        "selectAll": "このページのコメントをすべて選択",
+        "empty": "登録されたコメントがありません。"
+      },
+      "history": "更新履歴",
+      "historyDate": "更新日",
+      "historyChange": "更新内容",
+      "historyManager": "担当者",
+      "historyEmpty": "更新履歴がありません。",
+      "historyCreated": "登録",
+      "historyUpdated": "修正",
+      "historyCommentCreated": "コメント登録",
+      "historyCommentUpdated": "コメント修正",
+      "historyLine": "{{field}} : {{before}} > {{after}}",
+      "historyUnknownField": "不明な項目が変更されました。",
+      "edit": "修正",
+      "delete": "削除"
+    },
+    "form": {
+      "createTitle": "投稿登録",
+      "editTitle": "投稿修正",
+      "section": "基本情報",
+      "selectPlaceholder": "選択",
+      "errors": {
+        "category": "区分を選択してください。",
+        "boardId": "掲示板を選択してください。",
+        "boardCategory": "カテゴリを選択してください。",
+        "answerEmail": "回答用メールを入力してください。",
+        "answerEmailFormat": "メール形式で入力してください。",
+        "title": "タイトルを入力してください。",
+        "content": "内容を入力してください。",
+        "registeredAt": "登録日を選択してください。",
+        "status": "掲載状態を選択してください。"
+      }
+    }
   }
 }

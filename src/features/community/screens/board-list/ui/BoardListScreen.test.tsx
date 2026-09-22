@@ -9,6 +9,7 @@ function renderScreen(sparse: BoardListSearch = {}) {
   const onSearchChange = vi.fn();
   const onActivate = vi.fn();
   const onCreate = vi.fn();
+  const onViewPosts = vi.fn();
   render(
     <TestQueryLocaleProvider>
       <BoardListScreen
@@ -16,10 +17,11 @@ function renderScreen(sparse: BoardListSearch = {}) {
         onSearchChange={onSearchChange}
         onActivate={onActivate}
         onCreate={onCreate}
+        onViewPosts={onViewPosts}
       />
     </TestQueryLocaleProvider>,
   );
-  return { onSearchChange, onActivate, onCreate };
+  return { onSearchChange, onActivate, onCreate, onViewPosts };
 }
 
 describe('BoardListScreen', () => {
@@ -173,6 +175,17 @@ describe('BoardListScreen', () => {
 
     expect(onCreate).toHaveBeenCalledTimes(1);
     // 버튼은 행 안에 없으므로 행 활성화가 함께 발생하지 않는다.
+    expect(onActivate).not.toHaveBeenCalled();
+  });
+
+  it('게시물 열의 조회를 누르면 그 게시판의 게시물 목록으로 나가고 행 활성화는 일어나지 않는다 — 원장 12행', async () => {
+    const { onViewPosts, onActivate } = renderScreen();
+    await screen.findByRole('cell', { name: 'Reference Board 5' });
+
+    const row = screen.getByRole('cell', { name: 'Reference Board 5' }).closest('tr')!;
+    fireEvent.click(within(row).getByRole('button', { name: '조회' }));
+
+    expect(onViewPosts).toHaveBeenCalledWith('reference-board-5');
     expect(onActivate).not.toHaveBeenCalled();
   });
 

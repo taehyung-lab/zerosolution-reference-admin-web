@@ -24,18 +24,21 @@ export function BoardListScreen({
   onSearchChange,
   onActivate,
   onCreate,
+  onViewPosts,
 }: {
   readonly search: BoardListSearch;
   readonly onSearchChange: (next: BoardListSearch) => void;
   readonly onActivate: (boardId: string) => void;
   readonly onCreate: () => void;
+  /** 원장 12행의 `게시물` link 셀: 그 게시판으로 좁힌 게시물 목록으로 나간다. */
+  readonly onViewPosts: (boardId: string) => void;
 }) {
   const { t } = useTranslation('community');
   const search = boardListSearch.resolve(sparse);
   const commit = (next: BoardListView) => onSearchChange(boardListSearch.canonical.parse(next));
   const filter = useBoardListFilter(search, commit);
   const { rows, total, totalPages, ...data } = useBoardListData(search);
-  const result = useBoardListResult({ search, totalPages, commit });
+  const result = useBoardListResult({ search, totalPages, commit, onViewPosts });
 
   return (
     <section>
