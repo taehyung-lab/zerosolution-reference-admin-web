@@ -133,5 +133,147 @@
         "NOT_IN_USE": "使用しない"
       }
     }
+  },
+  "issue": {
+    "title": "全体発券",
+    "tooltip": "全体の発券履歴を照会できます。",
+    "tooltipLabel": "画面案内",
+    "breadcrumb": {
+      "ticketing": "発券",
+      "issues": "全体発券"
+    },
+    "filter": {
+      "performance": "公演検索",
+      "performanceSearch": "公演検索",
+      "clearPerformance": "選択した公演を消す",
+      "schedule": "公演日",
+      "allSchedules": "すべて",
+      "scheduleOption": "{{round}} {{start}} ~ {{end}}",
+      "period": "期間",
+      "keyword": "検索語",
+      "keywordChip": "{{field}} : {{value}}",
+      "vendor": "予約先",
+      "reservationStatus": "予約状態",
+      "issueStatus": "発券状態",
+      "reissueStatus": "再発券状態",
+      "reissueBranch": "再発券"
+    },
+    "columns": {
+      "performance": "公演情報",
+      "reservation": "予約情報",
+      "buyer": "予約者情報",
+      "payment": "決済情報",
+      "issueStatus": "発券状態",
+      "lastIssuedAt": "最近発券日",
+      "timestamps": "登録日/最終更新日",
+      "line": "{{field}} : {{value}}"
+    },
+    "fields": {
+      "performanceType": "公演種別",
+      "performanceName": "公演名",
+      "round": "回次",
+      "performedAt": "公演日",
+      "reservationNo": "予約番号",
+      "seatNo": "座席番号",
+      "grade": "等級",
+      "ticketSerialNo": "チケット通番",
+      "buyerName": "氏名",
+      "buyerPhone": "携帯番号",
+      "paymentMethod": "決済手段",
+      "paymentAmount": "決済金額",
+      "discount": "割引情報",
+      "vendor": "予約先"
+    },
+    "sort": {
+      "registeredAt": "登録日",
+      "updatedAt": "最終更新日",
+      "reservedAt": "予約日",
+      "reservationCanceledAt": "予約取消日",
+      "issuedAt": "発券日",
+      "performanceType": "公演種別",
+      "performanceName": "公演名",
+      "round": "回次",
+      "performedAt": "公演日",
+      "reservationNo": "予約番号",
+      "seatNo": "座席番号",
+      "grade": "等級",
+      "buyerName": "予約者氏名",
+      "buyerPhone": "予約者携帯番号",
+      "paymentMethod": "決済手段",
+      "paymentAmount": "決済金額",
+      "discount": "割引情報",
+      "vendor": "予約先",
+      "issueStatus": "発券状態"
+    },
+    "result": {
+      "notSearched": "検索してください。",
+      "empty": "一致する検索結果がありません。",
+      "emptyValue": "-",
+      "total": "計 {{formatted}}",
+      "countPending": "発券待ち {{formatted}}",
+      "countIssued": "発券完了 {{formatted}}",
+      "countReissued": "再発券 {{formatted}}",
+      "countLost": "紛失 {{formatted}}",
+      "selectAll": "このページの発券履歴をすべて選択",
+      "selectRow": "予約番号 {{reservationNo}} を選択",
+      "bulkField": "一括変更項目",
+      "bulkPlaceholder": "選択",
+      "bulkOption": "発券状態 > {{value}}",
+      "bulkChange": "変更",
+      "downloadField": "ダウンロード範囲",
+      "downloadPlaceholder": "選択",
+      "downloadScope": {
+        "SELECTED": "選択した項目",
+        "ALL": "検索結果すべて"
+      },
+      "download": "ダウンロード"
+    },
+    "values": {
+      "periodType": {
+        "reservedAt": "予約日",
+        "reservationCanceledAt": "予約取消日",
+        "issuedAt": "発券日",
+        "issueCanceledAt": "発券取消日",
+        "lostAt": "紛失日",
+        "registeredAt": "登録日",
+        "updatedAt": "最終更新日"
+      },
+      "keywordField": {
+        "reservationNo": "予約番号",
+        "seatNo": "座席番号",
+        "grade": "等級",
+        "buyerName": "予約者氏名",
+        "buyerPhone": "予約者携帯番号",
+        "paymentMethod": "決済手段",
+        "discount": "割引情報"
+      },
+      "vendor": {
+        "ZERO_PLUS": "ゼロプラス",
+        "MELON_TICKET": "メロンチケット",
+        "TICKET_LINK": "チケットリンク",
+        "NOL_UNIVERSE": "NOLユニバース",
+        "YES24": "YES24",
+        "ETC": "その他"
+      },
+      "reservationStatus": {
+        "RESERVED": "予約完了",
+        "CANCELED": "予約取消"
+      },
+      "issueStatus": {
+        "PENDING": "発券待ち",
+        "ISSUED": "発券完了",
+        "CANCELED": "発券取消",
+        "LOST": "紛失"
+      },
+      "reissueStatus": {
+        "NEW": "新規発券",
+        "REISSUE_CS_LOST": "CS 紛失",
+        "REISSUE_CS_MISPRINT": "CS 印刷不良",
+        "REISSUE_CS_ETC": "CS その他",
+        "REISSUE_GENERAL": "一般"
+      },
+      "round": "{{round}}回次",
+      "amount": "{{formatted}}ウォン"
+    }
   }
 }

@@ -94,7 +94,7 @@ export function ciVerifyStageFailures(scripts) {
 }
 
 /** 작업 검증이 feature-local 기본 경로와 전체 검사 확대 근거를 잃지 않았는지 확인한다. */
-export function verificationSelectionFailures(rootContract, scripts) {
+export function verificationSelectionFailures(rootContract, scripts, readme) {
   const failures = []
   if (scripts['test:e2e:focused'] !== 'playwright test --project=chromium') {
     failures.push('package.json의 test:e2e:focused는 대상 파일·grep을 호출자가 넘기는 Playwright 진입점이어야 한다.')
@@ -112,6 +112,9 @@ export function verificationSelectionFailures(rootContract, scripts) {
   ]
   for (const marker of requiredRootMarkers) {
     if (!rootContract.includes(marker)) failures.push(`AGENTS.md 검증 선택 계약 누락: ${marker}`)
+  }
+  if (!readme.includes('pnpm test:e2e:focused <test-file> --grep <대상>')) {
+    failures.push('README.md는 pnpm 구분자 없이 test:e2e:focused <test-file> --grep <대상> 순서를 안내해야 한다.')
   }
   return failures
 }

@@ -22,6 +22,7 @@ import { Route as AppPerformancesIndexRouteImport } from './routes/_app/performa
 import { Route as AppPerformancesContentsRouteImport } from './routes/_app/performances/contents'
 import { Route as AppProfileIndexRouteImport } from './routes/_app/profile/index'
 import { Route as AppProfileEditRouteImport } from './routes/_app/profile/edit'
+import { Route as AppTicketingIssuesRouteImport } from './routes/_app/ticketing/issues'
 import { Route as AppCommunityBoardsIndexRouteImport } from './routes/_app/community/boards/index'
 import { Route as AppCommunityBoardsNewRouteImport } from './routes/_app/community/boards/new'
 import { Route as AppCommunityPostsIndexRouteImport } from './routes/_app/community/posts/index'
@@ -110,6 +111,11 @@ const AppProfileIndexRoute = AppProfileIndexRouteImport.update({
 const AppProfileEditRoute = AppProfileEditRouteImport.update({
   id: '/profile/edit',
   path: '/profile/edit',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTicketingIssuesRoute = AppTicketingIssuesRouteImport.update({
+  id: '/ticketing/issues',
+  path: '/ticketing/issues',
   getParentRoute: () => AppRoute,
 } as any)
 const AppCommunityBoardsIndexRoute = AppCommunityBoardsIndexRouteImport.update({
@@ -262,6 +268,7 @@ export interface FileRoutesByFullPath {
   '/members/new': typeof AppMembersNewRoute
   '/performances/contents': typeof AppPerformancesContentsRoute
   '/profile/edit': typeof AppProfileEditRoute
+  '/ticketing/issues': typeof AppTicketingIssuesRoute
   '/managers/': typeof AppManagersIndexRoute
   '/performances/': typeof AppPerformancesIndexRoute
   '/profile/': typeof AppProfileIndexRoute
@@ -301,6 +308,7 @@ export interface FileRoutesByTo {
   '/members/new': typeof AppMembersNewRoute
   '/performances/contents': typeof AppPerformancesContentsRoute
   '/profile/edit': typeof AppProfileEditRoute
+  '/ticketing/issues': typeof AppTicketingIssuesRoute
   '/managers': typeof AppManagersIndexRoute
   '/performances': typeof AppPerformancesIndexRoute
   '/profile': typeof AppProfileIndexRoute
@@ -342,6 +350,7 @@ export interface FileRoutesById {
   '/_app/members/new': typeof AppMembersNewRoute
   '/_app/performances/contents': typeof AppPerformancesContentsRoute
   '/_app/profile/edit': typeof AppProfileEditRoute
+  '/_app/ticketing/issues': typeof AppTicketingIssuesRoute
   '/_app/managers/': typeof AppManagersIndexRoute
   '/_app/performances/': typeof AppPerformancesIndexRoute
   '/_app/profile/': typeof AppProfileIndexRoute
@@ -383,6 +392,7 @@ export interface FileRouteTypes {
     | '/members/new'
     | '/performances/contents'
     | '/profile/edit'
+    | '/ticketing/issues'
     | '/managers/'
     | '/performances/'
     | '/profile/'
@@ -422,6 +432,7 @@ export interface FileRouteTypes {
     | '/members/new'
     | '/performances/contents'
     | '/profile/edit'
+    | '/ticketing/issues'
     | '/managers'
     | '/performances'
     | '/profile'
@@ -462,6 +473,7 @@ export interface FileRouteTypes {
     | '/_app/members/new'
     | '/_app/performances/contents'
     | '/_app/profile/edit'
+    | '/_app/ticketing/issues'
     | '/_app/managers/'
     | '/_app/performances/'
     | '/_app/profile/'
@@ -589,6 +601,13 @@ declare module '@tanstack/react-router' {
       path: '/profile/edit'
       fullPath: '/profile/edit'
       preLoaderRoute: typeof AppProfileEditRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/ticketing/issues': {
+      id: '/_app/ticketing/issues'
+      path: '/ticketing/issues'
+      fullPath: '/ticketing/issues'
+      preLoaderRoute: typeof AppTicketingIssuesRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/community/boards/': {
@@ -777,6 +796,7 @@ interface AppRouteChildren {
   AppMembersNewRoute: typeof AppMembersNewRoute
   AppPerformancesContentsRoute: typeof AppPerformancesContentsRoute
   AppProfileEditRoute: typeof AppProfileEditRoute
+  AppTicketingIssuesRoute: typeof AppTicketingIssuesRoute
   AppManagersIndexRoute: typeof AppManagersIndexRoute
   AppPerformancesIndexRoute: typeof AppPerformancesIndexRoute
   AppProfileIndexRoute: typeof AppProfileIndexRoute
@@ -815,6 +835,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppMembersNewRoute: AppMembersNewRoute,
   AppPerformancesContentsRoute: AppPerformancesContentsRoute,
   AppProfileEditRoute: AppProfileEditRoute,
+  AppTicketingIssuesRoute: AppTicketingIssuesRoute,
   AppManagersIndexRoute: AppManagersIndexRoute,
   AppPerformancesIndexRoute: AppPerformancesIndexRoute,
   AppProfileIndexRoute: AppProfileIndexRoute,

@@ -5,6 +5,7 @@ import {
   communityNavigationItems,
   memberNavigationItems,
   performanceNavigationItems,
+  ticketingNavigationItems,
   type AppNavigationItem,
   type AppNavigationLink,
 } from "@/app/config/navigation";
@@ -14,6 +15,7 @@ function children(id: string): readonly AppNavigationLink[] {
   if (id === "members") return memberNavigationItems;
   if (id === "performances") return performanceNavigationItems;
   if (id === "community") return communityNavigationItems;
+  if (id === "ticketing") return ticketingNavigationItems;
   return [];
 }
 

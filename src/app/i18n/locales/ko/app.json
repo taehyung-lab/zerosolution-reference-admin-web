@@ -43,7 +43,9 @@
       "performanceList": "공연목록",
       "performanceContents": "콘텐츠",
       "boards": "게시판",
-      "posts": "게시물"
+      "posts": "게시물",
+      "ticketIssues": "전체발권",
+      "smartPrinters": "스마트프린터"
     }
   },
   "bootstrap": {

@@ -43,7 +43,9 @@
       "performanceList": "公演一覧",
       "performanceContents": "コンテンツ",
       "boards": "掲示板",
-      "posts": "投稿"
+      "posts": "投稿",
+      "ticketIssues": "全体発券",
+      "smartPrinters": "スマートプリンター"
     }
   },
   "bootstrap": {

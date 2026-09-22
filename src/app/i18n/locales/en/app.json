@@ -43,7 +43,9 @@
       "performanceList": "Performance list",
       "performanceContents": "Contents",
       "boards": "Boards",
-      "posts": "Posts"
+      "posts": "Posts",
+      "ticketIssues": "All ticket issues",
+      "smartPrinters": "Smart printers"
     }
   },
   "bootstrap": {

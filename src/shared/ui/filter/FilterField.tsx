@@ -22,16 +22,20 @@ export interface FilterFieldIds {
  */
 export function FilterField({
   label,
+  required = false,
   group = false,
   children,
 }: {
   readonly label: string;
+  /** 필수 표시만 그린다. 검사·차단은 그 화면의 제출 정책이 소유한다(폼 라벨과 같은 표기). */
+  readonly required?: boolean;
   readonly group?: boolean;
   readonly children: (ids: FilterFieldIds) => ReactNode;
 }) {
   const labelId = useId();
   const controlId = useId();
   const field = renderControl(children, labelId, controlId);
+  const marker = required ? <span aria-hidden="true">*</span> : null;
   const content = group ? (
     <div
       role="group"
@@ -49,9 +53,13 @@ export function FilterField({
       {field.usesControlId ? (
         <label id={labelId} htmlFor={controlId}>
           {label}
+          {marker}
         </label>
       ) : (
-        <span id={labelId}>{label}</span>
+        <span id={labelId}>
+          {label}
+          {marker}
+        </span>
       )}
       <div className="w-full min-w-0">{content}</div>
     </div>

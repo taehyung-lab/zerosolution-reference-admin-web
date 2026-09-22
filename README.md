@@ -36,7 +36,7 @@ pnpm dev
 | `pnpm eval:routing -- --runtime all --suite smoke` | Claude·Codex·Copilot 각 런타임에 재표현 15건, 총 45회 호출한다. `full`은 런타임당 45건, 총 135회라 루트·description·라우팅 구조를 바꿀 때만 쓴다. 기대·허용 범위 밖의 `requiredContracts`는 `unexpectedContracts`, 금지 계약은 `forbiddenRequired`로 관측하고 실제 load는 `actuallyLoadedSkills`로 분리한다. 실행 불가는 exit 2와 `unconfirmed`다. 원시 로그는 저장소에 넣지 않는다 |
 | `pnpm api:pull` / `api:diff` | 원격 Swagger 수집·차이 분석. 네트워크가 필요하므로 `verify` 밖의 별도 작업이다 |
 | `pnpm build` / `preview` | 프로덕션 빌드 및 미리보기 |
-| `pnpm test:e2e:focused -- <test-file> --grep <대상>` | 작업과 직접 연결된 Playwright 파일·사례만 실행. 실행 전후 선택된 테스트 수를 확인한다 |
+| `pnpm test:e2e:focused <test-file> --grep <대상>` | 작업과 직접 연결된 Playwright 파일·사례만 실행. 실행 전후 선택된 테스트 수를 확인한다 |
 | `pnpm test:e2e:verify` | Chromium에서 smoke와 제품 시나리오의 요청 호출 경계(`@reference`) 검증 |
 | `pnpm test:e2e:smoke` | Chromium에서 목록의 draft → URL → 조회 → 표 흐름과 폼의 검증 → 확인 → 요청 흐름 검증 |
 
@@ -52,7 +52,7 @@ pnpm dev
 
 작업 중에는 바뀐 동작과 연결된 회귀 위험을 확인하는 검사를 선택한다. `pnpm verify`는 병합 전 통합
 안전망이며 매 작업마다 전체 실행할 의무는 아니다. feature 내부 변경은 관련 unit·component 검사와
-`pnpm test:e2e:focused -- tests/e2e/search-contract.spec.ts --grep /community/posts`처럼 대상 경로가 제목에
+`pnpm test:e2e:focused tests/e2e/search-contract.spec.ts --grep /community/boards`처럼 대상 경로가 제목에
 포함된 사례만 먼저 실행한다. 루트·공용 계약·shared·빌드 설정·생성 API·전역 인증/라우팅 변경, 가까운
 검사에서 발견한 범위 밖 영향, 사용자의 병합 전 통합 요청이 있을 때 전체 검사로 넓힌다. CI는 위 단계
 집합을 계속 검사한다. 통과해도 제품

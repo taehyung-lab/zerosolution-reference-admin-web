@@ -17,6 +17,7 @@ for (const path of [
   "/performances/contents",
   "/community/boards",
   "/community/posts",
+  "/ticketing/issues",
   "/ticketing/printers",
 ]) {
   test(`@reference search/defaults preserve view, double reset and history: ${path}`, async ({
@@ -162,6 +163,7 @@ for (const path of [
   "/performances/contents",
   "/community/boards",
   "/community/posts",
+  "/ticketing/issues",
   "/ticketing/printers",
 ]) {
   test(`@reference closed dates recover URL and submitted drafts: ${path}`, async ({

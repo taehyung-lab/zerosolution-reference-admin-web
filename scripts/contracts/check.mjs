@@ -90,7 +90,8 @@ failures.push(...ciVerifyStageFailures(packageJson.scripts ?? {}))
 const workflow = readFileSync(resolve('.github/workflows/verify.yml'), 'utf8')
 failures.push(...ciWorkflowScriptFailures(workflow))
 failures.push(...ciWorkflowConcurrencyFailures(workflow))
-const projected = parseReadmeVerifyProjection(readFileSync(resolve('README.md'), 'utf8'))
+const readmeDocument = readFileSync(resolve('README.md'), 'utf8')
+const projected = parseReadmeVerifyProjection(readmeDocument)
 if (projected === null) {
   failures.push('README.md 에 `pnpm verify` 단계를 투영한 행이 없다.')
 } else if (chain.join(' → ') !== projected.join(' → ')) {
@@ -162,7 +163,7 @@ const skillDocuments = readdirSync(resolve('.agents/skills'), { withFileTypes: t
   .filter((entry) => entry.isDirectory() && existsSync(resolve('.agents/skills', entry.name, 'SKILL.md')))
   .map((entry) => readFileSync(resolve('.agents/skills', entry.name, 'SKILL.md'), 'utf8'))
 const rootDocument = readFileSync(resolve('AGENTS.md'), 'utf8')
-failures.push(...verificationSelectionFailures(rootDocument, packageJson.scripts ?? {}))
+failures.push(...verificationSelectionFailures(rootDocument, packageJson.scripts ?? {}, readmeDocument))
 const baselinePath = resolve('scripts/loop/baseline.json')
 const baselineDocument = existsSync(baselinePath) ? readFileSync(baselinePath, 'utf8') : null
 if (mode === 'source') {
