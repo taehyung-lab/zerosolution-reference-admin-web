@@ -6,7 +6,8 @@ Figma `ZEROsol (For Kakao)`(`Ogb6WpSpwCVhKggQ1NLRlQ`) 78 page와 Notion `DB: Wor
 판정(공용 / feature / 미확인)은 여기에 쓰지 않는다. 판정과 그 근거는
 [zero-sol-figma-analysis.md](../zero-sol-figma-analysis.md), 승격 절차는
 `.agents/skills/source-structure/SKILL.md` 의 공용 단위의 승격, 단계는 `docs/decisions/0014-single-screen-shape.md`가 소유한다.
-현재 계정으로 Figma·Notion 원문을 다시 여는 방법은 [원문 접근](source-access.md)이 소유한다.
+현재 계정으로 Figma·Notion 원문을 다시 여는 방법은 [원문 접근](source-access.md)이, 저장소 snapshot 을
+재사용할지 원문을 다시 볼지는 [근거 정책](../../../product/policies/evidence.md#저장소-snapshot-과-원문을-구별한다)이 소유한다.
 
 ## 프로젝트 사실
 
@@ -73,8 +74,9 @@ Figma와 Notion은 이 제품 사실의 1순위 입력이다. 둘이 **같은 �
 
 - 관찰은 원문 URL과 frame/절 위치, 확인 시점·방법·범위, 확인한 사실을 남긴다. 얻지 못한 원문 버전이나
   상태는 미확인으로 둔다. 기존 캡처 날짜를 오늘의 재확인 날짜로 바꾸지 않는다.
-- 새 입력·상태·액션, 기록의 누락·충돌, 잘못된 식별자, 원문 변경 징후, 시각 측정 또는 최신 확인 요청이
-  있으면 해당 원문 범위를 다시 확인한다. 접근 실패 시 확인 못 한 사실과 영향을 적고 정책을 추측하지 않는다.
+- snapshot 재사용·재관찰·신선도 미확인의 조건은
+  [근거 정책](../../../product/policies/evidence.md#저장소-snapshot-과-원문을-구별한다)을 따른다. 재관찰
+  판정 뒤의 ZEROsol 접근 절차만 [원문 접근](source-access.md)이 소유한다.
 - 작업의 지속 근거는 첫 판독부터 해당 원장 셀에 갱신하고 경로가 바뀌면 기존 색인을 정정한다. 워커가 판독한 요구·원문 위치·시점·방법·한계는 코드와 분리해 기존 정본에 수용한다.
   `.ai-work/` 기록을 근거 원장 대신 만들지 않는다. 구현 branch를 수용하지 않아도 근거 변경은 버리지 않으며, 수용자는 실제 근거 diff와 출처를 대조한다.
   구현한 surface의 지속 가능한 근거와 색인은 `settled` 전에 갖춘다. 근거가 없을 때의 진입은
@@ -159,6 +161,8 @@ Figma 최상위 page 번호를 따른다. 파일 하나가 200줄을 넘으면 �
 것이다. [notion/00-index.md](notion/00-index.md)가 페이지·링크·섹션 대응, `notion/NN-*.md`가 섹션별
 원문, [notion/99-cross-screen.md](notion/99-cross-screen.md)가 **여러 화면에서 같은 문장으로 반복되는
 규칙**(183행)이다. 각 섹션 파일의 "Notion 요점"은 이 원문에서 공용화 판정에 직접 닿는 문장만 추린 것이다.
+이 전사는 관찰 snapshot 이며 현재 원문과 동일하다는 보증은 아니다. [근거 정책](../../../product/policies/evidence.md#저장소-snapshot-과-원문을-구별한다)이
+재관찰 필요로 판정하면 [원문 접근](source-access.md)의 고정된 경로로 대상 절을 다시 관찰한다.
 
 ## 관찰 한계
 
