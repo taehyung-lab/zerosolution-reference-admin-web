@@ -1,20 +1,51 @@
+import { mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { observationCeiling, respondingPorts } from './entry.mjs'
+import * as entry from './entry.mjs'
+const { observationCeiling } = entry
 
-describe('진입점 관찰', () => {
-  it('응답한 포트만 돌려주고, 거부된 포트는 결과에서 빠진다', async () => {
-    const fetchImpl = async (url) => {
-      if (url.includes('5174')) return { status: 200 }
-      throw new Error('ECONNREFUSED')
+describe('자신이 시작한 관측 서버', () => {
+  it('지정한 root를 제공하고, 자기 서버를 닫아도 다른 서버는 살아 있다', async () => {
+    const roots = ['first', 'second'].map((name) => {
+      const root = mkdtempSync(join(tmpdir(), 'observe-test-'))
+      writeFileSync(join(root, 'index.html'), `<h1>${name}</h1>`)
+      return root
+    })
+    const servers = []
+    try {
+      for (const root of roots) servers.push(await entry.startObservation({ root, port: 0 }))
+      expect(servers[0].root).toBe(realpathSync(roots[0]))
+      expect(await (await fetch(servers[0].url)).text()).toContain('<h1>first</h1>')
+      expect(await (await fetch(servers[1].url)).text()).toContain('<h1>second</h1>')
+      await servers[0].close()
+      await expect(fetch(servers[0].url)).rejects.toThrow()
+      expect((await fetch(servers[1].url)).status).toBe(200)
+    } finally {
+      await Promise.all(servers.map((server) => server.close()))
+      roots.forEach((root) => rmSync(root, { recursive: true, force: true }))
     }
-    expect(await respondingPorts([5173, 5174], fetchImpl)).toEqual([
-      { port: 5174, url: 'http://localhost:5174/', status: 200 },
-    ])
   })
 
-  it('하나도 응답하지 않으면 빈 목록이다 — 부재가 아니라 "지금 안 떠 있다"', async () => {
-    const fetchImpl = async () => { throw new Error('ECONNREFUSED') }
-    expect(await respondingPorts([5173], fetchImpl)).toEqual([])
+  it('포트 충돌이면 다른 서버 재사용이나 포트 변경 없이 실패한다', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'observe-test-'))
+    writeFileSync(join(root, 'index.html'), '<h1>existing</h1>')
+    let existing
+    let unexpected
+    try {
+      existing = await entry.startObservation({ root, port: 0 })
+      const port = Number(new URL(existing.url).port)
+      await expect(
+        entry.startObservation({ root, port }).then((server) => {
+          unexpected = server
+        }),
+      ).rejects.toThrow(/already in use/)
+      expect(await (await fetch(existing.url)).text()).toContain('<h1>existing</h1>')
+    } finally {
+      await unexpected?.close()
+      await existing?.close()
+      rmSync(root, { recursive: true, force: true })
+    }
   })
 })
 

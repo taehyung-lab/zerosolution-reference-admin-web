@@ -27,6 +27,7 @@ pnpm dev
 | 명령 | 하는 일 |
 | ---- | ------- |
 | `pnpm dev` | 개발 서버 |
+| `pnpm observe` | 현재 스크립트가 속한 worktree의 관측 서버를 빈 포트에 시작하고 주소·실측 상한 안내. 기존 서버를 재사용하지 않음 |
 | `pnpm verify` | **통합 검증 진입점.** api:check → contracts:check → product:check → product:values → typecheck → lint → test:unit → i18n:check → gates:negative → build → test:e2e:verify |
 | `pnpm api:check` | snapshot 검증 + Orval 생성 + 생성물 typecheck |
 | `pnpm contracts:check` | 규범 문서와 저장소 설정의 기계적 정합성. verify 체인 투영, `pnpm` 명령·로컬 link, 문서 notice와 항상 로드되는 `AGENTS.md + description` 5,400자 상한, 런타임 포인터·skill 어댑터, 이관 sentinel, API 이음매, seed 폐쇄, 이관 manifest를 검사한다. `--mode target`은 이관된 저장소용이다 |
@@ -41,6 +42,12 @@ pnpm dev
 전체 script는 `package.json`이 소유한다. CI(`.github/workflows/verify.yml`)는 `pnpm verify`와 같은 단계 집합을 static, unit 2개 shard, E2E의 네 runner로 병렬 실행하며, Chromium은 E2E runner만 설치한다. PR은 main과 합친 merge ref로 검사하므로 main push에서는 static만 다시 돌고, 문서(`**.md`, `docs/`, `.agents/`)만 바뀐 PR은 unit·E2E를 건너뛴다. pnpm store와 Chromium은 캐시한다.
 
 격리 worktree에서 검증할 때는 `PLAYWRIGHT_PORT=4184 pnpm verify`처럼 비어 있는 전용 포트를 지정한다. Playwright는 기존 서버를 재사용하지 않으므로 포트가 겹치면 바로 실패한다.
+
+브라우저 수용 관찰은 `pnpm observe`가 시작에 성공한 뒤 출력한 주소를 사용한다. 터미널을 유지하고,
+끝나면 그 터미널에서 Ctrl+C로 자신이 시작한 서버만 닫는다. 고정 포트가 필요하면
+`pnpm observe --port 5180`을 쓴다. 충돌하면 실패하며, 점유한 기존 서버를 종료하거나 대신 사용하지 않는다.
+단위 검사를 좁힐 때는 `pnpm test:unit scripts/observe/entry.test.mjs`처럼 경로를 바로 전달한다.
+중간에 `--`를 추가하지 않고, 출력의 실행 파일·테스트 수가 의도한 범위인지 확인한다.
 
 작업 중에는 바뀐 동작과 연결된 회귀 위험을 확인하는 검사를 선택한다. `pnpm verify`는 병합 전 통합
 안전망이며 매 작업마다 전체 실행할 의무는 아니다. CI는 위 단계 집합을 계속 검사한다. 통과해도 제품

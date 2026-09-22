@@ -1,34 +1,31 @@
 #!/usr/bin/env node
-/**
- * **어디로 들어가서 무엇까지 판정할 수 있는지**를 저장소에 묻는다.
- *
- * 이 값들은 문서에 손으로 적히면 즉시 낡는다. 포트는 실행할 때 정해지고(vite 는 점유된 포트를
- * 비켜 간다), 실측 상한은 실 API·실 세션이 붙었는지에 달려 있다. 둘 다 **지금 확인할 수 있는
- * 사실**이므로 문서가 아니라 여기서 답한다.
- *
- *   node scripts/observe/entry.mjs [--port <n>…]
- *
- * 이 스크립트는 브라우저를 열지 않는다. 무엇을 열어야 하고 그 결과로 무엇을 주장할 수 있는지만
- * 말한다. 실제 관찰은 저장소가 선언한 브라우저 수단으로 사람이(또는 에이전트가) 한다.
- */
-import { existsSync, readFileSync, readdirSync } from 'node:fs'
+/** 소유한 Vite 서버만 관측 주소로 제공한다. 다른 포트의 HTTP 응답은 이 작업의 증거가 아니다. */
+import { existsSync, readFileSync, readdirSync, realpathSync } from 'node:fs'
 import { join, resolve } from 'node:path'
+import { fileURLToPath, pathToFileURL, URL } from 'node:url'
+import { parseArgs } from 'node:util'
 
-const DEFAULT_PORTS = [5173, 5174, 5175, 5176, 4173]
+const projectRoot = () => fileURLToPath(new URL('../../', import.meta.url))
 
-/** 응답한 포트만 돌려준다. 응답하지 않은 포트는 "없다"가 아니라 "이 순간 안 떠 있다"이다. */
-export async function respondingPorts(ports, fetchImpl = fetch) {
-  const hits = []
-  for (const port of ports) {
-    const url = `http://localhost:${port}/`
-    try {
-      const response = await fetchImpl(url, { signal: AbortSignal.timeout(1500) })
-      hits.push({ port, url, status: response.status })
-    } catch {
-      // 연결 거부·타임아웃. 그 포트에 서버가 없다는 뜻일 뿐이다.
-    }
+/** port 0은 OS가 빈 포트를 배정한다. 명시한 포트는 충돌 시 변경·재사용하지 않는다. */
+export async function startObservation({ root = projectRoot(), port = 0 } = {}) {
+  if (!Number.isInteger(port) || port < 0 || port > 65535) {
+    throw new Error('port는 0~65535 정수여야 한다')
   }
-  return hits
+  const { createServer } = await import('vite')
+  const server = await createServer({
+    root: realpathSync(root),
+    server: { host: '127.0.0.1', port, strictPort: true, open: false },
+  })
+  try {
+    await server.listen()
+    const url = server.resolvedUrls?.local[0]
+    if (!url) throw new Error('관측 서버의 주소를 확인할 수 없다')
+    return { root: server.config.root, url, close: () => server.close() }
+  } catch (error) {
+    await server.close()
+    throw error
+  }
 }
 
 /**
@@ -72,28 +69,39 @@ export function observationCeiling(
   }
 }
 
-if (process.argv[1]?.endsWith('entry.mjs')) {
+async function main() {
   const args = process.argv.slice(2)
-  const given = args.includes('--port')
-    ? args.slice(args.indexOf('--port') + 1).filter((value) => /^\d+$/.test(value)).map(Number)
-    : []
-  const ports = given.length > 0 ? given : DEFAULT_PORTS
-  const hits = await respondingPorts(ports)
-
-  if (hits.length === 0) {
-    console.log(`  ✗ ${ports.join(' · ')} 에서 응답이 없다. dev 서버를 먼저 띄운다 — \`pnpm dev\``)
-    console.log('    (포트를 직접 아는 경우: --port <n>)')
-  } else {
-    console.log('  응답한 진입점:')
-    for (const hit of hits) console.log(`    ${hit.url}  (HTTP ${hit.status})`)
-    if (hits.length > 1) console.log('    ⚠ 둘 이상이 떠 있다. 어느 저장소의 서버인지 확인하고 들어간다.')
+  if (args[0] === '--') args.shift()
+  const { values } = parseArgs({ args, options: { port: { type: 'string' } } })
+  const { ceiling, reasons } = observationCeiling(projectRoot())
+  const session = await startObservation({
+    port: values.port === undefined ? 0 : Number(values.port),
+  })
+  let closing
+  const stop = () => {
+    closing ??= session.close().catch((error) => {
+      console.error(error.message)
+      process.exitCode = 1
+    })
+    return closing
   }
+  process.once('SIGINT', stop)
+  process.once('SIGTERM', stop)
+  console.log(`\n  관측 워크트리: ${session.root}`)
+  console.log(`  관측 주소: ${session.url}`)
+  console.log('  이 터미널을 유지하고 aside-browser로 위 주소를 연다. 종료는 Ctrl+C로 이 서버만 닫는다.')
 
-  const { ceiling, reasons } = observationCeiling()
-  console.log(`\n  이 저장소에서 브라우저 실측이 주장할 수 있는 상한: **${ceiling}**`)
+  console.log(`\n  코드 기준 실측 상한: **${ceiling}** (실 인증·API 수용의 증거는 별도)`)
   for (const reason of reasons) console.log(`    · ${reason}`)
   if (ceiling === '경계까지 확인됨') {
     console.log('    → 볼 수 있는 것은 렌더·상호작용·내부 전이·URL 까지다. 서버가 그 입력을 받아들이는지는')
     console.log('      여기서 관찰되지 않는다. 보고에 인증 경계를 통과하지 않았고 어떤 응답이 fixture 였는지 적는다.')
   }
+}
+
+if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url) {
+  main().catch((error) => {
+    console.error(`관측 서버 시작 실패: ${error.message}`)
+    process.exitCode = 1
+  })
 }
