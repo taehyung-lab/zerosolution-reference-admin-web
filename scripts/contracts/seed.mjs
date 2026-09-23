@@ -404,8 +404,8 @@ export const SEED_BUNDLES = [
     adrs: [location('docs/decisions/0014-single-screen-shape.md', '결정', '공용은 의미·상태 전이·실패가')],
     tests: ['src/shared/lib/list-view.test.ts', 'src/shared/lib/list-sort.test.ts'],
     ownership: {
-      shared: 'Owns the four pure view transitions of a paged list URL (page size and sort key return to page 1, page keeps the rest, only the active header flips direction) and the aria-sort vocabulary of the active column.',
-      feature: 'Owns the search type, its sort keys, the default direction, the commit destination and the columns.',
+      shared: 'Owns the four pure view transitions of a paged list URL (page size and sort key return to page 1, page keeps the rest, only the active header flips direction), the descending `No.` of a row from total, page and page size, and the aria-sort vocabulary of the active column.',
+      feature: 'Owns the search type, its sort keys, the default direction, the commit destination and the columns, including whether a `No.` column exists.',
     },
   },
   {
@@ -468,7 +468,7 @@ export const SEED_BUNDLE_EXPORTS = {
   'page-header': ['PageHeader'],
   'section-card': ['SectionCard'],
   'detail-field': ['DetailField'],
-  'list-view': ['ActiveListSort', 'HeaderSortDirection', 'ListSortDirection', 'ListViewControls', 'ListViewSearch', 'SortDirection', 'changePageSize', 'changeSort', 'goToPage', 'headerSortDirection', 'listViewControls', 'toggleHeaderSort'],
+  'list-view': ['ActiveListSort', 'HeaderSortDirection', 'ListSortDirection', 'ListViewControls', 'ListViewSearch', 'SortDirection', 'changePageSize', 'changeSort', 'descendingRowNumber', 'goToPage', 'headerSortDirection', 'listViewControls', 'toggleHeaderSort'],
   'scenario-request': ['scenarioRequest'],
 }
 

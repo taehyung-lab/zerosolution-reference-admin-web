@@ -38,7 +38,7 @@ export function BoardListScreen({
   const commit = (next: BoardListView) => onSearchChange(boardListSearch.canonical.parse(next));
   const filter = useBoardListFilter(search, commit);
   const { rows, total, totalPages, ...data } = useBoardListData(search);
-  const result = useBoardListResult({ search, totalPages, commit, onViewPosts });
+  const result = useBoardListResult({ search, total, totalPages, commit, onViewPosts });
 
   return (
     <section>

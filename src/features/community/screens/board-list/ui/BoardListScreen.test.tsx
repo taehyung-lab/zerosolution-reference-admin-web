@@ -67,6 +67,17 @@ describe('BoardListScreen', () => {
     expect(within(rows[0]!).getByRole('cell', { name: 'Reference Board 7' })).toBeInTheDocument();
   });
 
+  it('No. 는 전체 건수에서 내려간다 — LIST-ROW-NUMBER', async () => {
+    renderScreen();
+    await screen.findByRole('cell', { name: 'Reference Board 7' });
+
+    const numbers = screen
+      .getAllByRole('row')
+      .slice(1)
+      .map((row) => within(row).getAllByRole('cell')[0]?.textContent);
+    expect(numbers).toEqual(['7', '6', '5', '4', '3', '2', '1']);
+  });
+
   it('활성 정렬 헤더를 누르면 방향만 바뀐 검색으로 나간다', async () => {
     const { onSearchChange } = renderScreen();
     await screen.findByRole('cell', { name: 'Reference Board 1' });

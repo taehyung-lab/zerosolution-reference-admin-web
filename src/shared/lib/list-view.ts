@@ -38,6 +38,18 @@ export function goToPage<T extends ListViewSearch<string>>(search: T, page: numb
   return { ...search, page };
 }
 
+/**
+ * The `No.` of a paged list row: it counts down from the total and continues across pages, so the
+ * first row of page 1 is `total` and the last row of the last page is 1 (LIST-ROW-NUMBER).
+ */
+export function descendingRowNumber(
+  search: Pick<ListViewSearch<string>, 'page' | 'pageSize'>,
+  total: number,
+  index: number,
+): number {
+  return total - (search.page - 1) * search.pageSize - index;
+}
+
 export interface ListViewControls<T extends ListViewSearch<string>> {
   readonly pageSize: {
     readonly value: number;
