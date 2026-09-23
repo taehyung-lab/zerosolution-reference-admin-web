@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   changePageSize,
   changeSort,
+  descendingRowNumber,
   goToPage,
   listViewControls,
   toggleHeaderSort,
@@ -55,5 +56,12 @@ describe('list view transitions', () => {
       { ...view, sortDirection: 'asc', page: 1 },
       { ...view, page: 2 },
     ]);
+  });
+
+  it('numbers rows down from the total and continues across pages', () => {
+    expect(descendingRowNumber({ page: 1, pageSize: 100 }, 1000, 0)).toBe(1000);
+    expect(descendingRowNumber({ page: 1, pageSize: 100 }, 1000, 1)).toBe(999);
+    expect(descendingRowNumber({ page: 3, pageSize: 100 }, 250, 0)).toBe(50);
+    expect(descendingRowNumber({ page: 3, pageSize: 100 }, 250, 49)).toBe(1);
   });
 });

@@ -146,6 +146,7 @@
 | 단위 | 입력 → 출력 | 쓰는 곳 |
 | --- | --- | --- |
 | `listViewControls({ search, totalPages, commit })` (`list-view.ts`) | → `{ pageSize, sort: { value, direction, onValueChange, onHeaderSort }, pagination }`. 보기·정렬 키 변경은 1페이지, 페이지 이동은 나머지 보존, 활성 헤더 클릭만 방향 뒤집기 | 모든 목록 결과 훅. 순수 전이 `changePageSize`·`changeSort`·`toggleHeaderSort`·`goToPage` 도 export |
+| `descendingRowNumber({ page, pageSize }, total, index)` (`list-view.ts`) | → `total − (page − 1) × pageSize − index`. 1페이지 첫 행이 결과 건수, 페이지를 넘겨도 이어진다(LIST-ROW-NUMBER) | `No.` 컬럼을 가진 목록의 셀. 컬럼을 둘지는 화면 fact 가 정한다 |
 | `headerSortDirection({ type, direction }, key)` (`list-sort.ts`) | 활성 키면 `'ascending' \| 'descending'`, 아니면 `undefined`. `direction` 은 필수 | 컬럼 `meta.sort.direction` 의 유일한 출처 |
 | `defineSearchFields(fields)` / `defineGatedSearchFields(fields)` (`search-fields.ts`) | `{ schema, defaultValue, kind }` 선언 → `{ schema, defaults, partition, resolve, canonical }`. gated 는 `searched` 표식을 붙이고 `searched: false` 커밋을 `{}` 로 | 목록 URL 선언 |
 | `optionalInstant`, `optionalPositiveInteger`, `recoverArray(item)`, `recoverArrayItems(item)` (`search-codecs.ts`) | 불량 값 → `undefined` / 항목 제거 | 필드 schema |

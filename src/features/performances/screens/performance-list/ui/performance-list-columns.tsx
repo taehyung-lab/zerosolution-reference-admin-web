@@ -6,6 +6,7 @@ import {
 } from '@/features/performances/model/performance';
 import { formatDate } from '@/shared/lib/datetime';
 import { headerSortDirection } from '@/shared/lib/list-sort';
+import { descendingRowNumber } from '@/shared/lib/list-view';
 import type { DataTableProps } from '@/shared/ui/list/DataTable';
 import type { PerformanceListView } from '../model/performance-list-search';
 
@@ -50,8 +51,7 @@ export function performanceListColumns({
     {
       id: 'number',
       header: t('fields.number'),
-      /** 원장: 역순 번호(전체 건수에서 내려간다). */
-      cell: ({ row }) => total - (search.page - 1) * search.pageSize - row.index,
+      cell: ({ row }) => descendingRowNumber(search, total, row.index),
     },
     ...columnOrder.map((field) => {
       const sortKey = sortKeyOf(field);

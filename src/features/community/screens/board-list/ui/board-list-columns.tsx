@@ -2,6 +2,7 @@ import type { TFunction } from 'i18next';
 import type { BoardRow, BoardSortKey } from '@/features/community/model/board';
 import { formatDate } from '@/shared/lib/datetime';
 import { headerSortDirection } from '@/shared/lib/list-sort';
+import { descendingRowNumber } from '@/shared/lib/list-view';
 import type { DataTableProps } from '@/shared/ui/list/DataTable';
 import { Button } from '@/shared/ui/primitives/Button';
 import type { BoardListView } from '../model/board-list-search';
@@ -9,6 +10,7 @@ import type { BoardListView } from '../model/board-list-search';
 type BoardColumns = DataTableProps<BoardRow>['columns'];
 /**
  * 원장 12행의 컬럼 구성이다. 행 checkbox 는 없다(2026-09-10 사용자 확정).
+ * `No.` 는 전체 건수에서 내려가는 번호다(LIST-ROW-NUMBER).
  * 정렬 가능한 컬럼은 원장 13행의 7개와 같은 집합이며 활성 컬럼에만 방향이 붙는다.
  *
  * `권한` 은 원장이 쓰기/읽기 두 값을 한 컬럼으로 적었지만 정렬 키는 하나(`permission`)다.
@@ -21,13 +23,13 @@ type BoardColumns = DataTableProps<BoardRow>['columns'];
 export function boardListColumns({
   t,
   search,
-  offset,
+  total,
   onHeaderSort,
   onViewPosts,
 }: {
   readonly t: TFunction<'community'>;
   readonly search: BoardListView;
-  readonly offset: number;
+  readonly total: number;
   readonly onHeaderSort: (key: BoardSortKey) => void;
   readonly onViewPosts: (boardId: string) => void;
 }): BoardColumns {
@@ -43,7 +45,7 @@ export function boardListColumns({
     {
       id: 'no',
       header: t('board.columns.no'),
-      cell: (context: { row: { index: number } }) => offset + context.row.index + 1,
+      cell: (context: { row: { index: number } }) => descendingRowNumber(search, total, context.row.index),
     },
     {
       id: 'type',
