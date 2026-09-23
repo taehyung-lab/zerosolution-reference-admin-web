@@ -81,10 +81,10 @@ values·dirty·per-row error를 한 폼이 소유하고, caller가 row schema·�
 | 요구 | 현재 계약 | 판정 |
 | --- | --- | --- |
 | 기간 입력 | `PeriodField` 구현, preset/default는 caller 소유 | 채택 — catalog.md:11,19 |
-| 다중선택 필터 | `CheckboxTree(emptyMeansAll)` 구현 | 채택 — list.md |
-| 섹션 disclosure | `SectionCard(collapsible)` 구현 | 채택 — form.md:19,28 |
+| 다중선택 필터 | `CheckboxTree(emptyMeansAll)` 구현 | 채택 — [list-contract의 Filter](../../../.agents/skills/list-contract/SKILL.md#filter) |
+| 섹션 disclosure | `SectionCard(collapsible)` 구현 | 채택 — [form-contract의 필드](../../../.agents/skills/form-contract/SKILL.md#필드) |
 | 취소와 dirty 이탈 | 독립 등록·수정 화면에만 dirty 취소 확인; 상세 inline/dialog local 닫기는 제외 | 2026-09-07 시나리오 채택 — form-workflow. 해당 공연 편집 surface의 실제 조립·검증은 미완료 |
-| 반복 행·파일 workflow | kind D와 file boundary가 feature 소유 | 커버됨 — list.md:14, file-workflow.md:3-13 |
+| 반복 행·파일 workflow | kind D와 file boundary가 feature 소유 | 커버됨 — [list-contract의 Collections elsewhere](../../../.agents/skills/list-contract/SKILL.md#collections-elsewhere), [file-workflow](../../../.agents/skills/file-workflow/SKILL.md) |
 | 언어 tab | 다섯 shared 후보 중 `Tabs` | 후보 유지 — primitives-and-tokens.md:21 |
 | 미리보기 없음의 `-` | 다섯 shared 후보 중 빈 값 표현 | 후보 유지 — primitives-and-tokens.md:25 |
 

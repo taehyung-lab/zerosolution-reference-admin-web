@@ -63,11 +63,11 @@ tab primitive는 controlled value·tab/tabpanel 접근성만 맡고, URL/local �
 | 요구 | 현재 계약 | 판정 |
 | --- | --- | --- |
 | page/sub-tab | 다섯 shared 후보 중 `Tabs` | 후보 유지 — primitives-and-tokens.md:21 |
-| 화면별 권한 leaf | `CheckboxTree(emptyMeansAll)` 구현 | 채택 — list.md |
-| 접이식 설정 섹션 | `SectionCard(collapsible)` 구현 | 채택 — form.md:19,28 |
+| 화면별 권한 leaf | `CheckboxTree(emptyMeansAll)` 구현 | 채택 — [list-contract의 Filter](../../../.agents/skills/list-contract/SKILL.md#filter) |
+| 접이식 설정 섹션 | `SectionCard(collapsible)` 구현 | 채택 — [form-contract의 필드](../../../.agents/skills/form-contract/SKILL.md#필드) |
 | 취소와 dirty 이탈 | 독립 등록·수정 화면의 dirty 취소에 한정; 설정 내부 local 편집은 자동 채택하지 않음 | 2026-09-07 시나리오 적용 대상 대조 필요 — form-workflow |
 | 반복 행·편집 표 | kind D, row schema·정책은 feature 소유 | 커버됨 — collection.md:14,27-30 |
-| 선택복사 | 안정 ID·검증·intent는 feature 소유 | 커버됨 — list.md:3-9 |
+| 선택복사 | 안정 ID·검증·intent는 feature 소유 | 커버됨 — [list-contract의 Selection and actions](../../../.agents/skills/list-contract/SKILL.md#selection-and-actions) |
 
 현재 운영자 consumer(2026-09-07): 등록·수정 dirty 취소 경고는 유지하고 `ManagerActionForm`의 local 취소 경고만 제외했다. `managers-form.smoke.spec.ts`는 clean 취소·dirty 취소 질문의 취소/확인·뒤로가기 문장 구분을, `ManagerDetailActions.test.tsx`는 거절 입력 취소의 무호출과 재입력 요청을 검증한다. 설정의 다른 편집 화면 구현 완료를 뜻하지 않는다.
 

@@ -65,7 +65,7 @@ feature가 소유한다. interval도 feature enum이며 shared chart/table mode�
 | 집계 summary/section | `ResultSummary.groups`는 문장형 summary만 소유 | 필요 없음 — chart·전치 표는 feature-local |
 | lookup·회차 candidate | kind E local draft/commit/candidate | 커버됨 — collection.md:15,19 |
 | 결과 종류 tab | 다섯 shared 후보 중 `Tabs` | 후보 유지 — primitives-and-tokens.md:21 |
-| 결과별 table·paging | list mechanic은 Router/Query를 읽지 않는 shared surface를 조립 | 커버됨 — list.md |
+| 결과별 table·paging | list mechanic은 Router/Query를 읽지 않는 shared surface를 조립 | 커버됨 — [list-contract](../../../.agents/skills/list-contract/SKILL.md) |
 | 빈 집계 값 `-` | 다섯 shared 후보 중 빈 값 표현 | 후보 유지 — primitives-and-tokens.md:25 |
 
 ## 6. 미확인

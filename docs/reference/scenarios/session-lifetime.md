@@ -138,7 +138,7 @@ Figma는 별도 OS 창이나 origin 전체에 하나뿐인 경고 UI를 요구�
 | 경고 dialog primitive | 있다. 도메인 중립 `ConfirmDialog`/`AlertDialog` | `.agents/skills/shared-ui/SKILL.md#dialog:9` | 커버됨 |
 | 만료 dialog의 닫기 차단(X/ESC/외부 클릭 불가) | 부분. 닫기 차단이 `pending` 동안으로만 정의돼 있다 | `.agents/skills/shared-ui/SKILL.md#dialog:9,11` | 수정 필요 |
 | 연장 중 진행 표시 | 있다. `연장`은 화면 진입 primary 요청이 아니므로 overlay 금지, 버튼 pending만 | `.agents/skills/shared-ui/SKILL.md#primitives:6,8` | 커버됨(제외 판정) |
-| 유휴 시 배경 인증 트래픽 억제 | 없다. `refetchOnWindowFocus:false`는 있으나 polling·유휴 억제를 소유한 규칙이 없다 | `src/app/providers/AppProviders.tsx:12-14`, `query-cache.md` 전문 | 아예 없음 |
+| 유휴 시 배경 인증 트래픽 억제 | 없다. `refetchOnWindowFocus:false`는 있으나 polling·유휴 억제를 소유한 규칙이 없다 | `src/app/providers/AppProviders.tsx:12-14`, [server-state의 Keys](../../../.agents/skills/server-state/SKILL.md#keys) | 아예 없음 |
 | `SESSION_EXPIRED(4004)`의 kind 매핑 | 있다. ADR이 `401`·`4004` → `unauthorized`를 선언하고 구현이 그 표를 따른다. 봉투 실패 경로는 `DECLARED_FAILURE_KINDS`가, HTTP 401 경로는 `classifyHttpStatus`가 같은 kind를 낸다 | `docs/decisions/0001-rehearsal-api-contract.md:114-120`, `src/api/http/envelope.ts:19-27`, `src/api/http/client.ts:80-88` | 커버됨 — 남은 것은 kind가 아니라 어느 HTTP status로 오는가다(미확인 7) |
 | 세션 마감 상태의 단일 소유자 | 있다. 앱 수명주기 → app boundary/provider | `AGENTS.md`의 상태 소유 표 상태 소유권 표 | 커버됨 |
 | 롤링 TTL과 만료 권위의 재검토 조건 | 있다. ADR이 이 작업으로 명시적으로 넘긴다 | `docs/decisions/0006-auth-token-storage.md:41-43` | 커버됨 |

@@ -67,7 +67,7 @@ compatible adapter API; this contract does not pin a library major. Invalid opti
 defaults, while missing resource params/not-found remain explicit failures. A loader that reads search declares
 dependencies from validated search.
 
-Committed filter, sort, page, page size, and shareable tab state live in route search. Field declarations, resolution, canonical form, and transitions are owned by [list.md](../list-contract/SKILL.md#url). This file owns only their Router integration.
+Committed filter, sort, page, page size, and shareable tab state live in route search. Field declarations, resolution, canonical form, and transitions are owned by [list-contract의 URL](../list-contract/SKILL.md#url). This file owns only their Router integration.
 
 ## Loader and preload
 

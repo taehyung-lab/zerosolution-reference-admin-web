@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "capturedAt": "2026-09-21",
+  "capturedAt": "2026-09-23",
   "source": "current working-tree snapshot; history is owned by Git",
   "supersedes": {
     "revision": "main@8487d39 pre-excess-selection exam",
@@ -9,11 +9,11 @@
     "note": "이전 원시 값은 Git history가 소유함"
   },
   "entry": {
-    "rootCharacters": 3474,
+    "rootCharacters": 3948,
     "descriptionCharacters": 1925,
-    "alwaysLoadedCharacters": 5399,
+    "alwaysLoadedCharacters": 5873,
     "budgetCharacters": 6000,
-    "observedAt": "2026-09-22",
+    "observedAt": "2026-09-23",
     "budgetBasis": {
       "previous": 5400,
       "confirmedBy": "사용자, 2026-09-22",
@@ -26,15 +26,15 @@
   "routing": {
     "suite": "smoke",
     "status": "partial",
-    "observedAt": "2026-09-21",
+    "observedAt": "2026-09-23",
     "coverage": {
       "codex": {
         "observed": 15,
         "unconfirmed": 0,
         "missingRequired": 0,
         "forbiddenRequired": 0,
-        "unexpectedCases": 1,
-        "unexpectedContracts": 2
+        "unexpectedCases": 2,
+        "unexpectedContracts": 3
       },
       "copilot": {
         "observed": 0,
@@ -48,10 +48,21 @@
     },
     "observations": [
       {
+        "case": "detail/재표현",
+        "runtime": "codex",
+        "expected": ["detail-contract"],
+        "requiredContracts": ["detail-contract", "product-evidence"],
+        "actuallyLoadedSkills": null,
+        "loadObservation": "unavailable",
+        "missingRequired": [],
+        "forbiddenRequired": [],
+        "unexpectedContracts": ["product-evidence"]
+      },
+      {
         "case": "server-state/재표현",
         "runtime": "codex",
         "expected": ["server-state"],
-        "requiredContracts": ["product-evidence", "list-contract", "server-state"],
+        "requiredContracts": ["list-contract", "server-state", "product-evidence"],
         "actuallyLoadedSkills": null,
         "loadObservation": "unavailable",
         "missingRequired": [],
@@ -79,7 +90,7 @@
       "note": "사용량 한계가 임박해 새 15건 관측을 실행하지 않음"
     },
     "codex": {
-      "version": "0.154.0",
+      "version": "0.155.1",
       "model": null,
       "configuration": "project context with --ignore-user-config --ephemeral --sandbox read-only",
       "isolation": "ignore-user-config",

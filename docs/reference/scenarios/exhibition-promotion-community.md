@@ -64,8 +64,8 @@ field에 commit하며 취소·닫기는 폐기한다. parent URL은 바꾸지 �
 | --- | --- | --- |
 | 기간 필터 | `PeriodField` 구현 | 채택 — catalog.md:11,19 |
 | 업로드·제거 | 파일 범위·선행조건·payload는 feature 소유 | 커버됨 — file-workflow.md:3-13 |
-| 행 안 상태 action | column renderer와 action은 feature 소유 | 커버됨 — list.md:28 |
-| 작성자 popup 목록 | kind E local draft/candidate/confirm/cancel | 커버됨 — list.md:15,19 |
+| 행 안 상태 action | column renderer와 action은 feature 소유 | 커버됨 — [list-contract의 Selection and actions](../../../.agents/skills/list-contract/SKILL.md#selection-and-actions) |
+| 작성자 popup 목록 | kind E local draft/candidate/confirm/cancel | 커버됨 — [list-contract의 Collections elsewhere](../../../.agents/skills/list-contract/SKILL.md#collections-elsewhere) |
 | PUSH 대상 tab | 다섯 shared 후보 중 `Tabs` | 후보 유지 — primitives-and-tokens.md:21 |
 | 행 클릭 상세 | 다섯 shared 후보 중 행 활성화 | 후보 유지 — primitives-and-tokens.md:23 |
 | 값 없음 `-` | 다섯 shared 후보 중 빈 값 표현 | 후보 유지 — primitives-and-tokens.md:25 |

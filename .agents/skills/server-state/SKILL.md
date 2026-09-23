@@ -10,7 +10,7 @@ description: >
 어디까지 가는가.
 
 **담지 않는 것**: 요청·응답의 모양과 실패 어휘 — `.agents/skills/api-wire/SKILL.md` 다.
-화면이 그 결과를 어떻게 그리는가 — `.agents/skills/list-contract/SKILL.md`·`detail.md`·`form.md` 다.
+화면이 그 결과를 어떻게 그리는가 — `list-contract`·`detail-contract`·`form-contract`다.
 
 Read this file only for query options, loader prefetch, mutations, query keys, cache updates, or invalidation.
 
@@ -63,7 +63,7 @@ If any condition differs, keep separate feature queries. Never mirror reference 
 
 Route loaders and screens use the same exported query options. Router trigger and waiting rules are owned by [router.md](../route-composition/SKILL.md). Components never call generated operations, assemble raw keys, or copy server data into local state.
 
-Mutation and invalidation rules are owned by [mutations.md](../api-wire/SKILL.md).
+Mutation and invalidation rules are owned by this contract's [Declaration](#declaration) and [Cache consequence](#cache-consequence).
 
 ## 서버 연결 전후의 책임
 
@@ -122,7 +122,7 @@ The mutation declares what its success makes stale in `meta.invalidates: QueryKe
 - **시나리오 구현 완료** — 미연결 액션을 브라우저에서 최종 확인까지 눌러 요청 함수의 `console.log` 한 줄과 그 뒤 전이(완료 alert·이동)를 관찰한다. 검색·이동·다이얼로그 선택 같은 내부 전이는 실제 URL 과 화면 상태로 확인한다. 목록·상세 fixture 응답의 성공은 등록·수정의 성공 증거가 아니다.
 - 실서버 이후 동작(권한·enum 의미·실패 코드)은 별도 미확인으로 남긴다. 신규 API 연결 시 `mutationFn` 을 교체하고 이관 sentinel 을 해소한다.
 
-Read [query-cache.md](../api-wire/SKILL.md) only when defining or changing key families or query identity; consuming an already exported key does not require the whole query reference.
+Read this contract's [Keys](#keys) only when defining or changing key families or query identity; consuming an already exported key does not require the whole query reference.
 
 ## Locale and cache identity
 

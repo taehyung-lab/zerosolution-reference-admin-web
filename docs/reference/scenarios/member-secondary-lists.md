@@ -51,24 +51,24 @@ Chromium `search-contract.spec.ts`에서 다섯 화면의 기본값 검색, 보�
 ## 4. 처음부터 알았다면 이렇게 설계한다
 
 목록 골격만 공유하고 toolbar action·필터·컬럼·선택 용도는 각 feature가 소유한다. 선택은 현재 page의 안정
-ID만 가지며 검색 조건·page·정렬 변경 때 지운다(list.md:3-9). `[확인]`
+ID만 가지며 검색 조건·page·정렬 변경 때 지운다([list-contract의 Selection and actions](../../../.agents/skills/list-contract/SKILL.md#selection-and-actions)). `[확인]`
 
 다운로드 범위는 default 미선택이다. `선택한 항목`은 행 검증 뒤 ID 입력을, `검색결과 전체`는 커밋된
 검색 조건을 확정한다. 파일 형식·payload·권한은 feature와 신규 계약이 정할 때까지 만들지 않는다. `[추론]`
 
 소명 처리 결과는 상세 안의 독립 인라인 폼이다. 통보 전에는 필드·검증·dirty를 폼이 소유하고,
 `SectionCard`와 form adapter를 채택하되 확인/완료 쌍을 전제한 새 workflow 훅은 만들지 않는다
-(form.md:19,31). 통보 후에는 같은 서버
+([form-contract의 저장 lifecycle](../../../.agents/skills/form-contract/SKILL.md#저장-lifecycle)). 통보 후에는 같은 서버
 상태가 필드 read-only와 저장 action 부재를 결정한다. `[추론]`
 
 ## 5. 우리 공용 계약과의 대조
 
 | 요구 | 현재 계약 | 판정 |
 | --- | --- | --- |
-| 목록별 action·선택 수명 | 화면/feature adapter가 소유 | 커버됨 — `list.md:3-9` |
+| 목록별 action·선택 수명 | 화면/feature adapter가 소유 | 커버됨 — [list-contract의 Selection and actions](../../../.agents/skills/list-contract/SKILL.md#selection-and-actions) |
 | 다운로드 선택/전체 | 범위·선행조건·request mapping은 feature 소유 | 커버됨 — file-workflow.md:3-13 |
-| 다중선택 필터 | `CheckboxTree(emptyMeansAll)` 구현 | 채택 — list.md |
-| 소명 인라인 폼·접이식 섹션 | form adapter와 `SectionCard(collapsible)` 구현 | 채택 — form.md:19,28 |
+| 다중선택 필터 | `CheckboxTree(emptyMeansAll)` 구현 | 채택 — [list-contract의 Filter](../../../.agents/skills/list-contract/SKILL.md#filter) |
+| 소명 인라인 폼·접이식 섹션 | form adapter와 `SectionCard(collapsible)` 구현 | 채택 — [form-contract의 필드](../../../.agents/skills/form-contract/SKILL.md#필드) |
 | 회원접속 header 도움말 | 다섯 shared 후보 중 `Tooltip` | 후보 유지 — primitives-and-tokens.md:22 |
 | 행 클릭 조회 | 접근성 있는 행 활성화는 다섯 shared 후보 중 하나 | 후보 유지 — primitives-and-tokens.md:23 |
 | 빈 값 `-` | 표현만 소유하는 다섯 shared 후보 중 하나 | 후보 유지 — primitives-and-tokens.md:25 |

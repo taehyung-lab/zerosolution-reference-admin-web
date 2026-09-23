@@ -46,7 +46,7 @@ surface: `manager-detail`
 | 결과 toolbar | 결과 수, 보기 수, 정렬과 방향 | 각 control은 독립 shared mechanic. **2026-09-02 재판정: 방향 컨트롤은 Figma에 없음**(위 표). 방향 전환은 활성 헤더 클릭(`DataTable.meta.sort`) |
 | table | 유형, 소속, 아이디, 이름, 휴대폰번호, 이메일, 권한, 가입경로, 계정상태, 가입일, 최근접속일 | Managers column이 순서와 copy를 소유. rehearsal DTO의 `updatedAt` 매핑은 제품 최근접속일 계약이 아님 |
 | paging | 결과 table 아래 page navigation | URL page와 out-of-range 정책은 feature, 버튼·`aria-current` mechanic은 shared |
-| 등록·수정 | `11.1.3 운영자 등록`, `11.1.4 운영자 수정` frame — ADR 0014의 관찰 근거. 등록은 아래 상세·폼·팝업 판독 절 참조. 수정 전체 구성은 이 절에서 미확인 | form 경계는 ADR 0014와 `form.md` |
+| 등록·수정 | `11.1.3 운영자 등록`, `11.1.4 운영자 수정` frame — ADR 0014의 관찰 근거. 등록은 아래 상세·폼·팝업 판독 절 참조. 수정 전체 구성은 이 절에서 미확인 | form 경계는 ADR 0014와 [form-contract](../../../.agents/skills/form-contract/SKILL.md) |
 
 ## 11.3.x 정책 · 11.4 로그 — 설정 폼 유형
 
@@ -82,7 +82,7 @@ surface: `manager-edit`
 | --- | --- | --- | --- | --- | --- |
 | 11.3.2 접근권한 등록 (`129:72959`) | 폼 + **권한 matrix** | 기본정보(유형*·권한*·사용 상태*) + "ZEROPLUS Admin" 섹션. 헤더 `기능1~8`은 익명 슬롯이며 실제 기능 집합은 행마다 다르다: 대시보드=조회, 전체·일반·불량회원=조회·등록·수정·탈퇴·SMS/이메일·일괄변경, 휴면회원=조회·수정·탈퇴·SMS/이메일, 탈퇴회원=조회, 회원상담=조회·등록·수정·삭제·다운로드, 회원접속=조회·다운로드 등 | Notion: 상위 레벨 선택 시 하위 전체 선택/해제 | 서버 권한 식별자 | `CheckboxTree`가 controlled leaf 선택과 `emptyMeansAll` 표현을 소유; 화면별 기능 집합은 caller 소유 |
 | 11.3.4 마케팅 | **page tab + 조건부 섹션 + sub-tab** | tab(메시지 설정·자동 발송). 자동 발송 설정(SMS·카카오 알림톡·이메일 select). Case: 사용 시 "메시지 사용 설정" 섹션 노출 + sub-tab(SMS·카카오 알림톡·이메일) + 조건부 필수 필드(발송 예외설정*, 이름*, 발신용 연락처* / 채널*, 업종 카테고리* cascade, 휴대폰번호* + `인증` + 인증코드*) | (notion/11 참조) | 인증 흐름 | 없음 |
-| 11.3.6 다국어 | **편집 가능 테이블 폼** | 검색어(chip) + 검색/초기화 → 표(No.·KEY·한국어·일본어·영어 input) → 하단 `저장`·`취소`. paging 없음(`- 이하 생략 -`) | Notion: 초기화 문장 존재 | 행 수 상한·저장 단위 | `list.md` kind D |
+| 11.3.6 다국어 | **편집 가능 테이블 폼** | 검색어(chip) + 검색/초기화 → 표(No.·KEY·한국어·일본어·영어 input) → 하단 `저장`·`취소`. paging 없음(`- 이하 생략 -`) | Notion: 초기화 문장 존재 | 행 수 상한·저장 단위 | [list-contract의 Collections elsewhere](../../../.agents/skills/list-contract/SKILL.md#collections-elsewhere) kind D |
 | 11.4 로그인 | list/Case | `129:77782`/`129:77731`. 정렬 `접속일시·아이디·구분·결과·IP`. `구분`·`결과` 필터는 로그인에만 있다 | (notion/11 참조) | tab이 URL인지 | 기간 기본값 세 번째 변형(전체/1개월/7일) |
 | 11.4 조회 | list/Case | `129:77583`/`129:77548`. 정렬 `수행일시·아이디·IP·메뉴·경로` | (notion/11 참조) | — | — |
 | 11.4 다운로드 | list/Case | `129:77400`/`129:77365`. 정렬 `수행일시·아이디·IP·메뉴·경로` | (notion/11 참조) | — | — |

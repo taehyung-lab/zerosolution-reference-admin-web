@@ -448,6 +448,13 @@ export const RETIRED_DOCUMENT_NAMES = [
   { name: 'api-contract', allowIn: ['docs/decisions/'] },
   { name: 'shared-ui-contract', allowIn: ['docs/decisions/'] },
   { name: 'folder-structure-contract', allowIn: ['docs/decisions/'] },
+  // 역할 계약으로 갈라지기 전의 짧은 문서명. 결정 기록에서는 이전 이름을 설명할 수 있지만,
+  // 현재 안내와 시나리오는 실제 skill 이름과 heading을 가리켜야 한다.
+  { name: 'list.md', allowIn: ['docs/decisions/'] },
+  { name: 'detail.md', allowIn: ['docs/decisions/'] },
+  { name: 'form.md', allowIn: ['docs/decisions/'] },
+  { name: 'mutations.md', allowIn: ['docs/decisions/'] },
+  { name: 'query-cache.md', allowIn: ['docs/decisions/'] },
 
   '2026-09-14-reference-document-loop-redesign.md',
   'list-detail.md',

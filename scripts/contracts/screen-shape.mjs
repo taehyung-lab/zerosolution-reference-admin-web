@@ -8,9 +8,9 @@ import { basename, join, relative, resolve } from 'node:path'
  * boundaries are reviewed.
  */
 export const SHAPE_SECTIONS = {
-  detailRoute: '.agents/skills/feature-contract/references/router.md#형태',
-  sorting: '.agents/skills/feature-contract/references/list.md#sorting',
-  list: '.agents/skills/feature-contract/references/list.md#형태',
+  detailRoute: '.agents/skills/route-composition/SKILL.md#형태',
+  sorting: '.agents/skills/list-contract/SKILL.md#sorting',
+  list: '.agents/skills/list-contract/SKILL.md#형태',
 }
 
 /** 서버 정렬 어휘가 asc/desc 가 아니라 headerSortDirection 을 바로 받을 수 없는 컬럼 파일. 지금은 없다. */

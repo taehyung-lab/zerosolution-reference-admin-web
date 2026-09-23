@@ -578,6 +578,19 @@ describe('contracts check CLI wiring', () => {
     expect(result.stdout).toContain('Copilot')
   })
 
+  it('rejects a retired document alias in active contract tooling', () => {
+    const path = resolve(fixtureRoot, 'scripts/contracts/screen-shape.mjs')
+    const original = readFileSync(path)
+    try {
+      writeFileSync(path, `${original}\n// current owner: list.md\n`)
+      const result = runCheck()
+
+      expect(result.status).toBe(1)
+      expect(result.stderr).toContain('scripts/contracts/screen-shape.mjs')
+      expect(result.stderr).toContain('삭제된 문서 이름 → list.md')
+    } finally { writeFileSync(path, original) }
+  })
+
   it('reports missing merge prerequisites instead of crashing', () => {
     for (const file of ['package.json', '.github/workflows/verify.yml']) {
       const path = resolve(fixtureRoot, file)
@@ -953,6 +966,22 @@ describe('sentinel occurrences and citation drift', () => {
     expect(retiredDocumentNameFailures([stale, clean])).toEqual([
       `${stale}:1: 삭제된 문서 이름 → list-detail.md`,
       `${stale}:2: 삭제된 문서 이름 → 2026-09-14-reference-document-loop-redesign.md`,
+    ])
+  })
+
+  it.each([
+    'list.md',
+    'detail.md',
+    'form.md',
+    'mutations.md',
+    'query-cache.md',
+  ])('rejects the retired role-contract alias %s', (name) => {
+    const [stale] = createDocuments({
+      'docs/current.md': `현재 계약은 ${name}가 소유한다.\n`,
+    })
+
+    expect(retiredDocumentNameFailures([stale])).toEqual([
+      `${stale}:1: 삭제된 문서 이름 → ${name}`,
     ])
   })
 

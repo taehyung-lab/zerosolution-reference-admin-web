@@ -155,7 +155,10 @@ const citingFiles = [
   '.gitignore',
   '.env.example',
   ...listSourceFiles('src'),
-  ...listSourceFiles('scripts').filter((file) => !file.startsWith('scripts/contracts/')),
+  ...listSourceFiles('scripts').filter((file) => (
+    file !== 'scripts/contracts/contracts.mjs'
+    && !(file.startsWith('scripts/contracts/') && /\.test\.[cm]?[jt]sx?$/.test(file))
+  )),
 ].filter((file) => existsSync(resolve(file)))
 failures.push(...retiredDocumentNameFailures(citingFiles))
 failures.push(...checkNegativeControlFailures())

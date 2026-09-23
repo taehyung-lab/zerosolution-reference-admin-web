@@ -52,7 +52,7 @@ describe('screen shape', () => {
     const columns = 'src/features/things/screens/list/ui/thing-columns.tsx'
     files[columns] = "meta: { sort: { direction: sort === key ? (dir === 'asc' ? 'ascending' : 'descending') : undefined, onSort: () => go(key) } }"
     expect(screenShapeFailures(fixture(files))).toEqual([
-      expect.stringMatching(/ui\/thing-columns\.tsx 이 aria-sort 어휘를 직접 쓴다 → headerSortDirection.*list\.md#sorting/),
+      expect.stringMatching(/ui\/thing-columns\.tsx 이 aria-sort 어휘를 직접 쓴다 → headerSortDirection.*list-contract\/SKILL\.md#sorting/),
       expect.stringMatching(/ui\/thing-columns\.tsx 이 meta\.sort 를 선언하면서 headerSortDirection.*import 하지 않는다/),
     ])
     // Comments do not count; a columns file without sortable headers owes no import.
@@ -65,7 +65,7 @@ describe('screen shape', () => {
     const files = list()
     files['src/features/things/screens/list/model/thing-search.ts'] = "sortType: { defaultValue: 'a', kind: 'view' },\n  sortDirection: {\n    schema: s,\n    defaultValue: undefined,\n    kind: 'view',\n  },"
     expect(screenShapeFailures(fixture(files))).toEqual([
-      expect.stringMatching(/model\/thing-search\.ts 의 sortDirection 기본값이 undefined 다 → .*list\.md#sorting/),
+      expect.stringMatching(/model\/thing-search\.ts 의 sortDirection 기본값이 undefined 다 → .*list-contract\/SKILL\.md#sorting/),
     ])
     files['src/features/things/screens/list/model/thing-search.ts'] = "sortDirection: { schema: s, defaultValue: 'desc', kind: 'view' },"
     expect(screenShapeFailures(fixture(files))).toEqual([])
@@ -118,7 +118,7 @@ describe('screen shape', () => {
       'src/routes/_app/things/new.tsx': 'export const Route = createFileRoute("/_app/things/new")({ component: Create })',
     })
     expect(detailRouteLoaderFailures(root)).toEqual([
-      expect.stringMatching(/things\/\$thingId\/index\.tsx 에 loader 가 없다 → loadRequired.*router\.md#형태/),
+      expect.stringMatching(/things\/\$thingId\/index\.tsx 에 loader 가 없다 → loadRequired.*route-composition\/SKILL\.md#형태/),
     ])
   })
 })
