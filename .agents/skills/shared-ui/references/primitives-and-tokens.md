@@ -24,7 +24,7 @@ Which primitive a feature may use directly: `Button`, `Input`, `Checkbox`, `Badg
 
 ## Selection controls — which one
 
-- Few options, all visible, inline with a leading "전체": `CheckboxTree`.
+- Few options, all visible, inline with a leading "전체": `CheckboxTree`. The same inline leaves without a "전체" row (the source draws none): `CheckboxTree selectAll={false}`.
 - Many options, searched, or shown as removable tokens: `MultiSelect`.
 - Mutually exclusive choices all visible (period presets, a recipient-type choice): `RadioGroup`. More than a handful, or a dropdown in the design: `Select`.
 - Searchable single selection over a reference entity: `Combobox` (local options) or `InlineSearchSelect` (inline candidates). Remote search with pending/error, an unresolved selected label, and custom entry are unimplemented candidates that the first such consumer defines rather than widening these contracts silently.

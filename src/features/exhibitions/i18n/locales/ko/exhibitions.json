@@ -1,0 +1,105 @@
+{
+  "banner": {
+    "title": "배너",
+    "tooltip": "배너를 조회 및 관리할 수 있습니다.",
+    "tooltipLabel": "화면 안내",
+    "breadcrumb": {
+      "exhibitions": "전시",
+      "banners": "배너",
+      "detail": "조회",
+      "create": "등록",
+      "edit": "수정"
+    },
+    "filter": {
+      "period": { "label": "기간" },
+      "keyword": { "label": "검색어", "chip": "{{field}} : {{value}}" },
+      "category": { "label": "구분" },
+      "linkType": { "label": "이동경로 유형" },
+      "status": { "label": "게시 상태" }
+    },
+    "columns": {
+      "order": "게시순서",
+      "category": "구분",
+      "name": "배너명",
+      "linkType": "이동경로 유형",
+      "postPeriod": "게시기간",
+      "status": "게시 상태",
+      "timestamps": "등록일/최근업데이트일",
+      "emptyValue": "-"
+    },
+    "sort": {
+      "registeredAt": "등록일",
+      "updatedAt": "최근업데이트일",
+      "postStartAt": "게시시작일",
+      "postEndAt": "게시종료일",
+      "order": "순서",
+      "category": "구분",
+      "name": "배너명",
+      "linkType": "이동경로 유형",
+      "status": "게시상태"
+    },
+    "values": {
+      "periodType": { "registeredAt": "등록일", "updatedAt": "최근업데이트일", "postedAt": "게시일" },
+      "keywordField": { "name": "배너명" },
+      "category": { "HOME": "홈" },
+      "linkType": { "APP": "APP 내부", "EXTERNAL": "외부 경로" },
+      "status": { "WAITING": "대기", "POSTING": "게시중", "ENDED": "종료" },
+      "periodStart": "{{start}} ~",
+      "registeredAt": "{{at}} /"
+    },
+    "result": {
+      "create": "등록",
+      "preview": "미리보기",
+      "empty": "일치하는 검색결과가 없습니다.",
+      "selectAll": "이 페이지의 배너 전체 선택",
+      "selectRow": "{{name}} 선택",
+      "bulkField": "일괄변경 항목",
+      "bulkPlaceholder": "선택",
+      "bulkChange": "변경"
+    },
+    "preview": {
+      "title": "미리보기",
+      "close": "닫기"
+    },
+    "detail": {
+      "title": "배너 조회",
+      "section": "기본정보",
+      "link": "이동경로",
+      "linkType": "유형",
+      "linkUrl": "URL",
+      "image": "이미지",
+      "period": "{{start}} ~ {{end}}",
+      "history": "업데이트 이력",
+      "historyDate": "업데이트일",
+      "historyChangeColumn": "업데이트 사항",
+      "historyManager": "담당자",
+      "historyCreated": "등록",
+      "historyUpdated": "수정",
+      "historyChange": "- {{field}} : {{before}} > {{after}}",
+      "historyFields": {
+        "order": "게시순서",
+        "name": "배너명",
+        "linkUrl": "이동경로 URL",
+        "image": "이미지"
+      },
+      "edit": "수정",
+      "delete": "삭제"
+    },
+    "form": {
+      "createTitle": "배너 등록",
+      "editTitle": "배너 수정",
+      "section": "기본정보",
+      "orderHint": "숫자만 입력 가능합니다.",
+      "namePlaceholder": "500자 내외",
+      "selectFile": "파일선택",
+      "removeFile": "파일 삭제",
+      "imageHint": "권장 사이즈 : 가로 {n}px * 세로 {n}px   지원확장자 : png, 1MB 이하",
+      "periodFrom": "시작일",
+      "periodTo": "종료일",
+      "errors": {
+        "orderFormat": "숫자만 입력 가능합니다.",
+        "imageFile": "지원확장자 : png, 1MB 이하"
+      }
+    }
+  }
+}

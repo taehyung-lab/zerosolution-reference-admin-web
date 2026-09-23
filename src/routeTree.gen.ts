@@ -29,6 +29,8 @@ import { Route as AppCommunityBoardsIndexRouteImport } from './routes/_app/commu
 import { Route as AppCommunityBoardsNewRouteImport } from './routes/_app/community/boards/new'
 import { Route as AppCommunityPostsIndexRouteImport } from './routes/_app/community/posts/index'
 import { Route as AppCommunityPostsNewRouteImport } from './routes/_app/community/posts/new'
+import { Route as AppExhibitionsBannersIndexRouteImport } from './routes/_app/exhibitions/banners/index'
+import { Route as AppExhibitionsBannersNewRouteImport } from './routes/_app/exhibitions/banners/new'
 import { Route as AppManagersManagerIdIndexRouteImport } from './routes/_app/managers/$managerId/index'
 import { Route as AppManagersManagerIdEditRouteImport } from './routes/_app/managers/$managerId/edit'
 import { Route as AppMembersMemberIdIndexRouteImport } from './routes/_app/members/$memberId/index'
@@ -50,6 +52,8 @@ import { Route as AppCommunityBoardsBoardIdIndexRouteImport } from './routes/_ap
 import { Route as AppCommunityBoardsBoardIdEditRouteImport } from './routes/_app/community/boards/$boardId/edit'
 import { Route as AppCommunityPostsPostIdIndexRouteImport } from './routes/_app/community/posts/$postId/index'
 import { Route as AppCommunityPostsPostIdEditRouteImport } from './routes/_app/community/posts/$postId/edit'
+import { Route as AppExhibitionsBannersBannerIdIndexRouteImport } from './routes/_app/exhibitions/banners/$bannerId/index'
+import { Route as AppExhibitionsBannersBannerIdEditRouteImport } from './routes/_app/exhibitions/banners/$bannerId/edit'
 import { Route as AppTicketingPrintersPrinterIdIndexRouteImport } from './routes/_app/ticketing/printers/$printerId/index'
 import { Route as AppTicketingPrintersPrinterIdEditRouteImport } from './routes/_app/ticketing/printers/$printerId/edit'
 
@@ -152,6 +156,18 @@ const AppCommunityPostsNewRoute = AppCommunityPostsNewRouteImport.update({
   path: '/community/posts/new',
   getParentRoute: () => AppRoute,
 } as any)
+const AppExhibitionsBannersIndexRoute =
+  AppExhibitionsBannersIndexRouteImport.update({
+    id: '/exhibitions/banners/',
+    path: '/exhibitions/banners/',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppExhibitionsBannersNewRoute =
+  AppExhibitionsBannersNewRouteImport.update({
+    id: '/exhibitions/banners/new',
+    path: '/exhibitions/banners/new',
+    getParentRoute: () => AppRoute,
+  } as any)
 const AppManagersManagerIdIndexRoute =
   AppManagersManagerIdIndexRouteImport.update({
     id: '/managers/$managerId/',
@@ -269,6 +285,18 @@ const AppCommunityPostsPostIdEditRoute =
     path: '/community/posts/$postId/edit',
     getParentRoute: () => AppRoute,
   } as any)
+const AppExhibitionsBannersBannerIdIndexRoute =
+  AppExhibitionsBannersBannerIdIndexRouteImport.update({
+    id: '/exhibitions/banners/$bannerId/',
+    path: '/exhibitions/banners/$bannerId/',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppExhibitionsBannersBannerIdEditRoute =
+  AppExhibitionsBannersBannerIdEditRouteImport.update({
+    id: '/exhibitions/banners/$bannerId/edit',
+    path: '/exhibitions/banners/$bannerId/edit',
+    getParentRoute: () => AppRoute,
+  } as any)
 const AppTicketingPrintersPrinterIdIndexRoute =
   AppTicketingPrintersPrinterIdIndexRouteImport.update({
     id: '/ticketing/printers/$printerId/',
@@ -300,6 +328,7 @@ export interface FileRoutesByFullPath {
   '/terms/': typeof AppTermsIndexRoute
   '/community/boards/new': typeof AppCommunityBoardsNewRoute
   '/community/posts/new': typeof AppCommunityPostsNewRoute
+  '/exhibitions/banners/new': typeof AppExhibitionsBannersNewRoute
   '/managers/$managerId/edit': typeof AppManagersManagerIdEditRoute
   '/members/$memberId/edit': typeof AppMembersMemberIdEditRoute
   '/members/active/all': typeof AppMembersActiveAllRoute
@@ -312,6 +341,7 @@ export interface FileRoutesByFullPath {
   '/ticketing/printers/new': typeof AppTicketingPrintersNewRoute
   '/community/boards/': typeof AppCommunityBoardsIndexRoute
   '/community/posts/': typeof AppCommunityPostsIndexRoute
+  '/exhibitions/banners/': typeof AppExhibitionsBannersIndexRoute
   '/managers/$managerId/': typeof AppManagersManagerIdIndexRoute
   '/members/$memberId/': typeof AppMembersMemberIdIndexRoute
   '/members/appeals/': typeof AppMembersAppealsIndexRoute
@@ -321,9 +351,11 @@ export interface FileRoutesByFullPath {
   '/ticketing/printers/': typeof AppTicketingPrintersIndexRoute
   '/community/boards/$boardId/edit': typeof AppCommunityBoardsBoardIdEditRoute
   '/community/posts/$postId/edit': typeof AppCommunityPostsPostIdEditRoute
+  '/exhibitions/banners/$bannerId/edit': typeof AppExhibitionsBannersBannerIdEditRoute
   '/ticketing/printers/$printerId/edit': typeof AppTicketingPrintersPrinterIdEditRoute
   '/community/boards/$boardId/': typeof AppCommunityBoardsBoardIdIndexRoute
   '/community/posts/$postId/': typeof AppCommunityPostsPostIdIndexRoute
+  '/exhibitions/banners/$bannerId/': typeof AppExhibitionsBannersBannerIdIndexRoute
   '/ticketing/printers/$printerId/': typeof AppTicketingPrintersPrinterIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -344,6 +376,7 @@ export interface FileRoutesByTo {
   '/terms': typeof AppTermsIndexRoute
   '/community/boards/new': typeof AppCommunityBoardsNewRoute
   '/community/posts/new': typeof AppCommunityPostsNewRoute
+  '/exhibitions/banners/new': typeof AppExhibitionsBannersNewRoute
   '/managers/$managerId/edit': typeof AppManagersManagerIdEditRoute
   '/members/$memberId/edit': typeof AppMembersMemberIdEditRoute
   '/members/active/all': typeof AppMembersActiveAllRoute
@@ -356,6 +389,7 @@ export interface FileRoutesByTo {
   '/ticketing/printers/new': typeof AppTicketingPrintersNewRoute
   '/community/boards': typeof AppCommunityBoardsIndexRoute
   '/community/posts': typeof AppCommunityPostsIndexRoute
+  '/exhibitions/banners': typeof AppExhibitionsBannersIndexRoute
   '/managers/$managerId': typeof AppManagersManagerIdIndexRoute
   '/members/$memberId': typeof AppMembersMemberIdIndexRoute
   '/members/appeals': typeof AppMembersAppealsIndexRoute
@@ -365,9 +399,11 @@ export interface FileRoutesByTo {
   '/ticketing/printers': typeof AppTicketingPrintersIndexRoute
   '/community/boards/$boardId/edit': typeof AppCommunityBoardsBoardIdEditRoute
   '/community/posts/$postId/edit': typeof AppCommunityPostsPostIdEditRoute
+  '/exhibitions/banners/$bannerId/edit': typeof AppExhibitionsBannersBannerIdEditRoute
   '/ticketing/printers/$printerId/edit': typeof AppTicketingPrintersPrinterIdEditRoute
   '/community/boards/$boardId': typeof AppCommunityBoardsBoardIdIndexRoute
   '/community/posts/$postId': typeof AppCommunityPostsPostIdIndexRoute
+  '/exhibitions/banners/$bannerId': typeof AppExhibitionsBannersBannerIdIndexRoute
   '/ticketing/printers/$printerId': typeof AppTicketingPrintersPrinterIdIndexRoute
 }
 export interface FileRoutesById {
@@ -390,6 +426,7 @@ export interface FileRoutesById {
   '/_app/terms/': typeof AppTermsIndexRoute
   '/_app/community/boards/new': typeof AppCommunityBoardsNewRoute
   '/_app/community/posts/new': typeof AppCommunityPostsNewRoute
+  '/_app/exhibitions/banners/new': typeof AppExhibitionsBannersNewRoute
   '/_app/managers/$managerId/edit': typeof AppManagersManagerIdEditRoute
   '/_app/members/$memberId/edit': typeof AppMembersMemberIdEditRoute
   '/_app/members/active/all': typeof AppMembersActiveAllRoute
@@ -402,6 +439,7 @@ export interface FileRoutesById {
   '/_app/ticketing/printers/new': typeof AppTicketingPrintersNewRoute
   '/_app/community/boards/': typeof AppCommunityBoardsIndexRoute
   '/_app/community/posts/': typeof AppCommunityPostsIndexRoute
+  '/_app/exhibitions/banners/': typeof AppExhibitionsBannersIndexRoute
   '/_app/managers/$managerId/': typeof AppManagersManagerIdIndexRoute
   '/_app/members/$memberId/': typeof AppMembersMemberIdIndexRoute
   '/_app/members/appeals/': typeof AppMembersAppealsIndexRoute
@@ -411,9 +449,11 @@ export interface FileRoutesById {
   '/_app/ticketing/printers/': typeof AppTicketingPrintersIndexRoute
   '/_app/community/boards/$boardId/edit': typeof AppCommunityBoardsBoardIdEditRoute
   '/_app/community/posts/$postId/edit': typeof AppCommunityPostsPostIdEditRoute
+  '/_app/exhibitions/banners/$bannerId/edit': typeof AppExhibitionsBannersBannerIdEditRoute
   '/_app/ticketing/printers/$printerId/edit': typeof AppTicketingPrintersPrinterIdEditRoute
   '/_app/community/boards/$boardId/': typeof AppCommunityBoardsBoardIdIndexRoute
   '/_app/community/posts/$postId/': typeof AppCommunityPostsPostIdIndexRoute
+  '/_app/exhibitions/banners/$bannerId/': typeof AppExhibitionsBannersBannerIdIndexRoute
   '/_app/ticketing/printers/$printerId/': typeof AppTicketingPrintersPrinterIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -436,6 +476,7 @@ export interface FileRouteTypes {
     | '/terms/'
     | '/community/boards/new'
     | '/community/posts/new'
+    | '/exhibitions/banners/new'
     | '/managers/$managerId/edit'
     | '/members/$memberId/edit'
     | '/members/active/all'
@@ -448,6 +489,7 @@ export interface FileRouteTypes {
     | '/ticketing/printers/new'
     | '/community/boards/'
     | '/community/posts/'
+    | '/exhibitions/banners/'
     | '/managers/$managerId/'
     | '/members/$memberId/'
     | '/members/appeals/'
@@ -457,9 +499,11 @@ export interface FileRouteTypes {
     | '/ticketing/printers/'
     | '/community/boards/$boardId/edit'
     | '/community/posts/$postId/edit'
+    | '/exhibitions/banners/$bannerId/edit'
     | '/ticketing/printers/$printerId/edit'
     | '/community/boards/$boardId/'
     | '/community/posts/$postId/'
+    | '/exhibitions/banners/$bannerId/'
     | '/ticketing/printers/$printerId/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -480,6 +524,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/community/boards/new'
     | '/community/posts/new'
+    | '/exhibitions/banners/new'
     | '/managers/$managerId/edit'
     | '/members/$memberId/edit'
     | '/members/active/all'
@@ -492,6 +537,7 @@ export interface FileRouteTypes {
     | '/ticketing/printers/new'
     | '/community/boards'
     | '/community/posts'
+    | '/exhibitions/banners'
     | '/managers/$managerId'
     | '/members/$memberId'
     | '/members/appeals'
@@ -501,9 +547,11 @@ export interface FileRouteTypes {
     | '/ticketing/printers'
     | '/community/boards/$boardId/edit'
     | '/community/posts/$postId/edit'
+    | '/exhibitions/banners/$bannerId/edit'
     | '/ticketing/printers/$printerId/edit'
     | '/community/boards/$boardId'
     | '/community/posts/$postId'
+    | '/exhibitions/banners/$bannerId'
     | '/ticketing/printers/$printerId'
   id:
     | '__root__'
@@ -525,6 +573,7 @@ export interface FileRouteTypes {
     | '/_app/terms/'
     | '/_app/community/boards/new'
     | '/_app/community/posts/new'
+    | '/_app/exhibitions/banners/new'
     | '/_app/managers/$managerId/edit'
     | '/_app/members/$memberId/edit'
     | '/_app/members/active/all'
@@ -537,6 +586,7 @@ export interface FileRouteTypes {
     | '/_app/ticketing/printers/new'
     | '/_app/community/boards/'
     | '/_app/community/posts/'
+    | '/_app/exhibitions/banners/'
     | '/_app/managers/$managerId/'
     | '/_app/members/$memberId/'
     | '/_app/members/appeals/'
@@ -546,9 +596,11 @@ export interface FileRouteTypes {
     | '/_app/ticketing/printers/'
     | '/_app/community/boards/$boardId/edit'
     | '/_app/community/posts/$postId/edit'
+    | '/_app/exhibitions/banners/$bannerId/edit'
     | '/_app/ticketing/printers/$printerId/edit'
     | '/_app/community/boards/$boardId/'
     | '/_app/community/posts/$postId/'
+    | '/_app/exhibitions/banners/$bannerId/'
     | '/_app/ticketing/printers/$printerId/'
   fileRoutesById: FileRoutesById
 }
@@ -700,6 +752,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCommunityPostsNewRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/exhibitions/banners/': {
+      id: '/_app/exhibitions/banners/'
+      path: '/exhibitions/banners'
+      fullPath: '/exhibitions/banners/'
+      preLoaderRoute: typeof AppExhibitionsBannersIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/exhibitions/banners/new': {
+      id: '/_app/exhibitions/banners/new'
+      path: '/exhibitions/banners/new'
+      fullPath: '/exhibitions/banners/new'
+      preLoaderRoute: typeof AppExhibitionsBannersNewRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/managers/$managerId/': {
       id: '/_app/managers/$managerId/'
       path: '/managers/$managerId'
@@ -847,6 +913,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCommunityPostsPostIdEditRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/exhibitions/banners/$bannerId/': {
+      id: '/_app/exhibitions/banners/$bannerId/'
+      path: '/exhibitions/banners/$bannerId'
+      fullPath: '/exhibitions/banners/$bannerId/'
+      preLoaderRoute: typeof AppExhibitionsBannersBannerIdIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/exhibitions/banners/$bannerId/edit': {
+      id: '/_app/exhibitions/banners/$bannerId/edit'
+      path: '/exhibitions/banners/$bannerId/edit'
+      fullPath: '/exhibitions/banners/$bannerId/edit'
+      preLoaderRoute: typeof AppExhibitionsBannersBannerIdEditRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/ticketing/printers/$printerId/': {
       id: '/_app/ticketing/printers/$printerId/'
       path: '/ticketing/printers/$printerId'
@@ -880,6 +960,7 @@ interface AppRouteChildren {
   AppTermsIndexRoute: typeof AppTermsIndexRoute
   AppCommunityBoardsNewRoute: typeof AppCommunityBoardsNewRoute
   AppCommunityPostsNewRoute: typeof AppCommunityPostsNewRoute
+  AppExhibitionsBannersNewRoute: typeof AppExhibitionsBannersNewRoute
   AppManagersManagerIdEditRoute: typeof AppManagersManagerIdEditRoute
   AppMembersMemberIdEditRoute: typeof AppMembersMemberIdEditRoute
   AppMembersActiveAllRoute: typeof AppMembersActiveAllRoute
@@ -892,6 +973,7 @@ interface AppRouteChildren {
   AppTicketingPrintersNewRoute: typeof AppTicketingPrintersNewRoute
   AppCommunityBoardsIndexRoute: typeof AppCommunityBoardsIndexRoute
   AppCommunityPostsIndexRoute: typeof AppCommunityPostsIndexRoute
+  AppExhibitionsBannersIndexRoute: typeof AppExhibitionsBannersIndexRoute
   AppManagersManagerIdIndexRoute: typeof AppManagersManagerIdIndexRoute
   AppMembersMemberIdIndexRoute: typeof AppMembersMemberIdIndexRoute
   AppMembersAppealsIndexRoute: typeof AppMembersAppealsIndexRoute
@@ -901,9 +983,11 @@ interface AppRouteChildren {
   AppTicketingPrintersIndexRoute: typeof AppTicketingPrintersIndexRoute
   AppCommunityBoardsBoardIdEditRoute: typeof AppCommunityBoardsBoardIdEditRoute
   AppCommunityPostsPostIdEditRoute: typeof AppCommunityPostsPostIdEditRoute
+  AppExhibitionsBannersBannerIdEditRoute: typeof AppExhibitionsBannersBannerIdEditRoute
   AppTicketingPrintersPrinterIdEditRoute: typeof AppTicketingPrintersPrinterIdEditRoute
   AppCommunityBoardsBoardIdIndexRoute: typeof AppCommunityBoardsBoardIdIndexRoute
   AppCommunityPostsPostIdIndexRoute: typeof AppCommunityPostsPostIdIndexRoute
+  AppExhibitionsBannersBannerIdIndexRoute: typeof AppExhibitionsBannersBannerIdIndexRoute
   AppTicketingPrintersPrinterIdIndexRoute: typeof AppTicketingPrintersPrinterIdIndexRoute
 }
 
@@ -923,6 +1007,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppTermsIndexRoute: AppTermsIndexRoute,
   AppCommunityBoardsNewRoute: AppCommunityBoardsNewRoute,
   AppCommunityPostsNewRoute: AppCommunityPostsNewRoute,
+  AppExhibitionsBannersNewRoute: AppExhibitionsBannersNewRoute,
   AppManagersManagerIdEditRoute: AppManagersManagerIdEditRoute,
   AppMembersMemberIdEditRoute: AppMembersMemberIdEditRoute,
   AppMembersActiveAllRoute: AppMembersActiveAllRoute,
@@ -935,6 +1020,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppTicketingPrintersNewRoute: AppTicketingPrintersNewRoute,
   AppCommunityBoardsIndexRoute: AppCommunityBoardsIndexRoute,
   AppCommunityPostsIndexRoute: AppCommunityPostsIndexRoute,
+  AppExhibitionsBannersIndexRoute: AppExhibitionsBannersIndexRoute,
   AppManagersManagerIdIndexRoute: AppManagersManagerIdIndexRoute,
   AppMembersMemberIdIndexRoute: AppMembersMemberIdIndexRoute,
   AppMembersAppealsIndexRoute: AppMembersAppealsIndexRoute,
@@ -945,10 +1031,14 @@ const AppRouteChildren: AppRouteChildren = {
   AppTicketingPrintersIndexRoute: AppTicketingPrintersIndexRoute,
   AppCommunityBoardsBoardIdEditRoute: AppCommunityBoardsBoardIdEditRoute,
   AppCommunityPostsPostIdEditRoute: AppCommunityPostsPostIdEditRoute,
+  AppExhibitionsBannersBannerIdEditRoute:
+    AppExhibitionsBannersBannerIdEditRoute,
   AppTicketingPrintersPrinterIdEditRoute:
     AppTicketingPrintersPrinterIdEditRoute,
   AppCommunityBoardsBoardIdIndexRoute: AppCommunityBoardsBoardIdIndexRoute,
   AppCommunityPostsPostIdIndexRoute: AppCommunityPostsPostIdIndexRoute,
+  AppExhibitionsBannersBannerIdIndexRoute:
+    AppExhibitionsBannersBannerIdIndexRoute,
   AppTicketingPrintersPrinterIdIndexRoute:
     AppTicketingPrintersPrinterIdIndexRoute,
 }

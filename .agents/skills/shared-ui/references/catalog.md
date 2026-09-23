@@ -18,7 +18,7 @@
 | `Combobox` | `value: string \| null`, `onValueChange`, `options`, `searchValue`, `onSearchValueChange`, `placeholder`, `searchLabel`, `emptyLabel`, aria props | 열림 상태 하나, 로컬 라벨 필터, `Popover` 배선 | 원격 조회·pending·미해소 선택 라벨(첫 소비자가 정의) |
 | `InlineSearchSelect` | `searchValue`, `value: string \| undefined`, `options`, `selectedLabel`, 라벨 | 로컬 매칭, 선택 후 입력 잠금·제거 | 팝업, 원격 조회, 도메인 mode |
 | `MultiSelect` | `values: string[]`, `onValueChange`, `options`, `getRemoveLabel(option)`, aria props | 첫 라벨 + `+N` 트리거, 제거 가능한 토큰 | `options` 에 없는 값의 표시(유지되지만 안 보인다), 단일 선택 겸용 |
-| `CheckboxTree` | `nodes`(leaf `{ value, label }` / branch `{ label, children }`), `values`(leaf 만), `onValueChange`, `ariaLabelledby`, `emptyMeansAll?` | 전체·부모 토글 대수, 부분 선택은 checked 로 표시, 전체 항목의 이름(`shared:checkboxTree.selectAll`) | enum 의미·선택지 출처·기본값. `FilterField group` 으로 감싸지 않는다(이름이 두 번 읽힌다) |
+| `CheckboxTree` | `nodes`(leaf `{ value, label }` / branch `{ label, children }`), `values`(leaf 만), `onValueChange`, `ariaLabelledby`, `emptyMeansAll?`, `selectAll?`(기본 true — 원문이 `전체` 행을 그리지 않을 때만 false) | 전체·부모 토글 대수, 부분 선택은 checked 로 표시, 전체 항목의 이름(`shared:checkboxTree.selectAll`) | enum 의미·선택지 출처·기본값. `FilterField group` 으로 감싸지 않는다(이름이 두 번 읽힌다) |
 | `RadioGroup`/`RadioGroupItem` | `value`, `onValueChange`, `label` **또는** `ariaLabelledby`, item `value`+children | `fieldset`, 내부 `name`, 화살표 이동 | `''` 는 아무것도 checked 아님(폼이 `required` 로 검증) |
 | `Calendar` | `value?: 'YYYY-MM-DD'`, `min?`, `max?`, `onValueChange(value \| undefined)`, `ariaLabelledby`, aria props | `role="group"` 컨테이너, 표시 locale·탐색 라벨(`shared` namespace 예외) | `label` prop, `Date` 객체 |
 | `FileInput` | native props + `onFileChange(File \| undefined)` | 선택 하나 | `multiple`, controlled `value` |

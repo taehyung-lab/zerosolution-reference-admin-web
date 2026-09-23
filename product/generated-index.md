@@ -10,6 +10,9 @@
 
 | ID | 제목 | 역할 | 상태 | fact |
 | --- | --- | --- | --- | --- |
+| `BANNER-DETAIL` | 전시 배너 조회 | detail | 관찰됨 | [BANNER-DETAIL.md](facts/BANNER-DETAIL.md) |
+| `BANNER-FORM` | 전시 배너 등록·수정 | form | 관찰됨 | [BANNER-FORM.md](facts/BANNER-FORM.md) |
+| `BANNER-LIST` | 전시 배너 목록 | list | 관찰됨 | [BANNER-LIST.md](facts/BANNER-LIST.md) |
 | `CONTACT-MASKING` | 목록·조회의 연락처 마스킹 | policy | 관찰됨 | [CONTACT-MASKING.md](facts/CONTACT-MASKING.md) |
 | `LIST-COMMON-COPY` | 목록 공통 문구 — 검색 패널·결과 컨트롤 | policy | 관찰됨 | [LIST-COMMON-COPY.md](facts/LIST-COMMON-COPY.md) |
 | `LIST-ROW-NUMBER` | 목록 No. 컬럼 — 전체 건수에서 내려가는 번호 | policy | 관찰됨 | [LIST-ROW-NUMBER.md](facts/LIST-ROW-NUMBER.md) |
@@ -28,7 +31,7 @@
 | `TERMS-LIST` | 약관 목록 | list | 관찰됨 | [TERMS-LIST.md](facts/TERMS-LIST.md) |
 | `TICKET-ISSUE-LIST` | 전체발권 목록 | list | 관찰됨 | [TICKET-ISSUE-LIST.md](facts/TICKET-ISSUE-LIST.md) |
 
-총 17개.
+총 20개.
 
 ## 아직 fact 로 옮기지 않은 화면
 
