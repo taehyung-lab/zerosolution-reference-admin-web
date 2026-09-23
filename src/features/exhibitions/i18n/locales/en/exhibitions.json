@@ -1,0 +1,105 @@
+{
+  "banner": {
+    "title": "Banners",
+    "tooltip": "View and manage banners.",
+    "tooltipLabel": "Screen guide",
+    "breadcrumb": {
+      "exhibitions": "Exhibitions",
+      "banners": "Banners",
+      "detail": "View",
+      "create": "Create",
+      "edit": "Edit"
+    },
+    "filter": {
+      "period": { "label": "Period" },
+      "keyword": { "label": "Keyword", "chip": "{{field}} : {{value}}" },
+      "category": { "label": "Category" },
+      "linkType": { "label": "Link type" },
+      "status": { "label": "Posting status" }
+    },
+    "columns": {
+      "order": "Display order",
+      "category": "Category",
+      "name": "Banner name",
+      "linkType": "Link type",
+      "postPeriod": "Posting period",
+      "status": "Posting status",
+      "timestamps": "Registered/Last updated",
+      "emptyValue": "-"
+    },
+    "sort": {
+      "registeredAt": "Registered date",
+      "updatedAt": "Last updated",
+      "postStartAt": "Posting start date",
+      "postEndAt": "Posting end date",
+      "order": "Order",
+      "category": "Category",
+      "name": "Banner name",
+      "linkType": "Link type",
+      "status": "Posting status"
+    },
+    "values": {
+      "periodType": { "registeredAt": "Registered date", "updatedAt": "Last updated", "postedAt": "Posting date" },
+      "keywordField": { "name": "Banner name" },
+      "category": { "HOME": "Home" },
+      "linkType": { "APP": "In-app", "EXTERNAL": "External" },
+      "status": { "WAITING": "Waiting", "POSTING": "Posting", "ENDED": "Ended" },
+      "periodStart": "{{start}} ~",
+      "registeredAt": "{{at}} /"
+    },
+    "result": {
+      "create": "Create",
+      "preview": "Preview",
+      "empty": "No matching results.",
+      "selectAll": "Select all banners on this page",
+      "selectRow": "Select {{name}}",
+      "bulkField": "Bulk change field",
+      "bulkPlaceholder": "Select",
+      "bulkChange": "Change"
+    },
+    "preview": {
+      "title": "Preview",
+      "close": "Close"
+    },
+    "detail": {
+      "title": "Banner details",
+      "section": "Basic information",
+      "link": "Link",
+      "linkType": "Type",
+      "linkUrl": "URL",
+      "image": "Image",
+      "period": "{{start}} ~ {{end}}",
+      "history": "Update history",
+      "historyDate": "Updated at",
+      "historyChangeColumn": "Changes",
+      "historyManager": "Manager",
+      "historyCreated": "Created",
+      "historyUpdated": "Updated",
+      "historyChange": "- {{field}} : {{before}} > {{after}}",
+      "historyFields": {
+        "order": "Display order",
+        "name": "Banner name",
+        "linkUrl": "Link URL",
+        "image": "Image"
+      },
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "form": {
+      "createTitle": "Create banner",
+      "editTitle": "Edit banner",
+      "section": "Basic information",
+      "orderHint": "Numbers only.",
+      "namePlaceholder": "Up to about 500 characters",
+      "selectFile": "Select file",
+      "removeFile": "Remove file",
+      "imageHint": "Recommended size: {n}px wide * {n}px high   Supported format: png, 1MB or less",
+      "periodFrom": "Start date",
+      "periodTo": "End date",
+      "errors": {
+        "orderFormat": "Numbers only.",
+        "imageFile": "Supported format: png, 1MB or less"
+      }
+    }
+  }
+}

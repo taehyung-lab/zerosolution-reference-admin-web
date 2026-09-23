@@ -5,7 +5,7 @@
 export interface AppNavigationItem {
   readonly id: string;
   readonly labelKey: string;
-  readonly to?: "/performances" | "/performances/contents" | "/managers" | "/community/boards" | "/community/posts" | "/ticketing/issues" | "/ticketing/printers" | "/terms" | "/members/active/all" | "/members/active/general" | "/members/active/flagged" | "/members/dormant" | "/members/withdrawn" | "/members/counsel" | "/members/appeals" | "/members/access";
+  readonly to?: "/performances" | "/performances/contents" | "/managers" | "/exhibitions/banners" | "/community/boards" | "/community/posts" | "/ticketing/issues" | "/ticketing/printers" | "/terms" | "/members/active/all" | "/members/active/general" | "/members/active/flagged" | "/members/dormant" | "/members/withdrawn" | "/members/counsel" | "/members/appeals" | "/members/access";
 }
 
 export const appNavigationItems: readonly AppNavigationItem[] = [
@@ -14,7 +14,7 @@ export const appNavigationItems: readonly AppNavigationItem[] = [
   { id: "performances", labelKey: "shell.navigation.performances", to: "/performances" },
   // 발권 업무군의 진입은 LNB 에서 첫 번째로 구현된 화면인 전체발권이다(설정 → 운영자와 같다).
   { id: "ticketing", labelKey: "shell.navigation.ticketing", to: "/ticketing/issues" },
-  { id: "exhibitions", labelKey: "shell.navigation.exhibitions" },
+  { id: "exhibitions", labelKey: "shell.navigation.exhibitions", to: "/exhibitions/banners" },
   { id: "promotions", labelKey: "shell.navigation.promotions" },
   { id: "community", labelKey: "shell.navigation.community", to: "/community/boards" },
   { id: "statistics", labelKey: "shell.navigation.statistics" },
@@ -60,6 +60,14 @@ export const ticketingNavigationItems: readonly AppNavigationLink[] = [
 export const settingsNavigationItems: readonly AppNavigationLink[] = [
   { id: 'managers', labelKey: 'shell.navigation.managers', to: '/managers' },
   { id: 'terms', labelKey: 'shell.navigation.terms', to: '/terms' },
+];
+
+/**
+ * LNB 전시 하위: Figma 7.1 frame 의 LNB 가 `배너` · `APP Splash` 를 그린다(2026-09-23 실측).
+ * 지금 구현된 배너 화면만 둔다.
+ */
+export const exhibitionNavigationItems: readonly AppNavigationLink[] = [
+  { id: 'banners', labelKey: 'shell.navigation.banners', to: '/exhibitions/banners' },
 ];
 
 /** LNB 공연 하위: Figma 5.1/5.2 가 `공연목록`·`콘텐츠` 두 화면을 같은 업무군으로 그린다. */

@@ -14,7 +14,8 @@ export type CheckboxTreeNode =
  * Owns: controlled leaf-value selection. Select-all is checked only when every leaf
  * is selected; a parent is checked when any descendant is selected.
  * Rejects: URL serialization, enum meaning, API meaning of all.
- * API: nodes, values, onValueChange.
+ * API: nodes, values, onValueChange. `selectAll={false}` omits the select-all control for a
+ * group whose source draws only its leaves (e.g. a single fixed option with no "all" row).
  * Boundary: domain-free selection mechanics per `source-structure.md` §공용 단위의 승격.
  */
 export function CheckboxTree({
@@ -22,6 +23,7 @@ export function CheckboxTree({
   values,
   onValueChange,
   emptyMeansAll = false,
+  selectAll = true,
   ariaLabelledby,
   id,
   ariaDescribedby,
@@ -32,6 +34,7 @@ export function CheckboxTree({
   values: readonly string[];
   onValueChange: (values: string[]) => void;
   emptyMeansAll?: boolean;
+  selectAll?: boolean;
   ariaLabelledby?: string;
   id?: string;
   ariaDescribedby?: string;
@@ -113,8 +116,8 @@ export function CheckboxTree({
       onBlur={onBlur}
       role="group"
     >
-      {control(selectAllLabel, all, true)}
-      {isFlat ? (
+      {selectAll ? control(selectAllLabel, all, true) : null}
+      {selectAll && isFlat ? (
         <span aria-hidden="true" className="h-3 w-px shrink-0 bg-neutral-300" />
       ) : null}
       <ul

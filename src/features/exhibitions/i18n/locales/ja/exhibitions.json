@@ -1,0 +1,105 @@
+{
+  "banner": {
+    "title": "バナー",
+    "tooltip": "バナーを照会・管理できます。",
+    "tooltipLabel": "画面案内",
+    "breadcrumb": {
+      "exhibitions": "展示",
+      "banners": "バナー",
+      "detail": "照会",
+      "create": "登録",
+      "edit": "修正"
+    },
+    "filter": {
+      "period": { "label": "期間" },
+      "keyword": { "label": "検索語", "chip": "{{field}} : {{value}}" },
+      "category": { "label": "区分" },
+      "linkType": { "label": "リンク種別" },
+      "status": { "label": "掲載状態" }
+    },
+    "columns": {
+      "order": "掲載順",
+      "category": "区分",
+      "name": "バナー名",
+      "linkType": "リンク種別",
+      "postPeriod": "掲載期間",
+      "status": "掲載状態",
+      "timestamps": "登録日/最終更新日",
+      "emptyValue": "-"
+    },
+    "sort": {
+      "registeredAt": "登録日",
+      "updatedAt": "最終更新日",
+      "postStartAt": "掲載開始日",
+      "postEndAt": "掲載終了日",
+      "order": "順序",
+      "category": "区分",
+      "name": "バナー名",
+      "linkType": "リンク種別",
+      "status": "掲載状態"
+    },
+    "values": {
+      "periodType": { "registeredAt": "登録日", "updatedAt": "最終更新日", "postedAt": "掲載日" },
+      "keywordField": { "name": "バナー名" },
+      "category": { "HOME": "ホーム" },
+      "linkType": { "APP": "アプリ内", "EXTERNAL": "外部リンク" },
+      "status": { "WAITING": "待機", "POSTING": "掲載中", "ENDED": "終了" },
+      "periodStart": "{{start}} ~",
+      "registeredAt": "{{at}} /"
+    },
+    "result": {
+      "create": "登録",
+      "preview": "プレビュー",
+      "empty": "一致する検索結果がありません。",
+      "selectAll": "このページのバナーをすべて選択",
+      "selectRow": "{{name}} を選択",
+      "bulkField": "一括変更項目",
+      "bulkPlaceholder": "選択",
+      "bulkChange": "変更"
+    },
+    "preview": {
+      "title": "プレビュー",
+      "close": "閉じる"
+    },
+    "detail": {
+      "title": "バナー照会",
+      "section": "基本情報",
+      "link": "リンク先",
+      "linkType": "種別",
+      "linkUrl": "URL",
+      "image": "画像",
+      "period": "{{start}} ~ {{end}}",
+      "history": "更新履歴",
+      "historyDate": "更新日",
+      "historyChangeColumn": "更新内容",
+      "historyManager": "担当者",
+      "historyCreated": "登録",
+      "historyUpdated": "修正",
+      "historyChange": "- {{field}} : {{before}} > {{after}}",
+      "historyFields": {
+        "order": "掲載順",
+        "name": "バナー名",
+        "linkUrl": "リンク先URL",
+        "image": "画像"
+      },
+      "edit": "修正",
+      "delete": "削除"
+    },
+    "form": {
+      "createTitle": "バナー登録",
+      "editTitle": "バナー修正",
+      "section": "基本情報",
+      "orderHint": "数字のみ入力できます。",
+      "namePlaceholder": "500文字程度",
+      "selectFile": "ファイル選択",
+      "removeFile": "ファイル削除",
+      "imageHint": "推奨サイズ : 横 {n}px * 縦 {n}px   対応拡張子 : png、1MB以下",
+      "periodFrom": "開始日",
+      "periodTo": "終了日",
+      "errors": {
+        "orderFormat": "数字のみ入力できます。",
+        "imageFile": "対応拡張子 : png、1MB以下"
+      }
+    }
+  }
+}

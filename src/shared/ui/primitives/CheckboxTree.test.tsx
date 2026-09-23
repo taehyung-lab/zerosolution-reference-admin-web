@@ -64,4 +64,16 @@ describe('CheckboxTree', () => {
     fireEvent.click(checkbox('공연관리'));
     expect(onValueChange).toHaveBeenCalledWith(['CREATE', 'UPDATE', 'DELETE']);
   });
+
+  it('selectAll={false} renders only the leaves and still toggles them', () => {
+    const onValueChange = vi.fn();
+    renderWithI18n(
+      <CheckboxTree nodes={[{ value: 'HOME', label: '홈' }]} values={['HOME']} selectAll={false} onValueChange={onValueChange} />,
+    );
+    expect(screen.getAllByRole('checkbox')).toHaveLength(1);
+    expect(screen.queryByRole('checkbox', { name: '전체' })).toBeNull();
+    expect(isChecked('홈')).toBe(true);
+    fireEvent.click(checkbox('홈'));
+    expect(onValueChange).toHaveBeenCalledWith([]);
+  });
 });

@@ -20,6 +20,7 @@ for (const path of [
   "/ticketing/issues",
   "/ticketing/printers",
   "/terms",
+  "/exhibitions/banners",
 ]) {
   test(`@reference search/defaults preserve view, double reset and history: ${path}`, async ({
     page,
@@ -35,6 +36,7 @@ for (const path of [
       "/community/posts",
       "/ticketing/printers",
       "/terms",
+      "/exhibitions/banners",
     ].includes(path);
     await expect(page.getByRole("table")).toHaveCount(immediate ? 1 : 0);
     await page
@@ -140,6 +142,7 @@ for (const path of [
   "/community/boards",
   "/community/posts",
   "/terms",
+  "/exhibitions/banners",
 ]) {
   test(`@reference immediate URL ignores search intent: ${path}`, async ({
     page,
@@ -169,6 +172,7 @@ for (const path of [
   "/ticketing/issues",
   "/ticketing/printers",
   "/terms",
+  "/exhibitions/banners",
 ]) {
   test(`@reference closed dates recover URL and submitted drafts: ${path}`, async ({
     page,

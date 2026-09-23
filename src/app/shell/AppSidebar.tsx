@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   communityNavigationItems,
+  exhibitionNavigationItems,
   memberNavigationItems,
   performanceNavigationItems,
   settingsNavigationItems,
@@ -15,6 +16,7 @@ import {
 function children(id: string): readonly AppNavigationLink[] {
   if (id === "members") return memberNavigationItems;
   if (id === "performances") return performanceNavigationItems;
+  if (id === "exhibitions") return exhibitionNavigationItems;
   if (id === "community") return communityNavigationItems;
   if (id === "ticketing") return ticketingNavigationItems;
   if (id === "settings") return settingsNavigationItems;
